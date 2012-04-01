@@ -85,16 +85,16 @@ public class TestSpliceSites {
         linkBackward = Alignments.RelatedAlignmentEntry.newBuilder().
                 setFragmentIndex(1).setPosition(10).setTargetIndex(0).build();
         entry1 = Alignments.AlignmentEntry.newBuilder().setPosition(10).setMatchingReverseStrand(true).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(1).setSplicedForwardAlignmentLink(linkForward).
+                setQueryLength(50).setQueryIndex(1).setTargetIndex(0).setFragmentIndex(1).setSplicedForwardAlignmentLink(linkForward).
                 setQueryAlignedLength(20).addSequenceVariations(mutation).setMappingQuality(255).setScore(20).build();
         entry2 = Alignments.AlignmentEntry.newBuilder().setPosition(70).setMatchingReverseStrand(true).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(0).setSplicedBackwardAlignmentLink(linkBackward).
+                setQueryLength(50).setQueryIndex(1).setTargetIndex(0).setFragmentIndex(0).setSplicedBackwardAlignmentLink(linkBackward).
                 setQueryAlignedLength(30).setMappingQuality(255).setScore(30).build();
         writer.appendEntry(entry1);
         writer.appendEntry(entry2);
 
         writer.close();
-
+        System.out.println();
     }
 
     /**
