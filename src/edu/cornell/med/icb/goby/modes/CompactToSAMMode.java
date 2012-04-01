@@ -20,27 +20,15 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ExportableAlignmentEntryData;
-import edu.cornell.med.icb.goby.alignments.FileSlice;
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
+import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.Util;
-import net.sf.samtools.DefaultSAMRecordFactory;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileWriter;
-import net.sf.samtools.SAMFileWriterFactory;
-import net.sf.samtools.SAMProgramRecord;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.SAMRecordFactory;
+import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -113,7 +101,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
     private SAMRecordFactory samRecordFactory;
 
-    private RandomAccessSequenceCache genome;
+    private DualRandomAccessSequenceCache genome;
 
     private ExportableAlignmentEntryData exportData;
 
@@ -217,7 +205,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         output = jsapResult.getString("output");
         alignmentIterator = new CompactToSAMIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
-        genome = new RandomAccessSequenceCache();
+        genome = new DualRandomAccessSequenceCache();
         try {
             genome.load(inputGenome);
         } catch (ClassNotFoundException e) {
@@ -249,7 +237,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final boolean outputIsSam = output.toUpperCase().endsWith(".SAM");
 
-        ExportableAlignmentEntryData exportData = new ExportableAlignmentEntryData(genome);
+        exportData = new ExportableAlignmentEntryData(genome);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
         if (hasStartOrEndPosition) {
@@ -286,7 +274,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 }
 
                 samHeader.setSequenceDictionary(samTargetDictionary);
-                SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
+                final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
                 gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
                 samHeader.addProgramRecord(gobyVersionProgRec);
                 outputSam = new SAMFileWriterFactory().makeSAMOrBAMWriter(samHeader, inputIsSorted, new File(output));

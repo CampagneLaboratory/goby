@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
@@ -32,7 +32,7 @@ import org.apache.commons.lang.ArrayUtils;
 public class ExportableAlignmentEntryData {
     private static final byte UNKNOWN_MAPPING_VALUE = 127;
 
-    private RandomAccessSequenceCache genome;
+    private RandomAccessSequenceInterface genome;
     CharList refBases;
     CharList readBases;
     CharList readBasesOriginal;
@@ -65,7 +65,7 @@ public class ExportableAlignmentEntryData {
      * Constructor
      * @param genome the genome accessor.
      */
-    public ExportableAlignmentEntryData(final RandomAccessSequenceCache genome) {
+    public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome) {
         this.genome = genome;
         refBases = new CharArrayList();
         readBases = new CharArrayList();
