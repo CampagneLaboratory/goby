@@ -281,6 +281,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
 
             if (bsmap) {
+                // TODO obtain reference from genome when it is not provided in MD field.
                 // reference is provided in attribute XR
                 final String specifiedReference = (String) samRecord.getAttribute("XR");
                 final String directions = (String) samRecord.getAttribute("XS");
