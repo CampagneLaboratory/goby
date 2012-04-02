@@ -28,11 +28,15 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.Util;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Export a Goby alignment to the BAM format.
@@ -91,7 +95,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
      */
     private long endPosition = Long.MAX_VALUE;
 
-    private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
+    private QualityEncoding qualityEncoding = QualityEncoding.PHRED;
 
     private CompactToSAMIterateAlignments alignmentIterator;
 
@@ -104,6 +108,9 @@ public class CompactToSAMMode extends AbstractGobyMode {
     private DualRandomAccessSequenceCache genome;
 
     private ExportableAlignmentEntryData exportData;
+
+
+    private Int2ObjectMap<List<ExportableAlignmentEntryData>> queryIndexToFragmentsMap;
 
     // Keep?
     private ReadNameToIndex nameToQueryIndices = new ReadNameToIndex("ignore-this-for-now");
@@ -237,7 +244,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final boolean outputIsSam = output.toUpperCase().endsWith(".SAM");
 
-        exportData = new ExportableAlignmentEntryData(genome);
+        queryIndexToFragmentsMap = new Int2ObjectArrayMap<List<ExportableAlignmentEntryData>>();
+        exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
         if (hasStartOrEndPosition) {
@@ -245,70 +253,103 @@ public class CompactToSAMMode extends AbstractGobyMode {
         } else {
             alignmentIterator.iterate(basenames);
         }
-
+        if (outputSam != null) {
+            outputSam.close();
+        }
     }
 
     private class CompactToSAMIterateAlignments extends IterateAlignments {
 
         private long numWritten;
 
+        private void initializeSam(final AlignmentReader alignmentReader) {
+                // First entry to output.
+            boolean inputIsSorted = alignmentReader.isSorted();
+            // Because splices cannot be written in a sorted manner, we can never consider the output to be sorted.
+            boolean outputIsSorted = false;
+
+            // Gather the target identifiers, supply them to the SAM file
+            samHeader = new SAMFileHeader();
+            final SAMSequenceDictionary samTargetDictionary = new SAMSequenceDictionary();
+            final IndexedIdentifier gobyTargetIdentifiers = alignmentReader.getTargetIdentifiers();
+            final DoubleIndexedIdentifier gobyBackTargetIdentifiers =
+                    new DoubleIndexedIdentifier(gobyTargetIdentifiers);
+            for (int i = 0; i < gobyTargetIdentifiers.size(); i++) {
+                final String gobyTargetName = gobyBackTargetIdentifiers.getId(i).toString();
+                final int gobyTargetLength = alignmentReader.getTargetLength()[i];
+                final SAMSequenceRecord samSequenceRecord = new SAMSequenceRecord(gobyTargetName, gobyTargetLength);
+                samTargetDictionary.addSequence(samSequenceRecord);
+            }
+
+            samHeader.setSequenceDictionary(samTargetDictionary);
+            final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
+            gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
+            samHeader.addProgramRecord(gobyVersionProgRec);
+            outputSam = new SAMFileWriterFactory().makeSAMOrBAMWriter(samHeader, outputIsSorted, new File(output));
+            samRecordFactory = new DefaultSAMRecordFactory();
+        }
+
         @Override
         public void processAlignmentEntry(final AlignmentReader alignmentReader,
                                           final Alignments.AlignmentEntry alignmentEntry) {
 
             if (outputSam == null) {
-                // First entry to output.
-                boolean inputIsSorted = alignmentReader.isSorted();
-
-                // Gather the target identifiers, supply them to the SAM file
-                samHeader = new SAMFileHeader();
-                final SAMSequenceDictionary samTargetDictionary = new SAMSequenceDictionary();
-                final IndexedIdentifier gobyTargetIdentifiers = alignmentReader.getTargetIdentifiers();
-                final DoubleIndexedIdentifier gobyBackTargetIdentifiers =
-                        new DoubleIndexedIdentifier(gobyTargetIdentifiers);
-                for (int i = 0; i < gobyTargetIdentifiers.size(); i++) {
-                    final String gobyTargetName = gobyBackTargetIdentifiers.getId(i).toString();
-                    final int gobyTargetLength = alignmentReader.getTargetLength()[i];
-                    final SAMSequenceRecord samSequenceRecord = new SAMSequenceRecord(gobyTargetName, gobyTargetLength);
-                    samTargetDictionary.addSequence(samSequenceRecord);
-                }
-
-                samHeader.setSequenceDictionary(samTargetDictionary);
-                final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
-                gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
-                samHeader.addProgramRecord(gobyVersionProgRec);
-                outputSam = new SAMFileWriterFactory().makeSAMOrBAMWriter(samHeader, inputIsSorted, new File(output));
-                samRecordFactory = new DefaultSAMRecordFactory();
+                initializeSam(alignmentReader);
             }
-
-            final SAMRecord samRecord = samRecordFactory.createSAMRecord(samHeader);
-
-            samRecord.setReferenceIndex(alignmentEntry.getTargetIndex());
-            samRecord.setFlags(alignmentEntry.getPairFlags());
-            samRecord.setReadName(String.valueOf(alignmentEntry.getQueryIndex()));
-            samRecord.setAlignmentStart(alignmentEntry.getQueryPosition() + 1);
-            samRecord.setMappingQuality(alignmentEntry.getMappingQuality());
 
             exportData.buildFrom(alignmentEntry);
 
-            samRecord.setReadString(exportData.getReadBasesOriginal().toString());
-            samRecord.setBaseQualities(exportData.getReadQualities().toByteArray());
-            samRecord.setCigarString(exportData.getCigarString().toString());
-            samRecord.setAttribute("MD:Z", exportData.getMismatchString().toString());
+            List<ExportableAlignmentEntryData> fragmentsForQueryIndex = null;
+            if (alignmentEntry.hasSplicedForwardAlignmentLink() ||
+                    alignmentEntry.hasSplicedBackwardAlignmentLink()) {
+                fragmentsForQueryIndex = queryIndexToFragmentsMap.get(alignmentEntry.getQueryIndex());
+                if (fragmentsForQueryIndex == null) {
+                    fragmentsForQueryIndex = new ObjectArrayList<ExportableAlignmentEntryData>();
+                    queryIndexToFragmentsMap.put(alignmentEntry.getQueryIndex(), fragmentsForQueryIndex);
+                }
+                fragmentsForQueryIndex.add(ExportableAlignmentEntryData.duplicateFrom(exportData));
+            }
 
-            if (alignmentEntry.hasPairAlignmentLink()) {
-                /*
-                samRecord.setMateReferenceIndex(int referenceIndex);
-                samRecord.setMateAlignmentStart(int mateAlignmentStart);
-                samRecord.setInferredInsertSize(int inferredInsertSize);
-                */
+            if (fragmentsForQueryIndex == null) {
+                // This is suitable for single alignment entries or paired end
+                outputSingle();
+            } else {
+                if (fragmentsForQueryIndex.size() == alignmentEntry.getQueryIndexOccurrences()) {
+                    // When an alignment is spliced, we have to output all the splice pieces only
+                    // after we have read ALL of the pieces of the splice.
+                    outputMultiFragments(fragmentsForQueryIndex);
+                    queryIndexToFragmentsMap.remove(alignmentEntry.getQueryIndex());
+                }
+            }
+        }
+
+        private void outputMultiFragments(final List<ExportableAlignmentEntryData> spliceFragments) {
+
+        }
+
+        private void outputSingle() {
+            final SAMRecord samRecord = samRecordFactory.createSAMRecord(samHeader);
+
+            samRecord.setReferenceIndex(exportData.getTargetIndex());
+            samRecord.setFlags(exportData.getPairFlags());
+            samRecord.setReadName(exportData.getReadName());
+            samRecord.setAlignmentStart(exportData.getStartPosition());
+            samRecord.setMappingQuality(exportData.getMappingQuality());
+
+            samRecord.setReadString(exportData.getReadBasesOriginal());
+            samRecord.setBaseQualities(exportData.getReadQualities().toByteArray());
+            samRecord.setCigarString(exportData.getCigarString());
+            samRecord.setAttribute("MD", exportData.getMismatchString());
+
+            if (exportData.hasMate()) {
+                samRecord.setMateReferenceIndex(exportData.getMateReferenceIndex());
+                samRecord.setMateAlignmentStart(exportData.getMateAlignmentStart());
+                samRecord.setInferredInsertSize(exportData.getInferredInsertSize());
             }
 
             outputSam.addAlignment(samRecord);
         }
     }
-
-
     /**
      * Main method.
      *

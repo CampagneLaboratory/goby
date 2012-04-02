@@ -33,7 +33,7 @@
         <flaggedOption>
             <id>input-genome</id>
             <shortFlag>g</shortFlag>
-            <longFlag>input-genome</longFlag>
+            <longFlag>genome</longFlag>
             <required>true</required>
             <help>
                 The input genome in either 'compact random-access-genome' format or 'fa + fa.fai' format.
@@ -60,7 +60,7 @@
             <longFlag>quality-encoding</longFlag>
             <required>false</required>
             <defaults>
-                <string>Sanger</string>
+                <string>Phred</string>
             </defaults>
             <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM
                 specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.

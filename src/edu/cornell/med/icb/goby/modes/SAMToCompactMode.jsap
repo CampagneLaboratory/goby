@@ -173,7 +173,7 @@
         <flaggedOption>
             <id>input-genome</id>
             <shortFlag>g</shortFlag>
-            <longFlag>input-genome</longFlag>
+            <longFlag>genome</longFlag>
             <required>false</required>
             <help>
                 The input genome in either 'compact random-access-genome' format or 'fa + fa.fai' format. When a genome

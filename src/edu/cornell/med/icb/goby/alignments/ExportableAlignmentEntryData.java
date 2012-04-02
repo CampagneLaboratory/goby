@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
@@ -30,30 +31,35 @@ import org.apache.commons.lang.ArrayUtils;
  * Test ExportableAlignmentEntryData.
  */
 public class ExportableAlignmentEntryData {
-    private static final byte UNKNOWN_MAPPING_VALUE = 127;
+
+    // This was the maximum acceptable value
+    private static final byte UNKNOWN_MAPPING_VALUE = 93;
 
     private RandomAccessSequenceInterface genome;
-    CharList refBases;
-    CharList readBases;
-    CharList readBasesOriginal;
-    ByteList qualities;
-    MutableString cigarString;
-    MutableString mismatchString;
-    MutableString invalidMessage;
-    boolean hasQualities;
+
+    private CharList refBases;
+    private CharList readBases;
+    private MutableString readBasesOriginal;
+    private ByteList qualities;
+    private MutableString cigarString;
+    private MutableString mismatchString;
+    private MutableString invalidMessage;
+    private boolean hasQualities;
 
     // These actual* values are generally empty except during testing when they can be fed in for debugging
-    CharList actualReads;
-    ByteList actualQualities;
+    private CharList actualReads;
+    private ByteList actualQualities;
 
-    boolean invalid;
-    int alignmentStartPosition;
-    int startClip;
-    int endClip;
-    int queryLength;
-    int queryAlignedLength;
-    int targetAlignedLength;
-    boolean reverseStrand;
+    private boolean invalid;
+    private int startClip;
+    private int endClip;
+    private int queryLength;
+    private int queryAlignedLength;
+    private int targetAlignedLength;
+    private boolean reverseStrand;
+    private QualityEncoding qualityEncoding;
+
+    private Alignments.AlignmentEntry alignmentEntry;
 
     /**
      * Marked private so it won't be used, always needs the genome version.
@@ -65,11 +71,14 @@ public class ExportableAlignmentEntryData {
      * Constructor
      * @param genome the genome accessor.
      */
-    public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome) {
+    public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
+                                        final QualityEncoding qualityEncoding) {
         this.genome = genome;
+        this.qualityEncoding = qualityEncoding;
+
         refBases = new CharArrayList();
         readBases = new CharArrayList();
-        readBasesOriginal = new CharArrayList();
+        readBasesOriginal = new MutableString();
         qualities = new ByteArrayList();
         cigarString = new MutableString();
         mismatchString = new MutableString();
@@ -77,6 +86,7 @@ public class ExportableAlignmentEntryData {
 
         actualReads = new CharArrayList();
         actualQualities = new ByteArrayList();
+
         reset();
     }
 
@@ -87,7 +97,7 @@ public class ExportableAlignmentEntryData {
     private void reset() {
         refBases.clear();
         readBases.clear();
-        readBasesOriginal.clear();
+        readBasesOriginal.setLength(0);
         qualities.clear();
         cigarString.setLength(0);
         mismatchString.setLength(0);
@@ -97,7 +107,6 @@ public class ExportableAlignmentEntryData {
         actualQualities.clear();
 
         invalid = false;
-        alignmentStartPosition = 0;
         startClip = 0;
         endClip = 0;
         queryLength = 0;
@@ -105,6 +114,8 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = 0;
         reverseStrand = true;
         hasQualities = false;
+
+        alignmentEntry = null;
     }
 
     /**
@@ -113,12 +124,12 @@ public class ExportableAlignmentEntryData {
      * @param from the ExportableAlignmentEntryData to duplicate
      * @return the duplicated object
      */
-    public static ExportableAlignmentEntryData duplicate(final ExportableAlignmentEntryData from) {
-        final ExportableAlignmentEntryData to = new ExportableAlignmentEntryData(from.genome);
+    public static ExportableAlignmentEntryData duplicateFrom(final ExportableAlignmentEntryData from) {
+        final ExportableAlignmentEntryData to = new ExportableAlignmentEntryData(from.genome, from.qualityEncoding);
 
         to.refBases.addAll(from.refBases);
         to.readBases.addAll(from.readBases);
-        to.readBasesOriginal.addAll(from.readBasesOriginal);
+        to.readBasesOriginal.append(from.readBasesOriginal);
         to.qualities.addAll(from.qualities);
         to.cigarString.append(from.cigarString);
         to.mismatchString.append(from.mismatchString);
@@ -128,7 +139,6 @@ public class ExportableAlignmentEntryData {
         to.actualQualities.addAll(from.actualQualities);
 
         to.invalid = from.invalid;
-        to.alignmentStartPosition = from.alignmentStartPosition;
         to.startClip = from.startClip;
         to.endClip = from.endClip;
         to.queryLength = from.queryLength;
@@ -137,7 +147,41 @@ public class ExportableAlignmentEntryData {
         to.reverseStrand = from.reverseStrand;
         to.hasQualities = from.hasQualities;
 
+        to.alignmentEntry = Alignments.AlignmentEntry.newBuilder(from.alignmentEntry).build();
+
         return to;
+    }
+
+    /**
+     * The target index
+     * @return target index
+     */
+    public int getTargetIndex() {
+        return alignmentEntry.getTargetIndex();
+    }
+
+    /**
+     * The pair flags
+     * @return the pair flags
+     */
+    public int getPairFlags() {
+        return alignmentEntry.getPairFlags();
+    }
+
+    /**
+     * Get the read name. This is always the query index converted to a String, but SAM wants a string.
+     * @return the read name.
+     */
+    public String getReadName() {
+        return String.valueOf(alignmentEntry.getQueryIndex());
+    }
+
+    /**
+     * Get the read name. This is always the query index converted to a String, but SAM wants a string.
+     * @return the read name.
+     */
+    public int getQueryIndex() {
+        return alignmentEntry.getQueryIndex();
     }
 
     /**
@@ -146,7 +190,55 @@ public class ExportableAlignmentEntryData {
      * @return the read bases, containing "-"s for insertions.
      */
     public int getStartPosition() {
-        return alignmentStartPosition;
+        return alignmentEntry.getPosition() + 1;
+    }
+
+    /**
+     * The mapping quality of the read.
+     * @return mapping quality of the read.
+     */
+    public int getMappingQuality() {
+        return alignmentEntry.getMappingQuality();
+    }
+
+    /**
+     * If the entry has a pair.
+     * @return If the entry has a pair.
+     */
+    public boolean hasMate() {
+        return alignmentEntry.hasPairAlignmentLink();
+    }
+
+    /**
+     * Assuming hasMate() is true, get the mate's reference index (target index).
+     * @return If the entry has a pair.
+     */
+    public int getMateReferenceIndex() {
+        return alignmentEntry.getPairAlignmentLink().getTargetIndex();
+    }
+
+    public int getMateAlignmentStart() {
+        return alignmentEntry.getPairAlignmentLink().getPosition() + 1;
+    }
+
+    public int getInferredInsertSize() {
+        return alignmentEntry.getInsertSize();
+    }
+
+    /**
+     * If the conversion from AlignmentEntry was invalid.
+     * @return if this object is invalid
+     */
+    public boolean isInvalid() {
+        return invalid;
+    }
+
+    /**
+     * The message describing why this object is invalid.
+     * @return message describing why this object is invalid.
+     */
+    public String getInvalidMessage() {
+        return invalidMessage.toString();
     }
 
     /**
@@ -163,9 +255,10 @@ public class ExportableAlignmentEntryData {
      * read but the actual bases are unobtainable without the original reads file.
      * @return The original query bases (as close as possible)
      */
-    public CharList getReadBasesOriginal() {
-        return readBasesOriginal;
+    public String getReadBasesOriginal() {
+        return readBasesOriginal.toString();
     }
+
 
     /**
      * Return the reference bases, which include "-"'s if the alignment had inserts.
@@ -179,16 +272,16 @@ public class ExportableAlignmentEntryData {
      * Value for CIGAR (such as for SAM).
      * @return the calculated cigar string.
      */
-    public MutableString getCigarString() {
-        return cigarString;
+    public String getCigarString() {
+        return cigarString.toString();
     }
 
     /**
      * Value for MD:Z for SAM.
      * @return the calculated mismatch string.
      */
-    public MutableString getMismatchString() {
-        return mismatchString;
+    public String getMismatchString() {
+        return mismatchString.toString();
     }
 
     /**
@@ -291,7 +384,8 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
         endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition() - startClip;
-        alignmentStartPosition = startPosition + 1;
+
+        this.alignmentEntry = alignmentEntry;
 
         // First obtain the number of indels
         int numInserts = 0;
@@ -357,7 +451,8 @@ public class ExportableAlignmentEntryData {
             for (int i = 0; i < froms.length(); i++) {
                 final char from = froms.charAt(i);
                 final char to = tos.charAt(i);
-                final Byte toQual = toQuals == null ? null : toQuals[i];
+                final Byte toQual = toQuals == null ? null : (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
+
                 final int refPosition = startRefPosition + startClip + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
                     // Insertion, missing base in the reference.
@@ -410,11 +505,29 @@ public class ExportableAlignmentEntryData {
         }
         for (final char readBase : readBases) {
             if (readBase != '-') {
-                readBasesOriginal.add(readBase);
+                readBasesOriginal.append(readBase);
             }
         }
         observeReadRefDifferences();
         System.out.println(toString());
+    }
+
+    private enum MismatchType {
+        MATCH,
+        INSERTION,
+        DELETION,
+        MISMATCH,
+    }
+
+    private enum CigarType {
+        CLIP('S'),
+        MATCH('M'),
+        INSERTION('I'),
+        DELETION('D');
+        final char code;
+        private CigarType(final char code) {
+            this.code = code;
+        }
     }
 
     /**
@@ -423,6 +536,73 @@ public class ExportableAlignmentEntryData {
      * for this alignment.
      */
     private void observeReadRefDifferences() {
+        if (startClip > 0) {
+            cigarString.append(startClip).append(CigarType.CLIP.code);
+        }
+        final int startPos = startClip;
+        final int endPos = readBases.size() - endClip;
+        CigarType lastCigarType = CigarType.MATCH;
+        int numLastCigarType = 0;
+        MismatchType lastMismatchType = MismatchType.MATCH;
+        int numLastMismatchType = 0;
+        for (int i = startPos; i < endPos; i++) {
+            final char readBase = readBases.get(i);
+            final char refBase = refBases.get(i);
+            final CigarType curCigarType;
+            MismatchType curMismatchType;
+            if (readBase == '-') {
+                curCigarType = CigarType.DELETION;
+                curMismatchType = MismatchType.DELETION;
+            } else if (refBase == '-') {
+                curCigarType = CigarType.INSERTION;
+                curMismatchType = MismatchType.MATCH;
+            } else {
+                curCigarType = CigarType.MATCH;
+                if (readBase == refBase) {
+                    curMismatchType = MismatchType.MATCH;
+                } else {
+                    curMismatchType = MismatchType.MISMATCH;
+                }
+            }
+            if (curCigarType == lastCigarType) {
+                numLastCigarType++;
+            } else {
+                if (numLastCigarType > 0) {
+                    cigarString.append(numLastCigarType).append(lastCigarType.code);
+                }
+                numLastCigarType = 1;
+                lastCigarType = curCigarType;
+            }
+
+            if (curMismatchType != lastMismatchType) {
+                if (lastMismatchType == MismatchType.MATCH && numLastMismatchType > 0) {
+                    mismatchString.append(numLastMismatchType);
+                }
+                numLastMismatchType = 1;
+                lastMismatchType = curMismatchType;
+            } else {
+                if (curCigarType != CigarType.INSERTION) {
+                    // Mismatch=MATCH ++ CigarType=INSERTION is like a match, but we don't advance numLastMismatch
+                    numLastMismatchType++;
+                }
+            }
+
+            if (curMismatchType == MismatchType.DELETION && numLastMismatchType == 1) {
+                mismatchString.append("^");
+            }
+            if (curMismatchType == MismatchType.MISMATCH || curMismatchType == MismatchType.DELETION) {
+                mismatchString.append(refBase);
+            }
+        }
+        if (numLastCigarType > 0) {
+            cigarString.append(numLastCigarType).append(lastCigarType.code);
+        }
+        if (lastMismatchType == MismatchType.MATCH && numLastMismatchType > 0) {
+            mismatchString.append(numLastMismatchType);
+        }
+        if (endClip > 0) {
+            cigarString.append(endClip).append(CigarType.CLIP.code);
+        }
     }
 
     /**
@@ -447,6 +627,7 @@ public class ExportableAlignmentEntryData {
         if (invalid) {
             sb.append("invalidMessage").append(invalidMessage.toString()).append("\n");
         }
+        sb.append("startPos   =").append(getStartPosition()).append("\n");
         sb.append("startClip  =").append(startClip).append("\n");
         sb.append("startClip  =").append(startClip).append("\n");
         sb.append("endClip    =").append(endClip).append("\n");
@@ -504,7 +685,7 @@ public class ExportableAlignmentEntryData {
     private void basesOutput(final StringBuilder sb,
             final String prefixRefBases, final CharList refBases,
             final String prefixReadBases, final CharList readBases,
-            final String prefixReadBasesOriginal, final CharList readBasesOriginal,
+            final String prefixReadBasesOriginal, final MutableString readBasesOriginal,
             final String prefixActualReadBases, final CharList actualReadBases,
             final String diffPrefix) {
         final int refBasesSize = refBases.size();
@@ -533,10 +714,8 @@ public class ExportableAlignmentEntryData {
         sb.append("] size=").append(readBases.size()).append('\n');
 
         sb.append(prefixReadBasesOriginal).append('[');
-        for (final char base : readBasesOriginal) {
-            sb.append(base);
-        }
-        sb.append("] size=").append(readBasesOriginal.size()).append('\n');
+            sb.append(readBasesOriginal);
+        sb.append("] size=").append(readBasesOriginal.length()).append('\n');
 
         if (prefixActualReadBases != null) {
             sb.append(prefixActualReadBases).append('[');
