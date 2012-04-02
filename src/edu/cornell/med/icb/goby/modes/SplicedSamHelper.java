@@ -241,7 +241,7 @@ public class SplicedSamHelper {
             initializeHelpers();
             for (int i = 0; i < numEntries; i++) {
                 final Limits limit = limits[i];
-                final int refStartIndex=limit.refStart-position;
+                final int refStartIndex=Math.max(0,limit.refStart-position);
                 // TODO determine why we need the min. How come limit.refEnd-position is sometimes larger than the reference length?
                 final int refEndIndex=Math.max(0,Math.min(limit.refEnd-position, sourceReference.length()));
 
