@@ -241,19 +241,19 @@ public class SplicedSamHelper {
             initializeHelpers();
             for (int i = 0; i < numEntries; i++) {
                 final Limits limit = limits[i];
-                final int refStartIndex=Math.max(0,limit.refStart-position);
-                // TODO determine why we need the min. How come limit.refEnd-position is sometimes larger than the reference length?
-                final int refEndIndex=Math.max(0, Math.min(limit.refEnd - position, sourceReference.length()));
+                final int refStartIndex=limit.refStart - position;
+                final int refEndIndex=refStartIndex+limit.refEnd - limit.refStart;
                 try {
                 helpers.get(i).setSourceWithReference(queryIndex,
-                        sourceReference.subSequence(refStartIndex, refEndIndex),
+                        sourceReference.subSequence(refStartIndex, Math.min(refEndIndex,sourceReference.length()-1)),
                         sourceQuery.subSequence(limit.readStart, limit.readEnd),
                         sourceQual.subSequence(limit.readStart, limit.readEnd),
 
                         limit.position + 1,
                         reverseStrand
                 );    } catch (IndexOutOfBoundsException e) {
-                    System.out.println(e);
+                    System.out.printf("Another exception: refStartIndex=%d refEndIndex=%d refLength=%d  cigar=%s %s %n",
+                            refStartIndex, refEndIndex, sourceReference.length(), samRecord.getCigarString(), e);
                 }
             }
         }
