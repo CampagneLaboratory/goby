@@ -508,9 +508,6 @@ public class SamHelper {
                     queryChar = Character.toUpperCase(query.charAt(index));
                 } else {
                     final int index = i - numLeftClipped;
-                    if (index >= query.length()) {
-                        System.out.println("STOP4");
-                    }
                     queryChar = Character.toUpperCase(query.charAt(index));
                 }
                 if (queryChar != '-') {

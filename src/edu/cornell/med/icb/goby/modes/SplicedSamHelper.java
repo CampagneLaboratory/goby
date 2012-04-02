@@ -131,7 +131,7 @@ public class SplicedSamHelper {
         int previousPosition = position;
         int previousPositionInRead = 0;
         int positionInRead = 0;
-
+        int initialRefPosition = position;
         while (matcher.find()) {
             final int cigarLength = matcher.group(1).length() + matcher.group(2).length();
             final int readBasesLength = Integer.parseInt(matcher.group(1));
@@ -155,6 +155,12 @@ public class SplicedSamHelper {
                     // deletion in read
                     positionInRead += 0;
                     position += 0;
+                    break;
+                case 'S':
+                    // soft clip in the reference for so many bases.
+                    for (int j = 0; j < readBasesLength; j++) {
+                        refSequence.insert(position - initialRefPosition, '-');
+                    }
                     break;
                 default:
                     positionInRead += readBasesLength;
@@ -217,7 +223,7 @@ public class SplicedSamHelper {
         cursorIndex = 0;
         numEntries = 1;
         helpers.clear();
-
+        refSequence.setLength(0);
 
     }
 
@@ -234,24 +240,24 @@ public class SplicedSamHelper {
             final CharSequence sourceQuery = samRecord.getReadString();
             final CharSequence sourceQual = samRecord.getBaseQualityString();
             final int position = samRecord.getAlignmentStart();    // one-based
-            final boolean reverseStrand =samRecord.getReadNegativeStrandFlag();
-
+            final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
+            refSequence.append(sourceReference);
             final Limits[] limits = getLimits(position, cigarString, "");
             numEntries = limits.length;
             initializeHelpers();
             for (int i = 0; i < numEntries; i++) {
                 final Limits limit = limits[i];
-                final int refStartIndex=limit.refStart - position;
-                final int refEndIndex=refStartIndex+limit.refEnd - limit.refStart;
+                final int refStartIndex = limit.refStart - position;
+                final int refEndIndex = refStartIndex + limit.refEnd - limit.refStart;
                 try {
-                helpers.get(i).setSourceWithReference(queryIndex,
-                        sourceReference.subSequence(refStartIndex, Math.min(refEndIndex,sourceReference.length()-1)),
-                        sourceQuery.subSequence(limit.readStart, limit.readEnd),
-                        sourceQual.subSequence(limit.readStart, limit.readEnd),
-
-                        limit.position + 1,
-                        reverseStrand
-                );    } catch (IndexOutOfBoundsException e) {
+                    helpers.get(i).setSourceWithReference(queryIndex,
+                            refSequence.subSequence(refStartIndex, Math.min(refEndIndex, sourceReference.length() - 1)),
+                            sourceQuery.subSequence(limit.readStart, limit.readEnd),
+                            sourceQual.subSequence(limit.readStart, limit.readEnd),
+                            limit.position + 1,
+                            reverseStrand
+                    );
+                } catch (IndexOutOfBoundsException e) {
                     System.out.printf("Another exception: refStartIndex=%d refEndIndex=%d refLength=%d  cigar=%s %s %n",
                             refStartIndex, refEndIndex, sourceReference.length(), samRecord.getCigarString(), e);
                 }
@@ -259,14 +265,15 @@ public class SplicedSamHelper {
         }
     }
 
+    MutableString refSequence = new MutableString();
+
     /**
-     *
      * @param queryIndex
      * @param sourceQuery
      * @param sourceQual
      * @param cigar
      * @param md
-     * @param position one-based position
+     * @param position      one-based position
      * @param reverseStrand
      */
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
@@ -339,8 +346,8 @@ public class SplicedSamHelper {
             this.cigarEnd = cigarEnd;
             this.readStart = readStart;
             this.readEnd = readEnd;
-            this.refStart=refStart;
-            this.refEnd=refEnd;
+            this.refStart = refStart;
+            this.refEnd = refEnd;
             this.position = position;
         }
 
