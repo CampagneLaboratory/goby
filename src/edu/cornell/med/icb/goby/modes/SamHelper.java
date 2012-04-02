@@ -149,13 +149,13 @@ public class SamHelper {
         final CharSequence sourceQuery = samRecord.getReadString();
         final CharSequence sourceQual = samRecord.getBaseQualityString();
         final int position = samRecord.getAlignmentStart();
-        final boolean reverseStrand =samRecord.getReadNegativeStrandFlag();
+        final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
 
         setSourceWithReference(queryIndex, sourceRef, sourceQuery, sourceQual, position, reverseStrand);
     }
 
     public void setSourceWithReference(final int queryIndex, final CharSequence sourceRef, final CharSequence sourceQuery,
-                                        final CharSequence sourceQual, final int position, final boolean reverseStrand) {
+                                       final CharSequence sourceQual, final int position, final boolean reverseStrand) {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSourceWithReference --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -504,9 +504,14 @@ public class SamHelper {
                     refPosition++;
                 }
                 if (reverseStrand) {
-                    queryChar = Character.toUpperCase(query.charAt(genomicLength - (i - numLeftClipped) - 1));
+                    final int index = genomicLength - (i - numLeftClipped) - 1;
+                    queryChar = Character.toUpperCase(query.charAt(index));
                 } else {
-                    queryChar = Character.toUpperCase(query.charAt(i - numLeftClipped));
+                    final int index = i - numLeftClipped;
+                    if (index >= query.length()) {
+                        System.out.println("STOP4");
+                    }
+                    queryChar = Character.toUpperCase(query.charAt(index));
                 }
                 if (queryChar != '-') {
                     readIndex++;

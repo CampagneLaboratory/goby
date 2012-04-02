@@ -141,7 +141,7 @@ public class SplicedSamHelper {
 
                 case 'N':
 
-                    list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead));
+                    list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
                     previousCigarIndex = cigarIndex + cigarLength; // we exclude the N group from the limits.
                     previousPositionInRead = positionInRead;
                     position += readBasesLength;
@@ -164,7 +164,7 @@ public class SplicedSamHelper {
             cigarIndex += cigarLength;
 
         }
-        list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead));
+        list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
     }
 
     private QualityEncoding encoding;
@@ -233,7 +233,7 @@ public class SplicedSamHelper {
         } else {
             final CharSequence sourceQuery = samRecord.getReadString();
             final CharSequence sourceQual = samRecord.getBaseQualityString();
-            final int position = samRecord.getAlignmentStart();
+            final int position = samRecord.getAlignmentStart();    // one-based
             final boolean reverseStrand =samRecord.getReadNegativeStrandFlag();
 
             final Limits[] limits = getLimits(position, cigarString, "");
@@ -241,10 +241,12 @@ public class SplicedSamHelper {
             initializeHelpers();
             for (int i = 0; i < numEntries; i++) {
                 final Limits limit = limits[i];
-                final int refStart=limit.position-position;
-                final int refEnd=limit.position-position+ limit.readEnd -limit.readStart;
+                final int refStartIndex=limit.refStart-position;
+                // TODO determine why we need the min. How come limit.refEnd-position is sometimes larger than the reference length?
+                final int refEndIndex=Math.min(limit.refEnd-position, sourceReference.length());
+
                 helpers.get(i).setSourceWithReference(queryIndex,
-                        sourceReference.subSequence(refStart, refEnd),
+                        sourceReference.subSequence(refStartIndex, refEndIndex),
                         sourceQuery.subSequence(limit.readStart, limit.readEnd),
                         sourceQual.subSequence(limit.readStart, limit.readEnd),
 
@@ -255,6 +257,16 @@ public class SplicedSamHelper {
         }
     }
 
+    /**
+     *
+     * @param queryIndex
+     * @param sourceQuery
+     * @param sourceQual
+     * @param cigar
+     * @param md
+     * @param position one-based position
+     * @param reverseStrand
+     */
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
                           final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
 
@@ -317,15 +329,22 @@ public class SplicedSamHelper {
         public int mdStart = Integer.MAX_VALUE;
         public int mdEnd = Integer.MIN_VALUE;
         public String md = "";
+        public int refStart;
+        public int refEnd;
 
-        private Limits(final int position, final int cigarStart, final int cigarEnd, int readStart, int readEnd) {
+        private Limits(final int position, final int cigarStart, final int cigarEnd, int readStart, int readEnd, int refStart, int refEnd) {
             this.cigarStart = cigarStart;
             this.cigarEnd = cigarEnd;
             this.readStart = readStart;
             this.readEnd = readEnd;
+            this.refStart=refStart;
+            this.refEnd=refEnd;
             this.position = position;
         }
 
+        /**
+         * one-based position.
+         */
         public int position;
     }
 

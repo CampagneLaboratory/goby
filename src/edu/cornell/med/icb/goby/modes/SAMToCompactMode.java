@@ -222,7 +222,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             samHelper.reset();
             builders.clear();
             //  count++;
-            // if (count > 10000) break;
+           // if (count > 10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -299,6 +299,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 referenceString.setLength(0);
                 if (bsmap) {    // reference sequence is provided in the XR attribute:
                     referenceString.append((String) samRecord.getAttribute("XR"));
+                     samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
                 } else {
                     // we obtain the reference sequence from the genome:
                     final String referenceName = samRecord.getReferenceName();
@@ -306,13 +307,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     if (referenceIndex == -1) {
                         System.err.println("Error, could not find reference index for id=" + referenceName);
                     }
-                    genome.getRange(referenceIndex, samRecord.getAlignmentStart() - 1,
-                            samRecord.getAlignmentEnd() - (samRecord.getAlignmentStart()-1), referenceString);
+                    final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
+                    final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart()+1;
+
+
+                    genome.getRange(referenceIndex, zeroBasedStart,
+                            length , referenceString);
+                     samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
                 }
-                samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
+
             } else {
                 final String md = (String) samRecord.getAttribute("MD");
-                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), md, samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
+                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(),
+                        samRecord.getCigarString(), md,
+                        samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
             }
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
