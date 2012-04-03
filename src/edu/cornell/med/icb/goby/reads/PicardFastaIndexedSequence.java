@@ -45,7 +45,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     private ReferenceSequence cachedSeq;
     private final MutableString baseBuffer = new MutableString();
     private FastaSequenceIndex indexDelegate;
-    private int[] basesPerLine;
+    private long[] basesPerLine;
 
 
     public PicardFastaIndexedSequence(String filename) throws FileNotFoundException {
@@ -58,7 +58,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
 
         lengths = new int[numContigs];
         names = new String[numContigs];
-        basesPerLine = new int[numContigs];
+        basesPerLine = new long[numContigs];
 
         final LineIterator lineIt = new LineIterator(new FileReader(filename + ".fai"));
 
@@ -72,7 +72,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
             names[index] = tokens[0];
             namesToIndices.put(tokens[0], index);
             lengths[index] = Integer.parseInt(tokens[1]);
-            basesPerLine[index] = Integer.parseInt(tokens[2]);
+            basesPerLine[index] = Long.parseLong(tokens[2]);
             index++;
         }
 
