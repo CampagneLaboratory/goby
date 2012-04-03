@@ -190,7 +190,7 @@ public class ExportableAlignmentEntryData {
      * @return the read bases, containing "-"s for insertions.
      */
     public int getStartPosition() {
-        return alignmentEntry.getPosition() + 1;
+        return alignmentEntry.getPosition() + 1 + startClip;
     }
 
     /**
@@ -383,7 +383,7 @@ public class ExportableAlignmentEntryData {
         queryAlignedLength = alignmentEntry.getQueryAlignedLength();
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
         endClip = queryLength - queryAlignedLength - startClip;
-        final int startPosition = alignmentEntry.getPosition() - startClip;
+        final int startPosition = alignmentEntry.getPosition();
 
         this.alignmentEntry = alignmentEntry;
 
@@ -422,8 +422,9 @@ public class ExportableAlignmentEntryData {
 
         // Construct read & ref before any sequence variations (indels, mutations)
         final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts; // Math.max(queryLength, targetAlignedLength);
+        final int targetIndex = alignmentEntry.getTargetIndex();
         for (int i = 0; i < endOfLoop; i++) {
-            final char base = genome.get(alignmentEntry.getTargetIndex(), i + startPosition);
+            final char base = genome.get(targetIndex, i + startPosition);
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
                 readBases.add('N');
@@ -453,7 +454,7 @@ public class ExportableAlignmentEntryData {
                 final char to = tos.charAt(i);
                 final Byte toQual = toQuals == null ? null : (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
 
-                final int refPosition = startRefPosition + startClip + i - 1; // Convert back to 0-based for list access
+                final int refPosition = startRefPosition + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
                     // Insertion, missing base in the reference.
                     refBases.add(refPosition + 1, from);
@@ -549,7 +550,7 @@ public class ExportableAlignmentEntryData {
             final char readBase = readBases.get(i);
             final char refBase = refBases.get(i);
             final CigarType curCigarType;
-            MismatchType curMismatchType;
+            final MismatchType curMismatchType;
             if (readBase == '-') {
                 curCigarType = CigarType.DELETION;
                 curMismatchType = MismatchType.DELETION;
