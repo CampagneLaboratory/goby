@@ -153,23 +153,11 @@ public class SplicedSamHelper {
                     break;
                 case 'D':
                     // deletion in read
-                    for (int j = 0; j < readBasesLength; j++) {
-                        refSequence.insert(position - initialRefPosition, '?');
-                    }
+                    insertSomeInRef(position, initialRefPosition, readBasesLength);
                     break;
                 case 'S':
-                    try {
-                        // soft clip in the reference for so many bases.
-                        for (int j = 0; j < readBasesLength; j++) {
-
-                            final int index = position - initialRefPosition;
-                            if (index >= refSequence.length()) break;
-                            refSequence.insert(index, '-');
-
-                        }
-                    } catch (StringIndexOutOfBoundsException e) {
-                        System.out.println("STOP");
-                    }
+                    // soft clip in the reference for so many bases.
+                    insertSomeInRef(position, initialRefPosition, readBasesLength);
                     break;
                 default:
                     positionInRead += readBasesLength;
@@ -180,6 +168,16 @@ public class SplicedSamHelper {
 
         }
         list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
+    }
+
+    private void insertSomeInRef(int position, int initialRefPosition, int readBasesLength) {
+        for (int j = 0; j < readBasesLength; j++) {
+
+            final int index = position - initialRefPosition;
+            if (index >= refSequence.length()) break;
+            refSequence.insert(index, '-');
+
+        }
     }
 
     private QualityEncoding encoding;
