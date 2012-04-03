@@ -222,7 +222,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             samHelper.reset();
             builders.clear();
             //  count++;
-           // if (count > 10000) break;
+            // if (count > 10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -299,21 +299,21 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 referenceString.setLength(0);
                 if (bsmap) {    // reference sequence is provided in the XR attribute:
                     referenceString.append((String) samRecord.getAttribute("XR"));
-                     samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
+                    samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
                 } else {
                     // we obtain the reference sequence from the genome:
                     final String referenceName = samRecord.getReferenceName();
-                    final int referenceIndex = genome.getReferenceIndex(map(referenceName));
+                    final int referenceIndex = genome.getReferenceIndex(map(genome, referenceName));
                     if (referenceIndex == -1) {
                         System.err.println("Error, could not find reference index for id=" + referenceName);
                     }
                     final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
-                    final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart()+1;
+                    final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart() + 1;
 
 
                     genome.getRange(referenceIndex, zeroBasedStart,
-                            length , referenceString);
-                     samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
+                            length, referenceString);
+                    samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
                 }
 
             } else {
@@ -489,12 +489,21 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     /**
      * Adjust reference names to match genome.
+     *
+     * @param genome
      * @param referenceName
      * @return
      */
-    private final String map(final String referenceName) {
-        if (referenceName.startsWith("chr")) {
-            return referenceName.substring(3);
+    private final String map(DualRandomAccessSequenceCache genome, final String referenceName) {
+        if (genome.getReferenceIndex(referenceName) == -1) {
+            if (referenceName.contentEquals("chrM")) {
+                return "MT";
+            }
+            if (referenceName.startsWith("chr")) {
+                return referenceName.substring(3);
+            } else {
+                return referenceName;
+            }
         } else {
             return referenceName;
         }
