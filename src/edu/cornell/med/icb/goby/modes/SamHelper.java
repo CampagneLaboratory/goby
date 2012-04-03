@@ -505,9 +505,15 @@ public class SamHelper {
                 }
                 if (reverseStrand) {
                     final int index = genomicLength - (i - numLeftClipped) - 1;
+                    if (index >= query.length()) {
+                        throw new IndexOutOfBoundsException(String.format("index=%d query=%s%n", index, query));
+                    }
                     queryChar = Character.toUpperCase(query.charAt(index));
                 } else {
                     final int index = i - numLeftClipped;
+                    if (index >= query.length()) {
+                        throw new IndexOutOfBoundsException(String.format("index=%d query=%s%n", index, query));
+                    }
                     queryChar = Character.toUpperCase(query.charAt(index));
                 }
                 if (queryChar != '-') {
