@@ -153,13 +153,22 @@ public class SplicedSamHelper {
                     break;
                 case 'D':
                     // deletion in read
-                    positionInRead += 0;
-                    position += 0;
+                    for (int j = 0; j < readBasesLength; j++) {
+                        refSequence.insert(position - initialRefPosition, '?');
+                    }
                     break;
                 case 'S':
-                    // soft clip in the reference for so many bases.
-                    for (int j = 0; j < readBasesLength; j++) {
-                        refSequence.insert(position - initialRefPosition, '-');
+                    try {
+                        // soft clip in the reference for so many bases.
+                        for (int j = 0; j < readBasesLength; j++) {
+
+                            final int index = position - initialRefPosition;
+                            if (index >= refSequence.length()) break;
+                            refSequence.insert(index, '-');
+
+                        }
+                    } catch (StringIndexOutOfBoundsException e) {
+                        System.out.println("STOP");
                     }
                     break;
                 default:
@@ -231,36 +240,31 @@ public class SplicedSamHelper {
 
     public void setSourceWithReference(final int queryIndex, final SAMRecord samRecord, final String sourceReference) {
         final String cigarString = samRecord.getCigarString();
-        if (!cigarString.contains(N_STRING)) {
-            numEntries = 1;
-            cursorIndex = 0;
-            initializeHelpers();
-            helpers.get(0).setSourceWithReference(queryIndex, samRecord, sourceReference);
-        } else {
-            final CharSequence sourceQuery = samRecord.getReadString();
-            final CharSequence sourceQual = samRecord.getBaseQualityString();
-            final int position = samRecord.getAlignmentStart();    // one-based
-            final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
-            refSequence.append(sourceReference);
-            final Limits[] limits = getLimits(position, cigarString, "");
-            numEntries = limits.length;
-            initializeHelpers();
-            for (int i = 0; i < numEntries; i++) {
-                final Limits limit = limits[i];
-                final int refStartIndex = limit.refStart - position;
-                final int refEndIndex = refStartIndex + limit.refEnd - limit.refStart;
-                try {
-                    helpers.get(i).setSourceWithReference(queryIndex,
-                            refSequence.subSequence(refStartIndex, Math.min(refEndIndex, sourceReference.length() - 1)),
-                            sourceQuery.subSequence(limit.readStart, limit.readEnd),
-                            sourceQual.subSequence(limit.readStart, limit.readEnd),
-                            limit.position + 1,
-                            reverseStrand
-                    );
-                } catch (IndexOutOfBoundsException e) {
-                    System.out.printf("Another exception: refStartIndex=%d refEndIndex=%d refLength=%d  cigar=%s %s %n",
-                            refStartIndex, refEndIndex, sourceReference.length(), samRecord.getCigarString(), e);
-                }
+        final int position = samRecord.getAlignmentStart();    // one-based
+        refSequence.append(sourceReference);
+
+        final Limits[] limits = getLimits(position, cigarString, null);
+        final CharSequence sourceQuery = samRecord.getReadString();
+        final CharSequence sourceQual = samRecord.getBaseQualityString();
+        final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
+        numEntries = limits.length;
+        initializeHelpers();
+        for (int i = 0; i < numEntries; i++) {
+            final Limits limit = limits[i];
+            final int refStartIndex = limit.refStart - position;
+            final int refEndIndex = refStartIndex + limit.refEnd - limit.refStart;
+            try {
+                final CharSequence sourceRef = refSequence.subSequence(refStartIndex, Math.min(refEndIndex, sourceReference.length() - 1));
+                helpers.get(i).setSourceWithReference(queryIndex,
+                        sourceRef,
+                        sourceQuery.subSequence(limit.readStart, limit.readEnd),
+                        sourceQual.subSequence(limit.readStart, limit.readEnd),
+                        limit.position,
+                        reverseStrand
+                );
+            } catch (IndexOutOfBoundsException e) {
+                System.out.printf("Another exception: refStartIndex=%d refEndIndex=%d refLength=%d  cigar=%s %s %n",
+                        refStartIndex, refEndIndex, sourceReference.length(), samRecord.getCigarString(), e);
             }
         }
     }
@@ -297,7 +301,7 @@ public class SplicedSamHelper {
                         sourceQual.subSequence(limit.readStart, limit.readEnd),
                         cigarString.substring(limit.cigarStart, limit.cigarEnd),
                         limit.md,
-                        limit.position + 1,
+                        limit.position,
                         reverseStrand
                 );
             }

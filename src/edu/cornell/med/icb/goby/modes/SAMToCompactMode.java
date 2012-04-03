@@ -27,9 +27,7 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
-import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
-import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.*;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
@@ -84,7 +82,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     private boolean debug;
     private boolean runningFromCommandLine;
-    private DualRandomAccessSequenceCache genome;
+    private RandomAccessSequenceInterface genome;
 
 
     public String getSamBinaryFilename() {
@@ -143,9 +141,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
-            genome = new DualRandomAccessSequenceCache();
+            DualRandomAccessSequenceCache aGenome = new DualRandomAccessSequenceCache();
             try {
-                genome.load(genomeFilename);
+                aGenome.load(genomeFilename);
+                genome=aGenome;
             } catch (ClassNotFoundException e) {
                 System.err.println("Unable to load genome.");
                 System.exit(1);
@@ -414,7 +413,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                         if (!samRecord.getMateUnmappedFlag()) {
                             assert firstFragmentIndex >= 0 : " firstFragmentIndex cannot be negative";
-                            assert mateFragmentIndex >= 0 : " mateFragmentIndex cannot be negative";
+                            // some BAM files indicate pair is in the p
+                            if (mateFragmentIndex>=0) {
                             final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                                     Alignments.RelatedAlignmentEntry.newBuilder();
 
@@ -424,6 +424,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                             relatedBuilder.setPosition(mateAlignmentStart);
                             relatedBuilder.setTargetIndex(mateTargetIndex);
                             builder.setPairAlignmentLink(relatedBuilder);
+                            }
                         }
                     }
                     writer.appendEntry(builder.build());
@@ -495,7 +496,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @param referenceName
      * @return
      */
-    private final String map(DualRandomAccessSequenceCache genome, final String referenceName) {
+    private final String map(RandomAccessSequenceInterface genome, final String referenceName) {
         if (genome.getReferenceIndex(referenceName) == -1) {
             if (referenceName.contentEquals("chrM")) {
                 return "MT";
@@ -608,5 +609,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         processor.configure(args);
         processor.runningFromCommandLine = true;
         processor.execute();
+    }
+
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome=genome;
     }
 }

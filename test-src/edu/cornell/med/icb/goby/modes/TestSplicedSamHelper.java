@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -284,7 +286,8 @@ public class TestSplicedSamHelper {
 
     }
 
-    // TODO ADD a test with soft clips as spliced-5
+    @Test
+    // Test  right soft clip:
     public void testSamToCompactTrickCase5() throws IOException {
 
         SAMToCompactMode importer = new SAMToCompactMode();
@@ -299,10 +302,88 @@ public class TestSplicedSamHelper {
 
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
-        assertEquals(188966 - 1, first.getPosition());
-        assertFalse(first.hasPairAlignmentLink());
-        assertFalse(first.hasSplicedForwardAlignmentLink());
-        assertFalse(first.hasSplicedBackwardAlignmentLink());
+        assertEquals(71428 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    // Test deletion in the read:
+    public void testSamToCompactTrickCase6() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-6.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-6");
+        importer.setOutputFile(outputFilename);
+        String[] refs = {"NNNNNNTTAGAAAAACAGAGAGAGAAGGAGAGTAAAGGGAGGAGGCGGAGGAGGAGAAAAGAAGAAAGCAGAGANNNNNN"};
+
+        RandomAccessSequenceTestSupport genomeTestSupport = new RandomAccessSequenceTestSupport(refs);
+        importer.setGenome(genomeTestSupport);
+
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(7 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    public void testSamToCompactTrickCase7() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-7.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-7");
+        importer.setOutputFile(outputFilename);
+        String[] refs = {"NNNNNNTTAGAAAAACAGAGAGAGAAGGAGAGTAAAGGGAGGAGGCGGAGGAGGAGAAAAGAAGAAAGCAGAGANNNNNN"};
+
+        RandomAccessSequenceTestSupport genomeTestSupport = new RandomAccessSequenceTestSupport(refs);
+        importer.setGenome(genomeTestSupport);
+
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(8 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    public void testSamToCompactTrickCase8() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-8.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-8");
+        importer.setOutputFile(outputFilename);
+        MutableString seq = new MutableString();
+        for (int i = 0; i < 194407 - 7; i++) {
+            seq.append('N');
+        }
+        seq.append("NNNNNNTTAGAAAAACAGAGAGAGAAGGAGAGTAAAGGGAGGAGGCGGAGGAGGAGAAAAGAAGAAAGCAGAGANNNNNN");
+        String[] refs = {seq.toString()};
+
+        RandomAccessSequenceTestSupport genomeTestSupport = new RandomAccessSequenceTestSupport(refs);
+        importer.setGenome(genomeTestSupport);
+
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(194301 - 1, first.getPosition());
 
 
     }
