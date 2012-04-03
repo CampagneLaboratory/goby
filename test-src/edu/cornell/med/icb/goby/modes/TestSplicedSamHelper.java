@@ -194,7 +194,7 @@ public class TestSplicedSamHelper {
         assertFalse(fourth.hasSplicedForwardAlignmentLink());
     }
 
-     @Test
+    @Test
     public void testSamToCompactTrickCase2() throws IOException {
 
         SAMToCompactMode importer = new SAMToCompactMode();
@@ -226,7 +226,7 @@ public class TestSplicedSamHelper {
 
     }
 
-      @Test
+    @Test
     public void testSamToCompactTrickCase3() throws IOException {
 
         SAMToCompactMode importer = new SAMToCompactMode();
@@ -241,11 +241,11 @@ public class TestSplicedSamHelper {
 
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
-        assertEquals(170769-1, first.getPosition());
+        assertEquals(170769 - 1, first.getPosition());
         assertTrue(first.hasPairAlignmentLink());
         assertFalse(first.hasSplicedForwardAlignmentLink());
         Assert.assertEquals(1, first.getPairAlignmentLink().getFragmentIndex());
-        Assert.assertEquals(216048-1, first.getPairAlignmentLink().getPosition());
+        Assert.assertEquals(216048 - 1, first.getPairAlignmentLink().getPosition());
         assertFalse(first.hasSplicedBackwardAlignmentLink());
 
         Alignments.AlignmentEntry second = reader.next();
@@ -260,9 +260,9 @@ public class TestSplicedSamHelper {
 
     }
 
-      @Test
-      // primary is mapped, but mate is unmapped. Primary must be imported.
-      public void testSamToCompactTrickCase4() throws IOException {
+    @Test
+    // primary is mapped, but mate is unmapped. Primary must be imported.
+    public void testSamToCompactTrickCase4() throws IOException {
 
         SAMToCompactMode importer = new SAMToCompactMode();
         importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-4.sam");
@@ -276,7 +276,30 @@ public class TestSplicedSamHelper {
 
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
-        assertEquals(188966-1, first.getPosition());
+        assertEquals(188966 - 1, first.getPosition());
+        assertFalse(first.hasPairAlignmentLink());
+        assertFalse(first.hasSplicedForwardAlignmentLink());
+        assertFalse(first.hasSplicedBackwardAlignmentLink());
+
+
+    }
+
+    // TODO ADD a test with soft clips as spliced-5
+    public void testSamToCompactTrickCase5() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-5.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-5");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(188966 - 1, first.getPosition());
         assertFalse(first.hasPairAlignmentLink());
         assertFalse(first.hasSplicedForwardAlignmentLink());
         assertFalse(first.hasSplicedBackwardAlignmentLink());
