@@ -1085,6 +1085,7 @@ extern "C" {
                 alignment->querySequence->size());
         gobyAlEntry_setFragmentIndex(writerHelper, fragmentIndex);
         gobyAlEntry_setMappingQuality(writerHelper, alignment->mapq);
+        gobyAlEntry_setInsertSize(writerHelper, alignment->insertLength);
     }
     
     int calculatePairFlags(GsnapAlignment *alignment,
