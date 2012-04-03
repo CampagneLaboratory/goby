@@ -305,7 +305,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final String referenceName = samRecord.getReferenceName();
                     final int referenceIndex = genome.getReferenceIndex(map(genome, referenceName));
                     if (referenceIndex == -1) {
-                        System.err.println("Error, could not find reference index for id=" + referenceName);
+                        System.err.println("Error, could not find reference index for id=" + referenceName+" Skipping record.");
+                        continue;
                     }
                     final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
                     final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart() + 1;
