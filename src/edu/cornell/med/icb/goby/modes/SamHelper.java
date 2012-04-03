@@ -509,6 +509,9 @@ public class SamHelper {
                         System.out.printf("exception/error: index=%d query=%s%n", index, query);
                     } else {
                         queryChar = Character.toUpperCase(query.charAt(index));
+                        if (queryChar != '-') {
+                            readIndex++;
+                        }
                     }
                 } else {
                     final int index = i - numLeftClipped;
@@ -516,11 +519,12 @@ public class SamHelper {
                         System.out.printf("exception/error: index=%d query=%s%n", index, query);
                     } else {
                         queryChar = Character.toUpperCase(query.charAt(index));
+                        if (queryChar != '-') {
+                            readIndex++;
+                        }
                     }
                 }
-                if (queryChar != '-') {
-                    readIndex++;
-                }
+
             }
             refPositions.set(i, refPosition);
             if (reverseStrand) {
