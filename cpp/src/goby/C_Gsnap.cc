@@ -1096,10 +1096,14 @@ extern "C" {
         int sizePair = alignmentEntriesPair == NULL ? 0 : alignmentEntriesPair->size();
         
         int flags = 0;
-        flags |= PAIRFLAG_PAIRED;
+        if (alignmentEntriesPair != NULL) {
+            flags |= PAIRFLAG_PAIRED;
+        }
 
         if (firstInPair) {
-            flags |= PAIRFLAG_FIRST_IN_PAIR;
+            if (alignmentEntriesPair != NULL) {
+                flags |= PAIRFLAG_FIRST_IN_PAIR;
+            }
         } else {
             flags |= PAIRFLAG_SECOND_IN_PAIR;
         }
@@ -1117,7 +1121,9 @@ extern "C" {
             }
         }
         if (sizePair == 0) {
-            flags |= PAIRFLAG_MATE_UNMAPPED;
+            if (alignmentEntriesPair != NULL) {
+                flags |= PAIRFLAG_MATE_UNMAPPED;
+            }
         } else {
             if (alignmentEntriesPair->at(0)->alignmentSegments->at(0)->reverseStrand) {
                 flags |= PAIRFLAG_MATE_REVERSE_STRAND;
@@ -1138,10 +1144,9 @@ extern "C" {
         }
         int pairFlags = 0;
         GsnapAlignmentSegment *pairSegment = NULL;
+        pairFlags = calculatePairFlags(alignment,
+                alignmentEntries, alignmentEntriesPair, firstInPair);
         if (alignment->pairedEnd) {
-            pairFlags = calculatePairFlags(alignment,
-                    alignmentEntries, alignmentEntriesPair, firstInPair);
-
             vector<GsnapAlignmentSegment*> *segments = size > 0 ? alignmentEntries->at(0)->alignmentSegments : NULL;
             GsnapAlignmentSegment *segment = segments == NULL ? NULL : segments->at(0);
             bool spliced = segment == NULL ? false : splicedSegment(segment);
@@ -1214,8 +1219,8 @@ extern "C" {
 
                         // Write pair relationships
                         //    [splice frag][splice frag]<->[splice frag][splice frag] 
+                        gobyAlEntry_setPairFlags(writerHelper, pairFlags);
                         if (alignment->pairedEnd) {
-                            gobyAlEntry_setPairFlags(writerHelper, pairFlags);
                             if ((firstInPair && (j == numSegs - 1)) ||
                                     (!firstInPair && alignment->pairedEnd && (j == 0))) {
                                 if (pairSegment != NULL) {
@@ -1240,8 +1245,8 @@ extern "C" {
                     alignmentEntry->alignmentSegments, splicedAlignment);
 
             writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex);
+            gobyAlEntry_setPairFlags(writerHelper, pairFlags);
             if (alignment->pairedEnd) {
-                gobyAlEntry_setPairFlags(writerHelper, pairFlags);
                 if (pairSegment != NULL) {
                     gobyAlEntry_setPairFragmentIndex(writerHelper, pairSegment->fragmentIndex);
                     gobyAlEntry_setPairPosition(writerHelper, pairSegment->targetStart);
@@ -1317,7 +1322,7 @@ extern "C" {
             }
         } else {
             writeAlignment(writerHelper,
-                    alignment->alignmentEntries, NULL, false /*firstInPair*/);
+                    alignment->alignmentEntries, NULL, true /*firstInPair*/);
         }
     }
 
