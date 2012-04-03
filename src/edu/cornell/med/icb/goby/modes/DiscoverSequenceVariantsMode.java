@@ -41,7 +41,6 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import sun.net.www.content.text.Generic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
