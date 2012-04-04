@@ -43,7 +43,7 @@ public class Sort1Mode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "sort-1";
+    private static final String MODE_NAME = "sort";
 
     /**
      * The mode description help text.
