@@ -119,7 +119,7 @@ public class TestSplicedSamHelper {
         assertEquals(bases_0_28, samHelper.getQuery().toString());
         assertEquals(bases_0_28, samHelper.getRef().toString());
         assertEquals(quals_0_28, samHelper.getQual().toString());
-        assertEquals(18339-1, samHelper.getPosition());
+        assertEquals(18339 - 1, samHelper.getPosition());
         assertEquals(0, samHelper.getQueryPosition());
         assertEquals(28, samHelper.getScore());
         assertEquals(28, samHelper.getAlignedLength());
@@ -140,7 +140,7 @@ public class TestSplicedSamHelper {
         assertEquals(bases_28_35, samHelper.getQuery().toString());
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());
-        assertEquals(18339 -1+ 6371 + bases_0_28.length(), samHelper.getPosition());
+        assertEquals(18339 - 1 + 6371 + bases_0_28.length(), samHelper.getPosition());
     }
 
     @Test
@@ -384,6 +384,58 @@ public class TestSplicedSamHelper {
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
         assertEquals(194301 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    public void testSamToCompactTrickCase9() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-9.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-9");
+        importer.setOutputFile(outputFilename);
+        MutableString seq = new MutableString();
+
+        seq.append("NNNTTAGAAAAACAGAGAGAGAAGGAGAGTAAAGGGAGGAGGCGGAGGAGGAGAAAAGAAGAAAGCAGAGANNNNNN");
+        for (int i = 0; i < 573; i++) {
+            seq.insert(25, '-');
+        }
+        String[] refs = {seq.toString()};
+
+        RandomAccessSequenceTestSupport genomeTestSupport = new RandomAccessSequenceTestSupport(refs);
+        importer.setGenome(genomeTestSupport);
+
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(3 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    // like 9 no genome
+    public void testSamToCompactTrickCase9NoGenome() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-9.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-9");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(3 - 1, first.getPosition());
 
 
     }

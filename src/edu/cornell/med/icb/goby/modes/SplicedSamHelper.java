@@ -49,7 +49,7 @@ public class SplicedSamHelper {
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMIDN])");
     private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
-    private boolean notUsingGenome = true;
+     private boolean usingGenome;
 
     /**
      * Compute limits from cigar and mdString. Each N stretch in the cigar string separates two alignment segments.
@@ -141,7 +141,7 @@ public class SplicedSamHelper {
             switch (op) {
 
                 case 'N':
-
+                  //  System.out.println("new CIGAR: "+cigar.substring(previousCigarIndex, cigarIndex));
                     list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
                     previousCigarIndex = cigarIndex + cigarLength; // we exclude the N group from the limits.
                     previousPositionInRead = positionInRead;
@@ -149,19 +149,23 @@ public class SplicedSamHelper {
                     previousPosition = position;
                     break;
                 case 'I': // insertion in read
-                    if (notUsingGenome) continue;
+                    if (usingGenome) {
                     positionInRead += readBasesLength;
                     position += readBasesLength;
-                    break;
+                    }
+                        break;
+
                 case 'D':
-                    if (notUsingGenome) continue;
+                    if (usingGenome) {
                     // deletion in read
                     insertSomeInRef(position, initialRefPosition, readBasesLength);
+                    }
                     break;
                 case 'S':
-                    if (notUsingGenome) continue;
+                    if (usingGenome) {
                     // soft clip in the reference for so many bases.
                     insertSomeInRef(position, initialRefPosition, readBasesLength);
+                    }
                     break;
                 default:
 
@@ -237,7 +241,7 @@ public class SplicedSamHelper {
         numEntries = 1;
         helpers.clear();
         refSequence.setLength(0);
-        this.notUsingGenome = true;
+        this.usingGenome = false;
     }
 
     private static final String N_STRING = "N";
@@ -246,7 +250,7 @@ public class SplicedSamHelper {
         final String cigarString = samRecord.getCigarString();
         final int position = samRecord.getAlignmentStart();    // one-based
         refSequence.append(sourceReference);
-        notUsingGenome = false;
+        usingGenome =true;
         final Limits[] limits = getLimits(position, cigarString, null);
         final CharSequence sourceQuery = samRecord.getReadString();
         final CharSequence sourceQual = samRecord.getBaseQualityString();
@@ -287,7 +291,7 @@ public class SplicedSamHelper {
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
                           final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
 
-        notUsingGenome = true;
+        usingGenome =false;
         final String cigarString = cigar.toString();
         if (!cigarString.contains(N_STRING)) {
             numEntries = 1;

@@ -372,7 +372,7 @@ public class SamHelper {
                         query.append('-');
                         qual.append((char) minQualValue); // min quality
                     }
-                    posInReads += length;
+                  //  posInReads += length;
                     break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
@@ -449,6 +449,12 @@ public class SamHelper {
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for (int i = 0; i < mdPart.length(); i++) {
+                    if (position>=ref.length()) {
+                        System.out.println("STOP5");
+                        System.out.println(cigar);
+                        System.out.println(md);
+                        System.out.flush();
+                    }
                     ref.setCharAt(position++, Character.toLowerCase(mdPart.charAt(i)));
                     numMisMatches++;
                 }
