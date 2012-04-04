@@ -24,6 +24,7 @@ import com.google.protobuf.Message;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
@@ -37,9 +38,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,13 +54,24 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignmentCollectionHandler.class);
+    private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
+            "stats-filename:string, the file where to append statistics to:",
+            "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
+            "basename:string, a basename for the file being converted.:"
+    );
+    private String statsFilename;
+    private String basename;
+    private PrintWriter statsWriter;
 
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
 
     private int previousPosition;
     private int previousTargetIndex;
     int deltaPosIndex = 0;
 
-    private final int debug = 1;
+    private int debug = 0;
     /**
      * This variable keeps track of the number of chunks compressed or decompressed.
      */
@@ -81,6 +91,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         for (int length = 0; length < qualArrays.length; length++) {
             qualArrays[length] = new byte[length];
         }
+        debug = doc().getInteger("debug-level");
+        statsFilename = doc().getString("stats-filename");
+        basename = doc().getString("basename");
+        if (debug(1)) {
+            try {
+                statsWriter = new PrintWriter(new FileWriter(statsFilename,true));
+                statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\n");
+
+            } catch (FileNotFoundException e) {
+                LOG.error("Cannot open stats file",e);
+            } catch (IOException e) {
+                LOG.error("Cannot open stats file",e);
+            }
+        }
+
     }
 
     @Override
@@ -94,6 +119,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     int numChunksProcessed = 0;
+    /**
+     * The version of the stream that this class reads and writes.
+     */
+    public static final int VERSION = 1;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -115,7 +144,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
         }
         final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
-        //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
+    //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
         writeCompressed(outputBitStream);
         outputBitStream.flush();
         writtenBits += outputBitStream.writtenBits();
@@ -175,6 +204,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 LOG.info
                         (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
                                 written, average));
+                statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n)));
+                statsWriter.flush();
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
             LOG.info(String.format("Overall: bits per read bases= %g", divide(writtenBits, writtenBases)));
@@ -478,6 +509,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
+        final int streamVersion = bitInput.readDelta();
+        assert streamVersion == VERSION : "The stream version must match this class version (only one version supported by this implementation)";
         multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
         decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
@@ -509,7 +542,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
-
+        out.writeDelta(VERSION);
         out.writeBit(multiplicityFieldsAllMissing);
 
         writeArithmetic("positions", deltaPositions, out);
