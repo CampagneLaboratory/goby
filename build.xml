@@ -248,8 +248,8 @@
                 <include name="edu/cornell/med/icb/goby/GobyVersion*"/>
             </fileset>
             <zipgroupfileset dir="${lib}">
-
-
+                <include name="bzip2.jar"/>
+                <!-- Apache Software License -->
                 <include name="fastutil-6.3.jar"/>
                 <!-- LGPL -->
                 <include name="dsiutils-1.0.12.jar"/>
@@ -280,6 +280,12 @@
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
+            </service>
         </jar>
         <chmod file="scripts/autojar/run-autojar.sh" perm="744"/>
         <exec command="scripts/autojar/run-autojar.sh"/>

@@ -110,7 +110,7 @@ public class TestSplicedSamHelper {
         final String sourceRead = bases_0_28 + bases_28_35;
         final String quals_28_35 = "`a`aa_[";
         final String sourceQual = quals_0_28 + quals_28_35;
-        samHelper.setSource(0, sourceRead, sourceQual, "28M6371N7M", "35", 18339, false);
+        samHelper.setSource(0, sourceRead, sourceQual, "28M6371N7M", "35", 18339, false, 35);
         assertEquals(2, samHelper.getNumEntries());
         samHelper.setEntryCursor(0);
 
@@ -129,7 +129,8 @@ public class TestSplicedSamHelper {
         assertEquals(0, samHelper.getNumInsertions());
         assertEquals(0, samHelper.getNumDeletions());
         assertEquals(0, samHelper.getQueryIndex());
-        assertEquals(bases_0_28.length(), samHelper.getQueryLength());
+        // note that read length is 35, since this is the length of the complete read, not just the spliced piece we are looking at
+        assertEquals(35, samHelper.getQueryLength());
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(0, vars.size());
@@ -436,6 +437,47 @@ public class TestSplicedSamHelper {
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
         assertEquals(3 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    // variation after splice
+    public void testSamToCompactTrickCase10NoGenome() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-10.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-10");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(3 - 1, first.getPosition());
+
+
+    }
+
+    @Test
+    public void testSamToCompactTrickCase11() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-11.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-11");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(26800015 - 1, first.getPosition());
 
 
     }

@@ -12,6 +12,11 @@ edu.cornell.med.icb.goby.counts.CountsArchiveReader.class
 edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader.class
 edu.cornell.med.icb.goby.counts.CountAdaptiveBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsReaderI.class
+edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler.class
+edu.cornell.med.icb.goby.compression.HybridChunkCodec1.class
+edu.cornell.med.icb.goby.compression.GZipChunkCodec.class
+edu.cornell.med.icb.goby.compression.BZip2ChunkCodec.class
+edu.cornell.med.icb.goby.compression.NullChunkCodec.class
 it.unimi.dsi.fastutil.io.RepositionableStream.class
 it.unimi.dsi.fastutil.bytes.ByteList.class
 it.unimi.dsi.fastutil.bytes.ByteArrayList.class

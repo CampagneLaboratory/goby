@@ -112,7 +112,10 @@ public class SamHelper {
     }
 
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
-                          final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
+                          final CharSequence cigar, final CharSequence md, final int position,
+                          final boolean reverseStrand,
+                          int readLength) {
+        this.queryLength=readLength;
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSource --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -449,12 +452,6 @@ public class SamHelper {
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for (int i = 0; i < mdPart.length(); i++) {
-                    if (position>=ref.length()) {
-                        System.out.println("STOP5");
-                        System.out.println(cigar);
-                        System.out.println(md);
-                        System.out.flush();
-                    }
                     ref.setCharAt(position++, Character.toLowerCase(mdPart.charAt(i)));
                     numMisMatches++;
                 }

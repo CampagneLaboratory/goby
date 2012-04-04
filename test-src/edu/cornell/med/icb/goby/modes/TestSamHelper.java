@@ -36,7 +36,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(0, sourceRead, sourceQual, "50M", "50", 31, false);
+        samHelper.setSource(0, sourceRead, sourceQual, "50M", "50", 31, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -63,7 +63,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
-        samHelper.setSource(1, sourceRead, sourceQual, "50M", "50", 31, true);
+        samHelper.setSource(1, sourceRead, sourceQual, "50M", "50", 31, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -92,7 +92,7 @@ public class TestSamHelper {
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTCGTGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRef = "CCGCCCTTGCCCTTCCTCCCTTCCCTttcGGAGTCCTGGCCCCACCCTGT";
-        samHelper.setSource(2, sourceRead, sourceQual, "50M", "26TTC21", 31, false);
+        samHelper.setSource(2, sourceRead, sourceQual, "50M", "26TTC21", 31, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -125,7 +125,7 @@ public class TestSamHelper {
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTCTACTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRef = "CCGCCCTTGCCCTTCCTCCCTtccCTTTCGGAGTCCTGGCCCCACCCTGT";
-        samHelper.setSource(3, sourceRead, sourceQual, "50M", "21TCC26", 31, true);
+        samHelper.setSource(3, sourceRead, sourceQual, "50M", "21TCC26", 31, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -155,7 +155,7 @@ public class TestSamHelper {
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRef = "CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC";
-        samHelper.setSource(4, sourceRead, sourceQual, "26M3I21M", "47", 31, false);
+        samHelper.setSource(4, sourceRead, sourceQual, "26M3I21M", "47", 31, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -185,7 +185,7 @@ public class TestSamHelper {
         final String sourceRead = "CCCTTGCCCTTCCTCCCTTCCGATCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRef = "CCCTTGCCCTTCCTCCCTTCC---CTTTCGGAGTCCTGGCCCCACCCTGT";
-        samHelper.setSource(5, sourceRead, sourceQual, "21M3I26M", "47", 34, true);
+        samHelper.setSource(5, sourceRead, sourceQual, "21M3I26M", "47", 34, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -218,7 +218,7 @@ public class TestSamHelper {
         final String expRead = "CCGCCCTTGCCCTTCCTCCCTTCCCT---GGAGTCCTGGCCCCACCCTGT";
         final String expQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZ___ABCDEFGHIJKLMNOPQRSTU";
         samHelper.setMinQualValue('_');
-        samHelper.setSource(6, sourceRead, sourceQual, "26M3D21M", "26^TTC21", 31, false);
+        samHelper.setSource(6, sourceRead, sourceQual, "26M3D21M", "26^TTC21", 31, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -251,7 +251,7 @@ public class TestSamHelper {
         final String expRead = "CCGCCCTTGCCCTTCCTCCCT---CTTTCGGAGTCCTGGCCCCACCCTGT";
         final String expQual = "UTSRQPONMLKJIHGFEDCBA___ZYXWVUTSRQPONMLKJIHGFEDCBA";
         samHelper.setMinQualValue((byte) '_');
-        samHelper.setSource(7, sourceRead, sourceQual, "21M3D26M", "21^TCC26", 31, true);
+        samHelper.setSource(7, sourceRead, sourceQual, "21M3D26M", "21^TCC26", 31, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -279,7 +279,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(8, sourceRead, sourceQual, "50M", "50", 1, false);
+        samHelper.setSource(8, sourceRead, sourceQual, "50M", "50", 1, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -306,7 +306,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
-        samHelper.setSource(9, sourceRead, sourceQual, "50M", "50", 1, true);
+        samHelper.setSource(9, sourceRead, sourceQual, "50M", "50", 1, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -333,7 +333,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(10, sourceRead, sourceQual, "50M", "50", 61, false);
+        samHelper.setSource(10, sourceRead, sourceQual, "50M", "50", 61, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -360,7 +360,7 @@ public class TestSamHelper {
         final SamHelper samHelper = new SamHelper();
         final String sourceRead = "GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
-        samHelper.setSource(11, sourceRead, sourceQual, "50M", "50", 61, true);
+        samHelper.setSource(11, sourceRead, sourceQual, "50M", "50", 61, true,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(sourceRead, samHelper.getQuery().toString());
@@ -391,7 +391,7 @@ public class TestSamHelper {
         final String expRead =    "ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCC";
         final String expRef =     "ATGAGGCAGGGCTGGACCaGGTGCCCGCGGCCGCCCTTGCCCTTCCTCC";
         final String expQual =    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
-        samHelper.setSource(12, sourceRead, sourceQual, "1S49M", "18A30", 2, false);
+        samHelper.setSource(12, sourceRead, sourceQual, "1S49M", "18A30", 2, false,50);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -423,7 +423,7 @@ public class TestSamHelper {
         final String expRead =    "AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTC";
         final String expRef =     "AAGAGGCAGGGCTGGACaCGGTGCCCGCGGCCGCCCTTGCCCTTCCTC";
         final String expQual =    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV";
-        samHelper.setSource(13, sourceRead, sourceQual, "2S48M", "17A30", 3, false);
+        samHelper.setSource(13, sourceRead, sourceQual, "2S48M", "17A30", 3, false,50);
         assertEquals(2, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -455,7 +455,7 @@ public class TestSamHelper {
         final String expRead =    "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expRef =     "GCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expQual =    "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(14, sourceRead, sourceQual, "5S45M", "14A30", 6, false);
+        samHelper.setSource(14, sourceRead, sourceQual, "5S45M", "14A30", 6, false,50);
         assertEquals(5, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -490,7 +490,7 @@ public class TestSamHelper {
         final String expRead = "CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expRef = "CtGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(15, sourceRead, sourceQual, "50M", "1T48", 1, false);
+        samHelper.setSource(15, sourceRead, sourceQual, "50M", "1T48", 1, false,50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -533,7 +533,7 @@ public class TestSamHelper {
         final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTG";
         final String expQual =    "BCDEFGHIJKLMNOPQRSTUVWXYZABCDE___FGHIJKLMNOPQRST";
         samHelper.setMinQualValue('_');
-        samHelper.setSource(24, sourceRead, sourceQual, "1S30M3D15M1S", "9CC19^AGT15", 32, false);
+        samHelper.setSource(24, sourceRead, sourceQual, "1S30M3D15M1S", "9CC19^AGT15", 32, false,50);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(1, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -566,7 +566,7 @@ public class TestSamHelper {
         final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
         final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
         final String expQual =    "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
-        samHelper.setSource(25, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, false);
+        samHelper.setSource(25, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, false,50);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(1, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -599,7 +599,7 @@ public class TestSamHelper {
         final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
         final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
         final String expQual =    "WVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCB";
-        samHelper.setSource(26, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, true);
+        samHelper.setSource(26, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, true,50);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(1, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
