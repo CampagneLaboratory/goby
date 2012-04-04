@@ -208,8 +208,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 statsWriter.flush();
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
-            LOG.info(String.format("Overall: bits per read bases= %g", divide(writtenBits, writtenBases)));
-
+            LOG.info(String.format("Overall: bits per aligned bases= %g", divide(writtenBits, writtenBases)));
         }
     }
 
@@ -644,7 +643,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         previousTargetIndex = targetIndex;
 
         if (debug(1) && source.hasQueryLength()) {
-            writtenBases += source.getQueryLength();
+            writtenBases += source.getQueryAlignedLength();
         }
         result.clearQueryIndex();
 
