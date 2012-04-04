@@ -61,7 +61,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int previousTargetIndex;
     int deltaPosIndex = 0;
 
-    private final int debug = 0;
+    private final int debug = 1;
     /**
      * This variable keeps track of the number of chunks compressed or decompressed.
      */
@@ -98,7 +98,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
         reset();
-
         final Alignments.AlignmentCollection alignmentCollection = (Alignments.AlignmentCollection) collection;
         final Alignments.AlignmentCollection.Builder remainingCollection = Alignments.AlignmentCollection.newBuilder();
         final int size = alignmentCollection.getAlignmentEntriesCount();
@@ -116,7 +115,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
         }
         final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
-    //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
+        //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
         writeCompressed(outputBitStream);
         outputBitStream.flush();
         writtenBits += outputBitStream.writtenBits();
@@ -365,11 +364,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int[] distinctvalue = new int[numTokens];
         for (int i = 0; i < numTokens; i++) {
             // -1 makes 0 symbol -1 (missing value) again
-            final int nat = bitInput.readNibble() - 1;
-            final int anInt = hasNegatives ? Fast.nat2int(nat) : nat;
+            final int token = bitInput.readNibble();
+            final int anInt = hasNegatives ? Fast.nat2int(token) : token - 1;
             distinctvalue[i] = anInt;
         }
-
+        if (hasNegatives) {
+            // we must sort the symbol values again since the bijection has permuted them
+            Arrays.sort(distinctvalue);
+        }
         final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
         for (int i = 0; i < size; i++) {
             final int tokenValue = distinctvalue[decoder.decode(bitInput)];
@@ -400,8 +402,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         for (final int token : distinctSymbols) {
             // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
 
-            final int anInt = token + 1;
-            final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt;
+            final int anInt = token;
+            final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt + 1;
 
             out.writeNibble(nat);
         }
@@ -685,7 +687,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         for (final Alignments.SequenceVariation seqVar : result.getSequenceVariationsList()) {
 
-            encodeVar(seqVar);
+            encodeVar(source.getMatchingReverseStrand(), source.getQueryLength(), seqVar);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
             varBuilder.clearPosition();
             varBuilder.clearFrom();
@@ -747,7 +749,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         System.out.println(result);
     }
 
-    private void encodeVar(final Alignments.SequenceVariation seqVar) {
+    private void encodeVar(boolean entryOnReverseStrand, int queryLenth, final Alignments.SequenceVariation seqVar) {
 
         final String from = seqVar.getFrom();
         final String to = seqVar.getTo();
@@ -755,8 +757,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int fromLength = from.length();
         final int toLength = to.length();
         final boolean hasToQuals = seqVar.hasToQuality();
-        varPositions.add(seqVar.getPosition());
-        varReadIndex.add(seqVar.getReadIndex());
+        final int position = seqVar.getPosition();
+        varPositions.add(position);
+        final int readIndex = seqVar.getReadIndex();
+        final int recodedReadIndex = entryOnReverseStrand ? readIndex - (queryLenth - position) + 5 : 5 + position - readIndex;
+
+       // System.out.printf("%c CODING readIndex=%d position=%d queryLength=%d recodedReadIndex=%d %n",
+       // entryOnReverseStrand ? '+' : '-', readIndex, position, queryLenth, recodedReadIndex);
+
+        varReadIndex.add(recodedReadIndex);
         fromLengths.add(fromLength);
         toLengths.add(toLength);
         final int maxLength = Math.max(fromLength, toLength);
@@ -828,9 +837,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             result.setNumberOfIndels(anInt);
 
         }
-        anInt = queryLengths.getInt(index);
-        if (anInt != MISSING_VALUE) {
-            result.setQueryLength(anInt);
+        final int queryLength = queryLengths.getInt(index);
+        if (queryLength != MISSING_VALUE) {
+            result.setQueryLength(queryLength);
         }
         anInt = queryAlignedLengths.getInt(index);
         if (anInt != MISSING_VALUE) {
@@ -844,7 +853,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (anInt != MISSING_VALUE) {
             result.setTargetAlignedLength(anInt);
         }
-        final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand()?result.getMatchingReverseStrand():false;
+        final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand() ? result.getMatchingReverseStrand() : false;
         Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getPairAlignmentLink());
         if (link != null) {
             result.setPairAlignmentLink(link);
@@ -870,8 +879,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
             final int fromLength = fromLengths.getInt(varPositionIndex);
             final int toLength = toLengths.getInt(varPositionIndex);
-            varBuilder.setPosition(varPositions.getInt(varPositionIndex));
-            varBuilder.setReadIndex(varReadIndex.getInt(varPositionIndex));
+            final int position = varPositions.getInt(varPositionIndex);
+            varBuilder.setPosition(position);
+
+
+            final int recodedReadIndex = varReadIndex.getInt(varPositionIndex);
+            final int readIndex = entryMatchingReverseStrand ? recodedReadIndex + (queryLength - position) - 5 : -recodedReadIndex + position + 5;
+            varBuilder.setReadIndex(readIndex);
+            //  System.out.printf("%c DECODING position=%d queryLength=%d recodedReadIndex=%d readIndex=%d  %n",
+            //         entryMatchingReverseStrand ? '+' : '-', position, queryLength, recodedReadIndex, readIndex);
+
             final int toQualLength = varToQualLength.getInt(varToQualsLength);
             varToQualsLength++;
 

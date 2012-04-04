@@ -300,6 +300,7 @@ public class TestAlignmentChunkCodec1 {
             alignmentBuilder.setQueryIndex(entry.query_index);
             alignmentBuilder.setMatchingReverseStrand(true);
             alignmentBuilder.setTargetIndex(entry.targetIndex);
+            alignmentBuilder.setQueryLength(1003);
             Alignments.SequenceVariation.Builder sequenceVariation1 = Alignments.SequenceVariation.newBuilder();
             sequenceVariation1.setFrom(entry.var1_from);
             sequenceVariation1.setTo(entry.var1_to);
