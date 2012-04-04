@@ -362,8 +362,8 @@ public class SamHelper {
         numMisMatches = 0;
         Matcher matcher = CIGAR_REGEX.matcher(cigar);
         while (matcher.find()) {
-            int length = Integer.parseInt(matcher.group(1));
-            char op = matcher.group(2).charAt(0);
+            final int length = Integer.parseInt(matcher.group(1));
+            final char op = matcher.group(2).charAt(0);
             switch (op) {
                 case 'S':
                     // Soft clipping
@@ -376,6 +376,9 @@ public class SamHelper {
                     break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
+                    if (posInReads + length>sourceQuery.length()) {
+                        System.out.println("STOP");
+                    }
                     query.append(sourceQuery.substring(posInReads, posInReads + length));
                     if (sourceQual.length() != 0) {
                         qual.append(sourceQual.substring(posInReads, posInReads + length));
