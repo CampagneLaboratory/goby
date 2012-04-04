@@ -386,11 +386,11 @@ public class TestSamHelper {
     public void testTrimOneMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        final String expRead = "TGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expRef = "TGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expQual = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+        final String sourceRead = "ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCC";
+        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
+        final String expRead =    "ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCC";
+        final String expRef =     "ATGAGGCAGGGCTGGACCaGGTGCCCGCGGCCGCCCTTGCCCTTCCTCC";
+        final String expQual =    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
         samHelper.setSource(12, sourceRead, sourceQual, "1S49M", "18A30", 2, false);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
@@ -411,18 +411,18 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
+        assertTrue(SamSequenceVariation.contains(vars, 19, "A", 20, "C", new byte[]{19}));
     }
 
     @Test
     public void testTrimTwoMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        final String expRead = "GAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expRef = "GAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expQual = "CDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+        final String sourceRead = "AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTC";
+        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV";
+        final String expRead =    "AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTC";
+        final String expRef =     "AAGAGGCAGGGCTGGACaCGGTGCCCGCGGCCGCCCTTGCCCTTCCTC";
+        final String expQual =    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV";
         samHelper.setSource(13, sourceRead, sourceQual, "2S48M", "17A30", 3, false);
         assertEquals(2, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
@@ -443,18 +443,18 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
+        assertTrue(SamSequenceVariation.contains(vars, 18, "A", 20, "C", new byte[]{18}));
     }
 
     @Test
     public void testTrimFiveMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "AAAAAGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        final String expRead = "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expRef = "GCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
-        final String expQual = "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+        final String sourceRead = "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+        final String sourceQual = "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+        final String expRead =    "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+        final String expRef =     "GCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+        final String expQual =    "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         samHelper.setSource(14, sourceRead, sourceQual, "5S45M", "14A30", 6, false);
         assertEquals(5, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
@@ -527,11 +527,11 @@ public class TestSamHelper {
     public void testTrimMismatchAndDelete() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGA";
-        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU";
-        final String expRead = "CGCCCTTGCAATTCCTCCCTTCCCTTTCGG---CCTGGCCCCACCCTG";
-        final String expRef = "CGCCCTTGCccTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTG";
-        final String expQual = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDE___FGHIJKLMNOPQRST";
+        final String sourceRead = "CGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTG";
+        final String sourceQual = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRST";
+        final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTTTCGG---CCTGGCCCCACCCTG";
+        final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTG";
+        final String expQual =    "BCDEFGHIJKLMNOPQRSTUVWXYZABCDE___FGHIJKLMNOPQRST";
         samHelper.setMinQualValue('_');
         samHelper.setSource(24, sourceRead, sourceQual, "1S30M3D15M1S", "9CC19^AGT15", 32, false);
         assertEquals(1, samHelper.getNumLeftClipped());
@@ -561,11 +561,11 @@ public class TestSamHelper {
     public void testTrimMismatchAndInsert() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA";
-        final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        final String expRead = "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
-        final String expRef = "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
-        final String expQual = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
+        final String sourceRead = "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
+        final String sourceQual = "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
+        final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
+        final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
+        final String expQual =    "BCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW";
         samHelper.setSource(25, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, false);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(1, samHelper.getNumRightClipped());
@@ -594,11 +594,11 @@ public class TestSamHelper {
     public void testTrimMismatchAndInsertReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
-        final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA";
-        final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
-        final String expRead = "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
-        final String expRef = "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
-        final String expQual = "WVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCB";
+        final String sourceRead = "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
+        final String sourceQual = "WVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCB";
+        final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
+        final String expRef =     "CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC";
+        final String expQual =    "WVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCB";
         samHelper.setSource(26, sourceRead, sourceQual, "1S25M3I20M1S", "9CC34", 32, true);
         assertEquals(1, samHelper.getNumLeftClipped());
         assertEquals(1, samHelper.getNumRightClipped());
