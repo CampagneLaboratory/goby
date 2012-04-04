@@ -174,6 +174,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int numAligns = 0;
 
         final ProgressLogger progress = new ProgressLogger(LOG);
+        progress.displayFreeMemory=true;
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
@@ -320,7 +321,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 final String md = (String) samRecord.getAttribute("MD");
                 samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(),
                         samRecord.getCigarString(), md,
-                        samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
+                        samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag(),
+                        samRecord.getReadLength());
             }
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
@@ -572,6 +574,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final int readIndex = variation.getReadIndex();
         if (readIndex > queryLength) {
+            if (readIndex>queryLength) {
+                System.out.println("STOP6");
+            }
             assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
                     readIndex, queryLength);
             LOG.warn(String.format(
