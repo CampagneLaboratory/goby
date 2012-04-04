@@ -22,6 +22,7 @@ package edu.cornell.med.icb.goby.compression;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -71,6 +72,8 @@ public class MessageChunksWriter {
             "chunk-size:integer, the number of entries per chunk. :10000");
 
     public static DynamicOptionClient doc() {
+        DynamicOptionRegistry.register(AlignmentCollectionHandler.doc());
+
         return doc;
     }
 

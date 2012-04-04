@@ -277,6 +277,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final IndexedIdentifier targetIdentifiers = reader.getTargetIdentifiers();
         final boolean hasTargetIdentifiers = targetIdentifiers != null && !targetIdentifiers.isEmpty();
         stream.printf("Has target identifiers = %s%n", hasTargetIdentifiers);
+        stream.printf("Has query index permutation = %s%n", reader.getQueryIndicesWerePermuted());
+        stream.printf("Has query index occurrences = %s%n", reader.getHasQueryIndexOccurrences());
+
         if (verbose) {
             if (hasTargetIdentifiers) {
                 for (Map.Entry<MutableString, Integer> entry : targetIdentifiers.entrySet()) {

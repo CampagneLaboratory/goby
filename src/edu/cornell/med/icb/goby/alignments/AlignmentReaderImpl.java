@@ -691,8 +691,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
             queryIndicesWerePermuted=header.getQueryIndicesWerePermuted();
-            hasQueryIndexOccurrences=header.hasQueryIndexOccurences();
 
+
+            hasQueryIndexOccurrences=header.hasQueryIndexOccurrences();
+            System.out.println("header.hasQueryIndexOccurrences()="+header.hasQueryIndexOccurrences());
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
             }

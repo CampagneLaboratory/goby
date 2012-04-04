@@ -166,7 +166,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, version_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, sample_basename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_indices_were_permuted_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_index_occurences_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_index_occurrences_),
   };
   AlignmentHeader_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -352,7 +352,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\n\016fragment_index\030\003 \001(\r\"g\n\021SequenceVariat"
     "ion\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010positio"
     "n\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto_qualit"
-    "y\030\004 \001(\014\"\322\004\n\017AlignmentHeader\022\"\n\032smallest_"
+    "y\030\004 \001(\014\"\323\004\n\017AlignmentHeader\022\"\n\032smallest_"
     "split_query_index\030\t \001(\r\022!\n\031largest_split"
     "_query_index\030\013 \001(\r\0223\n\022query_name_mapping"
     "\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023targe"
@@ -366,19 +366,19 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligner_"
     "version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n\017sample"
     "_basename\030\036 \003(\t\022#\n\033query_indices_were_pe"
-    "rmuted\030\032 \001(\010\022\036\n\026query_index_occurences\030\033"
-    " \001(\010\";\n\021IdentifierMapping\022&\n\010mappings\030\001 "
-    "\003(\0132\024.goby.IdentifierInfo\"-\n\016IdentifierI"
-    "nfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024Alig"
-    "nmentTooManyHits\022\031\n\021aligner_threshold\030\002 "
-    "\002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocati"
-    "on\"b\n\021AmbiguousLocation\022\023\n\013query_index\030\001"
-    " \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n"
-    "\017length_of_match\030\003 \001(\r\"j\n\016AlignmentIndex"
-    "\022#\n\027target_position_offsets\030\001 \003(\rB\002\020\001\022\023\n"
-    "\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positions"
-    "\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.goby.a"
-    "lignmentsH\001", 2091);
+    "rmuted\030\032 \001(\010\022\037\n\027query_index_occurrences\030"
+    "\033 \001(\010\";\n\021IdentifierMapping\022&\n\010mappings\030\001"
+    " \003(\0132\024.goby.IdentifierInfo\"-\n\016Identifier"
+    "Info\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024Ali"
+    "gnmentTooManyHits\022\031\n\021aligner_threshold\030\002"
+    " \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocat"
+    "ion\"b\n\021AmbiguousLocation\022\023\n\013query_index\030"
+    "\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027"
+    "\n\017length_of_match\030\003 \001(\r\"j\n\016AlignmentInde"
+    "x\022#\n\027target_position_offsets\030\001 \003(\rB\002\020\001\022\023"
+    "\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_position"
+    "s\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.goby."
+    "alignmentsH\001", 2092);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -2489,7 +2489,7 @@ const int AlignmentHeader::kAlignerVersionFieldNumber;
 const int AlignmentHeader::kVersionFieldNumber;
 const int AlignmentHeader::kSampleBasenameFieldNumber;
 const int AlignmentHeader::kQueryIndicesWerePermutedFieldNumber;
-const int AlignmentHeader::kQueryIndexOccurencesFieldNumber;
+const int AlignmentHeader::kQueryIndexOccurrencesFieldNumber;
 #endif  // !_MSC_VER
 
 AlignmentHeader::AlignmentHeader()
@@ -2525,7 +2525,7 @@ void AlignmentHeader::SharedCtor() {
   aligner_version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   query_indices_were_permuted_ = false;
-  query_index_occurences_ = false;
+  query_index_occurrences_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2606,7 +2606,7 @@ void AlignmentHeader::Clear() {
   }
   if (_has_bits_[17 / 32] & (0xffu << (17 % 32))) {
     query_indices_were_permuted_ = false;
-    query_index_occurences_ = false;
+    query_index_occurrences_ = false;
   }
   query_length_.Clear();
   target_length_.Clear();
@@ -2899,19 +2899,19 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(216)) goto parse_query_index_occurences;
+        if (input->ExpectTag(216)) goto parse_query_index_occurrences;
         break;
       }
       
-      // optional bool query_index_occurences = 27;
+      // optional bool query_index_occurrences = 27;
       case 27: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_query_index_occurences:
+         parse_query_index_occurrences:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &query_index_occurences_)));
-          set_has_query_index_occurences();
+                 input, &query_index_occurrences_)));
+          set_has_query_index_occurrences();
         } else {
           goto handle_uninterpreted;
         }
@@ -3056,9 +3056,9 @@ void AlignmentHeader::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(26, this->query_indices_were_permuted(), output);
   }
   
-  // optional bool query_index_occurences = 27;
-  if (has_query_index_occurences()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(27, this->query_index_occurences(), output);
+  // optional bool query_index_occurrences = 27;
+  if (has_query_index_occurrences()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(27, this->query_index_occurrences(), output);
   }
   
   // repeated string sample_basename = 30;
@@ -3184,9 +3184,9 @@ void AlignmentHeader::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(26, this->query_indices_were_permuted(), target);
   }
   
-  // optional bool query_index_occurences = 27;
-  if (has_query_index_occurences()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(27, this->query_index_occurences(), target);
+  // optional bool query_index_occurrences = 27;
+  if (has_query_index_occurrences()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(27, this->query_index_occurrences(), target);
   }
   
   // repeated string sample_basename = 30;
@@ -3310,8 +3310,8 @@ int AlignmentHeader::ByteSize() const {
       total_size += 2 + 1;
     }
     
-    // optional bool query_index_occurences = 27;
-    if (has_query_index_occurences()) {
+    // optional bool query_index_occurrences = 27;
+    if (has_query_index_occurrences()) {
       total_size += 2 + 1;
     }
     
@@ -3421,8 +3421,8 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
     if (from.has_query_indices_were_permuted()) {
       set_query_indices_were_permuted(from.query_indices_were_permuted());
     }
-    if (from.has_query_index_occurences()) {
-      set_query_index_occurences(from.query_index_occurences());
+    if (from.has_query_index_occurrences()) {
+      set_query_index_occurrences(from.query_index_occurrences());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -3471,7 +3471,7 @@ void AlignmentHeader::Swap(AlignmentHeader* other) {
     std::swap(version_, other->version_);
     sample_basename_.Swap(&other->sample_basename_);
     std::swap(query_indices_were_permuted_, other->query_indices_were_permuted_);
-    std::swap(query_index_occurences_, other->query_index_occurences_);
+    std::swap(query_index_occurrences_, other->query_index_occurrences_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

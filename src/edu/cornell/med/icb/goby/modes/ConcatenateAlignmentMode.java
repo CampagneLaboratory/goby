@@ -137,6 +137,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         //final String codecName = jsapResult.getString("codec", null);
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
         DynamicOptionRegistry.register(AlignmentWriter.doc());
+
         return this;
     }
 

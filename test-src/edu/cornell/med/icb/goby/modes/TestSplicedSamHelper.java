@@ -119,7 +119,7 @@ public class TestSplicedSamHelper {
         assertEquals(bases_0_28, samHelper.getQuery().toString());
         assertEquals(bases_0_28, samHelper.getRef().toString());
         assertEquals(quals_0_28, samHelper.getQual().toString());
-        assertEquals(18339, samHelper.getPosition());
+        assertEquals(18339-1, samHelper.getPosition());
         assertEquals(0, samHelper.getQueryPosition());
         assertEquals(28, samHelper.getScore());
         assertEquals(28, samHelper.getAlignedLength());
@@ -140,7 +140,7 @@ public class TestSplicedSamHelper {
         assertEquals(bases_28_35, samHelper.getQuery().toString());
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());
-        assertEquals(18339 + 6371 + bases_0_28.length(), samHelper.getPosition());
+        assertEquals(18339 -1+ 6371 + bases_0_28.length(), samHelper.getPosition());
     }
 
     @Test

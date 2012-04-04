@@ -415,7 +415,11 @@ public class SplicedSamHelper {
     public int getNumRightClipped() {
         return helpers.get(cursorIndex).getNumRightClipped();
     }
-
+     /**
+     * Return zero-based position.
+     *
+     * @return zero-based position.
+     */
     public int getPosition() {
         return helpers.get(cursorIndex).getPosition();
     }

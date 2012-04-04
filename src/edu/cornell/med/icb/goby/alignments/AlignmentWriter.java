@@ -66,7 +66,7 @@ public class AlignmentWriter implements Closeable {
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
-    private boolean entriesHaveQueryIndexOccurrences;
+    private boolean entriesHaveQueryIndexOccurrences=true;
 
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
@@ -443,7 +443,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfQueries(getNumQueries());
             headerBuilder.setSorted(sortedState);
             headerBuilder.setQueryIndicesWerePermuted(queryIndicesWerePermuted);
-            headerBuilder.setQueryIndexOccurences(entriesHaveQueryIndexOccurrences);
+            headerBuilder.setQueryIndexOccurrences(entriesHaveQueryIndexOccurrences);
             // The Java implementation always indexes an index written in sorted order.
             headerBuilder.setIndexed(sortedState);
 
