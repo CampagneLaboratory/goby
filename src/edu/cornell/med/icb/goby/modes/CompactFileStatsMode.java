@@ -355,13 +355,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         // size, the number of bytes in the file.
         final long size = file.length();
         stream.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
-        final int averageReadLength = (minReadLength + maxReadLength) / 2;
-        stream.printf("Average bits per read base, assuming average read length %d = %f%n", averageReadLength,
-                divide(size, numLogicalAlignmentEntries * averageReadLength));
 
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
         stream.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
-        stream.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
+        final double meanQueryLength = queryLengthStats.getMean();
+        stream.printf("Mean query length = %,.2f%n", meanQueryLength);
+        final int averageReadLength=(int)(Math.round(meanQueryLength));
+                stream.printf("Average bits per read base, assuming average read length %d = %f%n", averageReadLength,
+                        divide(size, numLogicalAlignmentEntries * averageReadLength));
+
         stream.printf("Percent paired reads = %,.2f %% %n", divide(numPaired, numQuerySequences * 2) * 100d);
         stream.printf("Percent properly paired reads = %,.2f %% %n", divide(numProperlyPaired, numQuerySequences * 2) * 100d);
         stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
