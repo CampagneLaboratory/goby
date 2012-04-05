@@ -52,6 +52,7 @@ public class SplicedSamHelper {
     private boolean usingGenome;
     private int queryLength;
 
+
     /**
      * Compute limits from cigar and mdString. Each N stretch in the cigar string separates two alignment segments.
      * The Limits instances describe individual segments.
@@ -195,7 +196,6 @@ public class SplicedSamHelper {
     public void setQualityEncoding(QualityEncoding qualityEncoding) {
         encoding = qualityEncoding;
     }
-
 
     private class SamHelperFactory extends BasePoolableObjectFactory<SamHelper> {
         // for makeObject we'll simply return a new buffer
@@ -431,6 +431,11 @@ public class SplicedSamHelper {
 
     public int getNumRightClipped() {
         return helpers.get(cursorIndex).getNumRightClipped();
+    }
+
+
+    public byte[] getSourceQualAsBytes() {
+       return helpers.get(cursorIndex).getSourceQualAsBytes();
     }
 
     /**

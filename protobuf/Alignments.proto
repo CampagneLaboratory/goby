@@ -189,6 +189,11 @@ message AlignmentEntry {
       Since Goby 2.0.
   */
   repeated string bam_attributes=50;
+  /*
+      Quality scores for all bases of the read.
+      Since Goby 2.0.
+  */
+  optional bytes read_quality_scores=55;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
@@ -379,7 +384,7 @@ message AlignmentHeader {
 
    repeated string sample_basename=30;
 
-   /**
+   /*
       This field is true when the query indices of alignment entries were permuted to smaller indices. Only sorted
       alignments can have query_indices_were_permuted=true. When the field is true, and you need to retrieve the
       original query-index of an alignment (because you want to retrieve the specific read(s) from a read file for
@@ -387,11 +392,17 @@ message AlignmentHeader {
       each small index of interest to the original query index.
    */
    optional bool query_indices_were_permuted=26;
-   /**
-      This field is true when entries in the alignment .entries file all have the query_index_occurences field populated
+   /*
+      This field is true when entries in the alignment .entries file all have the query_index_occurrences field populated
       (Since Goby 2.0).
    */
-   optional bool query_index_occurrences=27;
+   optional bool query_index_occurrences=35;
+
+   /*
+      This field is true when entries in the alignment .entries file all have the read_quality_score field populated.
+      (Since Goby 2.0).
+   */
+   optional bool all_read_quality_scores=40;
 }
 
 message IdentifierMapping {

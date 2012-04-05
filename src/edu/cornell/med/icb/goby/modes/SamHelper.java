@@ -115,7 +115,7 @@ public class SamHelper {
                           final CharSequence cigar, final CharSequence md, final int position,
                           final boolean reverseStrand,
                           int readLength) {
-        this.queryLength=readLength;
+        this.queryLength = readLength;
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSource --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -231,6 +231,15 @@ public class SamHelper {
 
     public MutableString getSourceQual() {
         return sourceQual;
+    }
+
+    public byte[] getSourceQualAsBytes() {
+        final int length = sourceQual.length();
+        final byte[] result = new byte[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = qualityEncoding.asciiEncodingToPhredQualityScore(sourceQual.charAt(i));
+        }
+        return result;
     }
 
     public MutableString getQual() {
@@ -375,11 +384,11 @@ public class SamHelper {
                         query.append('-');
                         qual.append((char) minQualValue); // min quality
                     }
-                  //  posInReads += length;
+                    //  posInReads += length;
                     break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
-                    if (posInReads + length>sourceQuery.length()) {
+                    if (posInReads + length > sourceQuery.length()) {
                         System.out.println("STOP");
                     }
                     query.append(sourceQuery.substring(posInReads, posInReads + length));
@@ -511,15 +520,15 @@ public class SamHelper {
                 }
                 if (reverseStrand) {
                     final int index = genomicLength - (i - numLeftClipped) - 1;
-                        queryChar = Character.toUpperCase(query.charAt(index));
+                    queryChar = Character.toUpperCase(query.charAt(index));
                 } else {
                     final int index = i - numLeftClipped;
-                        queryChar = Character.toUpperCase(query.charAt(index));
+                    queryChar = Character.toUpperCase(query.charAt(index));
                 }
-                        if (queryChar != '-') {
-                            readIndex++;
-                        }
-                    }
+                if (queryChar != '-') {
+                    readIndex++;
+                }
+            }
             refPositions.set(i, refPosition);
             if (reverseStrand) {
                 readIndexes.set(paddedLength - i - 1, readIndex);

@@ -289,8 +289,8 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Return the readQualities. These will mostly be of value UNKNOWN_MAPPING_VALUE except for values that
-     * come from SequenceVariations - this is because Goby doesn't store correctly mapped values or values
-     * that are clipped from the alignment.
+     * come from SequenceVariations. When the read_quality_scores field has been populated, we can regenerate
+     * all the read quality scores.
      * @return the read qualities.
      */
     public ByteList getReadQualities() {
@@ -364,7 +364,11 @@ public class ExportableAlignmentEntryData {
      * @param alignmentEntry a Goby alignment entry
      */
     public void buildFrom(final Alignments.AlignmentEntry alignmentEntry) {
-        buildFrom(alignmentEntry, null, null);
+
+        buildFrom(alignmentEntry, null,
+
+                // some alignments will store the quality scores for the original read:
+                alignmentEntry.hasReadQualityScores()?ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray()):null);
     }
 
     /**
@@ -494,6 +498,12 @@ public class ExportableAlignmentEntryData {
                         qualities.set(refPosition, toQual);
                         hasQualities = true;
                     }
+                }
+            }
+            if (alignmentEntry.hasReadQualityScores()) {
+                qualities.clear();
+                for (final byte value: alignmentEntry.getReadQualityScores().toByteArray()) {
+                    qualities.add(value);
                 }
             }
         }

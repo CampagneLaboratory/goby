@@ -43,6 +43,12 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     private static final Logger LOG = Logger.getLogger(NonAmbiguousAlignmentReader.class);
 
     private Alignments.AlignmentEntry possibleEntry;
+    private boolean allQueriesHaveQueryIndexOccurences;
+    private int maxLocations = 1;
+
+    public void setMaxLocations(int maxLocations) {
+        this.maxLocations = maxLocations;
+    }
 
     public boolean isSorted() {
         return delegate.isSorted();
@@ -69,7 +75,7 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
 
     private void readTmh(String basename) throws IOException {
         LOG.debug("start reading TMH for " + basename);
-        ProgressLogger pg = new ProgressLogger(LOG);
+        final ProgressLogger pg = new ProgressLogger(LOG);
 
         {
             final AlignmentTooManyHitsReader tmh = new AlignmentTooManyHitsReader(basename);
@@ -100,12 +106,28 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                                        final long endOffset,
                                        final String basename) throws IOException {
         delegate = new AlignmentReaderImpl(startOffset, endOffset, basename);
-        readTmh(basename);
+        delegate.readHeader();
+        if (!delegate.getHasQueryIndexOccurrences()) {
+            LOG.debug("Alignment does not have query index occurrences, using TMH file.");
+            readTmh(basename);
+        } else {
+            LOG.debug("Alignment entries have query index occurrences.");
+            allQueriesHaveQueryIndexOccurences = true;
+        }
     }
 
     public NonAmbiguousAlignmentReader(final String basename) throws IOException {
         delegate = new AlignmentReaderImpl(basename);
-        readTmh(basename);
+        delegate.readHeader();
+        if (!delegate.getHasQueryIndexOccurrences()) {
+            // We have to rely on the TMH (pre-goby 2.0):
+            LOG.debug("Alignment does not have query index occurrences, using TMH file.");
+            readTmh(basename);
+            allQueriesHaveQueryIndexOccurences = false;
+        } else {
+            LOG.debug("Alignment entries have query index occurrences.");
+            allQueriesHaveQueryIndexOccurences = true;
+        }
     }
 
     /**
@@ -113,6 +135,7 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
      *
      * @return True if such an entry exists, false otherwise.
      */
+    @Override
     public final boolean hasNext() {
         if (possibleEntry != null) {
             return true;
@@ -120,8 +143,13 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
 
         while (delegate.hasNext()) {
             possibleEntry = delegate.next();
-            if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
-                // the query index is not ambigious.
+            if (possibleEntry.hasQueryIndexOccurrences()) {
+                if (possibleEntry.getQueryIndexOccurrences() <= maxLocations) {
+                    return true;
+                }
+
+            } else if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
+                // the query index is not ambiguous.
                 return true;
             }
         }
@@ -154,23 +182,33 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
             }
         }
 
-        while (possibleEntry == null) {
+        while (true) {
             possibleEntry = delegate.skipTo(targetIndex, position);
             if (possibleEntry == null) {
                 return null;
             }
-            if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
-                final Alignments.AlignmentEntry tmp = possibleEntry;
-                possibleEntry = null;
-                // the query index is not ambiguous.
-                return tmp;
+            if (allQueriesHaveQueryIndexOccurences) {
+                if (possibleEntry.getQueryIndexOccurrences() <= maxLocations) {
+                    final Alignments.AlignmentEntry tmp = possibleEntry;
+                    possibleEntry = null;
+                    // the query index is not ambiguous.
+                    return tmp;
+                } else {
+                    // the last entry was ambiguous, look for a new one that is not.
+                    possibleEntry = null;
+                }
             } else {
-                // the last entry was ambiguous, look for a new one that is not.
-                possibleEntry = null;
+                if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
+                    final Alignments.AlignmentEntry tmp = possibleEntry;
+                    possibleEntry = null;
+                    // the query index is not ambiguous.
+                    return tmp;
+                } else {
+                    // the last entry was ambiguous, look for a new one that is not.
+                    possibleEntry = null;
+                }
             }
         }
-        return null;
-        // return delegate.skipTo(targetIndex, position);
     }
 
     public void reposition(int targetIndex, int position) throws IOException {
@@ -191,7 +229,9 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
 
     public void close() {
         delegate.close();
-        this.ambiguousQueryIndices.clear();
+        if (!allQueriesHaveQueryIndexOccurences) {
+            this.ambiguousQueryIndices.clear();
+        }
     }
 
     public Iterator<Alignments.AlignmentEntry> iterator() {
@@ -268,6 +308,7 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     public boolean getQueryIndicesWerePermuted() {
         return delegate.getQueryIndicesWerePermuted();
     }
+
 
     @Override
     public boolean getHasQueryIndexOccurrences() {

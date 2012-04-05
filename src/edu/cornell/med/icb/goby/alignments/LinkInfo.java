@@ -92,8 +92,8 @@ class LinkInfo {
         if (!justResetPos) {
 
             final int deltaPairPos = position - (entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand);
-            deltaPositions.add(Fast.int2nat(deltaPairPos));
-            deltaTargetIndices.add(Fast.int2nat(targetIndex - previousTargetIndex));
+            deltaPositions.add(deltaPairPos);
+            deltaTargetIndices.add(targetIndex - previousTargetIndex);
         }
         if (entryMatchingReverseStrand) {
             previousPositionNegativeStrand = position;
@@ -138,8 +138,8 @@ class LinkInfo {
                 // keep track of previous positions for each strand the entry is on. This helps because these positions
                // are typically shifted by about insert size
                 final int previousPosition = entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand;
-                position = Fast.nat2int(deltaPositions.getInt(deltaPositionIndex)) + previousPosition;
-                targetIndex = Fast.nat2int(deltaTargetIndices.getInt(deltaPositionIndex)) + previousTargetIndex;
+                position = deltaPositions.getInt(deltaPositionIndex) + previousPosition;
+                targetIndex = deltaTargetIndices.getInt(deltaPositionIndex) + previousTargetIndex;
                 deltaPositionIndex++;
                 //System.out.println("getting pos from deltas, position="+position);
 

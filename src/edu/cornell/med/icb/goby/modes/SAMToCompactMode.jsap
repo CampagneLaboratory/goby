@@ -24,7 +24,8 @@
             <longFlag>input</longFlag>
             <required>true</required>
             <help>The SAM/BAM file to convert to compact alignment format, or - to read from standard input. If feeding
-                SAM from standard input, the header must be included in the stream (e.g., samtools view -h input.bam | goby sam-to-compact -i -).
+                SAM from standard input, the header must be included in the stream (e.g., samtools view -h input.bam |
+                goby sam-to-compact -i -).
             </help>
         </flaggedOption>
         <flaggedOption>
@@ -60,12 +61,19 @@
                 amount of storage.
             </help>
         </switch>
-         <switch>
+        <switch>
             <id>preserve-all-tags</id>
             <longFlag>preserve-all-tags</longFlag>
             <help>When this switch is provided, all BAM tags/attributes are preserved and imported to the bam_attributes
-                  Alignment entry field. Note that the MD attribute is stored as in Goby native fields. MD attributes
-                  are written back to BAM from these fields.
+                Alignment entry field. Note that the MD attribute is stored as in Goby native fields. MD attributes
+                are written back to BAM from these fields.
+            </help>
+        </switch>
+        <switch>
+            <id>preserve-all-mapped-qualities</id>
+            <longFlag>preserve-all-mapped-qualities</longFlag>
+            <help>When this switch is provided, qualities scores for all mapped reads are preserved. The scores are
+                stored in the Goby read_quality_scores field.
             </help>
         </switch>
         <switch>

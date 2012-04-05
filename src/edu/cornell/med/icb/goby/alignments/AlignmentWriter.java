@@ -67,6 +67,7 @@ public class AlignmentWriter implements Closeable {
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
     private boolean entriesHaveQueryIndexOccurrences=true;
+    private boolean allReadQualityScores=true;
 
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
@@ -295,6 +296,9 @@ public class AlignmentWriter implements Closeable {
         // detect when all entries have query-index-occurrences:
         entriesHaveQueryIndexOccurrences &= builtEntry.hasQueryIndexOccurrences();
 
+        //detect when all entries have read_quality_scores:
+        allReadQualityScores &= builtEntry.hasReadQualityScores();
+
         // detect when one or more entries have query length:
         entriesHaveQueryLength |= builtEntry.hasQueryLength();
 
@@ -390,6 +394,15 @@ public class AlignmentWriter implements Closeable {
         this.appendEntry(entry);
     }
 
+    public boolean entriesHaveQueryIndexOccurrences() {
+        return entriesHaveQueryIndexOccurrences;
+    }
+
+    public boolean isAllReadQualityScores() {
+
+        return allReadQualityScores;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -444,6 +457,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setSorted(sortedState);
             headerBuilder.setQueryIndicesWerePermuted(queryIndicesWerePermuted);
             headerBuilder.setQueryIndexOccurrences(entriesHaveQueryIndexOccurrences);
+            headerBuilder.setAllReadQualityScores(allReadQualityScores);
             // The Java implementation always indexes an index written in sorted order.
             headerBuilder.setIndexed(sortedState);
 

@@ -204,6 +204,7 @@ public class TestConcatAlignmentReader {
             numQueries101 = numQuery;
 
             writer.close();
+            System.out.println("writer: header.hasQueryIndexOccurrences()="+writer.entriesHaveQueryIndexOccurrences());
             // reads in basename1 hit in 10 different places in the genome. They should be filtered when
             // removing ambiguous reads.
             AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputBasename1, 2);

@@ -380,6 +380,17 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& bam_attributes() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_bam_attributes();
   
+  // optional bytes read_quality_scores = 55;
+  inline bool has_read_quality_scores() const;
+  inline void clear_read_quality_scores();
+  static const int kReadQualityScoresFieldNumber = 55;
+  inline const ::std::string& read_quality_scores() const;
+  inline void set_read_quality_scores(const ::std::string& value);
+  inline void set_read_quality_scores(const char* value);
+  inline void set_read_quality_scores(const void* value, size_t size);
+  inline ::std::string* mutable_read_quality_scores();
+  inline ::std::string* release_read_quality_scores();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -428,6 +439,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_sample_index();
   inline void set_has_query_index_occurrences();
   inline void clear_has_query_index_occurrences();
+  inline void set_has_read_quality_scores();
+  inline void clear_has_read_quality_scores();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -455,10 +468,11 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
   ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
+  ::std::string* read_quality_scores_;
   ::google::protobuf::uint32 query_index_occurrences_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(25 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(26 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -918,12 +932,19 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool query_indices_were_permuted() const;
   inline void set_query_indices_were_permuted(bool value);
   
-  // optional bool query_index_occurrences = 27;
+  // optional bool query_index_occurrences = 35;
   inline bool has_query_index_occurrences() const;
   inline void clear_query_index_occurrences();
-  static const int kQueryIndexOccurrencesFieldNumber = 27;
+  static const int kQueryIndexOccurrencesFieldNumber = 35;
   inline bool query_index_occurrences() const;
   inline void set_query_index_occurrences(bool value);
+  
+  // optional bool all_read_quality_scores = 40;
+  inline bool has_all_read_quality_scores() const;
+  inline void clear_all_read_quality_scores();
+  static const int kAllReadQualityScoresFieldNumber = 40;
+  inline bool all_read_quality_scores() const;
+  inline void set_all_read_quality_scores(bool value);
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
@@ -959,6 +980,8 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void clear_has_query_indices_were_permuted();
   inline void set_has_query_index_occurrences();
   inline void clear_has_query_index_occurrences();
+  inline void set_has_all_read_quality_scores();
+  inline void clear_has_all_read_quality_scores();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -973,17 +996,18 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::uint32 constant_query_length_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
   ::std::string* aligner_name_;
+  ::std::string* aligner_version_;
   bool sorted_;
   bool indexed_;
   bool query_lengths_stored_in_entries_;
   bool query_indices_were_permuted_;
   bool query_index_occurrences_;
-  ::std::string* aligner_version_;
+  bool all_read_quality_scores_;
   ::std::string* version_;
   ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2152,6 +2176,64 @@ AlignmentEntry::mutable_bam_attributes() {
   return &bam_attributes_;
 }
 
+// optional bytes read_quality_scores = 55;
+inline bool AlignmentEntry::has_read_quality_scores() const {
+  return (_has_bits_[0] & 0x02000000u) != 0;
+}
+inline void AlignmentEntry::set_has_read_quality_scores() {
+  _has_bits_[0] |= 0x02000000u;
+}
+inline void AlignmentEntry::clear_has_read_quality_scores() {
+  _has_bits_[0] &= ~0x02000000u;
+}
+inline void AlignmentEntry::clear_read_quality_scores() {
+  if (read_quality_scores_ != &::google::protobuf::internal::kEmptyString) {
+    read_quality_scores_->clear();
+  }
+  clear_has_read_quality_scores();
+}
+inline const ::std::string& AlignmentEntry::read_quality_scores() const {
+  return *read_quality_scores_;
+}
+inline void AlignmentEntry::set_read_quality_scores(const ::std::string& value) {
+  set_has_read_quality_scores();
+  if (read_quality_scores_ == &::google::protobuf::internal::kEmptyString) {
+    read_quality_scores_ = new ::std::string;
+  }
+  read_quality_scores_->assign(value);
+}
+inline void AlignmentEntry::set_read_quality_scores(const char* value) {
+  set_has_read_quality_scores();
+  if (read_quality_scores_ == &::google::protobuf::internal::kEmptyString) {
+    read_quality_scores_ = new ::std::string;
+  }
+  read_quality_scores_->assign(value);
+}
+inline void AlignmentEntry::set_read_quality_scores(const void* value, size_t size) {
+  set_has_read_quality_scores();
+  if (read_quality_scores_ == &::google::protobuf::internal::kEmptyString) {
+    read_quality_scores_ = new ::std::string;
+  }
+  read_quality_scores_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_read_quality_scores() {
+  set_has_read_quality_scores();
+  if (read_quality_scores_ == &::google::protobuf::internal::kEmptyString) {
+    read_quality_scores_ = new ::std::string;
+  }
+  return read_quality_scores_;
+}
+inline ::std::string* AlignmentEntry::release_read_quality_scores() {
+  clear_has_read_quality_scores();
+  if (read_quality_scores_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = read_quality_scores_;
+    read_quality_scores_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
 // -------------------------------------------------------------------
 
 // RelatedAlignmentEntry
@@ -2994,7 +3076,7 @@ inline void AlignmentHeader::set_query_indices_were_permuted(bool value) {
   query_indices_were_permuted_ = value;
 }
 
-// optional bool query_index_occurrences = 27;
+// optional bool query_index_occurrences = 35;
 inline bool AlignmentHeader::has_query_index_occurrences() const {
   return (_has_bits_[0] & 0x00040000u) != 0;
 }
@@ -3014,6 +3096,28 @@ inline bool AlignmentHeader::query_index_occurrences() const {
 inline void AlignmentHeader::set_query_index_occurrences(bool value) {
   set_has_query_index_occurrences();
   query_index_occurrences_ = value;
+}
+
+// optional bool all_read_quality_scores = 40;
+inline bool AlignmentHeader::has_all_read_quality_scores() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void AlignmentHeader::set_has_all_read_quality_scores() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void AlignmentHeader::clear_has_all_read_quality_scores() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void AlignmentHeader::clear_all_read_quality_scores() {
+  all_read_quality_scores_ = false;
+  clear_has_all_read_quality_scores();
+}
+inline bool AlignmentHeader::all_read_quality_scores() const {
+  return all_read_quality_scores_;
+}
+inline void AlignmentHeader::set_all_read_quality_scores(bool value) {
+  set_has_all_read_quality_scores();
+  all_read_quality_scores_ = value;
 }
 
 // -------------------------------------------------------------------

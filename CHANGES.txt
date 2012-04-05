@@ -1,6 +1,7 @@
 Towards Goby 2.0
  - Add ability to preserve all BAM attributes during import and export. Use --preserve-all-tags in mode sam-to-compact
    to enable this.
+ - Add ability to preserve all quality scores. Use --preserve-all-mapped-qualities in mode sam-to-compact.
  - Supports bzip2 compression in fasta-to-compact mode and sam-extract-reads (use the -x MessageChunksWriter:codec=bzip2
    dynamic option).
  - Renamed SortMode to Sort1Mode. Renamed SortLargeMode to SortMode.

@@ -84,6 +84,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean runningFromCommandLine;
     private RandomAccessSequenceInterface genome;
     private boolean preserveAllTags;
+    private boolean preserveAllMappedQuals;
 
 
     public String getSamBinaryFilename() {
@@ -140,11 +141,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
+        preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         bsmap = jsapResult.getBoolean("bsmap");
         String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
-            DualRandomAccessSequenceCache aGenome = new DualRandomAccessSequenceCache();
+            final DualRandomAccessSequenceCache aGenome = new DualRandomAccessSequenceCache();
             try {
                 aGenome.load(genomeFilename);
                 genome = aGenome;
@@ -264,7 +266,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 readMaxOccurence++;
                 // Unfortunately the SAM/BAM format does not provide the exact number of times
                 // a read matched the reference sequence. We could find this number in an non sorted BAM file
-                // by counting how many times the same read name appears in a continous block of constant read name.
+                // by counting how many times the same read name appears in a continuous block of constant read name.
                 // However, for sorted input, we need this number to know when to stop
                 // keep a given read name in memory with its associated query index.
                 // Since we can't keep all the read names in memory continuously (these are strings and
@@ -272,7 +274,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 // SAM/BAM file that contains multiple best hits for read or mate. We can handle these cases
                 // correctly when working directly in the aligner and writing Goby format because the information
                 // is available at the time of alignment, but discarded afterwards.
-                //TODO see if we find a solution to better handle ambiguous matches.
             }
 
             final Object xoString = samRecord.getAttribute("X0");
@@ -360,6 +361,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
+                if (preserveAllMappedQuals) {
+
+                    currentEntry.setReadQualityScores(ByteString.copyFrom(samHelper.getSourceQualAsBytes()));
+                }
                 addSamAttributes(samRecord, currentEntry);
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (hasPaired) {
@@ -495,18 +500,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private void addSamAttributes(SAMRecord samRecord, Alignments.AlignmentEntry.Builder currentEntry) {
-      if (preserveAllTags) {
-        String tokens[] = samRecord.getSAMString().split("\t");
-        int size = tokens.length;
-        for (int i = 12; i < size; i++) {
-            final String token = tokens[i];
-            if (!token.startsWith("MD:Z")) {
-            //    System.out.printf("Preserving token=%s%n", token);
-                currentEntry.addBamAttributes(token);
+        if (preserveAllTags) {
+            String tokens[] = samRecord.getSAMString().split("\t");
+            int size = tokens.length;
+            for (int i = 12; i < size; i++) {
+                final String token = tokens[i];
+                if (!token.startsWith("MD:Z")) {
+                    //    System.out.printf("Preserving token=%s%n", token);
+                    currentEntry.addBamAttributes(token);
+                }
             }
         }
-      }
-}
+    }
 
 
     /**

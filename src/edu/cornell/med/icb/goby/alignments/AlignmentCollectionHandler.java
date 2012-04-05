@@ -62,6 +62,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private String statsFilename;
     private String basename;
     private PrintWriter statsWriter;
+    private static final IntArrayList EMPTY_LIST = new IntArrayList();
+
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -69,8 +71,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private int previousPosition;
     private int previousTargetIndex;
-    int deltaPosIndex = 0;
-
+    private int deltaPosIndex = 0;
+    private int qualScoreIndex = 0;
     private int debug = 0;
     /**
      * This variable keeps track of the number of chunks compressed or decompressed.
@@ -96,13 +98,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         basename = doc().getString("basename");
         if (debug(1)) {
             try {
-                statsWriter = new PrintWriter(new FileWriter(statsFilename,true));
+                statsWriter = new PrintWriter(new FileWriter(statsFilename, true));
                 statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\n");
 
             } catch (FileNotFoundException e) {
-                LOG.error("Cannot open stats file",e);
+                LOG.error("Cannot open stats file", e);
             } catch (IOException e) {
-                LOG.error("Cannot open stats file",e);
+                LOG.error("Cannot open stats file", e);
             }
         }
 
@@ -122,7 +124,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -144,7 +146,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
         }
         final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
-    //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
+        //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
         writeCompressed(outputBitStream);
         outputBitStream.flush();
         writtenBits += outputBitStream.writtenBits();
@@ -167,7 +169,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final InputBitStream bitInput = new InputBitStream(new FastByteArrayInputStream(moreRoom));
         final int numEntriesInChunk = alignmentCollection.getAlignmentEntriesCount();
 
-        decompressBits(bitInput, numEntriesInChunk);
+        final int streamVersion = decompressBits(bitInput, numEntriesInChunk);
         int originalIndex = 0;
         for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
             final int templatePositionIndex = varPositionIndex;
@@ -175,7 +177,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int templateVarHasToQualsIndex = varToQualsLength;
             while (multiplicities.get(templateIndex) >= 1) {
                 result.addAlignmentEntries(
-                        andBack(templateIndex, originalIndex, alignmentCollection.getAlignmentEntries(templateIndex)));
+                        andBack(templateIndex, originalIndex, alignmentCollection.getAlignmentEntries(templateIndex), streamVersion));
                 if (multiplicities.get(templateIndex) >= 1) {
                     // go back to the indices for the template:
                     varPositionIndex = templatePositionIndex;
@@ -495,7 +497,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList queryPositions = new IntArrayList();
     private IntList fragmentIndices = new IntArrayList();
     private IntList variationCount = new IntArrayList();
-
+    private IntList insertSizes = new IntArrayList();
     private IntList fromLengths = new IntArrayList();
     private IntList toLengths = new IntArrayList();
     private IntList varPositions = new IntArrayList();
@@ -503,13 +505,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList varFromTo = new IntArrayList();
     private IntList varQuals = new IntArrayList();
     private IntList varToQualLength = new IntArrayList();
+    private IntList allReadQualityScores = new IntArrayList();
+    private IntArrayList numReadQualityScores = new IntArrayList();
 
     IntArrayList multiplicities = new IntArrayList();
 
 
-    private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
+    private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
         final int streamVersion = bitInput.readDelta();
-        assert streamVersion == VERSION : "The stream version must match this class version (only one version supported by this implementation)";
+        assert streamVersion <= VERSION : "The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
         multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
         decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
@@ -519,6 +523,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeArithmetic("matchingReverseStrand", numEntriesInChunk, bitInput, matchingReverseStrand);
         decodeArithmetic("numberOfIndels", numEntriesInChunk, bitInput, numberOfIndels);
         decodeArithmetic("numberOfMismatches", numEntriesInChunk, bitInput, numberOfMismatches);
+        decodeArithmetic("insertSize", numEntriesInChunk, bitInput, insertSizes);
         decodeArithmetic("queryAlignedLength", numEntriesInChunk, bitInput, queryAlignedLengths);
         decodeArithmetic("targetAlignedLength", numEntriesInChunk, bitInput, targetAlignedLengths);
         decodeArithmetic("queryPositions", numEntriesInChunk, bitInput, queryPositions);
@@ -537,6 +542,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         backwardSpliceLinks.read(numEntriesInChunk, bitInput);
 
         decodeQueryIndices("queryIndices", numEntriesInChunk, bitInput, queryIndices);
+        if (streamVersion >= 2) {
+            decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
+            decodeArithmetic("allReadQualityScores", numEntriesInChunk, bitInput, allReadQualityScores);
+        }
+        return streamVersion;
     }
 
     private void writeCompressed(final OutputBitStream out) throws IOException {
@@ -551,6 +561,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("matchingReverseStrand", matchingReverseStrand, out);
         writeArithmetic("numberOfIndels", numberOfIndels, out);
         writeArithmetic("numberOfMismatches", numberOfMismatches, out);
+        writeArithmetic("insertSize", insertSizes, out);
         writeArithmetic("queryAlignedLength", queryAlignedLengths, out);
         writeArithmetic("targetAlignedLength", targetAlignedLengths, out);
         writeArithmetic("queryPositions", queryPositions, out);
@@ -568,7 +579,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         forwardSpliceLinks.write(out);
         backwardSpliceLinks.write(out);
         writeQueryIndices("queryIndices", queryIndices, out);
-
+        writeArithmetic("numReadQualityScores", numReadQualityScores, out);
+        writeArithmetic("allReadQualityScores", allReadQualityScores, out);
     }
 
     private void reset() {
@@ -586,6 +598,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryAlignedLengths.clear();
         targetAlignedLengths.clear();
         numberOfMismatches.clear();
+        insertSizes.clear();
         queryIndices.clear();
         queryPositions.clear();
         fragmentIndices.clear();
@@ -609,6 +622,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         pairLinks.reset();
         forwardSpliceLinks.reset();
         backwardSpliceLinks.reset();
+        qualScoreIndex = 0;
+        numReadQualityScores.clear();
+        allReadQualityScores.clear();
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -694,24 +710,37 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         matchingReverseStrand.add(source.hasMatchingReverseStrand() ? source.getMatchingReverseStrand() ? 1 : 0 : MISSING_VALUE);
         numberOfIndels.add(source.hasNumberOfIndels() ? source.getNumberOfIndels() : MISSING_VALUE);
         numberOfMismatches.add(source.hasNumberOfMismatches() ? source.getNumberOfMismatches() : MISSING_VALUE);
+        insertSizes.add(source.hasInsertSize() ? source.getInsertSize() : MISSING_VALUE);
         queryAlignedLengths.add(source.hasQueryAlignedLength() ? source.getQueryAlignedLength() : MISSING_VALUE);
         targetAlignedLengths.add(source.hasTargetAlignedLength() ? source.getTargetAlignedLength() : MISSING_VALUE);
         fragmentIndices.add(source.hasFragmentIndex() ? source.getFragmentIndex() : MISSING_VALUE);
         variationCount.add(source.getSequenceVariationsCount());
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
 
+        if (source.hasReadQualityScores()) {
+
+            final ByteString quals = source.getReadQualityScores();
+            final int size = quals.size();
+            numReadQualityScores.add(size);
+            for (int i = 0; i < size; i++) {
+                allReadQualityScores.add(quals.byteAt(i));
+            }
+        } else {
+            numReadQualityScores.add(0);
+        }
         result.clearQueryLength();
         result.clearMappingQuality();
         result.clearMatchingReverseStrand();
         result.clearMultiplicity();
         result.clearNumberOfIndels();
         result.clearNumberOfMismatches();
+        result.clearInsertSize();
         result.clearQueryAlignedLength();
         result.clearTargetAlignedLength();
 
         result.clearQueryPosition();
         result.clearFragmentIndex();
-
+        result.clearReadQualityScores();
 
         boolean canFullyRemoveThisOne = true;
         boolean canFullyRemoveCollection = true;
@@ -794,8 +823,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int readIndex = seqVar.getReadIndex();
         final int recodedReadIndex = entryOnReverseStrand ? readIndex - (queryLenth - position) + 5 : 5 + position - readIndex;
 
-       // System.out.printf("%c CODING readIndex=%d position=%d queryLength=%d recodedReadIndex=%d %n",
-       // entryOnReverseStrand ? '+' : '-', readIndex, position, queryLenth, recodedReadIndex);
+        // System.out.printf("%c CODING readIndex=%d position=%d queryLength=%d recodedReadIndex=%d %n",
+        // entryOnReverseStrand ? '+' : '-', readIndex, position, queryLenth, recodedReadIndex);
 
         varReadIndex.add(recodedReadIndex);
         fromLengths.add(fromLength);
@@ -816,7 +845,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     MutableString to = new MutableString();
 
 
-    private Alignments.AlignmentEntry andBack(final int index, int originalIndex, final Alignments.AlignmentEntry reduced) {
+    private Alignments.AlignmentEntry andBack(final int index, int originalIndex, final Alignments.AlignmentEntry reduced, int streamVersion) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(reduced);
 
         final int multiplicity = multiplicities.get(index);
@@ -847,7 +876,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             previousTargetIndex += deltaTarget;
             deltaPosIndex++;
         }
+        if (streamVersion >= 2) {
+            final int numReadQualScores = numReadQualityScores.get(index);
+            if (numReadQualScores > 0) {
 
+                final byte[] scores = new byte[numReadQualScores];
+                for (int i = 0; i < numReadQualScores; i++) {
+                    scores[i] = (byte) allReadQualityScores.getInt(qualScoreIndex++);
+                }
+                result.setReadQualityScores(ByteString.copyFrom(scores));
+            }
+        }
         int anInt = mappingQualities.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setMappingQuality(anInt);
@@ -863,6 +902,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         anInt = numberOfMismatches.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setNumberOfMismatches(anInt);
+        }
+        anInt = insertSizes.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setInsertSize(anInt);
         }
         anInt = numberOfIndels.getInt(index);
         if (anInt != MISSING_VALUE) {

@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
@@ -41,6 +42,8 @@ import static junit.framework.Assert.assertNotNull;
  *         Time: 3:40 PM
  */
 public class TestAlignmentChunkCodec1 {
+
+
     @Test
     public void nullCollection() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -68,10 +71,21 @@ public class TestAlignmentChunkCodec1 {
     public void testRoundTrip() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = buildCollection(examples);
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examples, false);
 
 
-        testRoundTripWithBuiltEntries(codec, collection);
+        testRoundTripWithBuiltEntries(codec, collection, false);
+    }
+
+    @Test
+
+    public void testRoundTrip2() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examples, true);
+
+
+        testRoundTripWithBuiltEntries(codec, collection, true);
     }
 
     AlignmentExample[] examplesWithDuplicates = {
@@ -89,7 +103,7 @@ public class TestAlignmentChunkCodec1 {
     public void testRoundTripMultipleEntriesDuplicate() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = buildCollection(examplesWithDuplicates);
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examplesWithDuplicates, false);
         //  System.out.println(collection.build().toString());
         assertRoundTripMatchExpected(codec, collection);
     }
@@ -118,7 +132,7 @@ public class TestAlignmentChunkCodec1 {
     public void roundTripExamplePairedEnd() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries",0,1000);
+        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 1000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
@@ -168,11 +182,12 @@ public class TestAlignmentChunkCodec1 {
         }
     }
 
-    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection) throws IOException {
+    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection, boolean addReadQual) throws IOException {
         final ByteArrayOutputStream encoded = codec.encode(collection.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
         Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
         for (final Alignments.AlignmentEntry.Builder entryBuilder : builtEntries) {
+            addReadQuals(addReadQual, entryBuilder);
             expected.addAlignmentEntries(entryBuilder);
         }
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
@@ -193,14 +208,32 @@ public class TestAlignmentChunkCodec1 {
 
     }
 
-    private Alignments.AlignmentCollection.Builder buildCollection(AlignmentExample[] builtEntries) {
+    private Alignments.AlignmentCollection.Builder buildCollection(AlignmentExample[] builtEntries, boolean addReadQual) {
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         for (Alignments.AlignmentEntry.Builder entry : buildEntriesCollection(builtEntries)) {
+            addReadQuals(addReadQual, entry);
             collectionBuilder.addAlignmentEntries(entry);
         }
         return collectionBuilder;
     }
 
+    private void addReadQuals(boolean addReadQual, Alignments.AlignmentEntry.Builder entry) {
+        if (addReadQual) {
+
+            final byte[] quals = {0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2};
+            final ByteString scores = ByteString.copyFrom(quals);
+            entry.setReadQualityScores(scores);
+        }
+    }
+
+    private Alignments.AlignmentCollection.Builder buildCollectionWithQualScores(AlignmentExample[] builtEntries) {
+        final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
+        for (Alignments.AlignmentEntry.Builder entry : buildEntriesCollection(builtEntries)) {
+
+            collectionBuilder.addAlignmentEntries(entry);
+        }
+        return collectionBuilder;
+    }
 
     @Test
     public void testMore() throws IOException {

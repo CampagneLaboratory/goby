@@ -91,6 +91,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     private AlignmentCodec codec;
     private boolean queryIndicesWerePermuted;
     /**
+     * This field is true when all the entries of the reader have the read_quality_scores field populated.
+     */
+    private boolean allReadQualityScores;
+    /**
      * Start offset of the slice this read was created with. Number of bytes into the entries file were to start reading from.
      */
     private long startOffset;
@@ -243,8 +247,6 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
 
-
-
     /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
      * This method will try to upgrade the alignment to the latest version of the Goby data structures on the fly.
@@ -270,8 +272,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename, boolean upgrade) throws IOException {
         super(upgrade, getBasename(basename));
         this.basename = getBasename(basename);
-        this.startOffset=startOffset;
-        this.endOffset=endOffset;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
         final String entriesFile = this.basename + ".entries";
         boolean entriesFileExist = RepositionableInputStream.resourceExist(entriesFile);
         if (entriesFileExist) {
@@ -459,9 +461,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             collection = null;
             final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
 
-            final ChunkCodec codec= alignmentEntryReader.getChunkCodec();
+            final ChunkCodec codec = alignmentEntryReader.getChunkCodec();
             try {
-               final  byte[] compressedBytes=alignmentEntryReader.getCompressedBytes();
+                final byte[] compressedBytes = alignmentEntryReader.getCompressedBytes();
                 if (compressedBytes != null) {
                     collection = (Alignments.AlignmentCollection) codec.decode(compressedBytes);
                     if (collection.getAlignmentEntriesCount() == 0) {
@@ -690,12 +692,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
             assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
-            queryIndicesWerePermuted=header.getQueryIndicesWerePermuted();
+            queryIndicesWerePermuted = header.getQueryIndicesWerePermuted();
 
-
-            hasQueryIndexOccurrences=header.hasQueryIndexOccurrences();
-            System.out.println("header.hasQueryIndexOccurrences()="+header.hasQueryIndexOccurrences());
-            if (header.getTargetLengthCount() > 0) {
+             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
             }
             numberOfQueries = header.getNumberOfQueries();
@@ -708,8 +707,23 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             sorted = header.getSorted() && indexExists(basename);
             indexed = header.getIndexed() && indexExists(basename);
             gobyVersion = header.getVersion();
+            allReadQualityScores = header.getAllReadQualityScores();
+            hasQueryIndexOccurrences = header.getQueryIndexOccurrences();
+
+
+
+
+            System.out.println("header.hasQueryIndexOccurrences()="+header.hasQueryIndexOccurrences());
 
         }
+    }
+
+    /**
+     * Indicates if all the entries of this alignment have the read_quality_score field.
+     * @return  True or False.
+     */
+    public boolean getHasAllReadQualityScores() {
+        return allReadQualityScores;
     }
 
     private boolean indexExists(String basename) {
@@ -865,12 +879,12 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     @Override
     public boolean getQueryIndicesWerePermuted() {
-            return queryIndicesWerePermuted;
+        return queryIndicesWerePermuted;
     }
 
     @Override
     public boolean getHasQueryIndexOccurrences() {
-          return hasQueryIndexOccurrences;
+        return hasQueryIndexOccurrences;
     }
 
     @Override
