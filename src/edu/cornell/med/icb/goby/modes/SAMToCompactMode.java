@@ -83,6 +83,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean debug;
     private boolean runningFromCommandLine;
     private RandomAccessSequenceInterface genome;
+    private boolean preserveAllTags;
 
 
     public String getSamBinaryFilename() {
@@ -137,6 +138,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // configure baseclass
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
+
+        preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         bsmap = jsapResult.getBoolean("bsmap");
         String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
@@ -144,7 +147,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             DualRandomAccessSequenceCache aGenome = new DualRandomAccessSequenceCache();
             try {
                 aGenome.load(genomeFilename);
-                genome=aGenome;
+                genome = aGenome;
             } catch (ClassNotFoundException e) {
                 System.err.println("Unable to load genome.");
                 System.exit(1);
@@ -174,7 +177,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int numAligns = 0;
 
         final ProgressLogger progress = new ProgressLogger(LOG);
-        progress.displayFreeMemory=true;
+        progress.displayFreeMemory = true;
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
@@ -305,7 +308,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final String referenceName = samRecord.getReferenceName();
                     final int referenceIndex = genome.getReferenceIndex(map(genome, referenceName));
                     if (referenceIndex == -1) {
-                        System.err.println("Error, could not find reference index for id=" + referenceName+" Skipping record.");
+                        System.err.println("Error, could not find reference index for id=" + referenceName + " Skipping record.");
                         continue;
                     }
                     final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
@@ -357,7 +360,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
-
+                addSamAttributes(samRecord, currentEntry);
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
@@ -416,16 +419,16 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                         if (!samRecord.getMateUnmappedFlag()) {
                             assert firstFragmentIndex >= 0 : " firstFragmentIndex cannot be negative";
                             // some BAM files indicate pair is in the p
-                            if (mateFragmentIndex>=0) {
-                            final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
-                                    Alignments.RelatedAlignmentEntry.newBuilder();
+                            if (mateFragmentIndex >= 0) {
+                                final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
+                                        Alignments.RelatedAlignmentEntry.newBuilder();
 
-                            final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
-                            final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // samhelper returns zero-based positions compatible with Goby.
-                            relatedBuilder.setFragmentIndex(mateFragmentIndex);
-                            relatedBuilder.setPosition(mateAlignmentStart);
-                            relatedBuilder.setTargetIndex(mateTargetIndex);
-                            builder.setPairAlignmentLink(relatedBuilder);
+                                final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
+                                final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // samhelper returns zero-based positions compatible with Goby.
+                                relatedBuilder.setFragmentIndex(mateFragmentIndex);
+                                relatedBuilder.setPosition(mateAlignmentStart);
+                                relatedBuilder.setTargetIndex(mateTargetIndex);
+                                builder.setPairAlignmentLink(relatedBuilder);
                             }
                         }
                     }
@@ -491,6 +494,21 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+    private void addSamAttributes(SAMRecord samRecord, Alignments.AlignmentEntry.Builder currentEntry) {
+      if (preserveAllTags) {
+        String tokens[] = samRecord.getSAMString().split("\t");
+        int size = tokens.length;
+        for (int i = 12; i < size; i++) {
+            final String token = tokens[i];
+            if (!token.startsWith("MD:Z")) {
+            //    System.out.printf("Preserving token=%s%n", token);
+                currentEntry.addBamAttributes(token);
+            }
+        }
+      }
+}
+
+
     /**
      * Adjust reference names to match genome.
      *
@@ -498,6 +516,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @param referenceName
      * @return
      */
+
     private final String map(RandomAccessSequenceInterface genome, final String referenceName) {
         if (genome.getReferenceIndex(referenceName) == -1) {
             if (referenceName.contentEquals("chrM")) {
@@ -574,7 +593,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final int readIndex = variation.getReadIndex();
         if (readIndex > queryLength) {
-            if (readIndex>queryLength) {
+            if (readIndex > queryLength) {
                 System.out.println("STOP6");
             }
             assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
@@ -617,6 +636,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
-        this.genome=genome;
+        this.genome = genome;
     }
 }

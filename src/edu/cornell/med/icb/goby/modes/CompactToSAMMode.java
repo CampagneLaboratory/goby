@@ -75,7 +75,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
      * The random-access-genome file can be made from the .fa.gz reference using the build-sequence-cache mode.
      * If using the random-access-genome input, specify any one of the files in the random-access-genome.
      * If using the 'fa.gz + fa.gz.fai' input, specify the 'fa.gz' file but make sure the '.fa.gz.fai' file
-     *    is located in the same directory.
+     * is located in the same directory.
      * Using the random-access-genome format will be considerably faster.
      */
     private String inputGenome;
@@ -263,7 +263,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         private long numWritten;
 
         private void initializeSam(final AlignmentReader alignmentReader) {
-                // First entry to output.
+            // First entry to output.
             boolean inputIsSorted = alignmentReader.isSorted();
             // Because splices cannot be written in a sorted manner, we can never consider the output to be sorted.
             boolean outputIsSorted = false;
@@ -340,7 +340,11 @@ public class CompactToSAMMode extends AbstractGobyMode {
             samRecord.setBaseQualities(exportData.getReadQualities().toByteArray());
             samRecord.setCigarString(exportData.getCigarString());
             samRecord.setAttribute("MD", exportData.getMismatchString());
-
+            for (final String bamAttribute : exportData.getBamAttributesList()) {
+                final String[] tokens = bamAttribute.split(":");
+                samRecord.setAttribute(tokens[0], getValue(tokens));
+                System.out.printf("Writing %s:%s %n",tokens[0],getValue(tokens));
+            }
             if (exportData.hasMate()) {
                 samRecord.setMateReferenceIndex(exportData.getMateReferenceIndex());
                 samRecord.setMateAlignmentStart(exportData.getMateAlignmentStart());
@@ -350,6 +354,26 @@ public class CompactToSAMMode extends AbstractGobyMode {
             outputSam.addAlignment(samRecord);
         }
     }
+
+    private Object getValue(String[] tokens) {
+        final String type = tokens[1];
+        if ("Z".equals(type)) {
+            return "Z:"+tokens[2];
+        }
+        if ("i".equals(type)) {
+            return "i:"+Integer.parseInt(tokens[2]);
+        }
+        if ("A".equals(type)) {
+            return "A:"+tokens[2].charAt(0);
+        }
+        LOG.warn("Attribute type %c is currently not supported, storing as string type");
+        return tokens[2];
+    }
+
+    private String getTag(String bamAttribute) {
+        return bamAttribute.split(":")[0];
+    }
+
     /**
      * Main method.
      *
@@ -363,8 +387,6 @@ public class CompactToSAMMode extends AbstractGobyMode {
         processor.configure(args);
         processor.execute();
     }
-
-
 
 
 }

@@ -60,6 +60,14 @@
                 amount of storage.
             </help>
         </switch>
+         <switch>
+            <id>preserve-all-tags</id>
+            <longFlag>preserve-all-tags</longFlag>
+            <help>When this switch is provided, all BAM tags/attributes are preserved and imported to the bam_attributes
+                  Alignment entry field. Note that the MD attribute is stored as in Goby native fields. MD attributes
+                  are written back to BAM from these fields.
+            </help>
+        </switch>
         <switch>
             <id>sorted</id>
             <longFlag>sorted</longFlag>

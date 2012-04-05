@@ -364,6 +364,22 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 query_index_occurrences() const;
   inline void set_query_index_occurrences(::google::protobuf::uint32 value);
   
+  // repeated string bam_attributes = 50;
+  inline int bam_attributes_size() const;
+  inline void clear_bam_attributes();
+  static const int kBamAttributesFieldNumber = 50;
+  inline const ::std::string& bam_attributes(int index) const;
+  inline ::std::string* mutable_bam_attributes(int index);
+  inline void set_bam_attributes(int index, const ::std::string& value);
+  inline void set_bam_attributes(int index, const char* value);
+  inline void set_bam_attributes(int index, const char* value, size_t size);
+  inline ::std::string* add_bam_attributes();
+  inline void add_bam_attributes(const ::std::string& value);
+  inline void add_bam_attributes(const char* value);
+  inline void add_bam_attributes(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& bam_attributes() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_bam_attributes();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -438,10 +454,11 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::goby::RelatedAlignmentEntry* spliced_backward_alignment_link_;
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
   ::google::protobuf::uint32 query_index_occurrences_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(24 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(25 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2089,6 +2106,50 @@ inline ::google::protobuf::uint32 AlignmentEntry::query_index_occurrences() cons
 inline void AlignmentEntry::set_query_index_occurrences(::google::protobuf::uint32 value) {
   set_has_query_index_occurrences();
   query_index_occurrences_ = value;
+}
+
+// repeated string bam_attributes = 50;
+inline int AlignmentEntry::bam_attributes_size() const {
+  return bam_attributes_.size();
+}
+inline void AlignmentEntry::clear_bam_attributes() {
+  bam_attributes_.Clear();
+}
+inline const ::std::string& AlignmentEntry::bam_attributes(int index) const {
+  return bam_attributes_.Get(index);
+}
+inline ::std::string* AlignmentEntry::mutable_bam_attributes(int index) {
+  return bam_attributes_.Mutable(index);
+}
+inline void AlignmentEntry::set_bam_attributes(int index, const ::std::string& value) {
+  bam_attributes_.Mutable(index)->assign(value);
+}
+inline void AlignmentEntry::set_bam_attributes(int index, const char* value) {
+  bam_attributes_.Mutable(index)->assign(value);
+}
+inline void AlignmentEntry::set_bam_attributes(int index, const char* value, size_t size) {
+  bam_attributes_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::add_bam_attributes() {
+  return bam_attributes_.Add();
+}
+inline void AlignmentEntry::add_bam_attributes(const ::std::string& value) {
+  bam_attributes_.Add()->assign(value);
+}
+inline void AlignmentEntry::add_bam_attributes(const char* value) {
+  bam_attributes_.Add()->assign(value);
+}
+inline void AlignmentEntry::add_bam_attributes(const char* value, size_t size) {
+  bam_attributes_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+AlignmentEntry::bam_attributes() const {
+  return bam_attributes_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+AlignmentEntry::mutable_bam_attributes() {
+  return &bam_attributes_;
 }
 
 // -------------------------------------------------------------------

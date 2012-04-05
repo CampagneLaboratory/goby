@@ -27,6 +27,8 @@ import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.ArrayUtils;
 
+import java.util.List;
+
 /**
  * Test ExportableAlignmentEntryData.
  */
@@ -60,6 +62,7 @@ public class ExportableAlignmentEntryData {
     private QualityEncoding qualityEncoding;
 
     private Alignments.AlignmentEntry alignmentEntry;
+
 
     /**
      * Marked private so it won't be used, always needs the genome version.
@@ -387,6 +390,7 @@ public class ExportableAlignmentEntryData {
 
         this.alignmentEntry = alignmentEntry;
 
+
         // First obtain the number of indels
         int numInserts = 0;
         int numDeletes = 0;
@@ -423,6 +427,7 @@ public class ExportableAlignmentEntryData {
         // Construct read & ref before any sequence variations (indels, mutations)
         final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts; // Math.max(queryLength, targetAlignedLength);
         final int targetIndex = alignmentEntry.getTargetIndex();
+        // TODO fix me. Got an error with deletion in the read: quals was longer than read by the number of bases deleted.
         for (int i = 0; i < endOfLoop; i++) {
             final char base = genome.get(targetIndex, i + startPosition);
             if (i < startClip) {
@@ -511,6 +516,10 @@ public class ExportableAlignmentEntryData {
         }
         observeReadRefDifferences();
         System.out.println(toString());
+    }
+
+    public List<String> getBamAttributesList() {
+        return alignmentEntry.getBamAttributesList();
     }
 
     private enum MismatchType {

@@ -180,6 +180,15 @@ message AlignmentEntry {
       This field is required (enforced by semantic validation in Goby 2.0+).
   */
   optional uint32 query_index_occurrences=25;
+  /*
+      List of BAM attributes, if the alignment was imported from BAM. The attributes are stored in exactly the format
+      allowed for BAM. For instance, X0:i:9  X1:i:1  MD:Z:68 RG:Z:SRR084825 will be stored as four strings:
+      "X0:i:9", "X1:i:1", "MD:Z:68", "RG:Z:SRR084825". Note that sam-to-compact will interpret some BAM attributes
+      and populate goby native fields. Such tags do not appear in bam_attributes, and are instead re-generated from
+      the corresponding goby native fields.
+      Since Goby 2.0.
+  */
+  repeated string bam_attributes=50;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
