@@ -39,6 +39,7 @@ class SequenceVariation;
 class AlignmentHeader;
 class IdentifierMapping;
 class IdentifierInfo;
+class ReadOriginInfo;
 class AlignmentTooManyHits;
 class AmbiguousLocation;
 class AlignmentIndex;
@@ -391,6 +392,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_read_quality_scores();
   inline ::std::string* release_read_quality_scores();
   
+  // optional uint32 read_origin_index = 26;
+  inline bool has_read_origin_index() const;
+  inline void clear_read_origin_index();
+  static const int kReadOriginIndexFieldNumber = 26;
+  inline ::google::protobuf::uint32 read_origin_index() const;
+  inline void set_read_origin_index(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -441,6 +449,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_query_index_occurrences();
   inline void set_has_read_quality_scores();
   inline void clear_has_read_quality_scores();
+  inline void set_has_read_origin_index();
+  inline void clear_has_read_origin_index();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -468,11 +478,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
   ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
-  ::std::string* read_quality_scores_;
   ::google::protobuf::uint32 query_index_occurrences_;
+  ::google::protobuf::uint32 read_origin_index_;
+  ::std::string* read_quality_scores_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(26 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(27 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -946,6 +957,18 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool all_read_quality_scores() const;
   inline void set_all_read_quality_scores(bool value);
   
+  // repeated .goby.ReadOriginInfo read_origin = 27;
+  inline int read_origin_size() const;
+  inline void clear_read_origin();
+  static const int kReadOriginFieldNumber = 27;
+  inline const ::goby::ReadOriginInfo& read_origin(int index) const;
+  inline ::goby::ReadOriginInfo* mutable_read_origin(int index);
+  inline ::goby::ReadOriginInfo* add_read_origin();
+  inline const ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo >&
+      read_origin() const;
+  inline ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo >*
+      mutable_read_origin();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   inline void set_has_smallest_split_query_index();
@@ -1005,9 +1028,10 @@ class AlignmentHeader : public ::google::protobuf::Message {
   bool all_read_quality_scores_;
   ::std::string* version_;
   ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
+  ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo > read_origin_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(21 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -1196,6 +1220,158 @@ class IdentifierInfo : public ::google::protobuf::Message {
   
   void InitAsDefaultInstance();
   static IdentifierInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ReadOriginInfo : public ::google::protobuf::Message {
+ public:
+  ReadOriginInfo();
+  virtual ~ReadOriginInfo();
+  
+  ReadOriginInfo(const ReadOriginInfo& from);
+  
+  inline ReadOriginInfo& operator=(const ReadOriginInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ReadOriginInfo& default_instance();
+  
+  void Swap(ReadOriginInfo* other);
+  
+  // implements Message ----------------------------------------------
+  
+  ReadOriginInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ReadOriginInfo& from);
+  void MergeFrom(const ReadOriginInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required uint32 origin_index = 1;
+  inline bool has_origin_index() const;
+  inline void clear_origin_index();
+  static const int kOriginIndexFieldNumber = 1;
+  inline ::google::protobuf::uint32 origin_index() const;
+  inline void set_origin_index(::google::protobuf::uint32 value);
+  
+  // required string origin_id = 2;
+  inline bool has_origin_id() const;
+  inline void clear_origin_id();
+  static const int kOriginIdFieldNumber = 2;
+  inline const ::std::string& origin_id() const;
+  inline void set_origin_id(const ::std::string& value);
+  inline void set_origin_id(const char* value);
+  inline void set_origin_id(const char* value, size_t size);
+  inline ::std::string* mutable_origin_id();
+  inline ::std::string* release_origin_id();
+  
+  // optional string sample = 4;
+  inline bool has_sample() const;
+  inline void clear_sample();
+  static const int kSampleFieldNumber = 4;
+  inline const ::std::string& sample() const;
+  inline void set_sample(const ::std::string& value);
+  inline void set_sample(const char* value);
+  inline void set_sample(const char* value, size_t size);
+  inline ::std::string* mutable_sample();
+  inline ::std::string* release_sample();
+  
+  // optional string platform = 5;
+  inline bool has_platform() const;
+  inline void clear_platform();
+  static const int kPlatformFieldNumber = 5;
+  inline const ::std::string& platform() const;
+  inline void set_platform(const ::std::string& value);
+  inline void set_platform(const char* value);
+  inline void set_platform(const char* value, size_t size);
+  inline ::std::string* mutable_platform();
+  inline ::std::string* release_platform();
+  
+  // optional string library = 8;
+  inline bool has_library() const;
+  inline void clear_library();
+  static const int kLibraryFieldNumber = 8;
+  inline const ::std::string& library() const;
+  inline void set_library(const ::std::string& value);
+  inline void set_library(const char* value);
+  inline void set_library(const char* value, size_t size);
+  inline ::std::string* mutable_library();
+  inline ::std::string* release_library();
+  
+  // optional string platform_unit = 12;
+  inline bool has_platform_unit() const;
+  inline void clear_platform_unit();
+  static const int kPlatformUnitFieldNumber = 12;
+  inline const ::std::string& platform_unit() const;
+  inline void set_platform_unit(const ::std::string& value);
+  inline void set_platform_unit(const char* value);
+  inline void set_platform_unit(const char* value, size_t size);
+  inline ::std::string* mutable_platform_unit();
+  inline ::std::string* release_platform_unit();
+  
+  // @@protoc_insertion_point(class_scope:goby.ReadOriginInfo)
+ private:
+  inline void set_has_origin_index();
+  inline void clear_has_origin_index();
+  inline void set_has_origin_id();
+  inline void clear_has_origin_id();
+  inline void set_has_sample();
+  inline void clear_has_sample();
+  inline void set_has_platform();
+  inline void clear_has_platform();
+  inline void set_has_library();
+  inline void clear_has_library();
+  inline void set_has_platform_unit();
+  inline void clear_has_platform_unit();
+  
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  
+  ::std::string* origin_id_;
+  ::std::string* sample_;
+  ::std::string* platform_;
+  ::std::string* library_;
+  ::std::string* platform_unit_;
+  ::google::protobuf::uint32 origin_index_;
+  
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  
+  friend void  protobuf_AddDesc_Alignments_2eproto();
+  friend void protobuf_AssignDesc_Alignments_2eproto();
+  friend void protobuf_ShutdownFile_Alignments_2eproto();
+  
+  void InitAsDefaultInstance();
+  static ReadOriginInfo* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -2234,6 +2410,28 @@ inline ::std::string* AlignmentEntry::release_read_quality_scores() {
   }
 }
 
+// optional uint32 read_origin_index = 26;
+inline bool AlignmentEntry::has_read_origin_index() const {
+  return (_has_bits_[0] & 0x04000000u) != 0;
+}
+inline void AlignmentEntry::set_has_read_origin_index() {
+  _has_bits_[0] |= 0x04000000u;
+}
+inline void AlignmentEntry::clear_has_read_origin_index() {
+  _has_bits_[0] &= ~0x04000000u;
+}
+inline void AlignmentEntry::clear_read_origin_index() {
+  read_origin_index_ = 0u;
+  clear_has_read_origin_index();
+}
+inline ::google::protobuf::uint32 AlignmentEntry::read_origin_index() const {
+  return read_origin_index_;
+}
+inline void AlignmentEntry::set_read_origin_index(::google::protobuf::uint32 value) {
+  set_has_read_origin_index();
+  read_origin_index_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // RelatedAlignmentEntry
@@ -3120,6 +3318,31 @@ inline void AlignmentHeader::set_all_read_quality_scores(bool value) {
   all_read_quality_scores_ = value;
 }
 
+// repeated .goby.ReadOriginInfo read_origin = 27;
+inline int AlignmentHeader::read_origin_size() const {
+  return read_origin_.size();
+}
+inline void AlignmentHeader::clear_read_origin() {
+  read_origin_.Clear();
+}
+inline const ::goby::ReadOriginInfo& AlignmentHeader::read_origin(int index) const {
+  return read_origin_.Get(index);
+}
+inline ::goby::ReadOriginInfo* AlignmentHeader::mutable_read_origin(int index) {
+  return read_origin_.Mutable(index);
+}
+inline ::goby::ReadOriginInfo* AlignmentHeader::add_read_origin() {
+  return read_origin_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo >&
+AlignmentHeader::read_origin() const {
+  return read_origin_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo >*
+AlignmentHeader::mutable_read_origin() {
+  return &read_origin_;
+}
+
 // -------------------------------------------------------------------
 
 // IdentifierMapping
@@ -3231,6 +3454,322 @@ inline ::google::protobuf::uint32 IdentifierInfo::index() const {
 inline void IdentifierInfo::set_index(::google::protobuf::uint32 value) {
   set_has_index();
   index_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// ReadOriginInfo
+
+// required uint32 origin_index = 1;
+inline bool ReadOriginInfo::has_origin_index() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ReadOriginInfo::set_has_origin_index() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ReadOriginInfo::clear_has_origin_index() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ReadOriginInfo::clear_origin_index() {
+  origin_index_ = 0u;
+  clear_has_origin_index();
+}
+inline ::google::protobuf::uint32 ReadOriginInfo::origin_index() const {
+  return origin_index_;
+}
+inline void ReadOriginInfo::set_origin_index(::google::protobuf::uint32 value) {
+  set_has_origin_index();
+  origin_index_ = value;
+}
+
+// required string origin_id = 2;
+inline bool ReadOriginInfo::has_origin_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ReadOriginInfo::set_has_origin_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ReadOriginInfo::clear_has_origin_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ReadOriginInfo::clear_origin_id() {
+  if (origin_id_ != &::google::protobuf::internal::kEmptyString) {
+    origin_id_->clear();
+  }
+  clear_has_origin_id();
+}
+inline const ::std::string& ReadOriginInfo::origin_id() const {
+  return *origin_id_;
+}
+inline void ReadOriginInfo::set_origin_id(const ::std::string& value) {
+  set_has_origin_id();
+  if (origin_id_ == &::google::protobuf::internal::kEmptyString) {
+    origin_id_ = new ::std::string;
+  }
+  origin_id_->assign(value);
+}
+inline void ReadOriginInfo::set_origin_id(const char* value) {
+  set_has_origin_id();
+  if (origin_id_ == &::google::protobuf::internal::kEmptyString) {
+    origin_id_ = new ::std::string;
+  }
+  origin_id_->assign(value);
+}
+inline void ReadOriginInfo::set_origin_id(const char* value, size_t size) {
+  set_has_origin_id();
+  if (origin_id_ == &::google::protobuf::internal::kEmptyString) {
+    origin_id_ = new ::std::string;
+  }
+  origin_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_origin_id() {
+  set_has_origin_id();
+  if (origin_id_ == &::google::protobuf::internal::kEmptyString) {
+    origin_id_ = new ::std::string;
+  }
+  return origin_id_;
+}
+inline ::std::string* ReadOriginInfo::release_origin_id() {
+  clear_has_origin_id();
+  if (origin_id_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = origin_id_;
+    origin_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string sample = 4;
+inline bool ReadOriginInfo::has_sample() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ReadOriginInfo::set_has_sample() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ReadOriginInfo::clear_has_sample() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ReadOriginInfo::clear_sample() {
+  if (sample_ != &::google::protobuf::internal::kEmptyString) {
+    sample_->clear();
+  }
+  clear_has_sample();
+}
+inline const ::std::string& ReadOriginInfo::sample() const {
+  return *sample_;
+}
+inline void ReadOriginInfo::set_sample(const ::std::string& value) {
+  set_has_sample();
+  if (sample_ == &::google::protobuf::internal::kEmptyString) {
+    sample_ = new ::std::string;
+  }
+  sample_->assign(value);
+}
+inline void ReadOriginInfo::set_sample(const char* value) {
+  set_has_sample();
+  if (sample_ == &::google::protobuf::internal::kEmptyString) {
+    sample_ = new ::std::string;
+  }
+  sample_->assign(value);
+}
+inline void ReadOriginInfo::set_sample(const char* value, size_t size) {
+  set_has_sample();
+  if (sample_ == &::google::protobuf::internal::kEmptyString) {
+    sample_ = new ::std::string;
+  }
+  sample_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_sample() {
+  set_has_sample();
+  if (sample_ == &::google::protobuf::internal::kEmptyString) {
+    sample_ = new ::std::string;
+  }
+  return sample_;
+}
+inline ::std::string* ReadOriginInfo::release_sample() {
+  clear_has_sample();
+  if (sample_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = sample_;
+    sample_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string platform = 5;
+inline bool ReadOriginInfo::has_platform() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ReadOriginInfo::set_has_platform() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ReadOriginInfo::clear_has_platform() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ReadOriginInfo::clear_platform() {
+  if (platform_ != &::google::protobuf::internal::kEmptyString) {
+    platform_->clear();
+  }
+  clear_has_platform();
+}
+inline const ::std::string& ReadOriginInfo::platform() const {
+  return *platform_;
+}
+inline void ReadOriginInfo::set_platform(const ::std::string& value) {
+  set_has_platform();
+  if (platform_ == &::google::protobuf::internal::kEmptyString) {
+    platform_ = new ::std::string;
+  }
+  platform_->assign(value);
+}
+inline void ReadOriginInfo::set_platform(const char* value) {
+  set_has_platform();
+  if (platform_ == &::google::protobuf::internal::kEmptyString) {
+    platform_ = new ::std::string;
+  }
+  platform_->assign(value);
+}
+inline void ReadOriginInfo::set_platform(const char* value, size_t size) {
+  set_has_platform();
+  if (platform_ == &::google::protobuf::internal::kEmptyString) {
+    platform_ = new ::std::string;
+  }
+  platform_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_platform() {
+  set_has_platform();
+  if (platform_ == &::google::protobuf::internal::kEmptyString) {
+    platform_ = new ::std::string;
+  }
+  return platform_;
+}
+inline ::std::string* ReadOriginInfo::release_platform() {
+  clear_has_platform();
+  if (platform_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = platform_;
+    platform_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string library = 8;
+inline bool ReadOriginInfo::has_library() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ReadOriginInfo::set_has_library() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ReadOriginInfo::clear_has_library() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ReadOriginInfo::clear_library() {
+  if (library_ != &::google::protobuf::internal::kEmptyString) {
+    library_->clear();
+  }
+  clear_has_library();
+}
+inline const ::std::string& ReadOriginInfo::library() const {
+  return *library_;
+}
+inline void ReadOriginInfo::set_library(const ::std::string& value) {
+  set_has_library();
+  if (library_ == &::google::protobuf::internal::kEmptyString) {
+    library_ = new ::std::string;
+  }
+  library_->assign(value);
+}
+inline void ReadOriginInfo::set_library(const char* value) {
+  set_has_library();
+  if (library_ == &::google::protobuf::internal::kEmptyString) {
+    library_ = new ::std::string;
+  }
+  library_->assign(value);
+}
+inline void ReadOriginInfo::set_library(const char* value, size_t size) {
+  set_has_library();
+  if (library_ == &::google::protobuf::internal::kEmptyString) {
+    library_ = new ::std::string;
+  }
+  library_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_library() {
+  set_has_library();
+  if (library_ == &::google::protobuf::internal::kEmptyString) {
+    library_ = new ::std::string;
+  }
+  return library_;
+}
+inline ::std::string* ReadOriginInfo::release_library() {
+  clear_has_library();
+  if (library_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = library_;
+    library_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string platform_unit = 12;
+inline bool ReadOriginInfo::has_platform_unit() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ReadOriginInfo::set_has_platform_unit() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ReadOriginInfo::clear_has_platform_unit() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ReadOriginInfo::clear_platform_unit() {
+  if (platform_unit_ != &::google::protobuf::internal::kEmptyString) {
+    platform_unit_->clear();
+  }
+  clear_has_platform_unit();
+}
+inline const ::std::string& ReadOriginInfo::platform_unit() const {
+  return *platform_unit_;
+}
+inline void ReadOriginInfo::set_platform_unit(const ::std::string& value) {
+  set_has_platform_unit();
+  if (platform_unit_ == &::google::protobuf::internal::kEmptyString) {
+    platform_unit_ = new ::std::string;
+  }
+  platform_unit_->assign(value);
+}
+inline void ReadOriginInfo::set_platform_unit(const char* value) {
+  set_has_platform_unit();
+  if (platform_unit_ == &::google::protobuf::internal::kEmptyString) {
+    platform_unit_ = new ::std::string;
+  }
+  platform_unit_->assign(value);
+}
+inline void ReadOriginInfo::set_platform_unit(const char* value, size_t size) {
+  set_has_platform_unit();
+  if (platform_unit_ == &::google::protobuf::internal::kEmptyString) {
+    platform_unit_ = new ::std::string;
+  }
+  platform_unit_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_platform_unit() {
+  set_has_platform_unit();
+  if (platform_unit_ == &::google::protobuf::internal::kEmptyString) {
+    platform_unit_ = new ::std::string;
+  }
+  return platform_unit_;
+}
+inline ::std::string* ReadOriginInfo::release_platform_unit() {
+  clear_has_platform_unit();
+  if (platform_unit_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = platform_unit_;
+    platform_unit_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // -------------------------------------------------------------------

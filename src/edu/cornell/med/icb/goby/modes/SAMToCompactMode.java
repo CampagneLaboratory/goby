@@ -185,6 +185,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final InputStream stream = "-".equals(inputFile) ? System.in : new FileInputStream(inputFile);
         final SAMFileReader parser = new SAMFileReader(stream);
+        // transfer read groups to Goby header:
+        final SAMFileHeader samHeader = parser.getFileHeader();
+        IndexedIdentifier readGroups = new IndexedIdentifier();
+        importReadGroups(samHeader, readGroups);
 
         boolean hasPaired = false;
 
@@ -194,13 +198,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final SplicedSamHelper samHelper = new SplicedSamHelper();
         samHelper.setQualityEncoding(qualityEncoding);
+
         numberOfReads = 0;
 
         // int stopEarly = 0;
         SAMRecord prevRecord = null;
 
-        final SAMFileHeader fileHeader = parser.getFileHeader();
-        if (fileHeader.getSequenceDictionary().isEmpty()) {
+
+        if (samHeader.getSequenceDictionary().isEmpty()) {
             System.err.println("SAM/BAM file/input appear to have no target sequences. If reading from stdin, please check you are feeding this mode actual SAM/BAM content and that the header of the SAM file is included.");
             if (runningFromCommandLine) {
                 System.exit(0);
@@ -208,10 +213,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
-            final int numTargets = fileHeader.getSequenceDictionary().size();
+            final int numTargets = samHeader.getSequenceDictionary().size();
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
-                final SAMSequenceRecord seq = fileHeader.getSequence(i);
+                final SAMSequenceRecord seq = samHeader.getSequence(i);
                 final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
                 targetLengths[targetIndex] = seq.getSequenceLength();
             }
@@ -378,6 +383,16 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                         LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", variation.toString(), queryIndex));
                     }
                 }
+                final String readGroup = samRecord.getStringAttribute("RG");
+                if (readGroup != null) {
+                    final int readOriginIndex = readGroups.getInt(new MutableString(readGroup).compact());
+                    if (readOriginIndex == -1) {
+                        System.err.printf("Read group identifier %s is used in alignment record (read-name=%s), " +
+                                "but was not found in the header. Ignoring this read group.%n", readGroup, samRecord.getReadName());
+                    } else {
+                        currentEntry.setReadOriginIndex(readOriginIndex);
+                    }
+                }
                 builders.add(currentEntry);
             }
             final int numFragments = builders.size();
@@ -469,8 +484,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.printStats(System.out);
 
         // write information from SAM file header
-        final SAMFileHeader samHeader = fileHeader;
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
+
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
         int targetCount = targetIds.size();
         if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size()))
@@ -495,8 +510,39 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
 
         writer.setTargetLengths(targetLengths);
+        writer.setReadOriginInfo(readOriginInfoBuilderList);
         progress.stop();
         return numAligns;
+    }
+
+    private ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
+
+    private void importReadGroups(SAMFileHeader samHeader, IndexedIdentifier readGroups) {
+        if (samHeader.getReadGroups().size() > 0) {
+            for (SAMReadGroupRecord rg : samHeader.getReadGroups()) {
+                String sample = rg.getSample();
+                String library = rg.getLibrary();
+                String platform = rg.getPlatform();
+                String platformUnit = rg.getPlatformUnit();
+                String id = rg.getId();
+                int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
+                Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
+                roi.setOriginIndex(readGroupIndex);
+                if (library != null) {
+                    roi.setLibrary(library);
+                }
+                if (platform != null) {
+                    roi.setPlatform(platform);
+                }
+                if (platformUnit != null) {
+                    roi.setPlatformUnit(platformUnit);
+                }
+                if (sample != null) {
+                    roi.setSample(sample);
+                }
+                readOriginInfoBuilderList.add(roi);
+            }
+        }
     }
 
     private void addSamAttributes(SAMRecord samRecord, Alignments.AlignmentEntry.Builder currentEntry) {
@@ -505,8 +551,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             int size = tokens.length;
             for (int i = 12; i < size; i++) {
                 final String token = tokens[i];
-                if (!token.startsWith("MD:Z")) {
-                    //    System.out.printf("Preserving token=%s%n", token);
+                if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
+                 // ignore MD and RG since we store them natively..
+                  //    System.out.printf("Preserving token=%s%n", token);
                     currentEntry.addBamAttributes(token);
                 }
             }

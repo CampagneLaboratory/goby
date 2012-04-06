@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -212,4 +213,10 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
      * @return byte offset in the entries file.
      */
     long getEndByteOffset(int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition);
+
+    /**
+     * Return the read origin infos from the header.
+     * @return  A list of read origin info messages.
+     */
+    ReadOriginInfo getReadOriginInfo();
 }

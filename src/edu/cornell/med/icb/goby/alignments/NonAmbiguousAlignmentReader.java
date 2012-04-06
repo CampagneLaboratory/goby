@@ -320,4 +320,9 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
         return delegate.getEndByteOffset(startReferenceIndex, startPosition, endReferenceIndex, endPosition);
     }
 
+    @Override
+    public ReadOriginInfo getReadOriginInfo() {
+        return delegate.getReadOriginInfo();
+    }
+
 }

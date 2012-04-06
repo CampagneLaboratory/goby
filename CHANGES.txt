@@ -1,4 +1,10 @@
 Towards Goby 2.0
+ - Add ability to preserve SAM/BAM read groups. Read groups are automatically preserved if present in the input BAM file.
+   The concatenate mode automatically reassigns read_origin indices (see field read_origin_index) to prevent conflicts
+   when Goby files from different origins are concatenated. The approach we use is to keep the most specific read origin
+   information, and let the client decide what origins/groups are equivalent given the type of analysis at hand.
+   Read groups are supported by the hybrid codec (and therefore stored very efficiently), are imported from BAM with
+   sam-to-compact and are exported back to SAM/BAM with the compact-to-bam mode.
  - Add ability to preserve all BAM attributes during import and export. Use --preserve-all-tags in mode sam-to-compact
    to enable this.
  - Add ability to preserve all quality scores. Use --preserve-all-mapped-qualities in mode sam-to-compact.

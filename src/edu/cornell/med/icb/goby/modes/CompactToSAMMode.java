@@ -58,7 +58,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts a compact alignment to the SAM/BAM format.";
+    private static final String MODE_DESCRIPTION = "Exports a compact alignment to the SAM/BAM format. This tool tries" +
+            "to export a Goby alignment comprehensively to the BAM format. Since Goby 2.0.";
 
     /**
      * BAM/SAM output alignment filename.
@@ -261,6 +262,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
     private class CompactToSAMIterateAlignments extends IterateAlignments {
 
         private long numWritten;
+        private ReadOriginInfo readOriginInfo;
+        private boolean hasReadGroups;
 
         private void initializeSam(final AlignmentReader alignmentReader) {
             // First entry to output.
@@ -280,13 +283,38 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 final SAMSequenceRecord samSequenceRecord = new SAMSequenceRecord(gobyTargetName, gobyTargetLength);
                 samTargetDictionary.addSequence(samSequenceRecord);
             }
-
+            exportReadGroups(alignmentReader);
             samHeader.setSequenceDictionary(samTargetDictionary);
             final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
             gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
             samHeader.addProgramRecord(gobyVersionProgRec);
             outputSam = new SAMFileWriterFactory().makeSAMOrBAMWriter(samHeader, outputIsSorted, new File(output));
             samRecordFactory = new DefaultSAMRecordFactory();
+        }
+
+        private void exportReadGroups(final AlignmentReader alignmentReader) {
+            readOriginInfo = alignmentReader.getReadOriginInfo();
+            if (readOriginInfo.size()>0) {
+                hasReadGroups=true;
+                // Goby alignment has read origin information, export as BAM read groups:
+                for (final Alignments.ReadOriginInfo roi:readOriginInfo.getPbList()) {
+                    final SAMReadGroupRecord readGroup = new SAMReadGroupRecord(roi.getOriginId());
+                    if (roi.hasSample()) {
+                        readGroup.setSample(roi.getSample());
+                    }
+                    if (roi.hasPlatform()) {
+                        readGroup.setSample(roi.getPlatform());
+                    }
+                    if (roi.hasPlatformUnit()) {
+                        readGroup.setSample(roi.getPlatformUnit());
+                    }
+                    if (roi.hasLibrary()) {
+                        readGroup.setSample(roi.getLibrary());
+                    }
+                    samHeader.addReadGroup(readGroup);
+                }
+                exportData.setReadGroupInfo(readOriginInfo);
+            }
         }
 
         @Override
@@ -350,7 +378,9 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 samRecord.setMateAlignmentStart(exportData.getMateAlignmentStart());
                 samRecord.setInferredInsertSize(exportData.getInferredInsertSize());
             }
-
+            if (hasReadGroups) {
+                samRecord.setAttribute("RG",exportData.getReadGroup());
+            }
             outputSam.addAlignment(samRecord);
         }
     }

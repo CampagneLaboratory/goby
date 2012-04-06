@@ -292,7 +292,17 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 }
             }
         }
-        stream.println();
+
+       stream.println();
+
+        if (reader.getReadOriginInfo().size() > 0) {
+            stream.print("---- Read Origin Info ------");
+            for (Alignments.ReadOriginInfo info : reader.getReadOriginInfo().getPbList()) {
+                stream.print(info.toString());
+            }
+        } else {
+            stream.print("Alignment has no Read Origin Info/Read Groups");
+        }
 
         // the query indices that aligned. Includes those
         final DistinctIntValueCounterBitSet alignedQueryIndices = new DistinctIntValueCounterBitSet();
@@ -361,14 +371,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
         final double meanQueryLength = queryLengthStats.getMean();
         stream.printf("Mean query length = %,.2f%n", meanQueryLength);
-        final int averageReadLength=(int)(Math.round(meanQueryLength));
-                stream.printf("Average bits per read base, assuming average read length %d = %f%n", averageReadLength,
-                        divide(size, numLogicalAlignmentEntries * averageReadLength));
+        final int averageReadLength = (int) (Math.round(meanQueryLength));
+        stream.printf("Average bits per read base, assuming average read length %d = %f%n", averageReadLength,
+                divide(size, numLogicalAlignmentEntries * averageReadLength));
 
         stream.printf("Percent paired reads = %,.2f %% %n", divide(numPaired, numQuerySequences * 2) * 100d);
         stream.printf("Percent properly paired reads = %,.2f %% %n", divide(numProperlyPaired, numQuerySequences * 2) * 100d);
         stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
         stream.printf("Percent second in pair = %,.2f %% %n", divide(numSecondInPair, numEntries) * 100d);
+
+
     }
 
     private double divide(final long a, final long b) {

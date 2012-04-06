@@ -194,6 +194,14 @@ message AlignmentEntry {
       Since Goby 2.0.
   */
   optional bytes read_quality_scores=55;
+
+  /*
+       Origin index. An integer that references a ReadOriginInfo message in the alignment header and
+       makes it possible to track the origin of the read (especially useful after several alignments
+       have been merged/concatenated).
+       (Since Goby 2.0).
+   */
+   optional uint32 read_origin_index=26;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
@@ -403,6 +411,13 @@ message AlignmentHeader {
       (Since Goby 2.0).
    */
    optional bool all_read_quality_scores=40;
+   /*
+     A description of the origin of sets of reads. Serves a similar function to BAM read groups, but more flexible and
+     efficient. Instead of storing strings, we use integers in the entries.
+     Alignemnt entries will link to a specific ReadOriginInfo with the origin_index field.
+     (Since Goby 2.0).
+   */
+   repeated ReadOriginInfo read_origin=27;
 }
 
 message IdentifierMapping {
@@ -412,6 +427,49 @@ message IdentifierMapping {
 message IdentifierInfo {
     required string name=1;
     required uint32 index=2;
+}
+
+
+/*
+     A description of the origin of sets of reads. Stored in the Goby alignment header and linked
+     from alignment entries. Goby makes it possible to adapt origin equivalence rules on the fly
+     efficiently. To do this, it is sufficient to read the header of the alignment, decide which
+     ReadOriginInfo instances are equivalent (e.g., by looking at sample, platform, library, or
+     other fields in the message), then construct a function e(a):int. This function takes
+     one originIndex parameter and returns another integer that maps to an equivalent class. The
+     equivalence class can be used to estimate error models for entries that belong to each class,
+     for instance.
+     (Since Goby 2.0).
+ */
+message ReadOriginInfo {
+    /*
+       Origin index. An integer that links alignment entries to their origin information.
+    */
+    required uint32 origin_index=1;
+    /*
+       Identifier that describes the origin of the reads. This field is compatible with the ID/platform field of BAM read
+       groups. Free text.
+    */
+    required string origin_id=2;
+    /*
+       The sample from which the reads were sequenced. This field is compatible with the SM/platform field of BAM read
+       groups. Free text.
+    */
+    optional string sample=4;
+    /*
+       The platform on which the reads were sequenced. This field is compatible with the PL/platform field of BAM read
+       groups. Valid values: ILLUMINA, SOLID, LS454, HELICOS and PACBIO.
+    */
+    optional string platform=5;
+    /*
+       The library from which the reads were sequenced. This field is compatible with the LB/library field of BAM read
+       groups. Free text.
+    */
+    optional string library=8;
+      /*
+       The platform unit on which the reads were sequenced. This field for compatibility with samtools.
+    */
+    optional string platform_unit=12;
 }
 
 /*

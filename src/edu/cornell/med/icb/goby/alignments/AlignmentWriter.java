@@ -66,12 +66,13 @@ public class AlignmentWriter implements Closeable {
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
-    private boolean entriesHaveQueryIndexOccurrences=true;
-    private boolean allReadQualityScores=true;
+    private boolean entriesHaveQueryIndexOccurrences = true;
+    private boolean allReadQualityScores = true;
 
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
     );
+    private ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList;
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -480,7 +481,11 @@ public class AlignmentWriter implements Closeable {
                 constantQueryLength = 0;
                 isConstantQueryLength = false;
             }
-
+            if (readOriginInfoBuilderList != null) {
+                for (final Alignments.ReadOriginInfo.Builder builder : readOriginInfoBuilderList) {
+                    headerBuilder.addReadOrigin(builder);
+                }
+            }
 
             // if some entries had query length, remove the information from the header. Do not duplicate.
             headerBuilder.setQueryLengthsStoredInEntries(true);
@@ -688,4 +693,7 @@ public class AlignmentWriter implements Closeable {
     }
 
 
+    public void setReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
+        this.readOriginInfoBuilderList = readOriginInfoBuilderList;
+    }
 }

@@ -62,6 +62,9 @@ public class ExportableAlignmentEntryData {
     private QualityEncoding qualityEncoding;
 
     private Alignments.AlignmentEntry alignmentEntry;
+    private ReadOriginInfo readOriginInfo;
+    private boolean hasReadGroups;
+    private String readGroup;
 
 
     /**
@@ -72,6 +75,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Constructor
+     *
      * @param genome the genome accessor.
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
@@ -124,6 +128,7 @@ public class ExportableAlignmentEntryData {
     /**
      * For spliced alignments, it is necessary to output all of the fragments at once. This will
      * duplicate this object so it can be saved for future output.
+     *
      * @param from the ExportableAlignmentEntryData to duplicate
      * @return the duplicated object
      */
@@ -157,6 +162,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * The target index
+     *
      * @return target index
      */
     public int getTargetIndex() {
@@ -165,6 +171,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * The pair flags
+     *
      * @return the pair flags
      */
     public int getPairFlags() {
@@ -173,6 +180,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Get the read name. This is always the query index converted to a String, but SAM wants a string.
+     *
      * @return the read name.
      */
     public String getReadName() {
@@ -181,6 +189,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Get the read name. This is always the query index converted to a String, but SAM wants a string.
+     *
      * @return the read name.
      */
     public int getQueryIndex() {
@@ -190,6 +199,7 @@ public class ExportableAlignmentEntryData {
     /**
      * The 1-based start position of the alignment before any clipping (so clipping is considered part of the
      * alignment). This is the position of the first base of the actual read as aligned.
+     *
      * @return the read bases, containing "-"s for insertions.
      */
     public int getStartPosition() {
@@ -198,6 +208,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * The mapping quality of the read.
+     *
      * @return mapping quality of the read.
      */
     public int getMappingQuality() {
@@ -206,6 +217,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * If the entry has a pair.
+     *
      * @return If the entry has a pair.
      */
     public boolean hasMate() {
@@ -214,6 +226,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Assuming hasMate() is true, get the mate's reference index (target index).
+     *
      * @return If the entry has a pair.
      */
     public int getMateReferenceIndex() {
@@ -230,6 +243,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * If the conversion from AlignmentEntry was invalid.
+     *
      * @return if this object is invalid
      */
     public boolean isInvalid() {
@@ -238,6 +252,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * The message describing why this object is invalid.
+     *
      * @return message describing why this object is invalid.
      */
     public String getInvalidMessage() {
@@ -246,6 +261,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Return the read bases, which include "-"s if the alignment had deletions.
+     *
      * @return the read bases, containing "-"s for insertions.
      */
     public CharList getReadBases() {
@@ -256,6 +272,7 @@ public class ExportableAlignmentEntryData {
      * Return the ORIGINAL read bases, contains no "-" even if the alignment had deletions.
      * For clipped left or right bases, this read may contains "N"s that weren't in the original
      * read but the actual bases are unobtainable without the original reads file.
+     *
      * @return The original query bases (as close as possible)
      */
     public String getReadBasesOriginal() {
@@ -265,6 +282,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Return the reference bases, which include "-"'s if the alignment had inserts.
+     *
      * @return The reference bases
      */
     public CharList getReferenceBases() {
@@ -273,6 +291,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Value for CIGAR (such as for SAM).
+     *
      * @return the calculated cigar string.
      */
     public String getCigarString() {
@@ -281,6 +300,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Value for MD:Z for SAM.
+     *
      * @return the calculated mismatch string.
      */
     public String getMismatchString() {
@@ -291,6 +311,7 @@ public class ExportableAlignmentEntryData {
      * Return the readQualities. These will mostly be of value UNKNOWN_MAPPING_VALUE except for values that
      * come from SequenceVariations. When the read_quality_scores field has been populated, we can regenerate
      * all the read quality scores.
+     *
      * @return the read qualities.
      */
     public ByteList getReadQualities() {
@@ -299,6 +320,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Reverse complement a base. Likely only used during tests.
+     *
      * @param base the base to complement
      * @return the complemented base
      */
@@ -319,7 +341,8 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Transfer actual reads into this object. This is likely only used during tests.
-     * @param reads the reads in the order of the reads file
+     *
+     * @param reads         the reads in the order of the reads file
      * @param reverseStrand if this alignment entry is reverse strand
      */
     private void setActualReads(final CharList reads, final boolean reverseStrand) {
@@ -340,11 +363,12 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Transfer actual quals into this object. This is likely only used during tests.
-     * @param quals the quals in the order of the reads file
+     *
+     * @param quals         the quals in the order of the reads file
      * @param reverseStrand if this alignment entry is reverse strand
      */
     private void setActualQuals(final ByteList quals, final boolean reverseStrand) {
-        if (quals == null  || quals.isEmpty()) {
+        if (quals == null || quals.isEmpty()) {
             return;
         }
         final int size = quals.size();
@@ -361,6 +385,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Build an ExportableAlignmentEntryData object from an alignment entry.
+     *
      * @param alignmentEntry a Goby alignment entry
      */
     public void buildFrom(final Alignments.AlignmentEntry alignmentEntry) {
@@ -368,13 +393,14 @@ public class ExportableAlignmentEntryData {
         buildFrom(alignmentEntry, null,
 
                 // some alignments will store the quality scores for the original read:
-                alignmentEntry.hasReadQualityScores()?ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray()):null);
+                alignmentEntry.hasReadQualityScores() ? ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray()) : null);
     }
 
     /**
      * Build an ExportableAlignmentEntryData object from an alignment entry.
-     * @param alignmentEntry a Goby alignment entry
-     * @param actualReadsSrc the actual reads from the original reads file. Only provided during tests.
+     *
+     * @param alignmentEntry     a Goby alignment entry
+     * @param actualReadsSrc     the actual reads from the original reads file. Only provided during tests.
      * @param actualQualitiesSrc the actual qualities from the original reads file. Only provided during tests.
      */
     public void buildFrom(final Alignments.AlignmentEntry alignmentEntry,
@@ -394,7 +420,18 @@ public class ExportableAlignmentEntryData {
 
         this.alignmentEntry = alignmentEntry;
 
+        if (hasReadGroups) {
+            final int readOriginIndex = alignmentEntry.getReadOriginIndex();
+            final Alignments.ReadOriginInfo info = readOriginInfo.getInfo(readOriginIndex);
+            if (info == null) {
+                invalid = true;
+                invalidMessage.append(String.format("Cannot export read group index=%d. Index was not found in the goby header.",
+                        readOriginIndex));
 
+            }                           else {
+                readGroup=info.getOriginId();
+            }
+        }
         // First obtain the number of indels
         int numInserts = 0;
         int numDeletes = 0;
@@ -502,7 +539,7 @@ public class ExportableAlignmentEntryData {
             }
             if (alignmentEntry.hasReadQualityScores()) {
                 qualities.clear();
-                for (final byte value: alignmentEntry.getReadQualityScores().toByteArray()) {
+                for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
                     qualities.add(value);
                 }
             }
@@ -532,6 +569,15 @@ public class ExportableAlignmentEntryData {
         return alignmentEntry.getBamAttributesList();
     }
 
+    public void setReadGroupInfo(ReadOriginInfo readOriginInfo) {
+        this.readOriginInfo = readOriginInfo;
+        hasReadGroups = true;
+    }
+
+    public String getReadGroup() {
+        return readGroup;
+    }
+
     private enum MismatchType {
         MATCH,
         INSERTION,
@@ -545,6 +591,7 @@ public class ExportableAlignmentEntryData {
         INSERTION('I'),
         DELETION('D');
         final char code;
+
         private CigarType(final char code) {
             this.code = code;
         }
@@ -627,6 +674,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * For used during debugging, logging. Output the contents of a sequence variation.
+     *
      * @param seqvar a sequence variation
      * @return return a description of a sequence variation as a string
      */
@@ -640,6 +688,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Describe this object as a String. For use during debugging, primarily.
+     *
      * @return this object as a string
      */
     public String toString() {
@@ -669,6 +718,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Output a string of a given list of quality values.
+     *
      * @param quals the list of quality values
      * @return string of the list of quality values.
      */
@@ -691,23 +741,24 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Output the various kinds of bases for this object.
-     * @param sb the stringbuilder to output to
-     * @param prefixRefBases prefix string for reference bases
-     * @param refBases the reference bases
-     * @param prefixReadBases prefix string for read bases
-     * @param readBases the read bases
+     *
+     * @param sb                      the stringbuilder to output to
+     * @param prefixRefBases          prefix string for reference bases
+     * @param refBases                the reference bases
+     * @param prefixReadBases         prefix string for read bases
+     * @param readBases               the read bases
      * @param prefixReadBasesOriginal prefix string for readBasesOriginal
-     * @param readBasesOriginal the readBasesOriginal
-     * @param prefixActualReadBases prefix for the actualReadBases (if they exist, during testing)
-     * @param actualReadBases the actualReadBases (if they exist, during testing)
-     * @param diffPrefix the prefix for marking the differences between readBases and refBases
+     * @param readBasesOriginal       the readBasesOriginal
+     * @param prefixActualReadBases   prefix for the actualReadBases (if they exist, during testing)
+     * @param actualReadBases         the actualReadBases (if they exist, during testing)
+     * @param diffPrefix              the prefix for marking the differences between readBases and refBases
      */
     private void basesOutput(final StringBuilder sb,
-            final String prefixRefBases, final CharList refBases,
-            final String prefixReadBases, final CharList readBases,
-            final String prefixReadBasesOriginal, final MutableString readBasesOriginal,
-            final String prefixActualReadBases, final CharList actualReadBases,
-            final String diffPrefix) {
+                             final String prefixRefBases, final CharList refBases,
+                             final String prefixReadBases, final CharList readBases,
+                             final String prefixReadBasesOriginal, final MutableString readBasesOriginal,
+                             final String prefixActualReadBases, final CharList actualReadBases,
+                             final String diffPrefix) {
         final int refBasesSize = refBases.size();
         final int readBasesSize = readBases.size();
         final StringBuilder diff = new StringBuilder();
@@ -734,7 +785,7 @@ public class ExportableAlignmentEntryData {
         sb.append("] size=").append(readBases.size()).append('\n');
 
         sb.append(prefixReadBasesOriginal).append('[');
-            sb.append(readBasesOriginal);
+        sb.append(readBasesOriginal);
         sb.append("] size=").append(readBasesOriginal.length()).append('\n');
 
         if (prefixActualReadBases != null) {

@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Fabien Campagne
@@ -69,6 +71,20 @@ public class TestConcatAlignmentReader {
         assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
+    }
+
+    @Test
+    public void testLoadTwoAdjustReadOrigins() throws IOException {
+        final int[] counts;
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+        concatReader.readHeader();
+        counts = countsForReadOrigins(concatReader);
+        assertEquals(count101, counts[0]);
+        assertEquals(count102, counts[1]);
+        ReadOriginInfo roiList = concatReader.getReadOriginInfo();
+        assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
+        assertEquals("SOLID",roiList.getInfo(1).getPlatform());
     }
 
     @Test
@@ -154,14 +170,28 @@ public class TestConcatAlignmentReader {
 
     private int countAlignmentEntries(final AbstractAlignmentReader reader) {
         int count = 0;
-
+        int[] readOriginCounts = new int[2];
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
             //System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;
+            readOriginCounts[alignmentEntry.getReadOriginIndex()]++;
         }
+
         return count;
+    }
+
+    private int[] countsForReadOrigins(final AbstractAlignmentReader reader) {
+
+        int[] readOriginCounts = new int[2];
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
+
+            readOriginCounts[alignmentEntry.getReadOriginIndex()]++;
+        }
+
+        return readOriginCounts;
     }
 
     @BeforeClass
@@ -188,6 +218,7 @@ public class TestConcatAlignmentReader {
             writer.setNumAlignmentEntriesPerChunk(1000);
             writer.setAlignerName("first-aligner");
             writer.setAlignerVersion("version-first-aligner");
+            writer.setReadOriginInfo(buildReadGroup(0, "group_0_sample_1", "ILLUMINA", "concat-align-101"));
             final int numQuery = 10;
             int position = 100;
             final int score = 30;
@@ -195,8 +226,16 @@ public class TestConcatAlignmentReader {
 
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false, constantQueryLength);
-                    writer.appendEntry();
+                    Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
+                    newEntry.setQueryIndex(queryIndex);
+                    newEntry.setTargetIndex(targetIndex);
+                    newEntry.setScore((float) score);
+                    newEntry.setPosition(position++);
+                    newEntry.setMatchingReverseStrand(false);
+                    newEntry.setMultiplicity(1);
+                    newEntry.setQueryLength(constantQueryLength);
+                    newEntry.setReadOriginIndex(0);
+                    writer.appendEntry(newEntry.build());
                     numEntriesIn101++;
                     count101++;
                 }
@@ -204,7 +243,6 @@ public class TestConcatAlignmentReader {
             numQueries101 = numQuery;
 
             writer.close();
-            System.out.println("writer: header.hasQueryIndexOccurrences()="+writer.entriesHaveQueryIndexOccurrences());
             // reads in basename1 hit in 10 different places in the genome. They should be filtered when
             // removing ambiguous reads.
             AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputBasename1, 2);
@@ -219,6 +257,7 @@ public class TestConcatAlignmentReader {
             writer.setAlignerName("second-aligner");
             writer.setAlignerVersion("version-second-aligner");
             writer.setNumAlignmentEntriesPerChunk(1000);
+            writer.setReadOriginInfo(buildReadGroup(0, "group_0_sample_2", "SOLID", "concat-align-102"));
 
             final int numQuery = 13;
 
@@ -226,9 +265,17 @@ public class TestConcatAlignmentReader {
             final int score = 50;
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false, constantQueryLength);
 
-                    writer.appendEntry();
+                    Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
+                    newEntry.setQueryIndex(queryIndex);
+                    newEntry.setTargetIndex(targetIndex);
+                    newEntry.setScore((float) score);
+                    newEntry.setPosition(position++);
+                    newEntry.setMatchingReverseStrand(false);
+                    newEntry.setMultiplicity(1);
+                    newEntry.setQueryLength(constantQueryLength);
+                    newEntry.setReadOriginIndex(0);
+                    writer.appendEntry(newEntry.build());
                     numEntriesIn102++;
                     count102++;
                 }
@@ -246,6 +293,18 @@ public class TestConcatAlignmentReader {
 
 
     }
+
+    private ObjectArrayList<Alignments.ReadOriginInfo.Builder> buildReadGroup(int readOriginIndex, String id, String platform, String sample) {
+        ObjectArrayList<Alignments.ReadOriginInfo.Builder> list = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
+        Alignments.ReadOriginInfo.Builder builder = Alignments.ReadOriginInfo.newBuilder();
+        builder.setOriginIndex(readOriginIndex);
+        builder.setOriginId(id);
+        builder.setPlatform(platform);
+        builder.setSample(sample);
+        list.add(builder);
+        return list;
+    }
+
 
     @Test
     public void testLoadTwoFromFileURLs() throws IOException {

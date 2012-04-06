@@ -68,6 +68,12 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     protected int activeIndex;
     protected boolean adjustQueryIndices = true;
     private int numberOfAlignedReads;
+    /**
+     * Permutations for read origin indices. The first index is the index of the input reader.
+     * The second index is the original read origin index in the input reader. The value is the
+     * permuted read origin index for the concatenated entry.
+     */
+    private int[][] readOriginPermutations;
 
     /**
      * Construct an alignment reader over a set of alignments.
@@ -180,6 +186,8 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             numberOfQueries = 0;
             smallestQueryIndex = Integer.MAX_VALUE;
             largestQueryIndex = adjustQueryIndices ? Integer.MIN_VALUE : 0;
+            readOriginPermutations = new int[readers.length][];
+
             for (final AlignmentReader reader : readers) {
                 reader.readHeader();
                 String alignerName = reader.getAlignerName();
@@ -199,6 +207,8 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 numQueriesPerReader[readerIndex] = numQueriesForReader;
                 numberOfQueries += numQueriesForReader;
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
+                mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList());
+
                 readerIndex++;
             }
             alignerName = alignerNames.toString();
@@ -257,6 +267,25 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
 
 
         setHeaderLoaded(true);
+    }
+
+    private int nextAvailableReadOriginIndex = 0;
+
+    private void mergeReadOrigins(int readerIndex, List<Alignments.ReadOriginInfo> readOriginInfo) {
+
+        for (Alignments.ReadOriginInfo roi : readOriginInfo) {
+            final int[] permutation = new int[readOriginInfo.size()];
+            readOriginPermutations[readerIndex] = permutation;
+            for (int i = 0; i < permutation.length; i++) {
+                final int newReadOriginIndex = nextAvailableReadOriginIndex++;
+                permutation[roi.getOriginIndex()] = newReadOriginIndex;
+                Alignments.ReadOriginInfo.Builder newRoi = Alignments.ReadOriginInfo.newBuilder(roi);
+                newRoi.setOriginIndex(newReadOriginIndex);
+                mergedReadOriginInfoList.add(newRoi.build());
+            }
+
+        }
+
     }
 
 
@@ -333,7 +362,10 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             if (adjustSampleIndices) {
                 builder = builder.setSampleIndex(activeIndex);
             }
-
+            if (alignmentEntry.hasReadOriginIndex()) {
+                // remove conflicts by permuting read origin index to the concatenated read origin indices:
+                builder = builder.setReadOriginIndex(readOriginPermutations[activeIndex][alignmentEntry.getReadOriginIndex()]);
+            }
             return builder.build();
         }
     }
@@ -400,5 +432,15 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         return list;
     }
 
+    ObjectArrayList<Alignments.ReadOriginInfo> mergedReadOriginInfoList = new ObjectArrayList<Alignments.ReadOriginInfo>();
+
+    /**
+     * Return the read origin infos for the concatenated alignment.
+     *
+     * @return A list of read origin info messages, adjusted to remove conflicts.
+     */
+    ReadOriginInfo getReadOriginInfo() {
+        return new ReadOriginInfo(mergedReadOriginInfoList);
+    }
 
 }

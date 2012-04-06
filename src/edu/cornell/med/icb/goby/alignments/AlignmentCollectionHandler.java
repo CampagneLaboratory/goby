@@ -124,7 +124,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -506,14 +506,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList varQuals = new IntArrayList();
     private IntList varToQualLength = new IntArrayList();
     private IntList allReadQualityScores = new IntArrayList();
+    private IntList sampleIndices = new IntArrayList();
+    private IntList readOriginIndices = new IntArrayList();
     private IntArrayList numReadQualityScores = new IntArrayList();
 
-    IntArrayList multiplicities = new IntArrayList();
+    private IntArrayList multiplicities = new IntArrayList();
 
 
     private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
         final int streamVersion = bitInput.readDelta();
-        assert streamVersion <= VERSION : "The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
+        assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
         multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
         decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
@@ -545,6 +547,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (streamVersion >= 2) {
             decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
             decodeArithmetic("allReadQualityScores", numEntriesInChunk, bitInput, allReadQualityScores);
+        }
+        if (streamVersion >= 3) {
+            decodeArithmetic("sampleIndices", numEntriesInChunk, bitInput, sampleIndices);
+            decodeArithmetic("readOriginIndices", numEntriesInChunk, bitInput, readOriginIndices);
         }
         return streamVersion;
     }
@@ -581,6 +587,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeQueryIndices("queryIndices", queryIndices, out);
         writeArithmetic("numReadQualityScores", numReadQualityScores, out);
         writeArithmetic("allReadQualityScores", allReadQualityScores, out);
+        writeArithmetic("sampleIndices", sampleIndices, out);
+        writeArithmetic("readOriginIndices", readOriginIndices, out);
     }
 
     private void reset() {
@@ -625,6 +633,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         qualScoreIndex = 0;
         numReadQualityScores.clear();
         allReadQualityScores.clear();
+        sampleIndices.clear();
+        readOriginIndices.clear();
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -716,6 +726,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         fragmentIndices.add(source.hasFragmentIndex() ? source.getFragmentIndex() : MISSING_VALUE);
         variationCount.add(source.getSequenceVariationsCount());
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
+        sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
+        readOriginIndices.add(source.hasReadOriginIndex() ? source.getReadOriginIndex() : MISSING_VALUE);
 
         if (source.hasReadQualityScores()) {
 
@@ -741,6 +753,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         result.clearQueryPosition();
         result.clearFragmentIndex();
         result.clearReadQualityScores();
+        result.clearSampleIndex();
+        result.clearReadOriginIndex();
 
         boolean canFullyRemoveThisOne = true;
         boolean canFullyRemoveCollection = true;
@@ -927,6 +941,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         anInt = targetAlignedLengths.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setTargetAlignedLength(anInt);
+        }
+        anInt = sampleIndices.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setSampleIndex(anInt);
+        }
+        anInt = readOriginIndices.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setReadOriginIndex(anInt);
         }
         final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand() ? result.getMatchingReverseStrand() : false;
         Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getPairAlignmentLink());

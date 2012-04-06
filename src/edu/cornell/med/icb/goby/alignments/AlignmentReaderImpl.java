@@ -39,10 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -103,6 +100,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      */
     private long endOffset;
     private boolean hasQueryIndexOccurrences;
+    private List<Alignments.ReadOriginInfo> readOriginInfoList;
 
 
     /**
@@ -709,13 +707,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             gobyVersion = header.getVersion();
             allReadQualityScores = header.getAllReadQualityScores();
             hasQueryIndexOccurrences = header.getQueryIndexOccurrences();
-
-
-
-
-            System.out.println("header.hasQueryIndexOccurrences()="+header.hasQueryIndexOccurrences());
-
-        }
+            readOriginInfoList=header.getReadOriginList();
+       }
     }
 
     /**
@@ -899,6 +892,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         }
         //  System.out.println(endByteOffset);
         return endByteOffset;
+    }
+
+    @Override
+    public ReadOriginInfo getReadOriginInfo() {
+        return new ReadOriginInfo(readOriginInfoList);
     }
 
     /**
