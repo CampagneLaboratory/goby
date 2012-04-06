@@ -480,6 +480,40 @@ public class TestSamHelper {
         }
         assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
     }
+    @Test
+        public void testLowercaseMD() throws IOException {
+            final SamHelper samHelper = new SamHelper();
+            samHelper.setQualityEncoding(QualityEncoding.ILLUMINA);
+            final String sourceRead = "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+            final String sourceQual = "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+            final String expRead =    "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+            final String expRef =     "GCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
+            final String expQual =    "FGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
+            samHelper.setSource(14, sourceRead, sourceQual, "5S45M", "14a30", 6, false,50);
+            assertEquals(5, samHelper.getNumLeftClipped());
+            assertEquals(0, samHelper.getNumRightClipped());
+            assertEquals(expRead, samHelper.getQuery().toString());
+            assertEquals(expRef, samHelper.getRef().toString());
+            assertEquals(expQual, samHelper.getQual().toString());
+            assertEquals(5, samHelper.getPosition());
+            assertEquals(5, samHelper.getQueryPosition());
+            assertEquals(44, samHelper.getScore());
+            assertEquals(45, samHelper.getAlignedLength());
+            assertEquals(45, samHelper.getQueryAlignedLength());
+            assertEquals(45, samHelper.getTargetAlignedLength());
+            assertEquals(1, samHelper.getNumMisMatches());
+            assertEquals(0, samHelper.getNumInsertions());
+            assertEquals(0, samHelper.getNumDeletions());
+            assertEquals(14, samHelper.getQueryIndex());
+            assertEquals(sourceRead.length(), samHelper.getQueryLength());
+            assertFalse(samHelper.isReverseStrand());
+            List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
+            assertEquals(1, vars.size());
+            for (SamSequenceVariation var : vars) {
+                System.out.println(var.toString());
+            }
+            assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
+        }
 
     @Test
     public void testMismatchAtPosTwo() throws IOException {
@@ -622,5 +656,7 @@ public class TestSamHelper {
         assertTrue(SamSequenceVariation.contains(vars, 41 - samHelper.getPosition(), "CC", 40, "AA", new byte[]{14, 13}));
         assertTrue(SamSequenceVariation.contains(vars, 56 - samHelper.getPosition(), "---", 24, "ATC", new byte[]{24, 23, 22}));
     }
+
+
 
 }

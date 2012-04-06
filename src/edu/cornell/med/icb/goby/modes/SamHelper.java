@@ -139,6 +139,7 @@ public class SamHelper {
         this.md.setLength(0);
         if (md != null) {
             this.md.append(md);
+            this.md.toUpperCase();
         }
         this.position = position - 1;  // SAM positions are 1-based, goby are 0-based
         this.reverseStrand = reverseStrand;
@@ -447,12 +448,16 @@ public class SamHelper {
             LOG.debug(String.format(":: Applying md=%s", md));
         }
         int position = numLeftClipped;
-        Matcher matcher = MD_REGEX.matcher(md);
+        final Matcher matcher = MD_REGEX.matcher(md);
         while (matcher.find()) {
-            String mdPart = matcher.group();
+            final String mdPart = matcher.group();
             if (NUMERIC_REGEX.matcher(mdPart).matches()) {
-                int length = Integer.parseInt(mdPart);
+           try {
+                final int length = Integer.parseInt(mdPart);
                 position += length;
+           } catch (NumberFormatException e) {
+               System.out.println("STOP");
+           }
             } else if (mdPart.charAt(0) == '^') {
                 // Adjust the ref with these characters, ignoring the ^ character so start at 1
                 for (int i = 1; i < mdPart.length(); i++) {

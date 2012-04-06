@@ -329,7 +329,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             } else {
                 final String md = (String) samRecord.getAttribute("MD");
                 samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(),
-                        samRecord.getCigarString(), md,
+                        samRecord.getCigarString(), md==null?null: md.toUpperCase(),
                         samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag(),
                         samRecord.getReadLength());
             }
@@ -391,6 +391,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                                 "but was not found in the header. Ignoring this read group.%n", readGroup, samRecord.getReadName());
                     } else {
                         currentEntry.setReadOriginIndex(readOriginIndex);
+                        currentEntry.setReadOriginIndex(readOriginIndex);
+
                     }
                 }
                 builders.add(currentEntry);
@@ -515,7 +517,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    private ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
+    private final ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
 
     private void importReadGroups(SAMFileHeader samHeader, IndexedIdentifier readGroups) {
         if (samHeader.getReadGroups().size() > 0) {
@@ -528,6 +530,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
                 Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
                 roi.setOriginIndex(readGroupIndex);
+                roi.setOriginId(id);
                 if (library != null) {
                     roi.setLibrary(library);
                 }
