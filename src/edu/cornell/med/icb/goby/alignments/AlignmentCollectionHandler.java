@@ -87,7 +87,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
     private int varToQualsLength = 0;
-    private boolean useTemplateBasedCompression;
+    private boolean useTemplateBasedCompression=true;
+    private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
     public AlignmentCollectionHandler() {
         for (int length = 0; length < qualArrays.length; length++) {
@@ -271,6 +272,28 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         if (debug(1)) {
             //   out.flush();
+            final long writtenStop = out.writtenBits();
+            final long written = writtenStop - writtenStart;
+            recordStats(label, list, written);
+        }
+    }
+
+    /**
+     * Write a list with Rice/Golomb coding
+     * @param label
+     * @param list
+     * @param out
+     * @throws IOException
+     */
+    public void writeRiceCoding(String label, IntList list, OutputBitStream out) throws IOException {
+        final long writtenStart=out.writtenBits();
+        out.writeNibble(list.size());
+        for (final int value : list) {
+
+            out.writeGolomb(value,8,LOG2_8);
+        }
+        if (debug(1)) {
+            System.err.flush();
             final long writtenStop = out.writtenBits();
             final long written = writtenStop - writtenStart;
             recordStats(label, list, written);
@@ -786,7 +809,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-        //    System.out.println(alignmentEntry);
+  //    System.out.println(alignmentEntry);
         return alignmentEntry;
     }
 
@@ -1036,5 +1059,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int varQualIndex = 0;
     private int varPositionIndex = 0;
     private int varFromToIndex = 0;
+
 
 }
