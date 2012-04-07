@@ -87,7 +87,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
     private int varToQualsLength = 0;
-    private boolean useTemplateBasedCompression=true;
+    private boolean useTemplateBasedCompression = true;
     private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
     public AlignmentCollectionHandler() {
@@ -125,7 +125,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 3;
+    public static final int VERSION = 4;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -280,17 +280,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     /**
      * Write a list with Rice/Golomb coding
+     *
      * @param label
      * @param list
      * @param out
      * @throws IOException
      */
     public void writeRiceCoding(String label, IntList list, OutputBitStream out) throws IOException {
-        final long writtenStart=out.writtenBits();
+        final long writtenStart = out.writtenBits();
         out.writeNibble(list.size());
         for (final int value : list) {
 
-            out.writeGolomb(value,8,LOG2_8);
+            out.writeGolomb(value, 8, LOG2_8);
         }
         if (debug(1)) {
             System.err.flush();
@@ -397,6 +398,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     Object2IntMap<String> typeToNumEntries = new Object2IntAVLTreeMap<String>();
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
+
 
     protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
 
@@ -531,6 +533,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList allReadQualityScores = new IntArrayList();
     private IntList sampleIndices = new IntArrayList();
     private IntList readOriginIndices = new IntArrayList();
+    private IntList pairFlags = new IntArrayList();
+    private IntList scores = new IntArrayList();
     private IntArrayList numReadQualityScores = new IntArrayList();
 
     private IntArrayList multiplicities = new IntArrayList();
@@ -574,6 +578,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (streamVersion >= 3) {
             decodeArithmetic("sampleIndices", numEntriesInChunk, bitInput, sampleIndices);
             decodeArithmetic("readOriginIndices", numEntriesInChunk, bitInput, readOriginIndices);
+
+        }
+        if (streamVersion >= 4) {
+            decodeArithmetic("pairFlags", numEntriesInChunk, bitInput, pairFlags);
+            decodeArithmetic("scores", numEntriesInChunk, bitInput, scores);
         }
         return streamVersion;
     }
@@ -612,6 +621,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("allReadQualityScores", allReadQualityScores, out);
         writeArithmetic("sampleIndices", sampleIndices, out);
         writeArithmetic("readOriginIndices", readOriginIndices, out);
+        writeArithmetic("pairFlags", pairFlags, out);
+        writeArithmetic("scores", scores, out);
     }
 
     private void reset() {
@@ -658,6 +669,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         allReadQualityScores.clear();
         sampleIndices.clear();
         readOriginIndices.clear();
+        pairFlags.clear();
+        scores.clear();
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -751,6 +764,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
         sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
         readOriginIndices.add(source.hasReadOriginIndex() ? source.getReadOriginIndex() : MISSING_VALUE);
+        pairFlags.add(source.hasPairFlags() ? source.getPairFlags() : MISSING_VALUE);
+        scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
         if (source.hasReadQualityScores()) {
 
@@ -778,7 +793,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         result.clearReadQualityScores();
         result.clearSampleIndex();
         result.clearReadOriginIndex();
-
+        result.clearPairFlags();
+        result.clearScore();
         boolean canFullyRemoveThisOne = true;
         boolean canFullyRemoveCollection = true;
         int seqVarIndex = 0;
@@ -805,11 +821,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (canFullyRemoveCollection) {
             result.clearSequenceVariations();
         }
-        //     print(result);
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-  //    System.out.println(alignmentEntry);
+        //   System.out.println(alignmentEntry);
         return alignmentEntry;
     }
 
@@ -972,6 +987,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         anInt = readOriginIndices.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setReadOriginIndex(anInt);
+        }
+        anInt = pairFlags.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setPairFlags(anInt);
+        }
+        anInt = scores.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setScore(Float.intBitsToFloat(anInt));
         }
         final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand() ? result.getMatchingReverseStrand() : false;
         Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getPairAlignmentLink());
