@@ -162,6 +162,17 @@ public class EntryFlagHelper {
     }
 
     /**
+     * Returns whether the pair mate was matching the reverse strand. Equivalent to looking
+     * at matchingReverseStrand if we are processing entry for the mate.
+     *
+     * @param pairFlags The entry pairFlags.
+     * @return True or False.
+     */
+    public static boolean isMateReverseStrand(final int pairFlags) {
+        return (pairFlags & (0x1L << 5)) != 0;
+    }
+
+    /**
      * Returns true if the entry corresponds to the first/primary read in a pair.
      *
      * @param entry The entry.

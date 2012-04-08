@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.io.InputBitStream;
@@ -162,9 +161,10 @@ class LinkInfo {
 
     public void write(final OutputBitStream out) throws IOException {
 
-        handler.writeArithmetic(whenDebug(HAS_LINK_LABEL), hasLinks, out);
+       handler.writeArithmetic(whenDebug(HAS_LINK_LABEL), hasLinks, out);
         //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
         handler.writeArithmetic(whenDebug(POS_LABEL), deltaPositions, out);
+   //    handler.writeRiceCoding(whenDebug(POS_LABEL), deltaPositions, out);
         handler.writeArithmetic(whenDebug(TARGETS_LABEL), deltaTargetIndices, out);
         handler.writeArithmetic(whenDebug(FRAGMENTS_LABEL), fragmentIndices, out);
     }

@@ -289,7 +289,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // Single reads typically have the field X0 set to the number of times the read appears in the
             // genome, there is no problem there, so we use X0 to initialize TMH.
             final int numTotalHits = xoString == null ? 1 : hasPaired ? 1 : (Integer) xoString;
-            final boolean readIsSpliced = samHelper.getNumEntries() > 1;
+            final int numEntries = samHelper.getNumEntries();
+            final boolean readIsSpliced = numEntries > 1;
             if (hasPaired) {
                 // file has paired end reads, check if this read is paired to use 1 occurrence:
 
@@ -348,7 +349,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
 
-            for (int i = 0; i < samHelper.getNumEntries(); i++) {
+            for (int i = 0; i < numEntries; i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
@@ -374,7 +375,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
-                    currentEntry.setInsertSize(samRecord.getInferredInsertSize());
+                    final int inferredInsertSize = samRecord.getInferredInsertSize();
+                    if (inferredInsertSize!=0) {
+                    currentEntry.setInsertSize(inferredInsertSize);
+                    }
                 }
 
                 for (final SamSequenceVariation variation : samHelper.getSequenceVariations()) {
@@ -391,8 +395,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                                 "but was not found in the header. Ignoring this read group.%n", readGroup, samRecord.getReadName());
                     } else {
                         currentEntry.setReadOriginIndex(readOriginIndex);
-                        currentEntry.setReadOriginIndex(readOriginIndex);
-
                     }
                 }
                 builders.add(currentEntry);
@@ -424,7 +426,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 } else {
                     fragmentIndex = firstFragmentIndex;
-
                     mateFragmentIndex = pairBefore(samRecord) ? firstFragmentIndex - 1 : firstFragmentIndex + 1;
                 }
             } else {

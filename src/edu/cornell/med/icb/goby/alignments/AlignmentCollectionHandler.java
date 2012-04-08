@@ -55,7 +55,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      */
     private static final Log LOG = LogFactory.getLog(AlignmentCollectionHandler.class);
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
-            "stats-filename:string, the file where to append statistics to:",
+            "stats-filename:string, the file where to append statistics to:compress-stats.tsv",
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:"
     );
@@ -208,6 +208,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                         (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
                                 written, average));
                 statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n)));
+                System.out.printf("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n));
                 statsWriter.flush();
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
@@ -756,7 +757,33 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         matchingReverseStrand.add(source.hasMatchingReverseStrand() ? source.getMatchingReverseStrand() ? 1 : 0 : MISSING_VALUE);
         numberOfIndels.add(source.hasNumberOfIndels() ? source.getNumberOfIndels() : MISSING_VALUE);
         numberOfMismatches.add(source.hasNumberOfMismatches() ? source.getNumberOfMismatches() : MISSING_VALUE);
-        insertSizes.add(source.hasInsertSize() ? source.getInsertSize() : MISSING_VALUE);
+        if (source.hasInsertSize()) {
+            final int readPos = source.getPosition();
+            final int matePos = source.getPairAlignmentLink().getPosition();
+            final int length = source.getTargetAlignedLength();
+            final int pos1 = source.getMatchingReverseStrand() ? length + readPos : readPos + 1;
+            final int pos2 = EntryFlagHelper.isMateReverseStrand(source) ? length + matePos : matePos + 1;
+            final int insertSize = source.getInsertSize();
+            int insertSizeDiff = pos2 - pos1 - insertSize;
+            // reverse:  insertSize= (pos2-pos1) - isd
+            if (insertSize != 0) {
+                /* System.out.printf("insertSize %d length= %d %c %c readPos %d matePos %d  pos1 %d pos2 %d  pos2-pos1 %d matePos-readPos  %d  insertSizeDiff %d %n",
+                       source.getInsertSize(), length,
+                       source.getMatchingReverseStrand() ? '+' : '-',
+                       EntryFlagHelper.isMateReverseStrand(source) ? '+' : '-',
+                       readPos, matePos, pos1, pos2, pos2 - pos1, matePos - readPos, insertSizeDiff);
+                */
+            }
+
+            if (insertSize == 0) {
+                insertSizeDiff = MISSING_VALUE;
+
+            }
+            insertSizes.add(source.hasInsertSize() ? insertSizeDiff : MISSING_VALUE);
+        } else {
+            insertSizes.add(MISSING_VALUE);
+        }
+
         queryAlignedLengths.add(source.hasQueryAlignedLength() ? source.getQueryAlignedLength() : MISSING_VALUE);
         targetAlignedLengths.add(source.hasTargetAlignedLength() ? source.getTargetAlignedLength() : MISSING_VALUE);
         fragmentIndices.add(source.hasFragmentIndex() ? source.getFragmentIndex() : MISSING_VALUE);
@@ -955,10 +982,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (anInt != MISSING_VALUE) {
             result.setNumberOfMismatches(anInt);
         }
-        anInt = insertSizes.getInt(index);
-        if (anInt != MISSING_VALUE) {
-            result.setInsertSize(anInt);
-        }
+
         anInt = numberOfIndels.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setNumberOfIndels(anInt);
@@ -1009,6 +1033,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (link != null) {
             result.setSplicedBackwardAlignmentLink(link);
         }
+
+        decodeInsertSize(result, index);
+
         final boolean templateHasSequenceVariations = reduced.getSequenceVariationsCount() > 0;
         final int numVariations = variationCount.getInt(index);
 
@@ -1070,6 +1097,30 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         }
         return result.build();
+    }
+
+    /**
+     * Decode the insert size given the already stored positions, an arithmetic expression linking position and insert size,
+     * and any observed difference.
+     *
+     * @param result
+     * @param index
+     */
+    private void decodeInsertSize(final Alignments.AlignmentEntry.Builder result, final int index) {
+        final int anInt = insertSizes.getInt(index);
+        if (anInt != MISSING_VALUE) {
+
+            final int readPos = result.getPosition();
+            final int matePos = result.getPairAlignmentLink().getPosition();
+            final int length = result.getTargetAlignedLength();
+            final int pos1 = result.getMatchingReverseStrand() ? length + readPos : readPos + 1;
+            final int pos2 = EntryFlagHelper.isMateReverseStrand(result.getPairFlags()) ? length + matePos : matePos + 1;
+
+            final int insertSize = pos2 - pos1 - anInt;
+            // reverse:  insertSize= (pos2-pos1) - isd
+            result.setInsertSize(insertSize);
+
+        }
     }
 
     // pre-allocated arrays, size 1 to 100.

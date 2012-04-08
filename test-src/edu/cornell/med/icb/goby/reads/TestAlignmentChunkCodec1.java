@@ -89,14 +89,14 @@ public class TestAlignmentChunkCodec1 {
     }
 
     AlignmentExample[] examplesWithDuplicates = {
-            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
-            new AlignmentExample(0, 2, 33, 2, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
-            new AlignmentExample(0, 3, 33, 3, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
-            new AlignmentExample(0, 15, 33, 4, "TA", "GG", 27, 31, "--", "TA", 3, 1000),   // R1
-            new AlignmentExample(0, 101, 9, 5, "..", "AA", 42, 24, "T-", "G.", 5, 1001),     // R2
-            new AlignmentExample(0, 112, 9, 6, "..", "AA", 42, 24, "T-", "G.", 5, 1001),    // R2
-            new AlignmentExample(0, 112, 9, 7, "..", "AA", 42, 24, "T-", "G.", 5, 1001),    // R2
-            new AlignmentExample(1, 1111, 9, 8, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3)   //R3
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
+            new AlignmentExample(0, 2, 33, 2, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
+            new AlignmentExample(0, 3, 33, 3, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
+            new AlignmentExample(0, 15, 33, 4, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),   // R1
+            new AlignmentExample(0, 101, 9, 5, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),     // R2
+            new AlignmentExample(0, 112, 9, 6, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),    // R2
+            new AlignmentExample(0, 112, 9, 7, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),    // R2
+            new AlignmentExample(1, 1111, 9, 8, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3,0)   //R3
     };
 
     @Test
@@ -286,10 +286,11 @@ public class TestAlignmentChunkCodec1 {
         String var2_from;
         int var2_position;
         int var2_readIndex;
+        private int insertSize;
 
 
         AlignmentExample(int targetIndex, int position, int mappingQuality, int query_index, String var1_to, String var1_from, int var1_position, int var1_readIndex,
-                         String var2_to, String var2_from, int var2_position, int var2_readIndex) {
+                         String var2_to, String var2_from, int var2_position, int var2_readIndex, int insertSize) {
 
             this.targetIndex = targetIndex;
             this.position = position;
@@ -307,13 +308,14 @@ public class TestAlignmentChunkCodec1 {
 
             //required fields that are uncompressed:
             this.query_index = query_index;
+            this.insertSize=insertSize;
         }
     }
 
     AlignmentExample[] examples = new AlignmentExample[]{
-            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000),
-            new AlignmentExample(0, 1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 1001),
-            new AlignmentExample(1, 1, 9, 1, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3)
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),
+            new AlignmentExample(0, 1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 1001,2),
+            new AlignmentExample(1, 1, 9, 1, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3,34)
     };
     ObjectArrayList<Alignments.AlignmentEntry.Builder> builtEntries;
 
@@ -347,7 +349,9 @@ public class TestAlignmentChunkCodec1 {
             sequenceVariation2.setPosition(entry.var2_position);
             sequenceVariation2.setReadIndex(entry.var2_readIndex);
             alignmentBuilder.addSequenceVariations(sequenceVariation2.build());
-
+           if (entry.insertSize!=0) {
+               alignmentBuilder.setInsertSize(entry.insertSize);
+           }
             list.add(alignmentBuilder);
         }
         return list;
