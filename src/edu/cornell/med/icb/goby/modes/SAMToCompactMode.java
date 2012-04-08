@@ -27,7 +27,11 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
-import edu.cornell.med.icb.goby.reads.*;
+import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
@@ -85,7 +89,16 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private RandomAccessSequenceInterface genome;
     private boolean preserveAllTags;
     private boolean preserveAllMappedQuals;
+    private boolean ignoreReadOrigin;
 
+
+    private static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
+            "ignore-read-origin:boolean, When this flag is true do not import read groups.:false"
+    );
+
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -143,6 +156,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         bsmap = jsapResult.getBoolean("bsmap");
+        ignoreReadOrigin = doc().getBoolean("ignore-read-origin");
         String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
@@ -188,6 +202,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // transfer read groups to Goby header:
         final SAMFileHeader samHeader = parser.getFileHeader();
         IndexedIdentifier readGroups = new IndexedIdentifier();
+
         importReadGroups(samHeader, readGroups);
 
         boolean hasPaired = false;
@@ -303,7 +318,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final String readName = samRecord.getReadName();
 
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
-            assert queryIndex>=0 :" Query index must never be negative.";
+            assert queryIndex >= 0 : " Query index must never be negative.";
 
             if (bsmap || genome != null) {
                 referenceString.setLength(0);
@@ -329,7 +344,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             } else {
                 final String md = (String) samRecord.getAttribute("MD");
                 samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(),
-                        samRecord.getCigarString(), md==null?null: md.toUpperCase(),
+                        samRecord.getCigarString(), md == null ? null : md.toUpperCase(),
                         samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag(),
                         samRecord.getReadLength());
             }
@@ -353,7 +368,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
-                if (multiplicity>1) {
+                if (multiplicity > 1) {
                     currentEntry.setMultiplicity(multiplicity);
                 }
                 currentEntry.setQueryIndex(samHelper.getQueryIndex());
@@ -375,8 +390,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
-                    if (inferredInsertSize!=0) {
-                    currentEntry.setInsertSize(inferredInsertSize);
+                    if (inferredInsertSize != 0) {
+                        currentEntry.setInsertSize(inferredInsertSize);
                     }
                 }
 
@@ -387,7 +402,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     }
                 }
                 final String readGroup = samRecord.getStringAttribute("RG");
-                if (readGroup != null) {
+                if (readGroup != null && !ignoreReadOrigin) {
                     final int readOriginIndex = readGroups.getInt(new MutableString(readGroup).compact());
                     if (readOriginIndex == -1) {
                         System.err.printf("Read group identifier %s is used in alignment record (read-name=%s), " +
@@ -519,8 +534,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private final ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
 
-    private void importReadGroups(SAMFileHeader samHeader, IndexedIdentifier readGroups) {
-        if (samHeader.getReadGroups().size() > 0) {
+    private void importReadGroups(final SAMFileHeader samHeader, final IndexedIdentifier readGroups) {
+        if (!samHeader.getReadGroups().isEmpty() && !ignoreReadOrigin) {
             for (SAMReadGroupRecord rg : samHeader.getReadGroups()) {
                 String sample = rg.getSample();
                 String library = rg.getLibrary();
@@ -555,8 +570,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             for (int i = 12; i < size; i++) {
                 final String token = tokens[i];
                 if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
-                 // ignore MD and RG since we store them natively..
-                  //    System.out.printf("Preserving token=%s%n", token);
+                    // ignore MD and RG since we store them natively..
+                    //    System.out.printf("Preserving token=%s%n", token);
                     currentEntry.addBamAttributes(token);
                 }
             }
