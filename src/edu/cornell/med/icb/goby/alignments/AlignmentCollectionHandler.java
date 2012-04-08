@@ -57,12 +57,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
             "stats-filename:string, the file where to append statistics to:compress-stats.tsv",
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
-            "basename:string, a basename for the file being converted.:"
+            "basename:string, a basename for the file being converted.:",
+            "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false"
     );
     private String statsFilename;
     private String basename;
     private PrintWriter statsWriter;
     private static final IntArrayList EMPTY_LIST = new IntArrayList();
+    private boolean storeReadOrigins=true;
 
 
     public static DynamicOptionClient doc() {
@@ -95,6 +97,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             qualArrays[length] = new byte[length];
         }
         debug = doc().getInteger("debug-level");
+        storeReadOrigins=!doc().getBoolean("ignore-read-origin");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
         if (debug(1)) {
@@ -793,7 +796,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         variationCount.add(source.getSequenceVariationsCount());
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
         sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
-        readOriginIndices.add(source.hasReadOriginIndex() ? source.getReadOriginIndex() : MISSING_VALUE);
+        readOriginIndices.add(source.hasReadOriginIndex() && storeReadOrigins ? source.getReadOriginIndex() : MISSING_VALUE);
         pairFlags.add(source.hasPairFlags() ? source.getPairFlags() : MISSING_VALUE);
         scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
