@@ -208,7 +208,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                         (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
                                 written, average));
                 statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n)));
-                System.out.printf("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n));
                 statsWriter.flush();
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
