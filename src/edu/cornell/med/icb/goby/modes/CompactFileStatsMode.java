@@ -181,10 +181,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             pairedSamples = new ArrayList<Boolean>(inputFiles.size());
             FileExtensionHelper.CompactFileType fileType;
             if (type == null) {
-                for (final File file : inputFiles) {
+                for ( File file : inputFiles) {
                     fileType = FileExtensionHelper.determineCompactFileType(file);
                     switch (fileType) {
                         case alignment:
+
                             describeCompactAlignment(file);
                             numberOfFilesProcessed++;
                             break;
@@ -233,6 +234,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
 
     private void describeCompactAlignment(final File file) throws IOException {
+
         final String basename = AlignmentReaderImpl.getBasename(file.toString());
         stream.printf("Compact Alignment basename = %s%n", basename);
 
@@ -363,8 +365,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Avg score alignment = %f%n", avgScore);
         stream.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
-        // size, the number of bytes in the file.
-        final long size = file.length();
+        // size, the number of bytes in the entries file.
+        final long size = new File(basename+".entries").length();
         stream.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
 
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
