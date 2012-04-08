@@ -308,7 +308,8 @@ public class AlignmentWriter implements Closeable {
             firstPositionInChunk = builtEntry.getPosition();
             firstEntryInChunk = false;
         }
-        final long currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        final long currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder,
+                builtEntry.hasMultiplicity()?builtEntry.getMultiplicity():1);
         // LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
         //        entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
         if (sortedState && entriesChunkWriter.getAppendedInChunk() == 0) {
