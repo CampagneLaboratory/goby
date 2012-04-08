@@ -321,7 +321,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
                     final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart() + 1;
 
-
                     genome.getRange(referenceIndex, zeroBasedStart,
                             length, referenceString);
                     samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
@@ -354,7 +353,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
-                currentEntry.setMultiplicity(multiplicity);
+                if (multiplicity>1) {
+                    currentEntry.setMultiplicity(multiplicity);
+                }
                 currentEntry.setQueryIndex(samHelper.getQueryIndex());
                 currentEntry.setTargetIndex(targetIndex);
                 currentEntry.setPosition(samHelper.getPosition());     // samhelper returns zero-based positions compatible with Goby.
@@ -362,8 +363,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 currentEntry.setQueryLength(samHelper.getQueryLength());
                 currentEntry.setScore(samHelper.getScore());
-                currentEntry.setNumberOfIndels(samHelper.getNumDeletions() + samHelper.getNumInsertions());
-                currentEntry.setNumberOfMismatches(samHelper.getNumMisMatches());
                 currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
