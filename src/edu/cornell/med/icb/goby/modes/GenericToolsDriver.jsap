@@ -33,6 +33,12 @@
             <help>Displays usage help information.</help>
         </switch>
         <switch>
+            <id>help-dynamic</id>
+            <shortFlag>H</shortFlag>
+            <longFlag>x-help</longFlag>
+            <help>Displays help for dynamic options.</help>
+        </switch>
+        <switch>
             <id>htmlhelp</id>
             <longFlag>htmlhelp</longFlag>
             <help>Displays mode usage information in html table format.</help>

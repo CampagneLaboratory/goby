@@ -66,4 +66,22 @@ public class DynamicOptionRegistry {
             }
         }
     }
+
+    public static void printHelp() {
+        System.out.println("The following dynamic options have been defined:");
+        for (final DynamicOptionClient doc : registeredDOClients) {
+            String[] keys = doc.getKeys();
+            String[] helpMessages = doc.getHelpMessages();
+            String[] defaultValues = doc.getDefaultValues();
+            int i = 0;
+            System.out.println("-x "+doc.getClassname()+":");
+            for (String key : keys) {
+
+                System.out.printf("  - %s: %s default: %s%n",  key, helpMessages[i], defaultValues[i]);
+                i++;
+            }
+
+
+        }
+    }
 }

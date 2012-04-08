@@ -21,13 +21,13 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.*;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import org.apache.commons.lang.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 /**
  * Base abstract class for Goby modes.
@@ -380,7 +380,11 @@ public abstract class AbstractCommandLineMode {
             if (jsap.getByID("help") != null && jsapResult.getBoolean("help")) {
                 printUsage(jsap);
                 System.exit(1);
-            } else if (jsap.getByID("htmlhelp") != null && jsapResult.getBoolean("htmlhelp")) {
+            } if (jsap.getByID("help-dynamic") != null && jsapResult.getBoolean("help-dynamic")) {
+                printDynamicHelpOptions(jsap);
+                System.exit(1);
+            }
+            else if (jsap.getByID("htmlhelp") != null && jsapResult.getBoolean("htmlhelp")) {
                 printUsageAsHtmlTable(jsap);
                 System.exit(2);
             } else if (jsap.getByID("wikihelp") != null && jsapResult.getBoolean("wikihelp")) {
@@ -389,6 +393,10 @@ public abstract class AbstractCommandLineMode {
             }
         }
         return jsapResult;
+    }
+
+    protected void printDynamicHelpOptions(JSAP jsap) {
+        DynamicOptionRegistry.printHelp();
     }
 
     /**

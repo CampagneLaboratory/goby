@@ -214,4 +214,19 @@ public class DynamicOptionClient implements Comparable {
         DynamicOptionClient otherClient=(DynamicOptionClient)o;
         return enclosingClass.getCanonicalName().compareTo(((DynamicOptionClient) o).enclosingClass.getCanonicalName());
     }
+
+    public String[] getHelpMessages() {
+        return helpMessages;
+    }
+
+    public String[] getKeys() {
+        return supportedKeys;
+    }
+    public String[] getDefaultValues() {
+        return defaultValues;
+    }
+
+    public String getClassname() {
+        return enclosingClass.getSimpleName();
+    }
 }
