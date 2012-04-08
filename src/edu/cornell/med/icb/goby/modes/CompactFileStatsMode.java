@@ -293,15 +293,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             }
         }
 
-       stream.println();
+        stream.println();
 
         if (reader.getReadOriginInfo().size() > 0) {
-            stream.print("---- Read Origin Info ------");
+            stream.println("---- Read Origin Info ------");
             for (Alignments.ReadOriginInfo info : reader.getReadOriginInfo().getPbList()) {
                 stream.print(info.toString());
             }
         } else {
-            stream.print("Alignment has no Read Origin Info/Read Groups");
+            stream.println("Alignment has no Read Origin Info/Read Groups");
         }
 
         // the query indices that aligned. Includes those
@@ -324,7 +324,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
-            numLogicalAlignmentEntries += entry.hasMultiplicity()? entry.getMultiplicity():1;
+            numLogicalAlignmentEntries += Math.max(entry.getMultiplicity(), 1);
             total += entry.getQueryAlignedLength();
             avgScore += entry.getScore();
             maxQueryIndex = Math.max(maxQueryIndex, entry.getQueryIndex());
