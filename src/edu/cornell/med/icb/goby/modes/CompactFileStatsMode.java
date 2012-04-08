@@ -324,7 +324,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
-            numLogicalAlignmentEntries += entry.getMultiplicity();
+            numLogicalAlignmentEntries += entry.hasMultiplicity()? entry.getMultiplicity():1;
             total += entry.getQueryAlignedLength();
             avgScore += entry.getScore();
             maxQueryIndex = Math.max(maxQueryIndex, entry.getQueryIndex());

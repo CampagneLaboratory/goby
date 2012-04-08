@@ -235,6 +235,8 @@ public class SamHelper {
     }
 
     public byte[] getSourceQualAsBytes() {
+
+        // TODO should return only the part of the quality scores for the range represented by this helper.
         final int length = sourceQual.length();
         final byte[] result = new byte[length];
         for (int i = 0; i < length; i++) {

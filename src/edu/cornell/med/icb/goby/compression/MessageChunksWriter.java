@@ -124,7 +124,7 @@ public class MessageChunksWriter {
      */
     public long writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
                               final int multiplicity) throws IOException {
-        totalEntriesWritten += multiplicity;
+        totalEntriesWritten += Math.max(1,multiplicity);
         if (++numAppended >= numEntriesPerChunk) {
             flush(collectionBuilder);
         }

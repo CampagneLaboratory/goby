@@ -680,7 +680,8 @@ public final class Alignments {
     boolean hasReadOriginIndex();
     int getReadOriginIndex();
   }
-  public static final class AlignmentEntry extends
+  public static final class
+          AlignmentEntry extends
       com.google.protobuf.GeneratedMessage
       implements AlignmentEntryOrBuilder {
     // Use AlignmentEntry.newBuilder() to construct.
