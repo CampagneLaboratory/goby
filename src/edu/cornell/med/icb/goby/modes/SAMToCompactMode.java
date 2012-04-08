@@ -303,7 +303,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final String readName = samRecord.getReadName();
 
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
-
+            assert queryIndex>=0 :" Query index must never be negative.";
 
             if (bsmap || genome != null) {
                 referenceString.setLength(0);
