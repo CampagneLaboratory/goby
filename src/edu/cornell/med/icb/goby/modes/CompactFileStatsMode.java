@@ -299,8 +299,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         if (reader.getReadOriginInfo().size() > 0) {
             stream.println("---- Read Origin Info ------");
-            for (Alignments.ReadOriginInfo info : reader.getReadOriginInfo().getPbList()) {
-                stream.print(info.toString());
+            for (final Alignments.ReadOriginInfo info : reader.getReadOriginInfo().getPbList()) {
+                stream.println(info.toString());
             }
         } else {
             stream.println("Alignment has no Read Origin Info/Read Groups");
