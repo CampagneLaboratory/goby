@@ -99,9 +99,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         basename = doc().getString("basename");
         if (debug(1)) {
             try {
-                final FileWriter fileWriter = new File(statsFilename).exists() ? new FileWriter(statsFilename) : new FileWriter(statsFilename, true);
+                final boolean appending = new File(statsFilename).exists();
+                final FileWriter fileWriter = appending ? new FileWriter(statsFilename, true) : new FileWriter(statsFilename);
                 statsWriter = new PrintWriter(fileWriter);
-                statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\n");
+                if (!appending) {
+                    statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\n");
+                }
 
             } catch (FileNotFoundException e) {
                 LOG.error("Cannot open stats file", e);
