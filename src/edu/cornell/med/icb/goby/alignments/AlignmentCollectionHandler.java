@@ -271,12 +271,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         final long writtenStart = out.writtenBits();
         final int b = max - min + 1;
-        final int log2b = Fast.mostSignificantBit(b);
+        final int log2b = Math.max(1,Fast.mostSignificantBit(b));
         for (final int value : list) {
 
             out.writeMinimalBinary(value - min, b, log2b);
             // out.writeLongMinimalBinary(value-min, max-min+1);
         }
+    //    out.flush();
         if (debug(1)) {
             //   out.flush();
             final long writtenStop = out.writtenBits();
@@ -367,9 +368,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void readAsDeltas(String label, int numEntriesInChunk, InputBitStream bitInput, IntList list) throws IOException {
         IntArrayList deltas = new IntArrayList();
         int previous = bitInput.readNibble();
-        list.add(previous);
         decodeArithmetic(label, numEntriesInChunk - 1, bitInput, deltas);
-
+        list.add(previous);
         for (int delta : deltas) {
             final int newValue = Fast.nat2int(delta) + previous;
             list.add(newValue);
@@ -385,12 +385,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         final int min = bitInput.readNibble();
         final int max = bitInput.readNibble();
-
+        final int b = max - min + 1;
+        final int log2b = Math.max(1,Fast.mostSignificantBit(b));
         for (int i = 0; i < size; i++) {
-            final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1);
+            final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1, log2b);
             list.add(reducedReadIndex + min);
         }
-
+      //  bitInput.flush();
     }
 
     private void writeNibble(String label, IntList list, OutputBitStream out) throws IOException {
@@ -414,9 +415,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             System.err.println("\nreading " + label + " with available=" + bitInput.available());
             System.err.flush();
         }
-        if (numEntriesInChunk == 0) {
-            return;
-        }
+       // if (numEntriesInChunk == 0) {
+       //     return;
+      //  }
         // TODO see if we can avoid reading the number of elements in some cases.
         final int size = bitInput.readNibble();
         if (size == 0) {
@@ -578,6 +579,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         backwardSpliceLinks.read(numEntriesInChunk, bitInput);
 
         decodeQueryIndices("queryIndices", numEntriesInChunk, bitInput, queryIndices);
+
         if (streamVersion >= 2) {
             decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
             decodeArithmetic("allReadQualityScores", numEntriesInChunk, bitInput, allReadQualityScores);
@@ -623,6 +625,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         pairLinks.write(out);
         forwardSpliceLinks.write(out);
         backwardSpliceLinks.write(out);
+
         writeQueryIndices("queryIndices", queryIndices, out);
         writeArithmetic("numReadQualityScores", numReadQualityScores, out);
         writeArithmetic("allReadQualityScores", allReadQualityScores, out);
