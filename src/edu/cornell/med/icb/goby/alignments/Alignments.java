@@ -7215,6 +7215,10 @@ public final class Alignments {
     // optional string platform_unit = 12;
     boolean hasPlatformUnit();
     String getPlatformUnit();
+    
+    // optional string run_date = 6;
+    boolean hasRunDate();
+    String getRunDate();
   }
   public static final class ReadOriginInfo extends
       com.google.protobuf.GeneratedMessage
@@ -7415,6 +7419,38 @@ public final class Alignments {
       }
     }
     
+    // optional string run_date = 6;
+    public static final int RUN_DATE_FIELD_NUMBER = 6;
+    private java.lang.Object runDate_;
+    public boolean hasRunDate() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    public String getRunDate() {
+      java.lang.Object ref = runDate_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          runDate_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getRunDateBytes() {
+      java.lang.Object ref = runDate_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        runDate_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       originIndex_ = 0;
       originId_ = "";
@@ -7422,6 +7458,7 @@ public final class Alignments {
       platform_ = "";
       library_ = "";
       platformUnit_ = "";
+      runDate_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7455,6 +7492,9 @@ public final class Alignments {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeBytes(5, getPlatformBytes());
       }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBytes(6, getRunDateBytes());
+      }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBytes(8, getLibraryBytes());
       }
@@ -7485,6 +7525,10 @@ public final class Alignments {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(5, getPlatformBytes());
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(6, getRunDateBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
@@ -7630,6 +7674,8 @@ public final class Alignments {
         bitField0_ = (bitField0_ & ~0x00000010);
         platformUnit_ = "";
         bitField0_ = (bitField0_ & ~0x00000020);
+        runDate_ = "";
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       
@@ -7692,6 +7738,10 @@ public final class Alignments {
           to_bitField0_ |= 0x00000020;
         }
         result.platformUnit_ = platformUnit_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.runDate_ = runDate_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7725,6 +7775,9 @@ public final class Alignments {
         }
         if (other.hasPlatformUnit()) {
           setPlatformUnit(other.getPlatformUnit());
+        }
+        if (other.hasRunDate()) {
+          setRunDate(other.getRunDate());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7783,6 +7836,11 @@ public final class Alignments {
             case 42: {
               bitField0_ |= 0x00000008;
               platform_ = input.readBytes();
+              break;
+            }
+            case 50: {
+              bitField0_ |= 0x00000040;
+              runDate_ = input.readBytes();
               break;
             }
             case 66: {
@@ -7999,6 +8057,42 @@ public final class Alignments {
       void setPlatformUnit(com.google.protobuf.ByteString value) {
         bitField0_ |= 0x00000020;
         platformUnit_ = value;
+        onChanged();
+      }
+      
+      // optional string run_date = 6;
+      private java.lang.Object runDate_ = "";
+      public boolean hasRunDate() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      public String getRunDate() {
+        java.lang.Object ref = runDate_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          runDate_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setRunDate(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000040;
+        runDate_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearRunDate() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        runDate_ = getDefaultInstance().getRunDate();
+        onChanged();
+        return this;
+      }
+      void setRunDate(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000040;
+        runDate_ = value;
         onChanged();
       }
       
@@ -9855,19 +9949,19 @@ public final class Alignments {
       "\n\013read_origin\030\033 \003(\0132\024.goby.ReadOriginInf" +
       "o\";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\013" +
       "2\024.goby.IdentifierInfo\"-\n\016IdentifierInfo" +
-      "\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\203\001\n\016ReadOr" +
+      "\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOr" +
       "iginInfo\022\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin" +
       "_id\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 ",
       "\001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\rplatform_unit\030\014 " +
-      "\001(\t\"X\n\024AlignmentTooManyHits\022\031\n\021aligner_t" +
-      "hreshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.Ambi" +
-      "guousLocation\"b\n\021AmbiguousLocation\022\023\n\013qu" +
-      "ery_index\030\001 \002(\r\022\037\n\027at_least_number_of_hi" +
-      "ts\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016Ali" +
-      "gnmentIndex\022#\n\027target_position_offsets\030\001" +
-      " \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolut" +
-      "e_positions\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med" +
-      ".icb.goby.alignmentsH\001"
+      "\001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n\024AlignmentTooMan" +
+      "yHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004hits" +
+      "\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambig" +
+      "uousLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_" +
+      "least_number_of_hits\030\002 \002(\r\022\027\n\017length_of_" +
+      "match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027target_" +
+      "position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 " +
+      "\003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B\002\020\001B" +
+      "\'\n#edu.cornell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9935,7 +10029,7 @@ public final class Alignments {
           internal_static_goby_ReadOriginInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_ReadOriginInfo_descriptor,
-              new java.lang.String[] { "OriginIndex", "OriginId", "Sample", "Platform", "Library", "PlatformUnit", },
+              new java.lang.String[] { "OriginIndex", "OriginId", "Sample", "Platform", "Library", "PlatformUnit", "RunDate", },
               edu.cornell.med.icb.goby.alignments.Alignments.ReadOriginInfo.class,
               edu.cornell.med.icb.goby.alignments.Alignments.ReadOriginInfo.Builder.class);
           internal_static_goby_AlignmentTooManyHits_descriptor =

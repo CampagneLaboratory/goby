@@ -36,6 +36,10 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -264,6 +268,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         private long numWritten;
         private ReadOriginInfo readOriginInfo;
         private boolean hasReadGroups;
+        private final DateFormat GOBY_DATE_FORMAT = new SimpleDateFormat("dd:MMM:yyyy");
 
         private void initializeSam(final AlignmentReader alignmentReader) {
             // First entry to output.
@@ -310,6 +315,15 @@ public class CompactToSAMMode extends AbstractGobyMode {
                     }
                     if (roi.hasLibrary()) {
                         readGroup.setSample(roi.getLibrary());
+                    }
+                    if (roi.hasRunDate()) {
+                        final String runDate = roi.getRunDate();
+                        try {
+
+                            readGroup.setRunDate(GOBY_DATE_FORMAT.parse(runDate));
+                        } catch (ParseException e) {
+                            LOG.error("Unable to parse Goby date: "+runDate+" ignoring runDate read origin.");
+                        }
                     }
                     samHeader.addReadGroup(readGroup);
                 }

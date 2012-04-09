@@ -219,13 +219,14 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(IdentifierInfo));
   ReadOriginInfo_descriptor_ = file->message_type(7);
-  static const int ReadOriginInfo_offsets_[6] = {
+  static const int ReadOriginInfo_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, origin_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, origin_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, sample_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, platform_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, library_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, platform_unit_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadOriginInfo, run_date_),
   };
   ReadOriginInfo_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -405,19 +406,19 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\n\013read_origin\030\033 \003(\0132\024.goby.ReadOriginInf"
     "o\";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\013"
     "2\024.goby.IdentifierInfo\"-\n\016IdentifierInfo"
-    "\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\203\001\n\016ReadOr"
+    "\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOr"
     "iginInfo\022\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin"
     "_id\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 "
     "\001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\rplatform_unit\030\014 "
-    "\001(\t\"X\n\024AlignmentTooManyHits\022\031\n\021aligner_t"
-    "hreshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.Ambi"
-    "guousLocation\"b\n\021AmbiguousLocation\022\023\n\013qu"
-    "ery_index\030\001 \002(\r\022\037\n\027at_least_number_of_hi"
-    "ts\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016Ali"
-    "gnmentIndex\022#\n\027target_position_offsets\030\001"
-    " \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolut"
-    "e_positions\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med"
-    ".icb.goby.alignmentsH\001", 2382);
+    "\001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n\024AlignmentTooMan"
+    "yHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004hits"
+    "\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambig"
+    "uousLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_"
+    "least_number_of_hits\030\002 \002(\r\022\027\n\017length_of_"
+    "match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027target_"
+    "position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 "
+    "\003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B\002\020\001B"
+    "\'\n#edu.cornell.med.icb.goby.alignmentsH\001", 2400);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -4229,6 +4230,7 @@ const int ReadOriginInfo::kSampleFieldNumber;
 const int ReadOriginInfo::kPlatformFieldNumber;
 const int ReadOriginInfo::kLibraryFieldNumber;
 const int ReadOriginInfo::kPlatformUnitFieldNumber;
+const int ReadOriginInfo::kRunDateFieldNumber;
 #endif  // !_MSC_VER
 
 ReadOriginInfo::ReadOriginInfo()
@@ -4253,6 +4255,7 @@ void ReadOriginInfo::SharedCtor() {
   platform_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   library_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   platform_unit_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  run_date_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -4275,6 +4278,9 @@ void ReadOriginInfo::SharedDtor() {
   }
   if (platform_unit_ != &::google::protobuf::internal::kEmptyString) {
     delete platform_unit_;
+  }
+  if (run_date_ != &::google::protobuf::internal::kEmptyString) {
+    delete run_date_;
   }
   if (this != default_instance_) {
   }
@@ -4326,6 +4332,11 @@ void ReadOriginInfo::Clear() {
     if (has_platform_unit()) {
       if (platform_unit_ != &::google::protobuf::internal::kEmptyString) {
         platform_unit_->clear();
+      }
+    }
+    if (has_run_date()) {
+      if (run_date_ != &::google::protobuf::internal::kEmptyString) {
+        run_date_->clear();
       }
     }
   }
@@ -4397,6 +4408,23 @@ bool ReadOriginInfo::MergePartialFromCodedStream(
                 input, this->mutable_platform()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->platform().data(), this->platform().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_run_date;
+        break;
+      }
+      
+      // optional string run_date = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_run_date:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_run_date()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->run_date().data(), this->run_date().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
@@ -4489,6 +4517,15 @@ void ReadOriginInfo::SerializeWithCachedSizes(
       5, this->platform(), output);
   }
   
+  // optional string run_date = 6;
+  if (has_run_date()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->run_date().data(), this->run_date().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      6, this->run_date(), output);
+  }
+  
   // optional string library = 8;
   if (has_library()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -4548,6 +4585,16 @@ void ReadOriginInfo::SerializeWithCachedSizes(
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         5, this->platform(), target);
+  }
+  
+  // optional string run_date = 6;
+  if (has_run_date()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->run_date().data(), this->run_date().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        6, this->run_date(), target);
   }
   
   // optional string library = 8;
@@ -4623,6 +4670,13 @@ int ReadOriginInfo::ByteSize() const {
           this->platform_unit());
     }
     
+    // optional string run_date = 6;
+    if (has_run_date()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->run_date());
+    }
+    
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -4668,6 +4722,9 @@ void ReadOriginInfo::MergeFrom(const ReadOriginInfo& from) {
     if (from.has_platform_unit()) {
       set_platform_unit(from.platform_unit());
     }
+    if (from.has_run_date()) {
+      set_run_date(from.run_date());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -4698,6 +4755,7 @@ void ReadOriginInfo::Swap(ReadOriginInfo* other) {
     std::swap(platform_, other->platform_);
     std::swap(library_, other->library_);
     std::swap(platform_unit_, other->platform_unit_);
+    std::swap(run_date_, other->run_date_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

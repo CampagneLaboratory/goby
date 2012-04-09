@@ -1339,6 +1339,17 @@ class ReadOriginInfo : public ::google::protobuf::Message {
   inline ::std::string* mutable_platform_unit();
   inline ::std::string* release_platform_unit();
   
+  // optional string run_date = 6;
+  inline bool has_run_date() const;
+  inline void clear_run_date();
+  static const int kRunDateFieldNumber = 6;
+  inline const ::std::string& run_date() const;
+  inline void set_run_date(const ::std::string& value);
+  inline void set_run_date(const char* value);
+  inline void set_run_date(const char* value, size_t size);
+  inline ::std::string* mutable_run_date();
+  inline ::std::string* release_run_date();
+  
   // @@protoc_insertion_point(class_scope:goby.ReadOriginInfo)
  private:
   inline void set_has_origin_index();
@@ -1353,6 +1364,8 @@ class ReadOriginInfo : public ::google::protobuf::Message {
   inline void clear_has_library();
   inline void set_has_platform_unit();
   inline void clear_has_platform_unit();
+  inline void set_has_run_date();
+  inline void clear_has_run_date();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -1361,10 +1374,11 @@ class ReadOriginInfo : public ::google::protobuf::Message {
   ::std::string* platform_;
   ::std::string* library_;
   ::std::string* platform_unit_;
+  ::std::string* run_date_;
   ::google::protobuf::uint32 origin_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -3768,6 +3782,64 @@ inline ::std::string* ReadOriginInfo::release_platform_unit() {
   } else {
     ::std::string* temp = platform_unit_;
     platform_unit_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string run_date = 6;
+inline bool ReadOriginInfo::has_run_date() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ReadOriginInfo::set_has_run_date() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ReadOriginInfo::clear_has_run_date() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ReadOriginInfo::clear_run_date() {
+  if (run_date_ != &::google::protobuf::internal::kEmptyString) {
+    run_date_->clear();
+  }
+  clear_has_run_date();
+}
+inline const ::std::string& ReadOriginInfo::run_date() const {
+  return *run_date_;
+}
+inline void ReadOriginInfo::set_run_date(const ::std::string& value) {
+  set_has_run_date();
+  if (run_date_ == &::google::protobuf::internal::kEmptyString) {
+    run_date_ = new ::std::string;
+  }
+  run_date_->assign(value);
+}
+inline void ReadOriginInfo::set_run_date(const char* value) {
+  set_has_run_date();
+  if (run_date_ == &::google::protobuf::internal::kEmptyString) {
+    run_date_ = new ::std::string;
+  }
+  run_date_->assign(value);
+}
+inline void ReadOriginInfo::set_run_date(const char* value, size_t size) {
+  set_has_run_date();
+  if (run_date_ == &::google::protobuf::internal::kEmptyString) {
+    run_date_ = new ::std::string;
+  }
+  run_date_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadOriginInfo::mutable_run_date() {
+  set_has_run_date();
+  if (run_date_ == &::google::protobuf::internal::kEmptyString) {
+    run_date_ = new ::std::string;
+  }
+  return run_date_;
+}
+inline ::std::string* ReadOriginInfo::release_run_date() {
+  clear_has_run_date();
+  if (run_date_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = run_date_;
+    run_date_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }

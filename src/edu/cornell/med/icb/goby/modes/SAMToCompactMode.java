@@ -46,6 +46,9 @@ import org.apache.log4j.Logger;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -533,6 +536,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private final ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
+    DateFormat dateFormatter = new SimpleDateFormat("dd:MMM:yyyy");
 
     private void importReadGroups(final SAMFileHeader samHeader, final IndexedIdentifier readGroups) {
         if (!samHeader.getReadGroups().isEmpty() && !ignoreReadOrigin) {
@@ -541,6 +545,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 String library = rg.getLibrary();
                 String platform = rg.getPlatform();
                 String platformUnit = rg.getPlatformUnit();
+                Date date=rg.getRunDate();
                 String id = rg.getId();
                 int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
                 Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
@@ -557,6 +562,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 if (sample != null) {
                     roi.setSample(sample);
+                }
+                if (date!=null) {
+                    roi.setRunDate(dateFormatter.format(date));
                 }
                 readOriginInfoBuilderList.add(roi);
             }

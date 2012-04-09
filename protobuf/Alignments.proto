@@ -226,6 +226,7 @@ message AlignmentEntry {
       This field is required (enforced by semantic validation in Goby 2.0+).
    */
    optional uint32 fragment_index=3;
+
  }
 
 /*
@@ -470,6 +471,11 @@ message ReadOriginInfo {
        The platform unit on which the reads were sequenced. This field for compatibility with samtools.
     */
     optional string platform_unit=12;
+    /*
+       The date the reads were sequenced. Useful to identify batch effects, in the format dd:MMM:yyyy.
+       The month is Jan, Feb, etc. to avoid all confusion with days when day<=12.
+    */
+    optional string run_date=6;
 }
 
 /*
