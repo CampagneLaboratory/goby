@@ -271,7 +271,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         final long writtenStart = out.writtenBits();
         final int b = max - min + 1;
-        final int log2b = Math.max(1,Fast.mostSignificantBit(b));
+        final int log2b = Fast.mostSignificantBit(b);
         for (final int value : list) {
 
             out.writeMinimalBinary(value - min, b, log2b);
@@ -386,7 +386,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int min = bitInput.readNibble();
         final int max = bitInput.readNibble();
         final int b = max - min + 1;
-        final int log2b = Math.max(1,Fast.mostSignificantBit(b));
+        final int log2b = Fast.mostSignificantBit(b);
         for (int i = 0; i < size; i++) {
             final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1, log2b);
             list.add(reducedReadIndex + min);
