@@ -366,7 +366,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
 
-            for (int i = 0; i < numEntries; i++) {
+            for (int i = 0; i < samHelper.getNumEntries(); i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();

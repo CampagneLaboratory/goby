@@ -257,8 +257,8 @@ public class TestSplicedSamHelper {
         assertTrue(second.hasPairAlignmentLink());
 
         Assert.assertEquals(0, second.getPairAlignmentLink().getFragmentIndex());
-        assertTrue(second.hasSplicedForwardAlignmentLink());
-        assertFalse(second.hasSplicedBackwardAlignmentLink());
+        assertTrue("second must have spliced forward link", second.hasSplicedForwardAlignmentLink());
+        assertFalse("second must have spliced backward link",second.hasSplicedBackwardAlignmentLink());
 
 
     }
