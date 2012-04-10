@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
@@ -54,6 +55,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignmentCollectionHandler.class);
+    @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
             "stats-filename:string, the file where to append statistics to:compress-stats.tsv",
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
@@ -64,7 +66,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private String basename;
     private PrintWriter statsWriter;
     private static final IntArrayList EMPTY_LIST = new IntArrayList();
-    private boolean storeReadOrigins=true;
+    private boolean storeReadOrigins = true;
 
 
     public static DynamicOptionClient doc() {
@@ -88,7 +90,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private long writtenBits;
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
-    private int varToQualsLength = 0;
+    private int varToQualLengthIndex = 0;
     private boolean useTemplateBasedCompression = true;
     private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
@@ -97,7 +99,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             qualArrays[length] = new byte[length];
         }
         debug = doc().getInteger("debug-level");
-        storeReadOrigins=!doc().getBoolean("ignore-read-origin");
+        storeReadOrigins = !doc().getBoolean("ignore-read-origin");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
         if (debug(1)) {
@@ -182,7 +184,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
             final int templatePositionIndex = varPositionIndex;
             final int templateVarFromToIndex = varFromToIndex;
-            final int templateVarHasToQualsIndex = varToQualsLength;
+            final int templateVarHasToQualsIndex = varToQualLengthIndex;
             while (multiplicities.get(templateIndex) >= 1) {
                 result.addAlignmentEntries(
                         andBack(templateIndex, originalIndex, alignmentCollection.getAlignmentEntries(templateIndex), streamVersion));
@@ -190,7 +192,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     // go back to the indices for the template:
                     varPositionIndex = templatePositionIndex;
                     varFromToIndex = templateVarFromToIndex;
-                    varToQualsLength = templateVarHasToQualsIndex;
                 }
                 originalIndex++;
             }
@@ -277,7 +278,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             out.writeMinimalBinary(value - min, b, log2b);
             // out.writeLongMinimalBinary(value-min, max-min+1);
         }
-    //    out.flush();
+        //    out.flush();
         if (debug(1)) {
             //   out.flush();
             final long writtenStop = out.writtenBits();
@@ -391,7 +392,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1, log2b);
             list.add(reducedReadIndex + min);
         }
-      //  bitInput.flush();
+        //  bitInput.flush();
     }
 
     private void writeNibble(String label, IntList list, OutputBitStream out) throws IOException {
@@ -415,9 +416,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             System.err.println("\nreading " + label + " with available=" + bitInput.available());
             System.err.flush();
         }
-       // if (numEntriesInChunk == 0) {
-       //     return;
-      //  }
+        // if (numEntriesInChunk == 0) {
+        //     return;
+        //  }
         // TODO see if we can avoid reading the number of elements in some cases.
         final int size = bitInput.readNibble();
         if (size == 0) {
@@ -666,7 +667,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         varPositionIndex = 0;
         varFromToIndex = 0;
         varToQualLength.clear();
-        varToQualsLength = 0;
+        varToQualLengthIndex = 0;
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
         previousPartial = null;
@@ -710,7 +711,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int queryIndex = source.getQueryIndex();
 
         queryIndices.add(queryIndex);
-
         previousPosition = position;
         previousTargetIndex = targetIndex;
 
@@ -719,7 +719,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         result.clearQueryIndex();
 
-        recordVariationQualitiesAndClear(result, result.getSequenceVariationsList());
+        recordVariationQualitiesAndClear(source, result, result.getSequenceVariationsList());
 
         final boolean entryMatchingReverseStrand = source.getMatchingReverseStrand();
         Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), entryMatchingReverseStrand,
@@ -870,7 +870,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
 
-    private void recordVariationQualitiesAndClear(Alignments.AlignmentEntry.Builder result, List<Alignments.SequenceVariation> sequenceVariationsList) {
+    private void recordVariationQualitiesAndClear(Alignments.AlignmentEntry source, Alignments.AlignmentEntry.Builder result, List<Alignments.SequenceVariation> sequenceVariationsList) {
 
         int index = 0;
         for (final Alignments.SequenceVariation seqVar : sequenceVariationsList) {
@@ -878,19 +878,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
             final ByteString toQualities = seqVar.getToQuality();
             final boolean hasToQuals = seqVar.hasToQuality();
-            final int toQualSize = toQualities.size();
+            final int toQualSize = hasToQuals ? toQualities.size() : 0;
             varToQualLength.add(toQualSize);
-            final int toQualsLength = hasToQuals ? seqVar.getToQuality().size() : 0;
-            for (int i = 0; i < toQualsLength; i++) {
-                if (hasToQuals && i < toQualSize) {
-                    varQuals.add(toQualities.byteAt(i));
-                }
+
+            for (int i = 0; i < toQualSize; i++) {
+                varQuals.add(toQualities.byteAt(i));
             }
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
             varBuilder.clearToQuality();
             result.setSequenceVariations(index, varBuilder.buildPartial());
             index++;
         }
+
     }
 
     private void print(Alignments.AlignmentEntry result) {
@@ -902,10 +901,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         final String from = seqVar.getFrom();
         final String to = seqVar.getTo();
-        final ByteString toQualities = seqVar.getToQuality();
         final int fromLength = from.length();
         final int toLength = to.length();
-        final boolean hasToQuals = seqVar.hasToQuality();
         final int position = seqVar.getPosition();
         varPositions.add(position);
         final int readIndex = seqVar.getReadIndex();
@@ -1068,9 +1065,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             //  System.out.printf("%c DECODING position=%d queryLength=%d recodedReadIndex=%d readIndex=%d  %n",
             //         entryMatchingReverseStrand ? '+' : '-', position, queryLength, recodedReadIndex, readIndex);
 
-            final int toQualLength = varToQualLength.getInt(varToQualsLength);
-            varToQualsLength++;
 
+            final int toQualLength = varToQualLength.getInt(varToQualLengthIndex);
+
+
+            varToQualLengthIndex++;
             final byte[] quals = getQualArray(toQualLength);
             ++varPositionIndex;
             final int maxLength = Math.max(fromLength, toLength);
