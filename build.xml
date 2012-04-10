@@ -123,6 +123,11 @@
                 <include name="sam-1.64.jar"/>
                 <include name="picard-1.64.jar"/>
                 <include name="squil.jar"/>
+                <include name="reflections-0.9.5.jar"/>
+                <include name="guava-r08.jar"/>
+                <include name="slf4j-api-1.6.1.jar"/>
+                <include name="slf4j-simple-1.6.1.jar"/>
+                <include name="javassist-3.12.1.GA.jar"/>
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>

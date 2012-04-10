@@ -30,6 +30,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.OutputInfoFromWriter;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FilenameUtils;
@@ -61,6 +62,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
+    @RegisterThis
     public static final DynamicOptionClient doc = new DynamicOptionClient(AnnotationAveragingWriter.class,
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
             "annotations:annotation filename:",
@@ -68,9 +70,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             "write-observations:boolean, when true write oservations to disk: false",
             "contexts:string, coma delimited list of contexts for which to evaluate methylation rate. Contexts can be CpG, CpA,CpC,CpT,CpN. Default is CpG only:CpG"
     );
+
     public static final DynamicOptionClient doc() {
         return doc;
     }
+
     private String[] groups;
     private int numGroups;
     private int[] sampleIndexToGroupIndex;

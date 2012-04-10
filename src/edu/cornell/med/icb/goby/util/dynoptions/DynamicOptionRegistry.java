@@ -20,6 +20,11 @@ package edu.cornell.med.icb.goby.util.dynoptions;
 
 import com.martiansoftware.jsap.JSAPResult;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
+import org.reflections.Reflections;
+import sun.rmi.runtime.Log;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
 
 /**
  * A global registry for dynamic options. These options are set on the command line with options of the
@@ -68,6 +73,8 @@ public class DynamicOptionRegistry {
     }
 
     public static void printHelp() {
+
+
         System.out.println("The following dynamic options have been defined:");
         for (final DynamicOptionClient doc : registeredDOClients) {
             String[] keys = doc.getKeys();
@@ -80,7 +87,7 @@ public class DynamicOptionRegistry {
                 System.out.printf("  - %s: %s default: %s%n",  key, helpMessages[i], defaultValues[i]);
                 i++;
             }
-
+            System.out.println();
 
         }
     }

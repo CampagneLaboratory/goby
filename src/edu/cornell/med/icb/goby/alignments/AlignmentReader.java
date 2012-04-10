@@ -197,7 +197,14 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
       (Since Goby 2.0).
      * @return True when entries are garanteed to have a query-index-occurrences field.
      */
-    boolean getHasQueryIndexOccurrences();
+    boolean hasQueryIndexOccurrences();
+
+     /**
+     * This field is true when entries in the alignment .entries file all have the ambiguity field populated
+      (Since Goby 2.0).
+     * @return True when entries are guaranteed to have a ambiguity field.
+     */
+    boolean hasAmbiguity();
 
     /**
      * Obtain the byte offset at the end of the chunk with entries at or before the given genomic end position.

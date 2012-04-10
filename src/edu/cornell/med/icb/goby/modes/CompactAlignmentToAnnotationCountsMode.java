@@ -35,6 +35,7 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
 import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.goby.util.Timer;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
@@ -145,6 +146,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         parseGenomicRange(jsapResult);
+
         parallel = jsapResult.getBoolean("parallel", false);
         writeAnnotationCounts = jsapResult.getBoolean("write-annotation-counts");
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");

@@ -173,13 +173,23 @@ message AlignmentEntry {
   optional uint32 sample_index=21;
   /*
       The total number of times the query index associated with this entry occurs across the entire alignment file.
-      The field can be used to filter by ambiguity-threshold on the fly after an alignment has been done (to restrict
-      entries to more smaller thresholds).
-      This field is also used to purge queryIndex->smallIndex associations after all instances of a queryindex have
-      been seen (see QueryIndexPermutation class).
+
+      This field is used to purge queryIndex->smallIndex associations after all instances of a queryindex have
+      been seen (see QueryIndexPermutation class). When each entry has a value for this field, the header field
+      query_index_occurrences is true.
       This field is required (enforced by semantic validation in Goby 2.0+).
   */
   optional uint32 query_index_occurrences=25;
+   /*
+      The total number of times the read matches the reference across the entire alignment file. This differs from
+      query_index_occurrences because reads that are matching through splice and pair links count as one for ambiguity.
+      The field can be used to filter by ambiguity-threshold on the fly after an alignment has been done (to restrict
+      entries to more smaller thresholds). When each entry has a value for this field, the header field
+      ambiguity_stored_in_entries is true.
+
+      This field is required (enforced by semantic validation in Goby 2.0+).
+  */
+  optional uint32 ambiguity=27;
   /*
       List of BAM attributes, if the alignment was imported from BAM. The attributes are stored in exactly the format
       allowed for BAM. For instance, X0:i:9  X1:i:1  MD:Z:68 RG:Z:SRR084825 will be stored as four strings:
@@ -407,6 +417,11 @@ message AlignmentHeader {
    */
    optional bool query_index_occurrences=35;
 
+   /*
+         This field is true when entries in the alignment .entries file all have the ambiguity field populated
+         (Since Goby 2.0).
+      */
+      optional bool ambiguity_stored_in_entries=36;
    /*
       This field is true when entries in the alignment .entries file all have the read_quality_score field populated.
       (Since Goby 2.0).

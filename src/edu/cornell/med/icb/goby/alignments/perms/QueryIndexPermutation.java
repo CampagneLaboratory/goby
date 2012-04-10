@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments.perms;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +41,8 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(QueryIndexPermutation.class);
-    private static DynamicOptionClient doc = new DynamicOptionClient(QueryIndexPermutation.class,
+    @RegisterThis
+    public static DynamicOptionClient doc = new DynamicOptionClient(QueryIndexPermutation.class,
             "safe-mode:boolean, when true keeps query indices in memory even when the link appears" +
                     " to point backwards. This can help process some incorrect BAM files where pair-links" +
                     " incorrectly map the mate on the same reference, when it appears on a different chromosome  with " +
@@ -90,7 +92,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     @Override
     public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
         final int queryIndex = entry.getQueryIndex();
-       /* if (queryIndex == 127177) {
+        /* if (queryIndex == 127177) {
             System.out.println("STOP");
             System.out.flush();
         }*/

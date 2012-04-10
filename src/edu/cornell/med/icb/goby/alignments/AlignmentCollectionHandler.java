@@ -54,7 +54,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignmentCollectionHandler.class);
-    private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
+    public static DynamicOptionClient doc = new DynamicOptionClient(AlignmentCollectionHandler.class,
             "stats-filename:string, the file where to append statistics to:compress-stats.tsv",
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",

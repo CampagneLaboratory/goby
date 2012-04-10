@@ -30,6 +30,7 @@ import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat
 import edu.cornell.med.icb.goby.stats.RegionWriter;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,13 +52,16 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    private static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:",
+    @RegisterThis
+    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:",
             "do-indel-rate:boolean, true value indicates that the indel rate should be output in the MR field:false",
             "de-novo-regions:boolean, true indicates that regions should be discovered de-novo, false indicates that regions are defined by annotations:false"
-            );
-     public static DynamicOptionClient doc() {
-            return doc;
+    );
+
+    public static DynamicOptionClient doc() {
+        return doc;
     }
+
     private String annotationFilename;
 
 
@@ -206,7 +210,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
     @Override
     public void setGenomeReferenceIndex(int index) {
-        genomeReferenceIndex=index;
+        genomeReferenceIndex = index;
     }
 
 

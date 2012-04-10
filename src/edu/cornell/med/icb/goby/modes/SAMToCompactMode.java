@@ -33,6 +33,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
@@ -94,8 +95,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean preserveAllMappedQuals;
     private boolean ignoreReadOrigin;
 
-
-    private static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
+    @RegisterThis
+    public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
             "ignore-read-origin:boolean, When this flag is true do not import read groups.:false"
     );
 
@@ -545,7 +546,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 String library = rg.getLibrary();
                 String platform = rg.getPlatform();
                 String platformUnit = rg.getPlatformUnit();
-                Date date=rg.getRunDate();
+                Date date = rg.getRunDate();
                 String id = rg.getId();
                 int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
                 Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
@@ -563,7 +564,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (sample != null) {
                     roi.setSample(sample);
                 }
-                if (date!=null) {
+                if (date != null) {
                     roi.setRunDate(dateFormatter.format(date));
                 }
                 readOriginInfoBuilderList.add(roi);

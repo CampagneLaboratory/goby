@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.alignments;
 
 
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
+
 import java.io.IOException;
 
 /**
@@ -30,6 +32,7 @@ import java.io.IOException;
  *         Time: 4:37:26 PM
  */
 public class NonAmbiguousAlignmentReaderFactory implements AlignmentReaderFactory {
+
     @Override
     public AlignmentReader createReader(String basename) throws IOException {
         return new NonAmbiguousAlignmentReader(basename);

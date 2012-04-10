@@ -365,6 +365,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 query_index_occurrences() const;
   inline void set_query_index_occurrences(::google::protobuf::uint32 value);
   
+  // optional uint32 ambiguity = 27;
+  inline bool has_ambiguity() const;
+  inline void clear_ambiguity();
+  static const int kAmbiguityFieldNumber = 27;
+  inline ::google::protobuf::uint32 ambiguity() const;
+  inline void set_ambiguity(::google::protobuf::uint32 value);
+  
   // repeated string bam_attributes = 50;
   inline int bam_attributes_size() const;
   inline void clear_bam_attributes();
@@ -447,6 +454,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_sample_index();
   inline void set_has_query_index_occurrences();
   inline void clear_has_query_index_occurrences();
+  inline void set_has_ambiguity();
+  inline void clear_has_ambiguity();
   inline void set_has_read_quality_scores();
   inline void clear_has_read_quality_scores();
   inline void set_has_read_origin_index();
@@ -477,13 +486,14 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::goby::RelatedAlignmentEntry* spliced_backward_alignment_link_;
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
   ::google::protobuf::uint32 query_index_occurrences_;
-  ::google::protobuf::uint32 read_origin_index_;
+  ::google::protobuf::uint32 ambiguity_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
   ::std::string* read_quality_scores_;
+  ::google::protobuf::uint32 read_origin_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(27 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(28 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -950,6 +960,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool query_index_occurrences() const;
   inline void set_query_index_occurrences(bool value);
   
+  // optional bool ambiguity_stored_in_entries = 36;
+  inline bool has_ambiguity_stored_in_entries() const;
+  inline void clear_ambiguity_stored_in_entries();
+  static const int kAmbiguityStoredInEntriesFieldNumber = 36;
+  inline bool ambiguity_stored_in_entries() const;
+  inline void set_ambiguity_stored_in_entries(bool value);
+  
   // optional bool all_read_quality_scores = 40;
   inline bool has_all_read_quality_scores() const;
   inline void clear_all_read_quality_scores();
@@ -1003,6 +1020,8 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void clear_has_query_indices_were_permuted();
   inline void set_has_query_index_occurrences();
   inline void clear_has_query_index_occurrences();
+  inline void set_has_ambiguity_stored_in_entries();
+  inline void clear_has_ambiguity_stored_in_entries();
   inline void set_has_all_read_quality_scores();
   inline void clear_has_all_read_quality_scores();
   
@@ -1020,18 +1039,19 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
   ::std::string* aligner_name_;
   ::std::string* aligner_version_;
+  ::std::string* version_;
   bool sorted_;
   bool indexed_;
   bool query_lengths_stored_in_entries_;
   bool query_indices_were_permuted_;
   bool query_index_occurrences_;
+  bool ambiguity_stored_in_entries_;
   bool all_read_quality_scores_;
-  ::std::string* version_;
   ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
   ::google::protobuf::RepeatedPtrField< ::goby::ReadOriginInfo > read_origin_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(21 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(22 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2322,6 +2342,28 @@ inline void AlignmentEntry::set_query_index_occurrences(::google::protobuf::uint
   query_index_occurrences_ = value;
 }
 
+// optional uint32 ambiguity = 27;
+inline bool AlignmentEntry::has_ambiguity() const {
+  return (_has_bits_[0] & 0x01000000u) != 0;
+}
+inline void AlignmentEntry::set_has_ambiguity() {
+  _has_bits_[0] |= 0x01000000u;
+}
+inline void AlignmentEntry::clear_has_ambiguity() {
+  _has_bits_[0] &= ~0x01000000u;
+}
+inline void AlignmentEntry::clear_ambiguity() {
+  ambiguity_ = 0u;
+  clear_has_ambiguity();
+}
+inline ::google::protobuf::uint32 AlignmentEntry::ambiguity() const {
+  return ambiguity_;
+}
+inline void AlignmentEntry::set_ambiguity(::google::protobuf::uint32 value) {
+  set_has_ambiguity();
+  ambiguity_ = value;
+}
+
 // repeated string bam_attributes = 50;
 inline int AlignmentEntry::bam_attributes_size() const {
   return bam_attributes_.size();
@@ -2368,13 +2410,13 @@ AlignmentEntry::mutable_bam_attributes() {
 
 // optional bytes read_quality_scores = 55;
 inline bool AlignmentEntry::has_read_quality_scores() const {
-  return (_has_bits_[0] & 0x02000000u) != 0;
+  return (_has_bits_[0] & 0x04000000u) != 0;
 }
 inline void AlignmentEntry::set_has_read_quality_scores() {
-  _has_bits_[0] |= 0x02000000u;
+  _has_bits_[0] |= 0x04000000u;
 }
 inline void AlignmentEntry::clear_has_read_quality_scores() {
-  _has_bits_[0] &= ~0x02000000u;
+  _has_bits_[0] &= ~0x04000000u;
 }
 inline void AlignmentEntry::clear_read_quality_scores() {
   if (read_quality_scores_ != &::google::protobuf::internal::kEmptyString) {
@@ -2426,13 +2468,13 @@ inline ::std::string* AlignmentEntry::release_read_quality_scores() {
 
 // optional uint32 read_origin_index = 26;
 inline bool AlignmentEntry::has_read_origin_index() const {
-  return (_has_bits_[0] & 0x04000000u) != 0;
+  return (_has_bits_[0] & 0x08000000u) != 0;
 }
 inline void AlignmentEntry::set_has_read_origin_index() {
-  _has_bits_[0] |= 0x04000000u;
+  _has_bits_[0] |= 0x08000000u;
 }
 inline void AlignmentEntry::clear_has_read_origin_index() {
-  _has_bits_[0] &= ~0x04000000u;
+  _has_bits_[0] &= ~0x08000000u;
 }
 inline void AlignmentEntry::clear_read_origin_index() {
   read_origin_index_ = 0u;
@@ -3310,15 +3352,37 @@ inline void AlignmentHeader::set_query_index_occurrences(bool value) {
   query_index_occurrences_ = value;
 }
 
-// optional bool all_read_quality_scores = 40;
-inline bool AlignmentHeader::has_all_read_quality_scores() const {
+// optional bool ambiguity_stored_in_entries = 36;
+inline bool AlignmentHeader::has_ambiguity_stored_in_entries() const {
   return (_has_bits_[0] & 0x00080000u) != 0;
 }
-inline void AlignmentHeader::set_has_all_read_quality_scores() {
+inline void AlignmentHeader::set_has_ambiguity_stored_in_entries() {
   _has_bits_[0] |= 0x00080000u;
 }
-inline void AlignmentHeader::clear_has_all_read_quality_scores() {
+inline void AlignmentHeader::clear_has_ambiguity_stored_in_entries() {
   _has_bits_[0] &= ~0x00080000u;
+}
+inline void AlignmentHeader::clear_ambiguity_stored_in_entries() {
+  ambiguity_stored_in_entries_ = false;
+  clear_has_ambiguity_stored_in_entries();
+}
+inline bool AlignmentHeader::ambiguity_stored_in_entries() const {
+  return ambiguity_stored_in_entries_;
+}
+inline void AlignmentHeader::set_ambiguity_stored_in_entries(bool value) {
+  set_has_ambiguity_stored_in_entries();
+  ambiguity_stored_in_entries_ = value;
+}
+
+// optional bool all_read_quality_scores = 40;
+inline bool AlignmentHeader::has_all_read_quality_scores() const {
+  return (_has_bits_[0] & 0x00100000u) != 0;
+}
+inline void AlignmentHeader::set_has_all_read_quality_scores() {
+  _has_bits_[0] |= 0x00100000u;
+}
+inline void AlignmentHeader::clear_has_all_read_quality_scores() {
+  _has_bits_[0] &= ~0x00100000u;
 }
 inline void AlignmentHeader::clear_all_read_quality_scores() {
   all_read_quality_scores_ = false;

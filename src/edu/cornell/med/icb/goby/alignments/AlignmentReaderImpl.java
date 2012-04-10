@@ -49,7 +49,8 @@ import java.util.zip.GZIPInputStream;
  *         Date: Apr 30, 2009
  *         Time: 6:36:04 PM
  */
-public class AlignmentReaderImpl extends AbstractAlignmentReader implements AlignmentReader {
+public class
+        AlignmentReaderImpl extends AbstractAlignmentReader implements AlignmentReader {
     /**
      * Used to log debug and informational messages.
      */
@@ -101,6 +102,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     private long endOffset;
     private boolean hasQueryIndexOccurrences;
     private List<Alignments.ReadOriginInfo> readOriginInfoList;
+    private boolean hasAmbiguity;
 
 
     /**
@@ -708,6 +710,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             allReadQualityScores = header.getAllReadQualityScores();
             hasQueryIndexOccurrences = header.getQueryIndexOccurrences();
             readOriginInfoList=header.getReadOriginList();
+            hasAmbiguity=header.getAmbiguityStoredInEntries();
        }
     }
 
@@ -876,8 +879,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     @Override
-    public boolean getHasQueryIndexOccurrences() {
+    public boolean hasQueryIndexOccurrences() {
         return hasQueryIndexOccurrences;
+    }
+
+    @Override
+    public boolean hasAmbiguity() {
+        return hasAmbiguity;
     }
 
     @Override

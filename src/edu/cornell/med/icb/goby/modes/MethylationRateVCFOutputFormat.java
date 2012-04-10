@@ -30,6 +30,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -55,7 +56,8 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRateVCFOutputFormat.class);
-    private static final DynamicOptionClient doc = new DynamicOptionClient(MethylationRateVCFOutputFormat.class,
+    @RegisterThis
+    public static final DynamicOptionClient doc = new DynamicOptionClient(MethylationRateVCFOutputFormat.class,
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
             "window-length: int, length of the fixed genomic window used to detect DMR. Default 1000 bp:1000",
             "significance-threshold: double, significance threshold to consider a site significant for DMR detection purposes. Default 0.01:0.01"

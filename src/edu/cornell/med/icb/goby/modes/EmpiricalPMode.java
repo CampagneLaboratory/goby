@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.stats.EmpiricalPValueEstimator;
 import edu.cornell.med.icb.goby.stats.FormatFieldCounter;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
@@ -72,7 +73,13 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private String outputFilename;
     private String[] dymamicOptions;
     private String statisticName;
-    public static final DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
+
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
+
+
+   public static final @RegisterThis DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS
 
     );

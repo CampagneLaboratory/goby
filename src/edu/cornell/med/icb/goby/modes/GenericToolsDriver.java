@@ -24,13 +24,20 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import edu.cornell.med.icb.io.ResourceFinder;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -152,6 +159,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
      */
     @Override
     public GenericToolsDriver configure(final String[] argsVal) throws IOException, JSAPException {
+        registerDynamicOptions();
         jsap = loadJsapFromResource(HELP_VALUES);
         args = argsVal;
         final JSAPResult jsapResult = parseJsap(jsap, args);
@@ -164,6 +172,24 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         dynamicOptions = jsapResult.getStringArray("dynamic-options");
 
         return this;
+    }
+
+    private void registerDynamicOptions() {
+        final Reflections reflections = new Reflections("edu.cornell.med.icb.goby", new FieldAnnotationsScanner());
+        Set<Field> result = reflections.getFieldsAnnotatedWith(RegisterThis.class);
+
+        for (Field field : result) {
+            final DynamicOptionClient doc;
+            try {
+                doc = (DynamicOptionClient) field.get(null);
+                DynamicOptionRegistry.register(doc);
+            } catch (IllegalAccessException e) {
+                LOG.error(e);
+            }
+
+
+        }
+
     }
 
     /**

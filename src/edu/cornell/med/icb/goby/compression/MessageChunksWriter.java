@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.compression;
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -65,7 +66,8 @@ public class MessageChunksWriter {
     private long currentChunkStartOffset;
     private long writtenBytes = 0;
     private final boolean compressingCodec;
-    private static final DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
+    @RegisterThis
+    public static final DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
             "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
             "template-compression:boolean, when true use template compression.:true",
             "codec:string, name of the chunk codec to use.:gzip",
@@ -124,7 +126,7 @@ public class MessageChunksWriter {
      */
     public long writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
                               final int multiplicity) throws IOException {
-        totalEntriesWritten += Math.max(1,multiplicity);
+        totalEntriesWritten += Math.max(1, multiplicity);
         if (++numAppended >= numEntriesPerChunk) {
             flush(collectionBuilder);
         }

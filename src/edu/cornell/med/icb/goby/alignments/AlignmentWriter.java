@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -68,11 +69,12 @@ public class AlignmentWriter implements Closeable {
     private boolean entriesHaveQueryLength;
     private boolean entriesHaveQueryIndexOccurrences = true;
     private boolean allReadQualityScores = true;
-
-    private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
+    @RegisterThis
+    public static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
     );
     private ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList;
+    private boolean entriesHaveAmbiguity = true;
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -297,6 +299,9 @@ public class AlignmentWriter implements Closeable {
         // detect when all entries have query-index-occurrences:
         entriesHaveQueryIndexOccurrences &= builtEntry.hasQueryIndexOccurrences();
 
+// detect when all entries have ambiguity:
+        entriesHaveAmbiguity &= builtEntry.hasAmbiguity();
+
         //detect when all entries have read_quality_scores:
         allReadQualityScores &= builtEntry.hasReadQualityScores();
 
@@ -309,7 +314,7 @@ public class AlignmentWriter implements Closeable {
             firstEntryInChunk = false;
         }
         final long currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder,
-                builtEntry.hasMultiplicity()?builtEntry.getMultiplicity():1);
+                builtEntry.hasMultiplicity() ? builtEntry.getMultiplicity() : 1);
         // LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
         //        entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
         if (sortedState && entriesChunkWriter.getAppendedInChunk() == 0) {
@@ -487,9 +492,8 @@ public class AlignmentWriter implements Closeable {
                     headerBuilder.addReadOrigin(builder);
                 }
             }
-
-            // if some entries had query length, remove the information from the header. Do not duplicate.
             headerBuilder.setQueryLengthsStoredInEntries(true);
+            headerBuilder.setAmbiguityStoredInEntries(entriesHaveAmbiguity);
 
             // store target lengths:
             if (targetLengths != null) {
