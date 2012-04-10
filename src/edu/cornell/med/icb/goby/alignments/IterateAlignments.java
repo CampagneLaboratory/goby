@@ -30,6 +30,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.jnlp.FileSaveService;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,6 +69,7 @@ public abstract class IterateAlignments {
     /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
+     *
      * @param includeReferenceNameCommas a comma separated string of reference names to include
      */
     public void parseIncludeReferenceArgument(final String includeReferenceNameCommas) {
@@ -132,8 +134,13 @@ public abstract class IterateAlignments {
     }
 
     public void iterate(final GenomicRange range, final String... basenames) throws IOException {
-        for (final String basename : basenames) {
-            iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename, range.startReferenceIndex, range.startPosition);
+        if (range == null) {
+            iterate(basenames);
+        } else {
+            for (final String basename : basenames) {
+
+                iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename, range.startReferenceIndex, range.startPosition);
+            }
         }
     }
 
@@ -153,7 +160,7 @@ public abstract class IterateAlignments {
 
         final int numberOfReferences;
         {
-            assert slice==null||slice.basename==null|| slice.basename.equals(basename) : "basename must match in slice.";
+            assert slice == null || slice.basename == null || slice.basename.equals(basename) : "basename must match in slice.";
             final AlignmentReader reader = alignmentReaderFactory.createReader(basename, slice.startOffset, slice.endOffset);
             reader.readHeader();
             numberOfReferences = reader.getNumberOfTargets();
@@ -199,7 +206,7 @@ public abstract class IterateAlignments {
         LOG.debug("Loading the alignment " + basename);
         if (alignmentReader.isSorted()) {
             alignmentReader.readIndex();
-            alignmentReader.reposition(minTargetIndex,minPosition);
+            alignmentReader.reposition(minTargetIndex, minPosition);
             LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
             // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
 
@@ -207,7 +214,7 @@ public abstract class IterateAlignments {
             // the first reference that we should skip to:
             int currentMinTargetIndex = referencesToProcess.firstInt();
             // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
-           while ((alignmentEntry = alignmentReader.skipTo(currentMinTargetIndex, 0)) != null) {
+            while ((alignmentEntry = alignmentReader.skipTo(currentMinTargetIndex, 0)) != null) {
                 final int referenceIndex = alignmentEntry.getTargetIndex();
                 if (referencesToProcess.contains(referenceIndex)) {
                     processAlignmentEntry(alignmentReader, alignmentEntry);
