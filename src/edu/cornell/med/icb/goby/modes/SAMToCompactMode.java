@@ -381,16 +381,17 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setQueryPosition(samHelper.getQueryPosition());
 
                 currentEntry.setQueryLength(samHelper.getQueryLength());
-                currentEntry.setScore(samHelper.getScore());
+                //currentEntry.setScore(samHelper.getScore());  BAM does not have the concept of a score.
                 currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
+                currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (preserveAllMappedQuals) {
 
                     currentEntry.setReadQualityScores(ByteString.copyFrom(samHelper.getSourceQualAsBytes()));
                 }
                 addSamAttributes(samRecord, currentEntry);
-                currentEntry.setMappingQuality(samRecord.getMappingQuality());
+
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
