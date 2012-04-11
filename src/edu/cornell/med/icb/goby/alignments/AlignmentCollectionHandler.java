@@ -64,6 +64,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false"
+
     );
     private String statsFilename;
     private String basename;
@@ -107,6 +108,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         storeReadOrigins = !doc().getBoolean("ignore-read-origin");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
+
         if (debug(1)) {
             try {
                 final boolean appending = new File(statsFilename).exists();
@@ -138,7 +140,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 4;
+    public static final int VERSION = 5;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -413,18 +415,32 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Object2IntMap<String> typeToNumEntries = new Object2IntAVLTreeMap<String>();
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
 
-
     protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        decodeArithmetic(label, numEntriesInChunk, bitInput, list, false);
+    }
+
+    protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list, boolean runLengthEncoding) throws IOException {
 
         if (debug(2)) {
             System.err.flush();
             System.err.println("\nreading " + label + " with available=" + bitInput.available());
             System.err.flush();
         }
-        // if (numEntriesInChunk == 0) {
-        //     return;
-        //  }
-        // TODO see if we can avoid reading the number of elements in some cases.
+        if (bitInput.readBit()==1) {
+            final IntArrayList encodedLengths = new IntArrayList();
+            final IntArrayList encodedValues = new IntArrayList();
+            decodeArithmeticInternal(bitInput, encodedLengths);
+            decodeArithmeticInternal(bitInput, encodedValues);
+
+            decodeRunLengths(encodedLengths, encodedValues, list);
+        } else {
+            decodeArithmeticInternal(bitInput, list);
+        }
+
+
+    }
+
+    private void decodeArithmeticInternal(InputBitStream bitInput, IntList list) throws IOException {
         final int size = bitInput.readNibble();
         if (size == 0) {
             return;
@@ -444,21 +460,51 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             Arrays.sort(distinctvalue);
         }
         decode(bitInput, list, size, numTokens, distinctvalue);
-
     }
 
-
     protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
+        writeArithmetic(label, list, out, false);
+    }
+
+    protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out, boolean runLengthEncoding) throws IOException {
         if (debug(2)) {
             System.err.flush();
             System.err.println("\nwriting " + label);
             System.err.flush();
         }
         final long writtenStart = out.writtenBits();
+           IntArrayList encodedLengths = new IntArrayList();
+            IntArrayList encodedValues = new IntArrayList();
+            encodeRunLengths(list, encodedLengths, encodedValues);
+        if (runLengthEncoding(label, list, encodedLengths,encodedValues)) {
+            out.writeBit(1);
+            encodeArithmeticInternal(label + "Lengths", encodedLengths, out);
+            encodeArithmeticInternal(label + "Values", encodedValues, out);
+        } else {
+            out.writeBit(0);
+            encodeArithmeticInternal(label, list, out);
+        }
+        if (debug(1)) {
+            System.err.flush();
+            final long writtenStop = out.writtenBits();
+            final long written = writtenStop - writtenStart;
+            recordStats(label, list, written);
+        }
+    }
+
+    private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
+        final boolean result = encodedLengths.size()>10 && (encodedLengths.size() + encodedValues.size()) < list.size()*.70;
+        if (result) {
+        //    System.out.println("Using run-length encoding for "+label);
+        }
+        return result;
+    }
+
+    private boolean encodeArithmeticInternal(String label, IntList list, OutputBitStream out) throws IOException {
         out.writeNibble(list.size());        // LIST.size
         if (list.isEmpty()) {
             // no list to write.
-            return;
+            return true;
         }
         final IntSet distinctSymbols = getTokens(list);
 
@@ -476,12 +522,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         encode(label, list, out, distinctSymbols, symbolValues);
-        if (debug(1)) {
-            System.err.flush();
-            final long writtenStop = out.writtenBits();
-            final long written = writtenStop - writtenStart;
-            recordStats(label, list, written);
-        }
+        return false;
     }
 
     private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
@@ -624,8 +665,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeArithmetic("fromLengths", numEntriesInChunk, bitInput, fromLengths);
         decodeArithmetic("toLengths", numEntriesInChunk, bitInput, toLengths);
         decodeArithmetic("varReadIndex", numEntriesInChunk, bitInput, varReadIndex);
-        decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo);
-        decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals);
+        decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo,true);
+        decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals,true);
         decodeArithmetic("varHasToQuals", numEntriesInChunk, bitInput, varToQualLength);
         decodeArithmetic("multiplicities", numEntriesInChunk, bitInput, multiplicities);
         pairLinks.read(numEntriesInChunk, bitInput);
@@ -721,8 +762,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("fromLengths", fromLengths, out);
         writeArithmetic("toLengths", toLengths, out);
         writeArithmetic("varReadIndex", varReadIndex, out);
-        writeArithmetic("varFromTo", varFromTo, out);
-        writeArithmetic("varQuals", varQuals, out);
+        writeArithmetic("varFromTo", varFromTo, out, true);
+        writeArithmetic("varQuals", varQuals, out, true);
         writeArithmetic("varHasToQuals", varToQualLength, out);
         writeArithmetic("multiplicities", multiplicities, out);
         pairLinks.write(out);
@@ -1232,15 +1273,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 final String toBases = seqVarBuilder.getTo();
 
                 final byte[] toQuals = new byte[toBases.length()];
-                int  indelOffset=0;
-                for (int l = 0; l < toBases.length();++l ) {
-                    final int i = l + seqVarBuilder.getReadIndex() - 1 -indelOffset;
-                    final byte b = i>=readQualScores.size()? 0: readQualScores.byteAt(i);
+                int indelOffset = 0;
+                for (int l = 0; l < toBases.length(); ++l) {
+                    final int i = l + seqVarBuilder.getReadIndex() - 1 - indelOffset;
+                    final byte b = i >= readQualScores.size() ? 0 : readQualScores.byteAt(i);
                     final boolean ignoreBase = toBases.charAt(l) == '-';
                     toQuals[l] = ignoreBase ? 0 : b;
 
                     if (ignoreBase) {
-                     indelOffset++;
+                        indelOffset++;
                     }
                 }
                 seqVarBuilder.setToQuality(ByteString.copyFrom(toQuals));
