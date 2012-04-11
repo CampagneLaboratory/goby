@@ -71,7 +71,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private static final IntArrayList EMPTY_LIST = new IntArrayList();
     private boolean storeReadOrigins = true;
     private final boolean useArithmeticCoding = true;
-    private final boolean useHuffmanCoding =false;
+    private final boolean useHuffmanCoding = false;
 
 
     public static DynamicOptionClient doc() {
@@ -122,7 +122,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 LOG.error("Cannot open stats file", e);
             }
         }
-
     }
 
     @Override
@@ -982,23 +981,30 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     private void recordVariationQualitiesAndClear(Alignments.AlignmentEntry source, Alignments.AlignmentEntry.Builder result, List<Alignments.SequenceVariation> sequenceVariationsList) {
-
-        int index = 0;
-        for (final Alignments.SequenceVariation seqVar : sequenceVariationsList) {
-            final String from = seqVar.getFrom();
-
-            final ByteString toQualities = seqVar.getToQuality();
-            final boolean hasToQuals = seqVar.hasToQuality();
-            final int toQualSize = hasToQuals ? toQualities.size() : 0;
-            varToQualLength.add(toQualSize);
-
-            for (int i = 0; i < toQualSize; i++) {
-                varQuals.add(toQualities.byteAt(i));
+        if (source.hasReadQualityScores()) {
+            for (final Alignments.SequenceVariation seqVar : sequenceVariationsList) {
+                varToQualLength.add(0);
             }
-            Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
-            varBuilder.clearToQuality();
-            result.setSequenceVariations(index, varBuilder.buildPartial());
-            index++;
+        } else
+
+        {
+            int index = 0;
+            for (final Alignments.SequenceVariation seqVar : sequenceVariationsList) {
+                final String from = seqVar.getFrom();
+
+                final ByteString toQualities = seqVar.getToQuality();
+                final boolean hasToQuals = seqVar.hasToQuality();
+                final int toQualSize = hasToQuals ? toQualities.size() : 0;
+                varToQualLength.add(toQualSize);
+
+                for (int i = 0; i < toQualSize; i++) {
+                    varQuals.add(toQualities.byteAt(i));
+                }
+                Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
+                varBuilder.clearToQuality();
+                result.setSequenceVariations(index, varBuilder.buildPartial());
+                index++;
+            }
         }
 
     }
@@ -1081,6 +1087,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     scores[i] = (byte) allReadQualityScores.getInt(qualScoreIndex++);
                 }
                 result.setReadQualityScores(ByteString.copyFrom(scores));
+
             }
         }
         int anInt = mappingQualities.getInt(index);
@@ -1197,10 +1204,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     if (varQualIndex < varQuals.size()) {
 
                         quals[i] = (byte) varQuals.getInt(varQualIndex);
-                        //  if (quals[i] != NO_VALUE) {
                         ++varQualIndex;
                     }
-                    // }
+
                 }
             }
             varBuilder.setFrom(from.toString());
@@ -1208,10 +1214,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             if (toQualLength > 0) {
                 varBuilder.setToQuality(ByteString.copyFrom(quals));
             }
+
             if (templateHasSequenceVariations) {
                 result.setSequenceVariations(varIndex, varBuilder);
             } else {
                 result.addSequenceVariations(varBuilder);
+            }
+
+        }
+        if (result.hasReadQualityScores()) {
+            final ByteString readQualScores = result.getReadQualityScores();
+            // put toQual back on entries:
+            for (int varIndex = 0; varIndex < numVariations; varIndex++) {
+
+                final Alignments.SequenceVariation.Builder seqVarBuilder = result.getSequenceVariationsBuilder(varIndex);
+                final String toBases = seqVarBuilder.getTo();
+
+                final byte[] toQuals = new byte[toBases.length()];
+                for (int l = 0; l < toBases.length(); l++) {
+                    toQuals[l] = toBases.charAt(l) == '-' ? 0 : readQualScores.byteAt(l + seqVarBuilder.getReadIndex() - 1);
+                }
+                seqVarBuilder.setToQuality(ByteString.copyFrom(toQuals));
+
+                result.setSequenceVariations(varIndex, seqVarBuilder);
             }
 
         }

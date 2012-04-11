@@ -84,19 +84,18 @@ public class TestAlignmentChunkCodec1 {
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, true);
 
-
         testRoundTripWithBuiltEntries(codec, collection, true);
     }
 
     AlignmentExample[] examplesWithDuplicates = {
-            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
-            new AlignmentExample(0, 2, 33, 2, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
-            new AlignmentExample(0, 3, 33, 3, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),    // R1
-            new AlignmentExample(0, 15, 33, 4, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),   // R1
-            new AlignmentExample(0, 101, 9, 5, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),     // R2
-            new AlignmentExample(0, 112, 9, 6, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),    // R2
-            new AlignmentExample(0, 112, 9, 7, "..", "AA", 42, 24, "T-", "G.", 5, 1001,0),    // R2
-            new AlignmentExample(1, 1111, 9, 8, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3,0)   //R3
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 10, 0),    // R1
+            new AlignmentExample(0, 2, 33, 2, "TA", "GG", 27, 31, "--", "TA", 3, 10, 0),    // R1
+            new AlignmentExample(0, 3, 33, 3, "TA", "GG", 27, 31, "--", "TA", 3, 10, 0),    // R1
+            new AlignmentExample(0, 15, 33, 4, "TA", "GG", 27, 31, "--", "TA", 3, 10, 0),   // R1
+            new AlignmentExample(0, 101, 9, 5, "..", "AA", 42, 24, "T-", "G.", 5, 11, 0),     // R2
+            new AlignmentExample(0, 112, 9, 6, "..", "AA", 42, 24, "T-", "G.", 5, 11, 0),    // R2
+            new AlignmentExample(0, 112, 9, 7, "..", "AA", 42, 24, "T-", "G.", 5, 11, 0),    // R2
+            new AlignmentExample(1, 1111, 9, 8, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3, 0)   //R3
     };
 
     @Test
@@ -116,20 +115,42 @@ public class TestAlignmentChunkCodec1 {
 
         assertRoundTripMatchExpected(codec, collection);
     }
+
     @Test
     public void roundTripMoreWithQualScores() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
         addQualScores(collection);
+        addToQuals(collection);
         assertRoundTripMatchExpected(codec, collection);
     }
 
-    private void addQualScores(Alignments.AlignmentCollection.Builder collection) {
-        byte[] quals=new byte[] {1,2,2,2,3,4,8,3,2,2,2,2,9};
-        for (int i=0; i< collection.getAlignmentEntriesCount(); i++) {
+    private void addToQuals(Alignments.AlignmentCollection.Builder collection) {
+        for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
             Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
-           element.setReadQualityScores(ByteString.copyFrom(quals));
+            if (element.hasReadQualityScores()) {
+                ByteString qualScores = element.getReadQualityScores();
+                for (int j = 0; j < element.getSequenceVariationsCount(); j++) {
+                    Alignments.SequenceVariation.Builder seqVarBuilder = element.getSequenceVariationsBuilder(j);
+                    final String toBases = seqVarBuilder.getTo();
+
+                    final byte[] toQuals = new byte[toBases.length()];
+                    for (int k = 0; k < toQuals.length; k++) {
+                        toQuals[k] = toBases.charAt(k)=='-'?0:qualScores.byteAt(seqVarBuilder.getReadIndex() - 1+k);
+                    }
+                    seqVarBuilder.setToQuality(ByteString.copyFrom(toQuals));
+                }
+            }
+
+        }
+    }
+
+    private void addQualScores(Alignments.AlignmentCollection.Builder collection) {
+        byte[] quals = new byte[]{1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1,2,3,4,5,6,7,8,9,1};
+        for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
+            Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
+            element.setReadQualityScores(ByteString.copyFrom(quals));
 
         }
 
@@ -208,6 +229,10 @@ public class TestAlignmentChunkCodec1 {
             addReadQuals(addReadQual, entryBuilder);
             expected.addAlignmentEntries(entryBuilder);
         }
+        if (addReadQual) {
+            addToQuals(expected);
+            addToQuals(collection);
+        }
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
 
     }
@@ -238,7 +263,8 @@ public class TestAlignmentChunkCodec1 {
     private void addReadQuals(boolean addReadQual, Alignments.AlignmentEntry.Builder entry) {
         if (addReadQual) {
 
-            final byte[] quals = {0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2};
+            final byte[] quals = {0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,0x1, 0x2, 0x3, 0x42, 0x1,
+                    0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,};
             final ByteString scores = ByteString.copyFrom(quals);
             entry.setReadQualityScores(scores);
         }
@@ -326,14 +352,14 @@ public class TestAlignmentChunkCodec1 {
 
             //required fields that are uncompressed:
             this.query_index = query_index;
-            this.insertSize=insertSize;
+            this.insertSize = insertSize;
         }
     }
 
     AlignmentExample[] examples = new AlignmentExample[]{
-            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000,0),
-            new AlignmentExample(0, 1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 1001,2),
-            new AlignmentExample(1, 1, 9, 1, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3,34)
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 10, 0),
+            new AlignmentExample(0, 1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 11, 2),
+            new AlignmentExample(1, 1, 9, 1, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3, 34)
     };
     ObjectArrayList<Alignments.AlignmentEntry.Builder> builtEntries;
 
@@ -367,9 +393,9 @@ public class TestAlignmentChunkCodec1 {
             sequenceVariation2.setPosition(entry.var2_position);
             sequenceVariation2.setReadIndex(entry.var2_readIndex);
             alignmentBuilder.addSequenceVariations(sequenceVariation2.build());
-           if (entry.insertSize!=0) {
-               alignmentBuilder.setInsertSize(entry.insertSize);
-           }
+            if (entry.insertSize != 0) {
+                alignmentBuilder.setInsertSize(entry.insertSize);
+            }
             list.add(alignmentBuilder);
         }
         return list;
