@@ -713,4 +713,7 @@ public class SamHelper {
     }
 
 
+    public void setQueryPosition(int position) {
+        this.queryPosition=position;
+    }
 }

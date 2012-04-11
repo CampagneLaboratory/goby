@@ -136,8 +136,10 @@ public class TestSplicedSamHelper {
         assertEquals(0, vars.size());
 
         samHelper.setEntryCursor(1);
+
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
+        assertEquals(28, samHelper.getQueryPosition());
         assertEquals(bases_28_35, samHelper.getQuery().toString());
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());

@@ -335,6 +335,7 @@ public class SplicedSamHelper {
                         limit.position,
                         reverseStrand  ,queryLength
                 );
+                helpers.get(i).setQueryPosition(limit.readStart);
             }
         }
     }
