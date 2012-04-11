@@ -39,9 +39,15 @@ import java.util.regex.Pattern;
  */
 public class SamHelper {
 
-    private final static Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
-    private final static Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
-    private final static Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
+    private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
+    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
+    private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
+
+    private static final Pattern FIRST_NUMBER_PATTERN = Pattern.compile("^(\\d+)");
+    private static final Pattern LAST_NUMBER_PATTERN = Pattern.compile("(\\d+)$");
+
+    public static final Pattern FIRST_CIGAR_PATTERN = Pattern.compile("^(\\d+)([MIDNSHP])");
+    public static final Pattern LAST_CIGAR_PATTERN = Pattern.compile("(\\d+)([MIDNSHP])$");
 
     /**
      * Used to log debug and informational messages.
@@ -712,8 +718,83 @@ public class SamHelper {
         this.qualityEncoding = qualityEncoding;
     }
 
+    public void setQueryPosition(final int queryPosition) {
+        this.queryPosition = queryPosition;
+    }
 
-    public void setQueryPosition(int position) {
-        this.queryPosition=position;
+    /**
+     * When appending two cigar strings, if the left ends with the same code as the right stars with,
+     * this will combine those two into a single code. Such as appendTo="2S45M" + appendFrom="25M2S"
+     * the result will be appendTo=="2S70M2S".
+     * @param appendTo the cigar string we are appending to
+     * @param appendFrom the cigar string we are appending from
+     */
+    public static void appendCigar(final MutableString appendTo, final MutableString appendFrom) {
+        // A couple simple cases
+        if (appendFrom.length() == 0 || appendTo.length() == 0) {
+            appendTo.append(appendFrom);
+            return;
+        }
+
+        String appendToMatchNum = null;
+        char appendToMatchCode = '\0';
+        final Matcher appendToMatcher = LAST_CIGAR_PATTERN.matcher(appendTo);
+        if (appendToMatcher.find()) {
+            appendToMatchNum = appendToMatcher.group(1);
+            appendToMatchCode = appendToMatcher.group(2).charAt(0);
+        }
+        String appendFromMatchNum = null;
+        char appendFromMatchCode = '\0';
+        final Matcher appendFromMatcher = FIRST_CIGAR_PATTERN.matcher(appendFrom);
+        if (appendFromMatcher.find()) {
+            appendFromMatchNum = appendFromMatcher.group(1);
+            appendFromMatchCode = appendFromMatcher.group(2).charAt(0);
+        }
+        if (appendToMatchNum == null || appendFromMatchNum == null || appendToMatchCode != appendFromMatchCode) {
+            // Either appendTo doesn't end in a number of appendFrom doesn't start with a number
+            appendTo.append(appendFrom);
+        } else {
+            final int appendToVal = Integer.parseInt(appendToMatchNum);
+            final int appendFromVal = Integer.parseInt(appendFromMatchNum);
+            appendTo.setLength(appendTo.length() - appendToMatchNum.length() - 1);
+            appendTo.append(appendToVal + appendFromVal).append(appendFromMatchCode);
+            appendTo.append(appendFrom.substring(appendFromMatchNum.length() + 1));
+        }
+    }
+
+    /**
+     * When one has two MD:Z mismatch strings, if the left ends with a number and the right ends with a number,
+     * you cannot just concatenate left+right, you must take the left number and add it to the right number.
+     * If appendTo="10TCC25" + appendFrom="15^TCC10" will result in appendTo=="10TCC40^TCC10".
+     * @param appendTo the mismatchString we are appending to
+     * @param appendFrom the mismatchString we are appending from
+     */
+    public static void appendMismatches(final MutableString appendTo, final MutableString appendFrom) {
+        // A couple simple cases
+        if (appendFrom.length() == 0 || appendTo.length() == 0) {
+            appendTo.append(appendFrom);
+            return;
+        }
+
+        String appendToMatch = null;
+        final Matcher appendToMatcher = LAST_NUMBER_PATTERN.matcher(appendTo);
+        if (appendToMatcher.find()) {
+            appendToMatch = appendToMatcher.group(0);
+        }
+        String appendFromMatch = null;
+        final Matcher appendFromMatcher = FIRST_NUMBER_PATTERN.matcher(appendFrom);
+        if (appendFromMatcher.find()) {
+            appendFromMatch = appendFromMatcher.group(0);
+        }
+        if (appendToMatch == null || appendFromMatch == null) {
+            // Either appendTo doesn't end in a number of appendFrom doesn't start with a number
+            appendTo.append(appendFrom);
+        } else {
+            final int appendToVal = Integer.parseInt(appendToMatch);
+            final int appendFromVal = Integer.parseInt(appendFromMatch);
+            appendTo.setLength(appendTo.length() - appendToMatch.length());
+            appendTo.append(appendToVal + appendFromVal);
+            appendTo.append(appendFrom.substring(appendFromMatch.length()));
+        }
     }
 }

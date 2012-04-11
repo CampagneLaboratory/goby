@@ -19,12 +19,14 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import it.unimi.dsi.lang.MutableString;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test construction of ref via sam data.
@@ -524,7 +526,7 @@ public class TestSamHelper {
         final String expRead = "CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expRef = "CtGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String expQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
-        samHelper.setSource(15, sourceRead, sourceQual, "50M", "1T48", 1, false,50);
+        samHelper.setSource(15, sourceRead, sourceQual, "50M", "1T48", 1, false, 50);
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(expRead, samHelper.getQuery().toString());
@@ -657,6 +659,71 @@ public class TestSamHelper {
         assertTrue(SamSequenceVariation.contains(vars, 56 - samHelper.getPosition(), "---", 24, "ATC", new byte[]{24, 23, 22}));
     }
 
+    @Test
+    public void testCigarMerge() {
+        // Merge the M's
+        final MutableString left = new MutableString("22S54M");
+        SamHelper.appendCigar(left, new MutableString("32M3S"));
+        assertEquals("Incorrect cigar merge", "22S86M3S", left.toString());
 
+        // Merge the S's
+        left.length(0);
+        left.append("22S54M2S");
+        SamHelper.appendCigar(left, new MutableString("2S5M3S"));
+        assertEquals("Incorrect cigar merge", "22S54M4S5M3S", left.toString());
 
+        // No merge, just concat
+        left.length(0);
+        left.append("22S54M2S");
+        SamHelper.appendCigar(left, new MutableString("5M3S"));
+        assertEquals("Incorrect cigar merge", "22S54M2S5M3S", left.toString());
+
+        // Nothing on left, just concat
+        left.length(0);
+        SamHelper.appendCigar(left, new MutableString("5M3S"));
+        assertEquals("Incorrect cigar merge", "5M3S", left.toString());
+
+        // Nothing on right, just concat
+        left.length(0);
+        left.append("22S54M2S");
+        SamHelper.appendCigar(left, new MutableString());
+        assertEquals("Incorrect cigar merge", "22S54M2S", left.toString());
+    }
+
+    @Test
+    public void testMismatchMerge() {
+        // Merge 45 and 32
+        final MutableString left = new MutableString("232D320N15^TCC45");
+        SamHelper.appendMismatches(left, new MutableString("32^TAC0N0N64"));
+        assertEquals("Incorrect mismatch merge", "232D320N15^TCC77^TAC0N0N64", left.toString());
+
+        // No merge just concat, no number on right
+        left.length(0);
+        left.append("232D320N15^TCC45");
+        SamHelper.appendMismatches(left, new MutableString("^TAC0N0N64"));
+        assertEquals("Incorrect mismatch merge", "232D320N15^TCC45^TAC0N0N64", left.toString());
+
+        // No merge just concat, no number on left
+        left.length(0);
+        left.append("232D320N15^TCC");
+        SamHelper.appendMismatches(left, new MutableString("32^TAC0N0N64"));
+        assertEquals("Incorrect mismatch merge", "232D320N15^TCC32^TAC0N0N64", left.toString());
+
+        // No merge just concat, no numbers on either
+        left.length(0);
+        left.append("232D320N15^TCC");
+        SamHelper.appendMismatches(left, new MutableString("^TAC0N0N64"));
+        assertEquals("Incorrect mismatch merge", "232D320N15^TCC^TAC0N0N64", left.toString());
+
+        // No merge just concat, nothing on left
+        left.length(0);
+        SamHelper.appendMismatches(left, new MutableString("^TAC0N0N64"));
+        assertEquals("Incorrect mismatch merge", "^TAC0N0N64", left.toString());
+
+        // No merge just concat, nothing on right
+        left.length(0);
+        left.append("232D320N15^TCC");
+        SamHelper.appendMismatches(left, new MutableString(""));
+        assertEquals("Incorrect mismatch merge", "232D320N15^TCC", left.toString());
+    }
 }

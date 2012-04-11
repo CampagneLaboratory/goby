@@ -20,8 +20,12 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.ExportableAlignmentEntryData;
+import edu.cornell.med.icb.goby.alignments.FileSlice;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.ReadOriginInfo;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
@@ -31,7 +35,16 @@ import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.sf.samtools.*;
+import net.sf.samtools.DefaultSAMRecordFactory;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileWriter;
+import net.sf.samtools.SAMFileWriterFactory;
+import net.sf.samtools.SAMProgramRecord;
+import net.sf.samtools.SAMReadGroupRecord;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordFactory;
+import net.sf.samtools.SAMSequenceDictionary;
+import net.sf.samtools.SAMSequenceRecord;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -39,8 +52,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Export a Goby alignment to the BAM format.
@@ -54,6 +68,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
      */
     private static final Logger LOG = Logger.getLogger(CompactToSAMMode.class);
 
+    private static final DateFormat GOBY_DATE_FORMAT = new SimpleDateFormat("dd:MMM:yyyy");
+
     /**
      * The mode name.
      */
@@ -62,8 +78,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Exports a compact alignment to the SAM/BAM format. This tool tries" +
-            "to export a Goby alignment comprehensively to the BAM format. Since Goby 2.0.";
+    private static final String MODE_DESCRIPTION = "Exports a compact alignment to the SAM/BAM format." +
+            "This tool tries to export a Goby alignment comprehensively to the BAM format. Since Goby 2.0.";
 
     /**
      * BAM/SAM output alignment filename.
@@ -114,11 +130,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
     private ExportableAlignmentEntryData exportData;
 
-
-    private Int2ObjectMap<List<ExportableAlignmentEntryData>> queryIndexToFragmentsMap;
-
-    // Keep?
-    private ReadNameToIndex nameToQueryIndices = new ReadNameToIndex("ignore-this-for-now");
+    private Int2ObjectMap<Int2ObjectMap<ExportableAlignmentEntryData>> queryIndexToFragmentsMap;
 
     /**
      * Flag to indicate if log4j was configured.
@@ -200,8 +212,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
      * @param args command line arguments
      * @return this object for chaining
      * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -210,7 +221,6 @@ public class CompactToSAMMode extends AbstractGobyMode {
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         // don't even dare go through the debugging code if log4j was not configured. The debug code
         // is way too slow to run unintentionally in production!
-        debug = Util.log4JIsConfigured();
 
         inputBasename = jsapResult.getString("input-basename");
         inputGenome = jsapResult.getString("input-genome");
@@ -247,9 +257,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
-        final boolean outputIsSam = output.toUpperCase().endsWith(".SAM");
-
-        queryIndexToFragmentsMap = new Int2ObjectArrayMap<List<ExportableAlignmentEntryData>>();
+        debug = Util.log4JIsConfigured();
+        queryIndexToFragmentsMap = new Int2ObjectArrayMap<Int2ObjectMap<ExportableAlignmentEntryData>>();
         exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
@@ -268,13 +277,19 @@ public class CompactToSAMMode extends AbstractGobyMode {
         private long numWritten;
         private ReadOriginInfo readOriginInfo;
         private boolean hasReadGroups;
-        private final DateFormat GOBY_DATE_FORMAT = new SimpleDateFormat("dd:MMM:yyyy");
+        private final List<ExportableAlignmentEntryData> completeSpliceFragments;
+        final LinkedList<Integer> needFragmentIndexes;
+        final LinkedList<Integer> foundFragmentIndexes;
+
+        private CompactToSAMIterateAlignments() {
+            completeSpliceFragments = new ObjectArrayList<ExportableAlignmentEntryData>();
+            needFragmentIndexes = new LinkedList<Integer>();
+            foundFragmentIndexes = new LinkedList<Integer>();
+        }
 
         private void initializeSam(final AlignmentReader alignmentReader) {
-            // First entry to output.
-            boolean inputIsSorted = alignmentReader.isSorted();
             // Because splices cannot be written in a sorted manner, we can never consider the output to be sorted.
-            boolean outputIsSorted = false;
+            final boolean outputIsSorted = false;
 
             // Gather the target identifiers, supply them to the SAM file
             samHeader = new SAMFileHeader();
@@ -341,65 +356,168 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
             exportData.buildFrom(alignmentEntry);
 
-            List<ExportableAlignmentEntryData> fragmentsForQueryIndex = null;
+            completeSpliceFragments.clear();
+            Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap;
+            boolean splicedFragment = false;
             if (alignmentEntry.hasSplicedForwardAlignmentLink() ||
                     alignmentEntry.hasSplicedBackwardAlignmentLink()) {
-                fragmentsForQueryIndex = queryIndexToFragmentsMap.get(alignmentEntry.getQueryIndex());
-                if (fragmentsForQueryIndex == null) {
-                    fragmentsForQueryIndex = new ObjectArrayList<ExportableAlignmentEntryData>();
-                    queryIndexToFragmentsMap.put(alignmentEntry.getQueryIndex(), fragmentsForQueryIndex);
+                splicedFragment = true;
+                fragIndexToAlignmentsMap = queryIndexToFragmentsMap.get(alignmentEntry.getQueryIndex());
+                if (fragIndexToAlignmentsMap == null) {
+                    fragIndexToAlignmentsMap = new Int2ObjectArrayMap<ExportableAlignmentEntryData>();
+                    queryIndexToFragmentsMap.put(alignmentEntry.getQueryIndex(), fragIndexToAlignmentsMap);
                 }
-                fragmentsForQueryIndex.add(ExportableAlignmentEntryData.duplicateFrom(exportData));
+                fragIndexToAlignmentsMap.put(exportData.getAlignmentEntry().getFragmentIndex(),
+                        ExportableAlignmentEntryData.duplicateFrom(exportData));
+                findCompleteSpliceFragments(fragIndexToAlignmentsMap);
             }
 
-            if (fragmentsForQueryIndex == null) {
-                // This is suitable for single alignment entries or paired end
-                outputSingle();
+            if (splicedFragment) {
+                if (!completeSpliceFragments.isEmpty()) {
+                    outputSplicedFragments(completeSpliceFragments);
+                }
             } else {
-                if (fragmentsForQueryIndex.size() == alignmentEntry.getQueryIndexOccurrences()) {
-                    // When an alignment is spliced, we have to output all the splice pieces only
-                    // after we have read ALL of the pieces of the splice.
-                    outputMultiFragments(fragmentsForQueryIndex);
-                    queryIndexToFragmentsMap.remove(alignmentEntry.getQueryIndex());
+                // This is suitable for single alignment entries or paired end
+                outputSingle(exportData);
+            }
+        }
+
+        /**
+         * Given a list of all of the fragments for a single query index, return a list of
+         * fragments that represent a complete splice formation. If the alignment is paired end,
+         * this will represent a single end of the pair, not both of the pairs.
+         * If none of the splices are complete, this will return null.
+         * If not null, this will return a NEW LIST, not the same fragIndexToAlignmentsMap list,
+         * additionally, the elements in the returned list will be removed from fragIndexToAlignmentsMap.
+         * NOTE: for performance completeSpliceFragments is used repeatedly.
+         *
+         * @param fragIndexToAlignmentsMap the list of found fragments for a desired query index.
+         */
+        private void findCompleteSpliceFragments(
+                final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap) {
+            for (final Map.Entry<Integer, ExportableAlignmentEntryData> entry :
+                    fragIndexToAlignmentsMap.entrySet()) {
+                // For THIS entry, see if all related forward/backward fragments exists in in  fragIndexToAlignmentsMap
+                // We need to do this for every entry in our map because this map COULD contain segments
+                // that span multiple alignments (such as if we are aligning ambiguity > 1 or with pairs).
+                needFragmentIndexes.clear();
+                foundFragmentIndexes.clear();
+
+                final Alignments.AlignmentEntry alignmentEntry = entry.getValue().getAlignmentEntry();
+                needFragmentIndexes.add(alignmentEntry.getFragmentIndex());
+                foundFragmentIndexes.add(alignmentEntry.getFragmentIndex());
+                if (alignmentEntry.hasSplicedForwardAlignmentLink()) {
+                    walkFragments(fragIndexToAlignmentsMap,
+                            alignmentEntry.getSplicedForwardAlignmentLink(), true);
+                }
+                if (alignmentEntry.hasSplicedBackwardAlignmentLink()) {
+                    walkFragments(fragIndexToAlignmentsMap,
+                            alignmentEntry.getSplicedBackwardAlignmentLink(), false);
+                }
+                // We've now walked the entire available distance, forward and backward. See if the fragment
+                // indexes that we need could be found.
+                if (needFragmentIndexes.equals(foundFragmentIndexes)) {
+                    // We have a complete set of fragments
+                    for (final int fragIndex : needFragmentIndexes) {
+                        completeSpliceFragments.add(fragIndexToAlignmentsMap.get(fragIndex));
+                        fragIndexToAlignmentsMap.remove(fragIndex);
+                    }
+                    break;
                 }
             }
         }
 
-        private void outputMultiFragments(final List<ExportableAlignmentEntryData> spliceFragments) {
+        /**
+         * Used to walk, forward or backward, the splice fragments. Helps with determining if we have
+         * all the fragments for a single spliced alignment entry.
+         * @param fragIndexToAlignmentsMap the map of fragment index to alignment entry
+         * @param requiredRelated the related splice fragment we are walking from
+         * @param walkForward true if we are walking forward
+         */
+        private void walkFragments(final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap,
+                                   final Alignments.RelatedAlignmentEntry requiredRelated, final boolean walkForward) {
+            final int fragmentIndex = requiredRelated.getFragmentIndex();
+            if (walkForward) {
+                // Build needFragmentIndexes, foundFragmentIndexes in the order of the aligned splices
+                needFragmentIndexes.addLast(fragmentIndex);
+            } else {
+                needFragmentIndexes.addFirst(fragmentIndex);
+            }
 
+            final ExportableAlignmentEntryData entry = fragIndexToAlignmentsMap.get(fragmentIndex);
+            if (entry != null) {
+                // The current needed entry was found. Look forward or backward for more required fragments
+                if (walkForward) {
+                    foundFragmentIndexes.addLast(fragmentIndex);
+                } else {
+                    foundFragmentIndexes.addFirst(fragmentIndex);
+                }
+                final Alignments.AlignmentEntry alignmentEntry = entry.getAlignmentEntry();
+                if (walkForward && alignmentEntry.hasSplicedForwardAlignmentLink()) {
+                    walkFragments(fragIndexToAlignmentsMap,
+                            alignmentEntry.getSplicedForwardAlignmentLink(), true);
+                }
+                if (!walkForward && alignmentEntry.hasSplicedBackwardAlignmentLink()) {
+                    walkFragments(fragIndexToAlignmentsMap,
+                            alignmentEntry.getSplicedBackwardAlignmentLink(), false);
+                }
+            }
         }
 
-        private void outputSingle() {
+        private void outputSplicedFragments(final List<ExportableAlignmentEntryData> spliceFragments) {
+            final ExportableAlignmentEntryData exportData =
+                    ExportableAlignmentEntryData.mergeSpliceFragments(spliceFragments);
+            outputSingle(exportData);
+        }
+
+        /**
+         * Output a single alignment segment. If paired end, this will output of the pair halfs.
+         * Spliced alignments will be written with outputMultiFragments once all the fragments of
+         * that alignment have bee encountered.
+         * @param toExport the alignment entry to output
+         */
+        private void outputSingle(final ExportableAlignmentEntryData toExport) {
+            if (toExport.isInvalid()) {
+                LOG.warn(toExport.toString());
+                return;
+            }
+            if (debug) {
+                LOG.debug("Wrote qi=" + toExport.getQueryIndex());
+            }
             final SAMRecord samRecord = samRecordFactory.createSAMRecord(samHeader);
 
-            samRecord.setReferenceIndex(exportData.getTargetIndex());
-            samRecord.setFlags(exportData.getPairFlags());
-            samRecord.setReadName(exportData.getReadName());
-            samRecord.setAlignmentStart(exportData.getStartPosition());
-            samRecord.setMappingQuality(exportData.getMappingQuality());
+            samRecord.setReferenceIndex(toExport.getTargetIndex());
+            samRecord.setFlags(toExport.getPairFlags());
+            samRecord.setReadName(toExport.getReadName());
+            samRecord.setAlignmentStart(toExport.getStartPosition());
+            samRecord.setMappingQuality(toExport.getMappingQuality());
 
-            samRecord.setReadString(exportData.getReadBasesOriginal());
-            samRecord.setBaseQualities(exportData.getReadQualities().toByteArray());
-            samRecord.setCigarString(exportData.getCigarString());
-            samRecord.setAttribute("MD", exportData.getMismatchString());
-            for (final String bamAttribute : exportData.getBamAttributesList()) {
+            samRecord.setReadString(toExport.getReadBasesOriginal());
+            samRecord.setBaseQualities(toExport.getReadQualities().toByteArray());
+            samRecord.setCigarString(toExport.getCigarString());
+            samRecord.setAttribute("MD", toExport.getMismatchString());
+            for (String bamAttribute : toExport.getBamAttributesList()) {
+                bamAttribute = bamAttribute.replaceAll("[\n\r]", "");
                 final String[] tokens = bamAttribute.split(":");
                 samRecord.setAttribute(tokens[0], getValue(tokens));
-                System.out.printf("Writing %s:%s %n",tokens[0],getValue(tokens));
+                if (debug) {
+                    LOG.debug(String.format("Writing %s:%s",tokens[0],getValue(tokens)));
+                }
             }
-            if (exportData.hasMate()) {
-                samRecord.setMateReferenceIndex(exportData.getMateReferenceIndex());
-                samRecord.setMateAlignmentStart(exportData.getMateAlignmentStart());
-                samRecord.setInferredInsertSize(exportData.getInferredInsertSize());
+            if (toExport.hasMate()) {
+                samRecord.setMateReferenceIndex(toExport.getMateReferenceIndex());
+                samRecord.setMateAlignmentStart(toExport.getMateAlignmentStart());
+                samRecord.setInferredInsertSize(toExport.getInferredInsertSize());
             }
             if (hasReadGroups) {
-                samRecord.setAttribute("RG",exportData.getReadGroup());
+                samRecord.setAttribute("RG", toExport.getReadGroup());
             }
             outputSam.addAlignment(samRecord);
+            numWritten++;
         }
     }
 
-    private Object getValue(String[] tokens) {
+    private Object getValue(final String[] tokens) {
         final String type = tokens[1];
         if ("Z".equals(type)) {
             return "Z:"+tokens[2];
@@ -414,7 +532,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         return tokens[2];
     }
 
-    private String getTag(String bamAttribute) {
+    private String getTag(final String bamAttribute) {
         return bamAttribute.split(":")[0];
     }
 

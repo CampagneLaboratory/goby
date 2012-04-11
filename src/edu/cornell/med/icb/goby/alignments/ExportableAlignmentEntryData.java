@@ -18,24 +18,35 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.modes.SamHelper;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.regex.Matcher;
 
 /**
- * Test ExportableAlignmentEntryData.
+ * Assist with converting Compact Alignments to other formats such as SAM.
+ * TODO: Splices that span chromosome boundaries won't be emitted, at least for now.
  */
 public class ExportableAlignmentEntryData {
 
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(ExportableAlignmentEntryData.class);
+
     // This was the maximum acceptable value
     private static final byte UNKNOWN_MAPPING_VALUE = 93;
+    private boolean debug;
 
     private RandomAccessSequenceInterface genome;
 
@@ -60,6 +71,7 @@ public class ExportableAlignmentEntryData {
     private int targetAlignedLength;
     private boolean reverseStrand;
     private QualityEncoding qualityEncoding;
+    private int endTargetPositionZeroBased;
 
     private Alignments.AlignmentEntry alignmentEntry;
     private ReadOriginInfo readOriginInfo;
@@ -80,6 +92,7 @@ public class ExportableAlignmentEntryData {
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
                                         final QualityEncoding qualityEncoding) {
+        debug = Util.log4JIsConfigured();
         this.genome = genome;
         this.qualityEncoding = qualityEncoding;
 
@@ -121,6 +134,7 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = 0;
         reverseStrand = true;
         hasQualities = false;
+        endTargetPositionZeroBased = 0;
 
         alignmentEntry = null;
     }
@@ -154,6 +168,7 @@ public class ExportableAlignmentEntryData {
         to.targetAlignedLength = from.targetAlignedLength;
         to.reverseStrand = from.reverseStrand;
         to.hasQualities = from.hasQualities;
+        to.endTargetPositionZeroBased = from.endTargetPositionZeroBased;
 
         to.alignmentEntry = Alignments.AlignmentEntry.newBuilder(from.alignmentEntry).build();
 
@@ -167,6 +182,10 @@ public class ExportableAlignmentEntryData {
      */
     public int getTargetIndex() {
         return alignmentEntry.getTargetIndex();
+    }
+
+    public String getTargetName() {
+        return genome.getReferenceName(alignmentEntry.getTargetIndex());
     }
 
     /**
@@ -239,6 +258,10 @@ public class ExportableAlignmentEntryData {
 
     public int getInferredInsertSize() {
         return alignmentEntry.getInsertSize();
+    }
+
+    public Alignments.AlignmentEntry getAlignmentEntry() {
+        return alignmentEntry;
     }
 
     /**
@@ -391,9 +414,9 @@ public class ExportableAlignmentEntryData {
     public void buildFrom(final Alignments.AlignmentEntry alignmentEntry) {
 
         buildFrom(alignmentEntry, null,
-
                 // some alignments will store the quality scores for the original read:
-                alignmentEntry.hasReadQualityScores() ? ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray()) : null);
+                alignmentEntry.hasReadQualityScores() ? ByteArrayList.wrap(
+                        alignmentEntry.getReadQualityScores().toByteArray()) : null);
     }
 
     /**
@@ -425,10 +448,13 @@ public class ExportableAlignmentEntryData {
             final Alignments.ReadOriginInfo info = readOriginInfo.getInfo(readOriginIndex);
             if (info == null) {
                 invalid = true;
-                invalidMessage.append(String.format("Cannot export read group index=%d. Index was not found in the goby header.",
+                invalidMessage.append(String.format(
+                        "Cannot export read group index=%d. Index was not found in the goby header.",
                         readOriginIndex));
-
-            }                           else {
+                if (debug) {
+                    LOG.debug(invalidMessage.toString());
+                }
+            } else {
                 readGroup=info.getOriginId();
             }
         }
@@ -445,6 +471,9 @@ public class ExportableAlignmentEntryData {
                 invalidMessage.append("Error: Sequence variation for queryIndex=").
                         append(alignmentEntry.getQueryIndex()).
                         append(" Has an invalid sequence variation. from.length != to.length");
+                if (debug) {
+                    LOG.debug(invalidMessage.toString());
+                }
                 return;
             }
             for (int i = 0; i < froms.length(); i++) {
@@ -455,6 +484,9 @@ public class ExportableAlignmentEntryData {
                     invalidMessage.append("Error: Sequence variation for queryIndex=").
                             append(alignmentEntry.getQueryIndex()).
                             append(" invalid. Both 'from' and 'to' bases both equal '-'");
+                    if (debug) {
+                        LOG.debug(invalidMessage.toString());
+                    }
                     return;
                 }
                 if (from == '-') {
@@ -466,9 +498,10 @@ public class ExportableAlignmentEntryData {
         }
 
         // Construct read & ref before any sequence variations (indels, mutations)
-        final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts; // Math.max(queryLength, targetAlignedLength);
+        final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts;
         final int targetIndex = alignmentEntry.getTargetIndex();
-        // TODO fix me. Got an error with deletion in the read: quals was longer than read by the number of bases deleted.
+        // TODO: fix me. Got an error with deletion in the read: quals was longer than
+        // TODO: read by the number of bases deleted.
         for (int i = 0; i < endOfLoop; i++) {
             final char base = genome.get(targetIndex, i + startPosition);
             if (i < startClip) {
@@ -486,11 +519,15 @@ public class ExportableAlignmentEntryData {
 
         // Process the seqvars
         if (!alignmentEntry.getSequenceVariationsList().isEmpty()) {
-            System.out.println("Before sequence variation:");
-            System.out.println(toString());
+            if (debug) {
+                LOG.debug("Before sequence variation:");
+                LOG.debug("\n" + toString());
+            }
         }
         for (final Alignments.SequenceVariation seqvar : alignmentEntry.getSequenceVariationsList()) {
-            System.out.println(seqVarToString(seqvar));
+            if (debug) {
+                LOG.debug(seqVarToString(seqvar));
+            }
             final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION
             final String tos = seqvar.getTo();      // read bases. '-' means INSERTION
             final int startRefPosition = seqvar.getPosition();   // refPosition, 1-based, always numbered from left
@@ -498,7 +535,8 @@ public class ExportableAlignmentEntryData {
             for (int i = 0; i < froms.length(); i++) {
                 final char from = froms.charAt(i);
                 final char to = tos.charAt(i);
-                final Byte toQual = toQuals == null ? null : (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
+                final Byte toQual = toQuals == null ? null :
+                        (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
 
                 final int refPosition = startRefPosition + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
@@ -512,23 +550,33 @@ public class ExportableAlignmentEntryData {
                 } else if (to == '-') {
                     // Deletion. Missing base in the read, but we
                     if (refBases.get(refPosition) != from) {
-                        invalid = true;
+                        invalid = false;
                         invalidMessage.append("Error: (Deletion) Sequence variation for queryIndex=").
                                 append(alignmentEntry.getQueryIndex()).
                                 append(" invalid. 'from' base doesn't match actual reference base. From=").
                                 append(from).append(" actual=").append(refBases.get(refPosition)).append('\n');
-                        return;
+                        if (debug) {
+                            LOG.debug(invalidMessage.toString());
+                        }
+                        if (invalid) {
+                            return;
+                        }
                     }
                     readBases.set(refPosition, to);
                 } else {
                     // Mutation
                     if (refBases.get(refPosition) != from) {
-                        invalid = true;
+                        invalid = false;
                         invalidMessage.append("Error: (Mutation) Sequence variation for queryIndex=").
                                 append(alignmentEntry.getQueryIndex()).
                                 append(" invalid. 'from' base doesn't match actual reference base. From=").
                                 append(from).append(" actual=").append(refBases.get(refPosition)).append('\n');
-                        return;
+                        if (debug) {
+                            LOG.debug(invalidMessage.toString());
+                        }
+                        if (invalid) {
+                            return;
+                        }
                     }
                     readBases.set(refPosition, to);
                     if (toQual != null) {
@@ -537,12 +585,13 @@ public class ExportableAlignmentEntryData {
                     }
                 }
             }
-            if (alignmentEntry.hasReadQualityScores()) {
-                qualities.clear();
-                for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
-                    qualities.add(value);
-                }
+        }
+        if (alignmentEntry.hasReadQualityScores()) {
+            qualities.clear();
+            for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
+                qualities.add(value);
             }
+            hasQualities = true;
         }
         if (numInserts > 0) {
             // Inserts, clip bases to the right so we don't go beyond read length
@@ -562,7 +611,11 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
-        System.out.println(toString());
+        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + endClip +
+                alignmentEntry.getTargetAlignedLength();
+        if (debug) {
+            LOG.debug("\n" + toString());
+        }
     }
 
     public List<String> getBamAttributesList() {
@@ -595,6 +648,120 @@ public class ExportableAlignmentEntryData {
         private CigarType(final char code) {
             this.code = code;
         }
+    }
+
+    /**
+     * Merge the splice fragments into a single ExportableAlignmentEntryData. Fragments should already be in
+     * their correct order based on the underlying goby alignment's next/previous splice fragments.
+     * @param fragments splice fragments to merge.
+     * @return the merge of fragments
+     */
+    public static ExportableAlignmentEntryData mergeSpliceFragments(
+            final List<ExportableAlignmentEntryData> fragments) {
+        final ExportableAlignmentEntryData merged = fragments.get(0);
+        final Alignments.AlignmentEntry mergedAlignment = merged.alignmentEntry;
+        final int size = fragments.size();
+        for (int i = 1; i < size; i++) {
+            final ExportableAlignmentEntryData fragment = fragments.get(i);
+            final Alignments.AlignmentEntry fragmentAlignment = fragment.alignmentEntry;
+            if (mergedAlignment.getTargetIndex() != fragmentAlignment.getTargetIndex()) {
+                // Not outputting splices across chromosome boundaries, at least for now.
+                merged.invalid = true;
+                merged.invalidMessage.append("Error: Splice segments for queryIndex=").
+                        append(mergedAlignment.getQueryIndex()).
+                        append(" Are on different chromosomes.");
+                if (merged.debug) {
+                    LOG.debug(merged.invalidMessage.toString());
+                }
+                return merged;
+            }
+
+            merged.mergeCigars(fragment);
+            if (merged.invalid) {
+                // Quit early, we've detected a problem.
+                return merged;
+            }
+            SamHelper.appendMismatches(merged.mismatchString, fragment.mismatchString);
+            merged.readBasesOriginal.append(fragment.readBasesOriginal);
+            merged.qualities.addAll(fragment.qualities);
+        }
+        return merged;
+    }
+
+    private void mergeCigars(final ExportableAlignmentEntryData other) {
+        final int gap;
+        final Alignments.AlignmentEntry otherAlignmentEntry = other.alignmentEntry;
+        final boolean spliceInReverse;
+        if (alignmentEntry.getPosition() < otherAlignmentEntry.getPosition()) {
+            // this earlier than other, this cigar ends in S, other cigar starts in S
+            spliceInReverse = false;
+            gap = otherAlignmentEntry.getPosition() - endTargetPositionZeroBased;
+        } else {
+            spliceInReverse = true;
+            gap = alignmentEntry.getPosition() - other.endTargetPositionZeroBased;
+            swapFieldsForReverseSplice(other);
+        }
+        final GobyCigarElement thisLastCigar = removeLastCigar();
+        final GobyCigarElement otherFirstCigar = other.removeFirstCigar();
+        if (thisLastCigar.code == 'S' && otherFirstCigar.code == 'S') {
+            // As expected
+            readBasesOriginal.length(queryLength - thisLastCigar.size);
+            other.readBasesOriginal.delete(0, otherFirstCigar.size);
+            qualities.size(queryLength - thisLastCigar.size);
+            other.qualities.removeElements(0, otherFirstCigar.size);
+            cigarString.append(gap).append('N');
+            cigarString.append(other.cigarString);
+        } else {
+            invalid = true;
+            invalidMessage.append("Splice cigar codes were incorrect for qi=").
+                    append(alignmentEntry.getQueryIndex());
+        }
+    }
+
+    private void swapFieldsForReverseSplice(final ExportableAlignmentEntryData other) {
+        final MutableString tempCigarString = cigarString;
+        cigarString = other.cigarString;
+        other.cigarString = tempCigarString;
+
+        final MutableString tempMismatchString = mismatchString;
+        mismatchString = other.mismatchString;
+        other.mismatchString = tempMismatchString;
+
+        final MutableString tempReadBasesOriginal = readBasesOriginal;
+        readBasesOriginal = other.readBasesOriginal;
+        other.readBasesOriginal = tempReadBasesOriginal;
+
+        final ByteList tempQualities = qualities;
+        qualities = other.qualities;
+        other.qualities = tempQualities;
+    }
+
+    public GobyCigarElement removeFirstCigar() {
+        final Matcher matcher = SamHelper.FIRST_CIGAR_PATTERN.matcher(cigarString);
+        GobyCigarElement cigarElement = null;
+        if (matcher.find()) {
+            final String matchStr = matcher.group(1);
+            final char matchCode = matcher.group(2).charAt(0);
+            cigarElement = new GobyCigarElement(matchStr, matchCode);
+            cigarString.delete(0, cigarElement.cigarWidth);
+        }
+        return cigarElement;
+    }
+
+    /**
+     * Obtain the last cigar element.
+     * @return a CigarElement
+     */
+    public GobyCigarElement removeLastCigar() {
+        final Matcher matcher = SamHelper.LAST_CIGAR_PATTERN.matcher(cigarString);
+        GobyCigarElement cigarElement = null;
+        if (matcher.find()) {
+            final String matchStr = matcher.group(1);
+            final char matchCode = matcher.group(2).charAt(0);
+            cigarElement = new GobyCigarElement(matchStr, matchCode);
+            cigarString.length(cigarString.length() - cigarElement.cigarWidth);
+        }
+        return cigarElement;
     }
 
     /**
@@ -693,9 +860,13 @@ public class ExportableAlignmentEntryData {
      */
     public String toString() {
         final StringBuilder sb = new StringBuilder();
+        sb.append("queryIndex =").append(getQueryIndex()).append("\n");
         if (invalid) {
             sb.append("invalidMessage").append(invalidMessage.toString()).append("\n");
         }
+        sb.append("targetIndex=").append(getTargetIndex()).append("\n");
+        sb.append("targetName =").append(getTargetName()).append('\n');
+        sb.append("fragIndex  =").append(alignmentEntry.getFragmentIndex()).append("\n");
         sb.append("startPos   =").append(getStartPosition()).append("\n");
         sb.append("startClip  =").append(startClip).append("\n");
         sb.append("startClip  =").append(startClip).append("\n");
@@ -712,6 +883,8 @@ public class ExportableAlignmentEntryData {
                 "diff        =");
         sb.append("actQuals    =").append(qualsToStr(actualQualities)).append("\n");
         sb.append("quals       =").append(qualsToStr(qualities)).append("\n");
+        sb.append("cigar       =").append(cigarString.toString()).append("\n");
+        sb.append("md:z        =").append(mismatchString.toString()).append("\n");
         return sb.toString();
     }
 
@@ -800,6 +973,20 @@ public class ExportableAlignmentEntryData {
             sb.append(diffPrefix).append('[');
             sb.append(diff.toString());
             sb.append("] size=").append(diff.length()).append('\n');
+        }
+    }
+
+    class GobyCigarElement {
+        int size;
+        char code;
+        int cigarWidth;
+        protected GobyCigarElement(final String sizeStr, final char code) {
+            size = Integer.parseInt(sizeStr);
+            this.code = code;
+            cigarWidth = sizeStr.length() + 1;
+        }
+        public String toString() {
+            return String.format("%d%c", size, code);
         }
     }
 }
