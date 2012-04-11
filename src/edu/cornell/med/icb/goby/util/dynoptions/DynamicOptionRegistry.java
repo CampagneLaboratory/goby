@@ -20,11 +20,6 @@ package edu.cornell.med.icb.goby.util.dynoptions;
 
 import com.martiansoftware.jsap.JSAPResult;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
-import org.reflections.Reflections;
-import sun.rmi.runtime.Log;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
 
 /**
  * A global registry for dynamic options. These options are set on the command line with options of the
