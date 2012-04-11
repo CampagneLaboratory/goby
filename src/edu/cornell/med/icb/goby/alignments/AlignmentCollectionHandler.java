@@ -1223,6 +1223,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         }
         if (result.hasReadQualityScores()) {
+
             final ByteString readQualScores = result.getReadQualityScores();
             // put toQual back on entries:
             for (int varIndex = 0; varIndex < numVariations; varIndex++) {
@@ -1231,8 +1232,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 final String toBases = seqVarBuilder.getTo();
 
                 final byte[] toQuals = new byte[toBases.length()];
-                for (int l = 0; l < toBases.length(); l++) {
-                    toQuals[l] = toBases.charAt(l) == '-' ? 0 : readQualScores.byteAt(l + seqVarBuilder.getReadIndex() - 1);
+                int  indelOffset=0;
+                for (int l = 0; l < toBases.length();++l ) {
+                    final int i = l + seqVarBuilder.getReadIndex() - 1 -indelOffset;
+                    final byte b = i>=readQualScores.size()? 0: readQualScores.byteAt(i);
+                    final boolean ignoreBase = toBases.charAt(l) == '-';
+                    toQuals[l] = ignoreBase ? 0 : b;
+
+                    if (ignoreBase) {
+                     indelOffset++;
+                    }
                 }
                 seqVarBuilder.setToQuality(ByteString.copyFrom(toQuals));
 

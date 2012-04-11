@@ -134,10 +134,15 @@ public class TestAlignmentChunkCodec1 {
                 for (int j = 0; j < element.getSequenceVariationsCount(); j++) {
                     Alignments.SequenceVariation.Builder seqVarBuilder = element.getSequenceVariationsBuilder(j);
                     final String toBases = seqVarBuilder.getTo();
-
+                    int indelOffset = 0;
                     final byte[] toQuals = new byte[toBases.length()];
                     for (int k = 0; k < toQuals.length; k++) {
-                        toQuals[k] = toBases.charAt(k)=='-'?0:qualScores.byteAt(seqVarBuilder.getReadIndex() - 1+k);
+                        final boolean ignoreBase = toBases.charAt(k) == '-';
+                        toQuals[k] = ignoreBase ? 0 : qualScores.byteAt(seqVarBuilder.getReadIndex() - 1 + k - indelOffset);
+
+                        if (ignoreBase) {
+                            indelOffset++;
+                        }
                     }
                     seqVarBuilder.setToQuality(ByteString.copyFrom(toQuals));
                 }
@@ -147,7 +152,7 @@ public class TestAlignmentChunkCodec1 {
     }
 
     private void addQualScores(Alignments.AlignmentCollection.Builder collection) {
-        byte[] quals = new byte[]{1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9,1,2,3,4,5,6,7,8,9,1};
+        byte[] quals = new byte[]{1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9, 1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9, 1, 2, 2, 2, 3, 4, 8, 3, 2, 2, 2, 2, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1};
         for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
             Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
             element.setReadQualityScores(ByteString.copyFrom(quals));
@@ -263,8 +268,8 @@ public class TestAlignmentChunkCodec1 {
     private void addReadQuals(boolean addReadQual, Alignments.AlignmentEntry.Builder entry) {
         if (addReadQual) {
 
-            final byte[] quals = {0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,0x1, 0x2, 0x3, 0x42, 0x1,
-                    0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,};
+            final byte[] quals = {0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2, 0x1, 0x2, 0x3, 0x42, 0x1,
+                    0x23, 0x2, 0x3, 0x1F, 0x3, 0x2, 0x1, 0x2, 0x3, 0x42, 0x1, 0x23, 0x2, 0x3, 0x1F, 0x3, 0x2,};
             final ByteString scores = ByteString.copyFrom(quals);
             entry.setReadQualityScores(scores);
         }
@@ -294,7 +299,7 @@ public class TestAlignmentChunkCodec1 {
         // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
 
-    // @Test
+    @Test
     // will not run on server.
     public void testLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
