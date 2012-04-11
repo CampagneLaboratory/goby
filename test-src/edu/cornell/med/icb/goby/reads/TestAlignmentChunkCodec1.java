@@ -116,6 +116,24 @@ public class TestAlignmentChunkCodec1 {
 
         assertRoundTripMatchExpected(codec, collection);
     }
+    @Test
+    public void roundTripMoreWithQualScores() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
+        addQualScores(collection);
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    private void addQualScores(Alignments.AlignmentCollection.Builder collection) {
+        byte[] quals=new byte[] {1,2,3,4,8,3,2,2,2,2,};
+        for (int i=0; i< collection.getAlignmentEntriesCount(); i++) {
+            Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
+           element.setReadQualityScores(ByteString.copyFrom(quals));
+
+        }
+
+    }
 
     // @Test
     // will not run on server.

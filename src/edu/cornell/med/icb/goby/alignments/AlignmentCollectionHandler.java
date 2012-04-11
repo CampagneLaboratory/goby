@@ -67,6 +67,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private PrintWriter statsWriter;
     private static final IntArrayList EMPTY_LIST = new IntArrayList();
     private boolean storeReadOrigins = true;
+    private int numQualScoreIndex;
 
 
     public static DynamicOptionClient doc() {
@@ -682,6 +683,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         readOriginIndices.clear();
         pairFlags.clear();
         scores.clear();
+        numQualScoreIndex=0;
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -744,7 +746,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             result.setSplicedBackwardAlignmentLink(link);
         }
         final Alignments.AlignmentEntry partial = result.clone().build();
+        if (source.hasReadQualityScores()) {
 
+            final ByteString quals = source.getReadQualityScores();
+            final int size = quals.size();
+            numReadQualityScores.add(size);
+            for (int i = 0; i < size; i++) {
+                allReadQualityScores.add(quals.byteAt(i));
+            }
+        } else {
+            numReadQualityScores.add(0);
+        }
         if (previousPartial != null && indexInReducedCollection >= 1 && fastEquals(previousPartial, partial)) {
             //   System.out.println("same");
             //  print(partial);
@@ -803,17 +815,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         pairFlags.add(source.hasPairFlags() ? source.getPairFlags() : MISSING_VALUE);
         scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
-        if (source.hasReadQualityScores()) {
 
-            final ByteString quals = source.getReadQualityScores();
-            final int size = quals.size();
-            numReadQualityScores.add(size);
-            for (int i = 0; i < size; i++) {
-                allReadQualityScores.add(quals.byteAt(i));
-            }
-        } else {
-            numReadQualityScores.add(0);
-        }
         result.clearQueryLength();
         result.clearMappingQuality();
         result.clearMatchingReverseStrand();
@@ -962,7 +964,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             deltaPosIndex++;
         }
         if (streamVersion >= 2) {
-            final int numReadQualScores = numReadQualityScores.get(index);
+            final int numReadQualScores = numReadQualityScores.get(numQualScoreIndex++);
             if (numReadQualScores > 0) {
 
                 final byte[] scores = new byte[numReadQualScores];
