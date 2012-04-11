@@ -23,6 +23,7 @@ import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.SAMRecord;
+import org.apache.commons.pool.BaseObjectPool;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
 import org.apache.log4j.Logger;
@@ -45,7 +46,22 @@ public class SplicedSamHelper {
     private int numEntries;
     private int cursorIndex;
     private ObjectArrayList<SamHelper> helpers = new ObjectArrayList<SamHelper>();
-    private final org.apache.commons.pool.ObjectPool<SamHelper> helperPool = new StackObjectPool<SamHelper>(new SamHelperFactory());
+    private final org.apache.commons.pool.ObjectPool<SamHelper> helperPool = new BaseObjectPool<SamHelper>() {
+        @Override
+        public SamHelper borrowObject() throws Exception {
+            return new SamHelper();
+        }
+
+        @Override
+        public void returnObject(SamHelper samHelper) throws Exception {
+
+        }
+
+        @Override
+        public void invalidateObject(SamHelper samHelper) throws Exception {
+
+        }
+    };//<SamHelper>(new SamHelperFactory());
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMIDN])");
     private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");

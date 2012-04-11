@@ -126,7 +126,7 @@ public class TestAlignmentChunkCodec1 {
     }
 
     private void addQualScores(Alignments.AlignmentCollection.Builder collection) {
-        byte[] quals=new byte[] {1,2,3,4,8,3,2,2,2,2,};
+        byte[] quals=new byte[] {1,2,2,2,3,4,8,3,2,2,2,2,9};
         for (int i=0; i< collection.getAlignmentEntriesCount(); i++) {
             Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
            element.setReadQualityScores(ByteString.copyFrom(quals));

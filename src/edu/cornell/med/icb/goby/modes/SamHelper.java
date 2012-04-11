@@ -77,13 +77,13 @@ public class SamHelper {
     private MutableString logval = new MutableString();
 
     private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
-    private boolean debug;
+    private static boolean debug=true;
 
 
     public SamHelper() {
         // don't even dare go through the debugging code if log4j was not configured. The debug code
         // is way too slow to run unintentionally in production!
-        debug = Util.log4JIsConfigured();
+        debug = debug && Util.log4JIsConfigured();
     }
 
     public void reset() {

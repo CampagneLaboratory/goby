@@ -27,6 +27,9 @@ import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.bits.Fast;
+import it.unimi.dsi.compression.CodeWordCoder;
+import it.unimi.dsi.compression.Decoder;
+import it.unimi.dsi.compression.HuffmanCodec;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
@@ -67,7 +70,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private PrintWriter statsWriter;
     private static final IntArrayList EMPTY_LIST = new IntArrayList();
     private boolean storeReadOrigins = true;
-    private int numQualScoreIndex;
+    private final boolean useArithmeticCoding = true;
+    private final boolean useHuffmanCoding =false;
 
 
     public static DynamicOptionClient doc() {
@@ -144,6 +148,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentCollection.Builder remainingCollection = Alignments.AlignmentCollection.newBuilder();
         final int size = alignmentCollection.getAlignmentEntriesCount();
         int indexInReducedCollection = 0;
+
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
 
@@ -439,14 +444,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             // we must sort the symbol values again since the bijection has permuted them
             Arrays.sort(distinctvalue);
         }
-        final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
-        for (int i = 0; i < size; i++) {
-            final int tokenValue = distinctvalue[decoder.decode(bitInput)];
-            list.add(tokenValue);
-        }
-        decoder.reposition(bitInput);
+        decode(bitInput, list, size, numTokens, distinctvalue);
 
     }
+
 
     protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
         if (debug(2)) {
@@ -475,19 +476,71 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             out.writeNibble(nat);
         }
 
-        final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
-        for (final int dp : list) {
-            final int symbolCode = Arrays.binarySearch(symbolValues, dp);
-            assert symbolCode >= 0 : "symbol code must exist.";
-            coder.encode(symbolCode, out);
-        }
-        coder.flush(out);
+        encode(label, list, out, distinctSymbols, symbolValues);
         if (debug(1)) {
             System.err.flush();
             final long writtenStop = out.writtenBits();
             final long written = writtenStop - writtenStart;
             recordStats(label, list, written);
         }
+    }
+
+    private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
+        if (useArithmeticCoding) {
+            final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
+            for (final int dp : list) {
+                final int symbolCode = Arrays.binarySearch(symbolValues, dp);
+                assert symbolCode >= 0 : "symbol code must exist.";
+                coder.encode(symbolCode, out);
+            }
+            coder.flush(out);
+        } else if (useHuffmanCoding) {
+            final int[] frequencies = frequencies(list, symbolValues);
+            final HuffmanCodec codec = new HuffmanCodec(frequencies);
+            final CodeWordCoder coder = codec.coder();
+            for (int freq : frequencies) {
+                out.writeNibble(freq);
+            }
+            for (final int dp : list) {
+                final int symbolCode = Arrays.binarySearch(symbolValues, dp);
+                assert symbolCode >= 0 : "symbol code must exist.";
+                coder.encode(symbolCode, out);
+            }
+            coder.flush(out);
+        }
+    }
+
+    private void decode(final InputBitStream bitInput, final IntList list, final int size, final int numTokens, int[] distinctvalue) throws IOException {
+        if (useArithmeticCoding) {
+            final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
+            for (int i = 0; i < size; i++) {
+                final int tokenValue = distinctvalue[decoder.decode(bitInput)];
+                list.add(tokenValue);
+            }
+            decoder.reposition(bitInput);
+        } else if (useHuffmanCoding) {
+            final int[] frequencies = new int[distinctvalue.length];
+            for (int i = 0; i < frequencies.length; i++) {
+                frequencies[i] = bitInput.readNibble();
+            }
+            final HuffmanCodec codec = new HuffmanCodec(frequencies);
+            final Decoder decoder = codec.decoder();
+            for (int i = 0; i < size; i++) {
+                final int tokenValue = distinctvalue[decoder.decode(bitInput)];
+                list.add(tokenValue);
+            }
+            // decoder.reposition(bitInput);
+        }
+    }
+
+    // return the frequencies of symbols in the list
+    private int[] frequencies(IntList list, int[] symbolValues) {
+        final int[] freqs = new int[symbolValues.length];
+        for (final int value : list) {
+            final int index = Arrays.binarySearch(symbolValues, value);
+            freqs[index] += 1;
+        }
+        return freqs;
     }
 
     private boolean hasNegatives(final int[] symbolValues) {
@@ -507,11 +560,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    IntSortedSet tokenSet = new IntAVLTreeSet();
+    final IntSortedSet tokenSet = new IntAVLTreeSet();
 
-    private IntSortedSet getTokens(IntList list) {
+    private final IntSortedSet getTokens(final IntList list) {
         tokenSet.clear();
-        for (int value : list) {
+        for (final int value : list) {
             tokenSet.add(value);
         }
         return tokenSet;
@@ -583,8 +636,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeQueryIndices("queryIndices", numEntriesInChunk, bitInput, queryIndices);
 
         if (streamVersion >= 2) {
-            decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
-            decodeArithmetic("allReadQualityScores", numEntriesInChunk, bitInput, allReadQualityScores);
+            {
+                final IntArrayList encodedLengths = new IntArrayList();
+                final IntArrayList encodedValues = new IntArrayList();
+                decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
+                decodeArithmetic("allReadQualityScoresLengths", numEntriesInChunk, bitInput, encodedLengths);
+                decodeArithmetic("allReadQualityScoresValues", numEntriesInChunk, bitInput, encodedValues);
+
+                decodeRunLengths(encodedLengths, encodedValues, allReadQualityScores);
+
+            }
         }
         if (streamVersion >= 3) {
             decodeArithmetic("sampleIndices", numEntriesInChunk, bitInput, sampleIndices);
@@ -596,6 +657,47 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             decodeArithmetic("scores", numEntriesInChunk, bitInput, scores);
         }
         return streamVersion;
+    }
+
+
+    private void decodeRunLengths(final IntArrayList encodedLengths, final IntArrayList encodedValues, final IntList list) {
+
+        final int size = encodedLengths.size();
+        int index = 0;
+        int valueIndex = 0;
+        for (index = 0; index < size; index++) {
+            final int runLength = encodedLengths.get(index);
+            for (int j = 0; j < runLength; j++) {
+
+                list.add(encodedValues.get(valueIndex));
+            }
+            valueIndex += 1;
+        }
+    }
+
+    private void encodeRunLengths(IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
+        if (list.size() == 0) {
+            return;
+        }
+        int previous = list.get(0);
+        int runLength = 1;
+
+        final int size = list.size();
+        for (int index = 1; index < size; index++) {
+            int value = list.get(index);
+            if (value == previous) {
+                runLength += 1;
+            } else {
+                encodedLengths.add(runLength);
+                encodedValues.add(previous);
+                runLength = 1;
+            }
+            previous = value;
+        }
+
+        encodedLengths.add(runLength);
+        encodedValues.add(previous);
+
     }
 
     private void writeCompressed(final OutputBitStream out) throws IOException {
@@ -629,8 +731,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         backwardSpliceLinks.write(out);
 
         writeQueryIndices("queryIndices", queryIndices, out);
-        writeArithmetic("numReadQualityScores", numReadQualityScores, out);
-        writeArithmetic("allReadQualityScores", allReadQualityScores, out);
+
+        {
+            IntArrayList encodedLengths = new IntArrayList();
+            IntArrayList encodedValues = new IntArrayList();
+            encodeRunLengths(allReadQualityScores, encodedLengths, encodedValues);
+
+            writeArithmetic("numReadQualityScores", numReadQualityScores, out);
+            writeArithmetic("allReadQualityScoresLengths", encodedLengths, out);
+            writeArithmetic("allReadQualityScoresValues", encodedValues, out);
+        }
         writeArithmetic("sampleIndices", sampleIndices, out);
         writeArithmetic("readOriginIndices", readOriginIndices, out);
         writeArithmetic("pairFlags", pairFlags, out);
@@ -683,7 +793,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         readOriginIndices.clear();
         pairFlags.clear();
         scores.clear();
-        numQualScoreIndex=0;
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -964,7 +1073,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             deltaPosIndex++;
         }
         if (streamVersion >= 2) {
-            final int numReadQualScores = numReadQualityScores.get(numQualScoreIndex++);
+            final int numReadQualScores = numReadQualityScores.get(index);
             if (numReadQualScores > 0) {
 
                 final byte[] scores = new byte[numReadQualScores];

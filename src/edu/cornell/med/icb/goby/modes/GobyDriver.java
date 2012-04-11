@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.util.VersionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -44,7 +45,7 @@ public class GobyDriver extends GenericToolsDriver {
 
     public static void main(final String[] args) throws IOException, JSAPException {
         final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
-
+        DynamicOptionRegistry.autoRegister();
         if (LOG.isDebugEnabled()) {
             LOG.debug(GobyDriver.class.getName() + " Implementation-Version: " + version);
             LOG.debug("Running with: " + ArrayUtils.toString(args));

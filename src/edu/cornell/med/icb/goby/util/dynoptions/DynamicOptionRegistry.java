@@ -20,6 +20,12 @@ package edu.cornell.med.icb.goby.util.dynoptions;
 
 import com.martiansoftware.jsap.JSAPResult;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
+import org.apache.log4j.Logger;
+import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
+
+import java.lang.reflect.Field;
+import java.util.Set;
 
 /**
  * A global registry for dynamic options. These options are set on the command line with options of the
@@ -30,6 +36,11 @@ import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
  *         Time: 12:05 PM
  */
 public class DynamicOptionRegistry {
+    /**
+        * Used to log debug and informational messages.
+        */
+       private static final Logger LOG = Logger.getLogger(DynamicOptionRegistry.class);
+
     private DynamicOptionRegistry() {
     }
 
@@ -76,14 +87,35 @@ public class DynamicOptionRegistry {
             String[] helpMessages = doc.getHelpMessages();
             String[] defaultValues = doc.getDefaultValues();
             int i = 0;
-            System.out.println("-x "+doc.getClassname()+":");
+            System.out.println("-x " + doc.getClassname() + ":");
             for (String key : keys) {
 
-                System.out.printf("  - %s: %s default: %s%n",  key, helpMessages[i], defaultValues[i]);
+                System.out.printf("  - %s: %s default: %s%n", key, helpMessages[i], defaultValues[i]);
                 i++;
             }
             System.out.println();
 
         }
+    }
+
+    /**
+     * Scan classes for annotations and register Dynamic option clients.
+     */
+    public static void autoRegister() {
+        final Reflections reflections = new Reflections("edu.cornell.med.icb.goby", new FieldAnnotationsScanner());
+        Set<Field> result = reflections.getFieldsAnnotatedWith(RegisterThis.class);
+
+        for (Field field : result) {
+            final DynamicOptionClient doc;
+            try {
+                doc = (DynamicOptionClient) field.get(null);
+                register(doc);
+            } catch (IllegalAccessException e) {
+                  LOG.error("Unable to register dynamic option client. ",e);
+            }
+
+
+        }
+
     }
 }

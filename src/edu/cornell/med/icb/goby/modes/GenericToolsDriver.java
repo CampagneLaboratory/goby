@@ -159,7 +159,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
      */
     @Override
     public GenericToolsDriver configure(final String[] argsVal) throws IOException, JSAPException {
-        registerDynamicOptions();
+        DynamicOptionRegistry.autoRegister();
         jsap = loadJsapFromResource(HELP_VALUES);
         args = argsVal;
         final JSAPResult jsapResult = parseJsap(jsap, args);
@@ -174,23 +174,6 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         return this;
     }
 
-    private void registerDynamicOptions() {
-        final Reflections reflections = new Reflections("edu.cornell.med.icb.goby", new FieldAnnotationsScanner());
-        Set<Field> result = reflections.getFieldsAnnotatedWith(RegisterThis.class);
-
-        for (Field field : result) {
-            final DynamicOptionClient doc;
-            try {
-                doc = (DynamicOptionClient) field.get(null);
-                DynamicOptionRegistry.register(doc);
-            } catch (IllegalAccessException e) {
-                LOG.error(e);
-            }
-
-
-        }
-
-    }
 
     /**
      * Removes any "special" options from being displayed.  In this case,
