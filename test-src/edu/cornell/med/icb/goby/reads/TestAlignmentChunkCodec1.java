@@ -299,7 +299,7 @@ public class TestAlignmentChunkCodec1 {
         // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
 
-    @Test
+    //@Test
     // will not run on server.
     public void testLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
