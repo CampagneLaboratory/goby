@@ -184,6 +184,8 @@ public class SplicedSamHelper {
                         // soft clip in the reference for so many bases.
                         insertSomeInRef(position, initialRefPosition, readBasesLength);
                     }
+                    positionInRead += readBasesLength;
+                    previousPositionInRead += readBasesLength;
                     break;
                 default:
 

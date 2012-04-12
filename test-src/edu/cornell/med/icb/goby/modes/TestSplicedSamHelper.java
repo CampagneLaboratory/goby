@@ -444,6 +444,33 @@ public class TestSplicedSamHelper {
     }
 
     @Test
+    // like 9 no genome
+    public void testSamToCompactTrickCase12NoGenome() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-12.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-12");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry second = reader.next();
+
+        assertEquals(15013, first.getPosition());
+        assertEquals(3, first.getQueryPosition());
+        assertEquals(0, first.getFragmentIndex());
+        assertEquals(25, first.getQueryAlignedLength());
+
+        assertEquals(15795, second.getPosition());
+        assertEquals(28, second.getQueryPosition());
+        assertEquals(1, second.getFragmentIndex());
+        assertEquals(7, second.getQueryAlignedLength());
+    }
+
+    @Test
     // variation after splice
     public void testSamToCompactTrickCase10NoGenome() throws IOException {
 
