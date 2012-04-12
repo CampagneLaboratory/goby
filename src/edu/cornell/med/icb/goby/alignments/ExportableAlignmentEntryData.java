@@ -46,6 +46,7 @@ public class ExportableAlignmentEntryData {
 
     // This was the maximum acceptable value
     private static final byte UNKNOWN_MAPPING_VALUE = 93;
+    private static final int SAM_REVERSE_STRAND_FLAG = 16;
     private boolean debug;
 
     private RandomAccessSequenceInterface genome;
@@ -194,7 +195,11 @@ public class ExportableAlignmentEntryData {
      * @return the pair flags
      */
     public int getPairFlags() {
-        return alignmentEntry.getPairFlags();
+        int flags = alignmentEntry.hasPairFlags() ? alignmentEntry.getPairFlags() : 0;
+        if (alignmentEntry.getMatchingReverseStrand()) {
+            flags |= SAM_REVERSE_STRAND_FLAG;
+        }
+        return flags;
     }
 
     /**
