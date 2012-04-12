@@ -92,7 +92,7 @@ public abstract class AbstractCommandLineMode {
      * @return true if the id is a known help option.
      */
     private boolean isJSAPHelpId(final String id) {
-        return "help".equals(id) || "wikihelp".equals(id) || "htmlhelp".equals(id);
+        return "help".equals(id) || "wikihelp".equals(id) || "htmlhelp".equals(id)|| "help-dynamic".equals(id);
     }
 
     /**

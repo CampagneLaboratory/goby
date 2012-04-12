@@ -73,6 +73,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private boolean storeReadOrigins = true;
     private final boolean useArithmeticCoding = true;
     private final boolean useHuffmanCoding = false;
+    private int streamVersion;
 
 
     public static DynamicOptionClient doc() {
@@ -415,18 +416,20 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Object2IntMap<String> typeToNumEntries = new Object2IntAVLTreeMap<String>();
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
 
-    protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
-        decodeArithmetic(label, numEntriesInChunk, bitInput, list, false);
-    }
 
-    protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list, boolean runLengthEncoding) throws IOException {
+    protected final void decodeArithmetic(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
 
         if (debug(2)) {
             System.err.flush();
             System.err.println("\nreading " + label + " with available=" + bitInput.available());
             System.err.flush();
         }
-        if (bitInput.readBit()==1) {
+        boolean useRunLength = false;
+        if (streamVersion >= 5) {
+            // version 5 and up choose to use run length encoding for each field:
+            useRunLength = bitInput.readBit() == 1;
+        }
+        if (useRunLength) {
             final IntArrayList encodedLengths = new IntArrayList();
             final IntArrayList encodedValues = new IntArrayList();
             decodeArithmeticInternal(bitInput, encodedLengths);
@@ -463,20 +466,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
-        writeArithmetic(label, list, out, false);
-    }
-
-    protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out, boolean runLengthEncoding) throws IOException {
         if (debug(2)) {
             System.err.flush();
             System.err.println("\nwriting " + label);
             System.err.flush();
         }
         final long writtenStart = out.writtenBits();
-           IntArrayList encodedLengths = new IntArrayList();
-            IntArrayList encodedValues = new IntArrayList();
-            encodeRunLengths(list, encodedLengths, encodedValues);
-        if (runLengthEncoding(label, list, encodedLengths,encodedValues)) {
+        IntArrayList encodedLengths = new IntArrayList();
+        IntArrayList encodedValues = new IntArrayList();
+        encodeRunLengths(list, encodedLengths, encodedValues);
+        if (runLengthEncoding(label, list, encodedLengths, encodedValues)) {
             out.writeBit(1);
             encodeArithmeticInternal(label + "Lengths", encodedLengths, out);
             encodeArithmeticInternal(label + "Values", encodedValues, out);
@@ -493,9 +492,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
-        final boolean result = encodedLengths.size()>10 && (encodedLengths.size() + encodedValues.size()) < list.size()*.70;
+        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() * .70;
         if (result) {
-        //    System.out.println("Using run-length encoding for "+label);
+            //    System.out.println("Using run-length encoding for "+label);
         }
         return result;
     }
@@ -644,7 +643,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
-        final int streamVersion = bitInput.readDelta();
+        streamVersion = bitInput.readDelta();
+
         assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
         multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
@@ -665,8 +665,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeArithmetic("fromLengths", numEntriesInChunk, bitInput, fromLengths);
         decodeArithmetic("toLengths", numEntriesInChunk, bitInput, toLengths);
         decodeArithmetic("varReadIndex", numEntriesInChunk, bitInput, varReadIndex);
-        decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo,true);
-        decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals,true);
+        decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo);
+        decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals);
         decodeArithmetic("varHasToQuals", numEntriesInChunk, bitInput, varToQualLength);
         decodeArithmetic("multiplicities", numEntriesInChunk, bitInput, multiplicities);
         pairLinks.read(numEntriesInChunk, bitInput);
@@ -676,16 +676,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeQueryIndices("queryIndices", numEntriesInChunk, bitInput, queryIndices);
 
         if (streamVersion >= 2) {
-            {
-                final IntArrayList encodedLengths = new IntArrayList();
-                final IntArrayList encodedValues = new IntArrayList();
-                decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
-                decodeArithmetic("allReadQualityScoresLengths", numEntriesInChunk, bitInput, encodedLengths);
-                decodeArithmetic("allReadQualityScoresValues", numEntriesInChunk, bitInput, encodedValues);
 
-                decodeRunLengths(encodedLengths, encodedValues, allReadQualityScores);
+            decodeArithmetic("numReadQualityScores", numEntriesInChunk, bitInput, numReadQualityScores);
+            decodeArithmetic("allReadQualityScores", numEntriesInChunk, bitInput, allReadQualityScores);
 
-            }
         }
         if (streamVersion >= 3) {
             decodeArithmetic("sampleIndices", numEntriesInChunk, bitInput, sampleIndices);
@@ -762,8 +756,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("fromLengths", fromLengths, out);
         writeArithmetic("toLengths", toLengths, out);
         writeArithmetic("varReadIndex", varReadIndex, out);
-        writeArithmetic("varFromTo", varFromTo, out, true);
-        writeArithmetic("varQuals", varQuals, out, true);
+        writeArithmetic("varFromTo", varFromTo, out);
+        writeArithmetic("varQuals", varQuals, out);
         writeArithmetic("varHasToQuals", varToQualLength, out);
         writeArithmetic("multiplicities", multiplicities, out);
         pairLinks.write(out);
@@ -772,15 +766,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         writeQueryIndices("queryIndices", queryIndices, out);
 
-        {
-            IntArrayList encodedLengths = new IntArrayList();
-            IntArrayList encodedValues = new IntArrayList();
-            encodeRunLengths(allReadQualityScores, encodedLengths, encodedValues);
+        writeArithmetic("numReadQualityScores", numReadQualityScores, out);
+        writeArithmetic("allReadQualityScoresLengths", allReadQualityScores, out);
 
-            writeArithmetic("numReadQualityScores", numReadQualityScores, out);
-            writeArithmetic("allReadQualityScoresLengths", encodedLengths, out);
-            writeArithmetic("allReadQualityScoresValues", encodedValues, out);
-        }
         writeArithmetic("sampleIndices", sampleIndices, out);
         writeArithmetic("readOriginIndices", readOriginIndices, out);
         writeArithmetic("pairFlags", pairFlags, out);

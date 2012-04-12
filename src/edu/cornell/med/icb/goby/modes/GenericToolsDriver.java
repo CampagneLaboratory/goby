@@ -33,11 +33,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.util.*;
