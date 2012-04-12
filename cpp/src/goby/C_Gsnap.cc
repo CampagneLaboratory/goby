@@ -1064,8 +1064,7 @@ extern "C" {
         gobyAlEntry_setQueryIndex(writerHelper, alignment->queryIndex); // checked
         gobyAlEntry_setTargetIndex(writerHelper,
                 mergedSeg->targetIndex);  //checked
-        gobyAlEntry_setPosition(writerHelper,
-                mergedSeg->targetStart - mergedSeg->startClip);  // Checked
+        gobyAlEntry_setPosition(writerHelper, mergedSeg->targetStart);  // Checked
         gobyAlEntry_setMatchingReverseStrand(writerHelper,
                 mergedSeg->reverseStrand); // Checked
         gobyAlEntry_setQueryPosition(writerHelper, mergedSeg->startClip);  //
