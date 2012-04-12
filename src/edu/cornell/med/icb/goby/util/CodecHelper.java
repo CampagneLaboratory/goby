@@ -19,15 +19,10 @@
 package edu.cornell.med.icb.goby.util;
 
 import com.google.protobuf.ByteString;
-import edu.cornell.med.icb.goby.alignments.AlignmentCodec;
 import edu.cornell.med.icb.goby.reads.ReadCodec;
-import edu.rit.compbio.seq.Alignment;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
@@ -37,19 +32,13 @@ import java.util.ServiceLoader;
  */
 public class CodecHelper {
     private static final ServiceLoader<ReadCodec> readCodecLoader = ServiceLoader.load(ReadCodec.class);
-    private static final ServiceLoader<AlignmentCodec> alignmentCodecLoader = ServiceLoader.load(AlignmentCodec.class);
 
     private static Byte2ObjectMap<ReadCodec> codeToReadCodec = new Byte2ObjectOpenHashMap(5);
-    private static Byte2ObjectMap<AlignmentCodec> codeToAlignmentCodec = new Byte2ObjectOpenHashMap(5);
 
     public static void reload() {
         readCodecLoader.reload();
-        alignmentCodecLoader.reload();
         for (final ReadCodec next : readCodecLoader) {
             codeToReadCodec.put(next.registrationCode(), next);
-        }
-        for (final AlignmentCodec next : alignmentCodecLoader) {
-            codeToAlignmentCodec.put(next.registrationCode(), next);
         }
     }
 
@@ -62,10 +51,5 @@ public class CodecHelper {
         }
         final byte codecId = compressedData.byteAt(0);
         return codeToReadCodec.get(codecId);
-    }
-
-    public static  AlignmentCodec locateAlignmentCodec(final ByteString compressedData) {
-        final byte codecId = compressedData.byteAt(0);
-        return codeToAlignmentCodec.get(codecId);
     }
 }
