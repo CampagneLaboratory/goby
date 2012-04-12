@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Alignments.proto',
   package='goby',
-  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"F\n\x13\x41lignmentCollection\x12/\n\x11\x61lignment_entries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xd5\x06\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x17\n\x0f\x63ompressed_data\x18\x17 \x01(\x0c\x12\x13\n\x0bquery_index\x18\x01 \x01(\r\x12\x14\n\x0ctarget_index\x18\x02 \x01(\r\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x01(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x14\n\x0cquery_length\x18\n \x01(\r\x12\x17\n\x0fmapping_quality\x18\x0e \x01(\x05\x12\x12\n\npair_flags\x18\x0f \x01(\r\x12\x38\n\x13pair_alignment_link\x18\x10 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x16\n\x0e\x66ragment_index\x18\x11 \x01(\r\x12\x43\n\x1espliced_forward_alignment_link\x18\x12 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x44\n\x1fspliced_backward_alignment_link\x18\x16 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x15\n\rspliced_flags\x18\x13 \x01(\r\x12\x13\n\x0binsert_size\x18\x14 \x01(\r\x12\x14\n\x0csample_index\x18\x15 \x01(\r\x12\x1f\n\x17query_index_occurrences\x18\x19 \x01(\r\x12\x11\n\tambiguity\x18\x1b \x01(\r\x12\x16\n\x0e\x62\x61m_attributes\x18\x32 \x03(\t\x12\x1b\n\x13read_quality_scores\x18\x37 \x01(\x0c\x12\x19\n\x11read_origin_index\x18\x1a \x01(\r\"W\n\x15RelatedAlignmentEntry\x12\x14\n\x0ctarget_index\x18\x01 \x01(\r\x12\x10\n\x08position\x18\x02 \x01(\r\x12\x16\n\x0e\x66ragment_index\x18\x03 \x01(\r\"g\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x01(\t\x12\n\n\x02to\x18\x01 \x01(\t\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x12\n\nread_index\x18\x05 \x01(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xc4\x05\n\x0f\x41lignmentHeader\x12\"\n\x1asmallest_split_query_index\x18\t \x01(\r\x12!\n\x19largest_split_query_index\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1d\n\x15\x63onstant_query_length\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\x12\x0f\n\x07indexed\x18\x0e \x01(\x08\x12\'\n\x1fquery_lengths_stored_in_entries\x18\x0f \x01(\x08\x12\x14\n\x0c\x61ligner_name\x18\x11 \x01(\t\x12\x17\n\x0f\x61ligner_version\x18\x12 \x01(\t\x12\x0f\n\x07version\x18\x19 \x01(\t\x12\x17\n\x0fsample_basename\x18\x1e \x03(\t\x12#\n\x1bquery_indices_were_permuted\x18\x1a \x01(\x08\x12\x1f\n\x17query_index_occurrences\x18# \x01(\x08\x12#\n\x1b\x61mbiguity_stored_in_entries\x18$ \x01(\x08\x12\x1f\n\x17\x61ll_read_quality_scores\x18( \x01(\x08\x12)\n\x0bread_origin\x18\x1b \x03(\x0b\x32\x14.goby.ReadOriginInfo\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"\x95\x01\n\x0eReadOriginInfo\x12\x14\n\x0corigin_index\x18\x01 \x02(\r\x12\x11\n\torigin_id\x18\x02 \x02(\t\x12\x0e\n\x06sample\x18\x04 \x01(\t\x12\x10\n\x08platform\x18\x05 \x01(\t\x12\x0f\n\x07library\x18\x08 \x01(\t\x12\x15\n\rplatform_unit\x18\x0c \x01(\t\x12\x10\n\x08run_date\x18\x06 \x01(\t\"X\n\x14\x41lignmentTooManyHits\x12\x19\n\x11\x61ligner_threshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\r\"j\n\x0e\x41lignmentIndex\x12#\n\x17target_position_offsets\x18\x01 \x03(\rB\x02\x10\x01\x12\x13\n\x07offsets\x18\x02 \x03(\x04\x42\x02\x10\x01\x12\x1e\n\x12\x61\x62solute_positions\x18\x03 \x03(\x04\x42\x02\x10\x01\x42\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
+  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"F\n\x13\x41lignmentCollection\x12/\n\x11\x61lignment_entries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xbc\x06\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x01(\r\x12\x14\n\x0ctarget_index\x18\x02 \x01(\r\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x01(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x14\n\x0cquery_length\x18\n \x01(\r\x12\x17\n\x0fmapping_quality\x18\x0e \x01(\x05\x12\x12\n\npair_flags\x18\x0f \x01(\r\x12\x38\n\x13pair_alignment_link\x18\x10 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x16\n\x0e\x66ragment_index\x18\x11 \x01(\r\x12\x43\n\x1espliced_forward_alignment_link\x18\x12 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x44\n\x1fspliced_backward_alignment_link\x18\x16 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x15\n\rspliced_flags\x18\x13 \x01(\r\x12\x13\n\x0binsert_size\x18\x14 \x01(\r\x12\x14\n\x0csample_index\x18\x15 \x01(\r\x12\x1f\n\x17query_index_occurrences\x18\x19 \x01(\r\x12\x11\n\tambiguity\x18\x1b \x01(\r\x12\x16\n\x0e\x62\x61m_attributes\x18\x32 \x03(\t\x12\x1b\n\x13read_quality_scores\x18\x37 \x01(\x0c\x12\x19\n\x11read_origin_index\x18\x1a \x01(\r\"W\n\x15RelatedAlignmentEntry\x12\x14\n\x0ctarget_index\x18\x01 \x01(\r\x12\x10\n\x08position\x18\x02 \x01(\r\x12\x16\n\x0e\x66ragment_index\x18\x03 \x01(\r\"g\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x01(\t\x12\n\n\x02to\x18\x01 \x01(\t\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x12\n\nread_index\x18\x05 \x01(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xc4\x05\n\x0f\x41lignmentHeader\x12\"\n\x1asmallest_split_query_index\x18\t \x01(\r\x12!\n\x19largest_split_query_index\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1d\n\x15\x63onstant_query_length\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\x12\x0f\n\x07indexed\x18\x0e \x01(\x08\x12\'\n\x1fquery_lengths_stored_in_entries\x18\x0f \x01(\x08\x12\x14\n\x0c\x61ligner_name\x18\x11 \x01(\t\x12\x17\n\x0f\x61ligner_version\x18\x12 \x01(\t\x12\x0f\n\x07version\x18\x19 \x01(\t\x12\x17\n\x0fsample_basename\x18\x1e \x03(\t\x12#\n\x1bquery_indices_were_permuted\x18\x1a \x01(\x08\x12\x1f\n\x17query_index_occurrences\x18# \x01(\x08\x12#\n\x1b\x61mbiguity_stored_in_entries\x18$ \x01(\x08\x12\x1f\n\x17\x61ll_read_quality_scores\x18( \x01(\x08\x12)\n\x0bread_origin\x18\x1b \x03(\x0b\x32\x14.goby.ReadOriginInfo\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"\x95\x01\n\x0eReadOriginInfo\x12\x14\n\x0corigin_index\x18\x01 \x02(\r\x12\x11\n\torigin_id\x18\x02 \x02(\t\x12\x0e\n\x06sample\x18\x04 \x01(\t\x12\x10\n\x08platform\x18\x05 \x01(\t\x12\x0f\n\x07library\x18\x08 \x01(\t\x12\x15\n\rplatform_unit\x18\x0c \x01(\t\x12\x10\n\x08run_date\x18\x06 \x01(\t\"X\n\x14\x41lignmentTooManyHits\x12\x19\n\x11\x61ligner_threshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\r\"j\n\x0e\x41lignmentIndex\x12#\n\x17target_position_offsets\x18\x01 \x03(\rB\x02\x10\x01\x12\x13\n\x07offsets\x18\x02 \x03(\x04\x42\x02\x10\x01\x12\x1e\n\x12\x61\x62solute_positions\x18\x03 \x03(\x04\x42\x02\x10\x01\x42\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
 
 
 
@@ -59,189 +59,182 @@ _ALIGNMENTENTRY = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='compressed_data', full_name='goby.AlignmentEntry.compressed_data', index=1,
-      number=23, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value="",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='query_index', full_name='goby.AlignmentEntry.query_index', index=2,
+      name='query_index', full_name='goby.AlignmentEntry.query_index', index=1,
       number=1, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='target_index', full_name='goby.AlignmentEntry.target_index', index=3,
+      name='target_index', full_name='goby.AlignmentEntry.target_index', index=2,
       number=2, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='position', full_name='goby.AlignmentEntry.position', index=4,
+      name='position', full_name='goby.AlignmentEntry.position', index=3,
       number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='matching_reverse_strand', full_name='goby.AlignmentEntry.matching_reverse_strand', index=5,
+      name='matching_reverse_strand', full_name='goby.AlignmentEntry.matching_reverse_strand', index=4,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='query_position', full_name='goby.AlignmentEntry.query_position', index=6,
+      name='query_position', full_name='goby.AlignmentEntry.query_position', index=5,
       number=5, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='score', full_name='goby.AlignmentEntry.score', index=7,
+      name='score', full_name='goby.AlignmentEntry.score', index=6,
       number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='number_of_mismatches', full_name='goby.AlignmentEntry.number_of_mismatches', index=8,
+      name='number_of_mismatches', full_name='goby.AlignmentEntry.number_of_mismatches', index=7,
       number=8, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='number_of_indels', full_name='goby.AlignmentEntry.number_of_indels', index=9,
+      name='number_of_indels', full_name='goby.AlignmentEntry.number_of_indels', index=8,
       number=9, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='query_aligned_length', full_name='goby.AlignmentEntry.query_aligned_length', index=10,
+      name='query_aligned_length', full_name='goby.AlignmentEntry.query_aligned_length', index=9,
       number=11, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='target_aligned_length', full_name='goby.AlignmentEntry.target_aligned_length', index=11,
+      name='target_aligned_length', full_name='goby.AlignmentEntry.target_aligned_length', index=10,
       number=12, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='sequence_variations', full_name='goby.AlignmentEntry.sequence_variations', index=12,
+      name='sequence_variations', full_name='goby.AlignmentEntry.sequence_variations', index=11,
       number=13, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='query_length', full_name='goby.AlignmentEntry.query_length', index=13,
+      name='query_length', full_name='goby.AlignmentEntry.query_length', index=12,
       number=10, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='mapping_quality', full_name='goby.AlignmentEntry.mapping_quality', index=14,
+      name='mapping_quality', full_name='goby.AlignmentEntry.mapping_quality', index=13,
       number=14, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='pair_flags', full_name='goby.AlignmentEntry.pair_flags', index=15,
+      name='pair_flags', full_name='goby.AlignmentEntry.pair_flags', index=14,
       number=15, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='pair_alignment_link', full_name='goby.AlignmentEntry.pair_alignment_link', index=16,
+      name='pair_alignment_link', full_name='goby.AlignmentEntry.pair_alignment_link', index=15,
       number=16, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='fragment_index', full_name='goby.AlignmentEntry.fragment_index', index=17,
+      name='fragment_index', full_name='goby.AlignmentEntry.fragment_index', index=16,
       number=17, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='spliced_forward_alignment_link', full_name='goby.AlignmentEntry.spliced_forward_alignment_link', index=18,
+      name='spliced_forward_alignment_link', full_name='goby.AlignmentEntry.spliced_forward_alignment_link', index=17,
       number=18, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='spliced_backward_alignment_link', full_name='goby.AlignmentEntry.spliced_backward_alignment_link', index=19,
+      name='spliced_backward_alignment_link', full_name='goby.AlignmentEntry.spliced_backward_alignment_link', index=18,
       number=22, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='spliced_flags', full_name='goby.AlignmentEntry.spliced_flags', index=20,
+      name='spliced_flags', full_name='goby.AlignmentEntry.spliced_flags', index=19,
       number=19, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='insert_size', full_name='goby.AlignmentEntry.insert_size', index=21,
+      name='insert_size', full_name='goby.AlignmentEntry.insert_size', index=20,
       number=20, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='sample_index', full_name='goby.AlignmentEntry.sample_index', index=22,
+      name='sample_index', full_name='goby.AlignmentEntry.sample_index', index=21,
       number=21, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='query_index_occurrences', full_name='goby.AlignmentEntry.query_index_occurrences', index=23,
+      name='query_index_occurrences', full_name='goby.AlignmentEntry.query_index_occurrences', index=22,
       number=25, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='ambiguity', full_name='goby.AlignmentEntry.ambiguity', index=24,
+      name='ambiguity', full_name='goby.AlignmentEntry.ambiguity', index=23,
       number=27, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='bam_attributes', full_name='goby.AlignmentEntry.bam_attributes', index=25,
+      name='bam_attributes', full_name='goby.AlignmentEntry.bam_attributes', index=24,
       number=50, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='read_quality_scores', full_name='goby.AlignmentEntry.read_quality_scores', index=26,
+      name='read_quality_scores', full_name='goby.AlignmentEntry.read_quality_scores', index=25,
       number=55, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value="",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='read_origin_index', full_name='goby.AlignmentEntry.read_origin_index', index=27,
+      name='read_origin_index', full_name='goby.AlignmentEntry.read_origin_index', index=26,
       number=26, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -257,7 +250,7 @@ _ALIGNMENTENTRY = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=99,
-  serialized_end=952,
+  serialized_end=927,
 )
 
 
@@ -298,8 +291,8 @@ _RELATEDALIGNMENTENTRY = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=954,
-  serialized_end=1041,
+  serialized_start=929,
+  serialized_end=1016,
 )
 
 
@@ -354,8 +347,8 @@ _SEQUENCEVARIATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1043,
-  serialized_end=1146,
+  serialized_start=1018,
+  serialized_end=1121,
 )
 
 
@@ -529,8 +522,8 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1149,
-  serialized_end=1857,
+  serialized_start=1124,
+  serialized_end=1832,
 )
 
 
@@ -557,8 +550,8 @@ _IDENTIFIERMAPPING = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1859,
-  serialized_end=1918,
+  serialized_start=1834,
+  serialized_end=1893,
 )
 
 
@@ -592,8 +585,8 @@ _IDENTIFIERINFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1920,
-  serialized_end=1965,
+  serialized_start=1895,
+  serialized_end=1940,
 )
 
 
@@ -662,8 +655,8 @@ _READORIGININFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1968,
-  serialized_end=2117,
+  serialized_start=1943,
+  serialized_end=2092,
 )
 
 
@@ -697,8 +690,8 @@ _ALIGNMENTTOOMANYHITS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2119,
-  serialized_end=2207,
+  serialized_start=2094,
+  serialized_end=2182,
 )
 
 
@@ -739,8 +732,8 @@ _AMBIGUOUSLOCATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2209,
-  serialized_end=2307,
+  serialized_start=2184,
+  serialized_end=2282,
 )
 
 
@@ -781,8 +774,8 @@ _ALIGNMENTINDEX = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2309,
-  serialized_end=2415,
+  serialized_start=2284,
+  serialized_end=2390,
 )
 
 _ALIGNMENTCOLLECTION.fields_by_name['alignment_entries'].message_type = _ALIGNMENTENTRY

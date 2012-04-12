@@ -86,7 +86,6 @@ public class
      * The version of Goby that created the alignment file we are reading.
      */
     private String gobyVersion;
-    private AlignmentCodec codec;
     private boolean queryIndicesWerePermuted;
     /**
      * This field is true when all the entries of the reader have the read_quality_scores field populated.
@@ -423,17 +422,6 @@ public class
 
                 LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()),
                         nextEntry.getPosition()));
-            }
-            if (nextEntry.hasCompressedData() && codec == null) {
-
-                codec = CodecHelper.locateAlignmentCodec(nextEntry.getCompressedData());
-            }
-            if (codec != null) {
-                final Alignments.AlignmentEntry.Builder result = codec.decode(nextEntry);
-                if (result != null) {
-                    // the codec was able to decode compressed data.
-                    return result.build();
-                }
             }
             return nextEntry;
 

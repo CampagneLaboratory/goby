@@ -76,9 +76,8 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AlignmentCollection));
   AlignmentEntry_descriptor_ = file->message_type(1);
-  static const int AlignmentEntry_offsets_[28] = {
+  static const int AlignmentEntry_offsets_[27] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, multiplicity_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, compressed_data_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, query_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, target_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, position_),
@@ -363,66 +362,65 @@ void protobuf_AddDesc_Alignments_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol"
     "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob"
-    "y.AlignmentEntry\"\325\006\n\016AlignmentEntry\022\024\n\014m"
-    "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001"
-    "(\014\022\023\n\013query_index\030\001 \001(\r\022\024\n\014target_index\030"
-    "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve"
-    "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r"
-    "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030"
-    "\010 \001(\r\022\030\n\020number_of_indels\030\t \001(\r\022\034\n\024query"
-    "_aligned_length\030\013 \001(\r\022\035\n\025target_aligned_"
-    "length\030\014 \001(\r\0224\n\023sequence_variations\030\r \003("
-    "\0132\027.goby.SequenceVariation\022\024\n\014query_leng"
-    "th\030\n \001(\r\022\027\n\017mapping_quality\030\016 \001(\005\022\022\n\npai"
-    "r_flags\030\017 \001(\r\0228\n\023pair_alignment_link\030\020 \001"
-    "(\0132\033.goby.RelatedAlignmentEntry\022\026\n\016fragm"
-    "ent_index\030\021 \001(\r\022C\n\036spliced_forward_align"
-    "ment_link\030\022 \001(\0132\033.goby.RelatedAlignmentE"
-    "ntry\022D\n\037spliced_backward_alignment_link\030"
-    "\026 \001(\0132\033.goby.RelatedAlignmentEntry\022\025\n\rsp"
-    "liced_flags\030\023 \001(\r\022\023\n\013insert_size\030\024 \001(\r\022\024"
-    "\n\014sample_index\030\025 \001(\r\022\037\n\027query_index_occu"
-    "rrences\030\031 \001(\r\022\021\n\tambiguity\030\033 \001(\r\022\026\n\016bam_"
-    "attributes\0302 \003(\t\022\033\n\023read_quality_scores\030"
-    "7 \001(\014\022\031\n\021read_origin_index\030\032 \001(\r\"W\n\025Rela"
-    "tedAlignmentEntry\022\024\n\014target_index\030\001 \001(\r\022"
-    "\020\n\010position\030\002 \001(\r\022\026\n\016fragment_index\030\003 \001("
-    "\r\"g\n\021SequenceVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002"
-    "to\030\001 \001(\t\022\020\n\010position\030\003 \001(\r\022\022\n\nread_index"
-    "\030\005 \001(\r\022\022\n\nto_quality\030\004 \001(\014\"\304\005\n\017Alignment"
-    "Header\022\"\n\032smallest_split_query_index\030\t \001"
-    "(\r\022!\n\031largest_split_query_index\030\013 \001(\r\0223\n"
-    "\022query_name_mapping\030\001 \001(\0132\027.goby.Identif"
-    "ierMapping\0224\n\023target_name_mapping\030\002 \001(\0132"
-    "\027.goby.IdentifierMapping\022\031\n\021number_of_qu"
-    "eries\030\005 \001(\r\022\031\n\021number_of_targets\030\006 \001(\r\022\037"
-    "\n\027number_of_aligned_reads\030\007 \001(\r\022\030\n\014query"
-    "_length\030\003 \003(\rB\002\030\001\022\035\n\025constant_query_leng"
-    "th\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006sorte"
-    "d\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_length"
-    "s_stored_in_entries\030\017 \001(\010\022\024\n\014aligner_nam"
-    "e\030\021 \001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n\007vers"
-    "ion\030\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\022#\n\033qu"
-    "ery_indices_were_permuted\030\032 \001(\010\022\037\n\027query"
-    "_index_occurrences\030# \001(\010\022#\n\033ambiguity_st"
-    "ored_in_entries\030$ \001(\010\022\037\n\027all_read_qualit"
-    "y_scores\030( \001(\010\022)\n\013read_origin\030\033 \003(\0132\024.go"
-    "by.ReadOriginInfo\";\n\021IdentifierMapping\022&"
-    "\n\010mappings\030\001 \003(\0132\024.goby.IdentifierInfo\"-"
-    "\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030"
-    "\002 \002(\r\"\225\001\n\016ReadOriginInfo\022\024\n\014origin_index"
-    "\030\001 \002(\r\022\021\n\torigin_id\030\002 \002(\t\022\016\n\006sample\030\004 \001("
-    "\t\022\020\n\010platform\030\005 \001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\r"
-    "platform_unit\030\014 \001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n"
-    "\024AlignmentTooManyHits\022\031\n\021aligner_thresho"
-    "ld\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousL"
-    "ocation\"b\n\021AmbiguousLocation\022\023\n\013query_in"
-    "dex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002"
-    "(\r\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016Alignment"
-    "Index\022#\n\027target_position_offsets\030\001 \003(\rB\002"
-    "\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_posi"
-    "tions\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.g"
-    "oby.alignmentsH\001", 2456);
+    "y.AlignmentEntry\"\274\006\n\016AlignmentEntry\022\024\n\014m"
+    "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \001(\r\022\024"
+    "\n\014target_index\030\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037"
+    "\n\027matching_reverse_strand\030\006 \001(\010\022\026\n\016query"
+    "_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number"
+    "_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels"
+    "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025"
+    "target_aligned_length\030\014 \001(\r\0224\n\023sequence_"
+    "variations\030\r \003(\0132\027.goby.SequenceVariatio"
+    "n\022\024\n\014query_length\030\n \001(\r\022\027\n\017mapping_quali"
+    "ty\030\016 \001(\005\022\022\n\npair_flags\030\017 \001(\r\0228\n\023pair_ali"
+    "gnment_link\030\020 \001(\0132\033.goby.RelatedAlignmen"
+    "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022C\n\036splice"
+    "d_forward_alignment_link\030\022 \001(\0132\033.goby.Re"
+    "latedAlignmentEntry\022D\n\037spliced_backward_"
+    "alignment_link\030\026 \001(\0132\033.goby.RelatedAlign"
+    "mentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013inse"
+    "rt_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q"
+    "uery_index_occurrences\030\031 \001(\r\022\021\n\tambiguit"
+    "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_"
+    "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde"
+    "x\030\032 \001(\r\"W\n\025RelatedAlignmentEntry\022\024\n\014targ"
+    "et_index\030\001 \001(\r\022\020\n\010position\030\002 \001(\r\022\026\n\016frag"
+    "ment_index\030\003 \001(\r\"g\n\021SequenceVariation\022\014\n"
+    "\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010position\030\003 \001("
+    "\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto_quality\030\004 \001("
+    "\014\"\304\005\n\017AlignmentHeader\022\"\n\032smallest_split_"
+    "query_index\030\t \001(\r\022!\n\031largest_split_query"
+    "_index\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\013"
+    "2\027.goby.IdentifierMapping\0224\n\023target_name"
+    "_mapping\030\002 \001(\0132\027.goby.IdentifierMapping\022"
+    "\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_"
+    "targets\030\006 \001(\r\022\037\n\027number_of_aligned_reads"
+    "\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\035\n\025cons"
+    "tant_query_length\030\n \001(\r\022\025\n\rtarget_length"
+    "\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022"
+    "\'\n\037query_lengths_stored_in_entries\030\017 \001(\010"
+    "\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligner_versio"
+    "n\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n\017sample_basen"
+    "ame\030\036 \003(\t\022#\n\033query_indices_were_permuted"
+    "\030\032 \001(\010\022\037\n\027query_index_occurrences\030# \001(\010\022"
+    "#\n\033ambiguity_stored_in_entries\030$ \001(\010\022\037\n\027"
+    "all_read_quality_scores\030( \001(\010\022)\n\013read_or"
+    "igin\030\033 \003(\0132\024.goby.ReadOriginInfo\";\n\021Iden"
+    "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I"
+    "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030"
+    "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOriginInfo\022"
+    "\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin_id\030\002 \002(\t"
+    "\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 \001(\t\022\017\n\007li"
+    "brary\030\010 \001(\t\022\025\n\rplatform_unit\030\014 \001(\t\022\020\n\010ru"
+    "n_date\030\006 \001(\t\"X\n\024AlignmentTooManyHits\022\031\n\021"
+    "aligner_threshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027."
+    "goby.AmbiguousLocation\"b\n\021AmbiguousLocat"
+    "ion\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_least_num"
+    "ber_of_hits\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001"
+    "(\r\"j\n\016AlignmentIndex\022#\n\027target_position_"
+    "offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036"
+    "\n\022absolute_positions\030\003 \003(\004B\002\020\001B\'\n#edu.co"
+    "rnell.med.icb.goby.alignmentsH\001", 2431);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -664,7 +662,6 @@ void AlignmentCollection::Swap(AlignmentCollection* other) {
 
 #ifndef _MSC_VER
 const int AlignmentEntry::kMultiplicityFieldNumber;
-const int AlignmentEntry::kCompressedDataFieldNumber;
 const int AlignmentEntry::kQueryIndexFieldNumber;
 const int AlignmentEntry::kTargetIndexFieldNumber;
 const int AlignmentEntry::kPositionFieldNumber;
@@ -713,7 +710,6 @@ AlignmentEntry::AlignmentEntry(const AlignmentEntry& from)
 void AlignmentEntry::SharedCtor() {
   _cached_size_ = 0;
   multiplicity_ = 0u;
-  compressed_data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   query_index_ = 0u;
   target_index_ = 0u;
   position_ = 0u;
@@ -746,9 +742,6 @@ AlignmentEntry::~AlignmentEntry() {
 }
 
 void AlignmentEntry::SharedDtor() {
-  if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
-    delete compressed_data_;
-  }
   if (read_quality_scores_ != &::google::protobuf::internal::kEmptyString) {
     delete read_quality_scores_;
   }
@@ -782,31 +775,26 @@ AlignmentEntry* AlignmentEntry::New() const {
 void AlignmentEntry::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     multiplicity_ = 0u;
-    if (has_compressed_data()) {
-      if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
-        compressed_data_->clear();
-      }
-    }
     query_index_ = 0u;
     target_index_ = 0u;
     position_ = 0u;
     matching_reverse_strand_ = false;
     query_position_ = 0u;
     score_ = 0;
+    number_of_mismatches_ = 0u;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    number_of_mismatches_ = 0u;
     number_of_indels_ = 0u;
     query_aligned_length_ = 0u;
     target_aligned_length_ = 0u;
     query_length_ = 0u;
     mapping_quality_ = 0;
     pair_flags_ = 0u;
-  }
-  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     if (has_pair_alignment_link()) {
       if (pair_alignment_link_ != NULL) pair_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
     }
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     fragment_index_ = 0u;
     if (has_spliced_forward_alignment_link()) {
       if (spliced_forward_alignment_link_ != NULL) spliced_forward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
@@ -818,9 +806,9 @@ void AlignmentEntry::Clear() {
     insert_size_ = 0u;
     sample_index_ = 0u;
     query_index_occurrences_ = 0u;
-  }
-  if (_has_bits_[24 / 32] & (0xffu << (24 % 32))) {
     ambiguity_ = 0u;
+  }
+  if (_has_bits_[25 / 32] & (0xffu << (25 % 32))) {
     if (has_read_quality_scores()) {
       if (read_quality_scores_ != &::google::protobuf::internal::kEmptyString) {
         read_quality_scores_->clear();
@@ -1180,20 +1168,6 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(186)) goto parse_compressed_data;
-        break;
-      }
-      
-      // optional bytes compressed_data = 23;
-      case 23: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_compressed_data:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_compressed_data()));
-        } else {
-          goto handle_uninterpreted;
-        }
         if (input->ExpectTag(200)) goto parse_query_index_occurrences;
         break;
       }
@@ -1410,12 +1384,6 @@ void AlignmentEntry::SerializeWithCachedSizes(
       22, this->spliced_backward_alignment_link(), output);
   }
   
-  // optional bytes compressed_data = 23;
-  if (has_compressed_data()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      23, this->compressed_data(), output);
-  }
-  
   // optional uint32 query_index_occurrences = 25;
   if (has_query_index_occurrences()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(25, this->query_index_occurrences(), output);
@@ -1572,13 +1540,6 @@ void AlignmentEntry::SerializeWithCachedSizes(
         22, this->spliced_backward_alignment_link(), target);
   }
   
-  // optional bytes compressed_data = 23;
-  if (has_compressed_data()) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        23, this->compressed_data(), target);
-  }
-  
   // optional uint32 query_index_occurrences = 25;
   if (has_query_index_occurrences()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(25, this->query_index_occurrences(), target);
@@ -1628,13 +1589,6 @@ int AlignmentEntry::ByteSize() const {
           this->multiplicity());
     }
     
-    // optional bytes compressed_data = 23;
-    if (has_compressed_data()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->compressed_data());
-    }
-    
     // optional uint32 query_index = 1;
     if (has_query_index()) {
       total_size += 1 +
@@ -1673,8 +1627,6 @@ int AlignmentEntry::ByteSize() const {
       total_size += 1 + 4;
     }
     
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional uint32 number_of_mismatches = 8;
     if (has_number_of_mismatches()) {
       total_size += 1 +
@@ -1682,6 +1634,8 @@ int AlignmentEntry::ByteSize() const {
           this->number_of_mismatches());
     }
     
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional uint32 number_of_indels = 9;
     if (has_number_of_indels()) {
       total_size += 1 +
@@ -1724,8 +1678,6 @@ int AlignmentEntry::ByteSize() const {
           this->pair_flags());
     }
     
-  }
-  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     // optional .goby.RelatedAlignmentEntry pair_alignment_link = 16;
     if (has_pair_alignment_link()) {
       total_size += 2 +
@@ -1733,6 +1685,8 @@ int AlignmentEntry::ByteSize() const {
           this->pair_alignment_link());
     }
     
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     // optional uint32 fragment_index = 17;
     if (has_fragment_index()) {
       total_size += 2 +
@@ -1782,8 +1736,6 @@ int AlignmentEntry::ByteSize() const {
           this->query_index_occurrences());
     }
     
-  }
-  if (_has_bits_[24 / 32] & (0xffu << (24 % 32))) {
     // optional uint32 ambiguity = 27;
     if (has_ambiguity()) {
       total_size += 2 +
@@ -1791,6 +1743,8 @@ int AlignmentEntry::ByteSize() const {
           this->ambiguity());
     }
     
+  }
+  if (_has_bits_[25 / 32] & (0xffu << (25 % 32))) {
     // optional bytes read_quality_scores = 55;
     if (has_read_quality_scores()) {
       total_size += 2 +
@@ -1852,9 +1806,6 @@ void AlignmentEntry::MergeFrom(const AlignmentEntry& from) {
     if (from.has_multiplicity()) {
       set_multiplicity(from.multiplicity());
     }
-    if (from.has_compressed_data()) {
-      set_compressed_data(from.compressed_data());
-    }
     if (from.has_query_index()) {
       set_query_index(from.query_index());
     }
@@ -1873,11 +1824,11 @@ void AlignmentEntry::MergeFrom(const AlignmentEntry& from) {
     if (from.has_score()) {
       set_score(from.score());
     }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_number_of_mismatches()) {
       set_number_of_mismatches(from.number_of_mismatches());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_number_of_indels()) {
       set_number_of_indels(from.number_of_indels());
     }
@@ -1896,11 +1847,11 @@ void AlignmentEntry::MergeFrom(const AlignmentEntry& from) {
     if (from.has_pair_flags()) {
       set_pair_flags(from.pair_flags());
     }
-  }
-  if (from._has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     if (from.has_pair_alignment_link()) {
       mutable_pair_alignment_link()->::goby::RelatedAlignmentEntry::MergeFrom(from.pair_alignment_link());
     }
+  }
+  if (from._has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     if (from.has_fragment_index()) {
       set_fragment_index(from.fragment_index());
     }
@@ -1922,11 +1873,11 @@ void AlignmentEntry::MergeFrom(const AlignmentEntry& from) {
     if (from.has_query_index_occurrences()) {
       set_query_index_occurrences(from.query_index_occurrences());
     }
-  }
-  if (from._has_bits_[24 / 32] & (0xffu << (24 % 32))) {
     if (from.has_ambiguity()) {
       set_ambiguity(from.ambiguity());
     }
+  }
+  if (from._has_bits_[25 / 32] & (0xffu << (25 % 32))) {
     if (from.has_read_quality_scores()) {
       set_read_quality_scores(from.read_quality_scores());
     }
@@ -1957,7 +1908,6 @@ bool AlignmentEntry::IsInitialized() const {
 void AlignmentEntry::Swap(AlignmentEntry* other) {
   if (other != this) {
     std::swap(multiplicity_, other->multiplicity_);
-    std::swap(compressed_data_, other->compressed_data_);
     std::swap(query_index_, other->query_index_);
     std::swap(target_index_, other->target_index_);
     std::swap(position_, other->position_);

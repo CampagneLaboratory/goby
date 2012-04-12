@@ -18,10 +18,9 @@ message AlignmentEntry {
  optional uint32 multiplicity=7;
 
   /*
-    Compressed stream of data. The first byte indicates the compression/decompression method (codec). The remaining bytes are
-    content compressed with the codec.
+    Compressed stream of data. Removed since Goby 2.0 supports chunk codecs. Do not reuse field index 23
+    optional bytes compressed_data = 23;
   */
-  optional bytes compressed_data = 23;
 
  /* An integer that uniquely identifies the query (a short read) in a set of alignment runs. When several
     alignment runs are made with the same set of query sequences, equality of query index means that the query

@@ -566,10 +566,6 @@ public final class Alignments {
     boolean hasMultiplicity();
     int getMultiplicity();
     
-    // optional bytes compressed_data = 23;
-    boolean hasCompressedData();
-    com.google.protobuf.ByteString getCompressedData();
-    
     // optional uint32 query_index = 1;
     boolean hasQueryIndex();
     int getQueryIndex();
@@ -723,21 +719,11 @@ public final class Alignments {
       return multiplicity_;
     }
     
-    // optional bytes compressed_data = 23;
-    public static final int COMPRESSED_DATA_FIELD_NUMBER = 23;
-    private com.google.protobuf.ByteString compressedData_;
-    public boolean hasCompressedData() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    public com.google.protobuf.ByteString getCompressedData() {
-      return compressedData_;
-    }
-    
     // optional uint32 query_index = 1;
     public static final int QUERY_INDEX_FIELD_NUMBER = 1;
     private int queryIndex_;
     public boolean hasQueryIndex() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     public int getQueryIndex() {
       return queryIndex_;
@@ -747,7 +733,7 @@ public final class Alignments {
     public static final int TARGET_INDEX_FIELD_NUMBER = 2;
     private int targetIndex_;
     public boolean hasTargetIndex() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     public int getTargetIndex() {
       return targetIndex_;
@@ -757,7 +743,7 @@ public final class Alignments {
     public static final int POSITION_FIELD_NUMBER = 3;
     private int position_;
     public boolean hasPosition() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     public int getPosition() {
       return position_;
@@ -767,7 +753,7 @@ public final class Alignments {
     public static final int MATCHING_REVERSE_STRAND_FIELD_NUMBER = 6;
     private boolean matchingReverseStrand_;
     public boolean hasMatchingReverseStrand() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     public boolean getMatchingReverseStrand() {
       return matchingReverseStrand_;
@@ -777,7 +763,7 @@ public final class Alignments {
     public static final int QUERY_POSITION_FIELD_NUMBER = 5;
     private int queryPosition_;
     public boolean hasQueryPosition() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     public int getQueryPosition() {
       return queryPosition_;
@@ -787,7 +773,7 @@ public final class Alignments {
     public static final int SCORE_FIELD_NUMBER = 4;
     private float score_;
     public boolean hasScore() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     public float getScore() {
       return score_;
@@ -797,7 +783,7 @@ public final class Alignments {
     public static final int NUMBER_OF_MISMATCHES_FIELD_NUMBER = 8;
     private int numberOfMismatches_;
     public boolean hasNumberOfMismatches() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     public int getNumberOfMismatches() {
       return numberOfMismatches_;
@@ -807,7 +793,7 @@ public final class Alignments {
     public static final int NUMBER_OF_INDELS_FIELD_NUMBER = 9;
     private int numberOfIndels_;
     public boolean hasNumberOfIndels() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     public int getNumberOfIndels() {
       return numberOfIndels_;
@@ -817,7 +803,7 @@ public final class Alignments {
     public static final int QUERY_ALIGNED_LENGTH_FIELD_NUMBER = 11;
     private int queryAlignedLength_;
     public boolean hasQueryAlignedLength() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     public int getQueryAlignedLength() {
       return queryAlignedLength_;
@@ -827,7 +813,7 @@ public final class Alignments {
     public static final int TARGET_ALIGNED_LENGTH_FIELD_NUMBER = 12;
     private int targetAlignedLength_;
     public boolean hasTargetAlignedLength() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     public int getTargetAlignedLength() {
       return targetAlignedLength_;
@@ -858,7 +844,7 @@ public final class Alignments {
     public static final int QUERY_LENGTH_FIELD_NUMBER = 10;
     private int queryLength_;
     public boolean hasQueryLength() {
-      return ((bitField0_ & 0x00001000) == 0x00001000);
+      return ((bitField0_ & 0x00000800) == 0x00000800);
     }
     public int getQueryLength() {
       return queryLength_;
@@ -868,7 +854,7 @@ public final class Alignments {
     public static final int MAPPING_QUALITY_FIELD_NUMBER = 14;
     private int mappingQuality_;
     public boolean hasMappingQuality() {
-      return ((bitField0_ & 0x00002000) == 0x00002000);
+      return ((bitField0_ & 0x00001000) == 0x00001000);
     }
     public int getMappingQuality() {
       return mappingQuality_;
@@ -878,7 +864,7 @@ public final class Alignments {
     public static final int PAIR_FLAGS_FIELD_NUMBER = 15;
     private int pairFlags_;
     public boolean hasPairFlags() {
-      return ((bitField0_ & 0x00004000) == 0x00004000);
+      return ((bitField0_ & 0x00002000) == 0x00002000);
     }
     public int getPairFlags() {
       return pairFlags_;
@@ -888,7 +874,7 @@ public final class Alignments {
     public static final int PAIR_ALIGNMENT_LINK_FIELD_NUMBER = 16;
     private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry pairAlignmentLink_;
     public boolean hasPairAlignmentLink() {
-      return ((bitField0_ & 0x00008000) == 0x00008000);
+      return ((bitField0_ & 0x00004000) == 0x00004000);
     }
     public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getPairAlignmentLink() {
       return pairAlignmentLink_;
@@ -901,7 +887,7 @@ public final class Alignments {
     public static final int FRAGMENT_INDEX_FIELD_NUMBER = 17;
     private int fragmentIndex_;
     public boolean hasFragmentIndex() {
-      return ((bitField0_ & 0x00010000) == 0x00010000);
+      return ((bitField0_ & 0x00008000) == 0x00008000);
     }
     public int getFragmentIndex() {
       return fragmentIndex_;
@@ -911,7 +897,7 @@ public final class Alignments {
     public static final int SPLICED_FORWARD_ALIGNMENT_LINK_FIELD_NUMBER = 18;
     private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedForwardAlignmentLink_;
     public boolean hasSplicedForwardAlignmentLink() {
-      return ((bitField0_ & 0x00020000) == 0x00020000);
+      return ((bitField0_ & 0x00010000) == 0x00010000);
     }
     public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedForwardAlignmentLink() {
       return splicedForwardAlignmentLink_;
@@ -924,7 +910,7 @@ public final class Alignments {
     public static final int SPLICED_BACKWARD_ALIGNMENT_LINK_FIELD_NUMBER = 22;
     private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedBackwardAlignmentLink_;
     public boolean hasSplicedBackwardAlignmentLink() {
-      return ((bitField0_ & 0x00040000) == 0x00040000);
+      return ((bitField0_ & 0x00020000) == 0x00020000);
     }
     public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedBackwardAlignmentLink() {
       return splicedBackwardAlignmentLink_;
@@ -937,7 +923,7 @@ public final class Alignments {
     public static final int SPLICED_FLAGS_FIELD_NUMBER = 19;
     private int splicedFlags_;
     public boolean hasSplicedFlags() {
-      return ((bitField0_ & 0x00080000) == 0x00080000);
+      return ((bitField0_ & 0x00040000) == 0x00040000);
     }
     public int getSplicedFlags() {
       return splicedFlags_;
@@ -947,7 +933,7 @@ public final class Alignments {
     public static final int INSERT_SIZE_FIELD_NUMBER = 20;
     private int insertSize_;
     public boolean hasInsertSize() {
-      return ((bitField0_ & 0x00100000) == 0x00100000);
+      return ((bitField0_ & 0x00080000) == 0x00080000);
     }
     public int getInsertSize() {
       return insertSize_;
@@ -957,7 +943,7 @@ public final class Alignments {
     public static final int SAMPLE_INDEX_FIELD_NUMBER = 21;
     private int sampleIndex_;
     public boolean hasSampleIndex() {
-      return ((bitField0_ & 0x00200000) == 0x00200000);
+      return ((bitField0_ & 0x00100000) == 0x00100000);
     }
     public int getSampleIndex() {
       return sampleIndex_;
@@ -967,7 +953,7 @@ public final class Alignments {
     public static final int QUERY_INDEX_OCCURRENCES_FIELD_NUMBER = 25;
     private int queryIndexOccurrences_;
     public boolean hasQueryIndexOccurrences() {
-      return ((bitField0_ & 0x00400000) == 0x00400000);
+      return ((bitField0_ & 0x00200000) == 0x00200000);
     }
     public int getQueryIndexOccurrences() {
       return queryIndexOccurrences_;
@@ -977,7 +963,7 @@ public final class Alignments {
     public static final int AMBIGUITY_FIELD_NUMBER = 27;
     private int ambiguity_;
     public boolean hasAmbiguity() {
-      return ((bitField0_ & 0x00800000) == 0x00800000);
+      return ((bitField0_ & 0x00400000) == 0x00400000);
     }
     public int getAmbiguity() {
       return ambiguity_;
@@ -1001,7 +987,7 @@ public final class Alignments {
     public static final int READ_QUALITY_SCORES_FIELD_NUMBER = 55;
     private com.google.protobuf.ByteString readQualityScores_;
     public boolean hasReadQualityScores() {
-      return ((bitField0_ & 0x01000000) == 0x01000000);
+      return ((bitField0_ & 0x00800000) == 0x00800000);
     }
     public com.google.protobuf.ByteString getReadQualityScores() {
       return readQualityScores_;
@@ -1011,7 +997,7 @@ public final class Alignments {
     public static final int READ_ORIGIN_INDEX_FIELD_NUMBER = 26;
     private int readOriginIndex_;
     public boolean hasReadOriginIndex() {
-      return ((bitField0_ & 0x02000000) == 0x02000000);
+      return ((bitField0_ & 0x01000000) == 0x01000000);
     }
     public int getReadOriginIndex() {
       return readOriginIndex_;
@@ -1019,7 +1005,6 @@ public final class Alignments {
     
     private void initFields() {
       multiplicity_ = 0;
-      compressedData_ = com.google.protobuf.ByteString.EMPTY;
       queryIndex_ = 0;
       targetIndex_ = 0;
       position_ = 0;
@@ -1059,88 +1044,85 @@ public final class Alignments {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeUInt32(1, queryIndex_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeUInt32(2, targetIndex_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeUInt32(3, position_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeFloat(4, score_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeUInt32(5, queryPosition_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBool(6, matchingReverseStrand_);
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeUInt32(7, multiplicity_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeUInt32(8, numberOfMismatches_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeUInt32(9, numberOfIndels_);
       }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
         output.writeUInt32(10, queryLength_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeUInt32(11, queryAlignedLength_);
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeUInt32(12, targetAlignedLength_);
       }
       for (int i = 0; i < sequenceVariations_.size(); i++) {
         output.writeMessage(13, sequenceVariations_.get(i));
       }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
         output.writeInt32(14, mappingQuality_);
       }
-      if (((bitField0_ & 0x00004000) == 0x00004000)) {
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
         output.writeUInt32(15, pairFlags_);
       }
-      if (((bitField0_ & 0x00008000) == 0x00008000)) {
+      if (((bitField0_ & 0x00004000) == 0x00004000)) {
         output.writeMessage(16, pairAlignmentLink_);
       }
-      if (((bitField0_ & 0x00010000) == 0x00010000)) {
+      if (((bitField0_ & 0x00008000) == 0x00008000)) {
         output.writeUInt32(17, fragmentIndex_);
       }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+      if (((bitField0_ & 0x00010000) == 0x00010000)) {
         output.writeMessage(18, splicedForwardAlignmentLink_);
       }
-      if (((bitField0_ & 0x00080000) == 0x00080000)) {
+      if (((bitField0_ & 0x00040000) == 0x00040000)) {
         output.writeUInt32(19, splicedFlags_);
       }
-      if (((bitField0_ & 0x00100000) == 0x00100000)) {
+      if (((bitField0_ & 0x00080000) == 0x00080000)) {
         output.writeUInt32(20, insertSize_);
       }
-      if (((bitField0_ & 0x00200000) == 0x00200000)) {
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
         output.writeUInt32(21, sampleIndex_);
       }
-      if (((bitField0_ & 0x00040000) == 0x00040000)) {
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
         output.writeMessage(22, splicedBackwardAlignmentLink_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(23, compressedData_);
-      }
-      if (((bitField0_ & 0x00400000) == 0x00400000)) {
+      if (((bitField0_ & 0x00200000) == 0x00200000)) {
         output.writeUInt32(25, queryIndexOccurrences_);
       }
-      if (((bitField0_ & 0x02000000) == 0x02000000)) {
+      if (((bitField0_ & 0x01000000) == 0x01000000)) {
         output.writeUInt32(26, readOriginIndex_);
       }
-      if (((bitField0_ & 0x00800000) == 0x00800000)) {
+      if (((bitField0_ & 0x00400000) == 0x00400000)) {
         output.writeUInt32(27, ambiguity_);
       }
       for (int i = 0; i < bamAttributes_.size(); i++) {
         output.writeBytes(50, bamAttributes_.getByteString(i));
       }
-      if (((bitField0_ & 0x01000000) == 0x01000000)) {
+      if (((bitField0_ & 0x00800000) == 0x00800000)) {
         output.writeBytes(55, readQualityScores_);
       }
       getUnknownFields().writeTo(output);
@@ -1152,27 +1134,27 @@ public final class Alignments {
       if (size != -1) return size;
     
       size = 0;
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, queryIndex_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(2, targetIndex_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, position_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(4, score_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(5, queryPosition_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(6, matchingReverseStrand_);
       }
@@ -1180,23 +1162,23 @@ public final class Alignments {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(7, multiplicity_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(8, numberOfMismatches_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(9, numberOfIndels_);
       }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(10, queryLength_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(11, queryAlignedLength_);
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(12, targetAlignedLength_);
       }
@@ -1204,55 +1186,51 @@ public final class Alignments {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13, sequenceVariations_.get(i));
       }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(14, mappingQuality_);
       }
-      if (((bitField0_ & 0x00004000) == 0x00004000)) {
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(15, pairFlags_);
       }
-      if (((bitField0_ & 0x00008000) == 0x00008000)) {
+      if (((bitField0_ & 0x00004000) == 0x00004000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(16, pairAlignmentLink_);
       }
-      if (((bitField0_ & 0x00010000) == 0x00010000)) {
+      if (((bitField0_ & 0x00008000) == 0x00008000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(17, fragmentIndex_);
       }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+      if (((bitField0_ & 0x00010000) == 0x00010000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(18, splicedForwardAlignmentLink_);
       }
-      if (((bitField0_ & 0x00080000) == 0x00080000)) {
+      if (((bitField0_ & 0x00040000) == 0x00040000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(19, splicedFlags_);
       }
-      if (((bitField0_ & 0x00100000) == 0x00100000)) {
+      if (((bitField0_ & 0x00080000) == 0x00080000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(20, insertSize_);
       }
-      if (((bitField0_ & 0x00200000) == 0x00200000)) {
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(21, sampleIndex_);
       }
-      if (((bitField0_ & 0x00040000) == 0x00040000)) {
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(22, splicedBackwardAlignmentLink_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(23, compressedData_);
-      }
-      if (((bitField0_ & 0x00400000) == 0x00400000)) {
+      if (((bitField0_ & 0x00200000) == 0x00200000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(25, queryIndexOccurrences_);
       }
-      if (((bitField0_ & 0x02000000) == 0x02000000)) {
+      if (((bitField0_ & 0x01000000) == 0x01000000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(26, readOriginIndex_);
       }
-      if (((bitField0_ & 0x00800000) == 0x00800000)) {
+      if (((bitField0_ & 0x00400000) == 0x00400000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(27, ambiguity_);
       }
@@ -1265,7 +1243,7 @@ public final class Alignments {
         size += dataSize;
         size += 2 * getBamAttributesList().size();
       }
-      if (((bitField0_ & 0x01000000) == 0x01000000)) {
+      if (((bitField0_ & 0x00800000) == 0x00800000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(55, readQualityScores_);
       }
@@ -1399,76 +1377,74 @@ public final class Alignments {
         super.clear();
         multiplicity_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        compressedData_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
         queryIndex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         targetIndex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         position_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000008);
         matchingReverseStrand_ = false;
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000010);
         queryPosition_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000020);
         score_ = 0F;
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         numberOfMismatches_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         numberOfIndels_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         queryAlignedLength_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000200);
         targetAlignedLength_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000400);
         if (sequenceVariationsBuilder_ == null) {
           sequenceVariations_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00000800);
         } else {
           sequenceVariationsBuilder_.clear();
         }
         queryLength_ = 0;
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         mappingQuality_ = 0;
-        bitField0_ = (bitField0_ & ~0x00004000);
+        bitField0_ = (bitField0_ & ~0x00002000);
         pairFlags_ = 0;
-        bitField0_ = (bitField0_ & ~0x00008000);
+        bitField0_ = (bitField0_ & ~0x00004000);
         if (pairAlignmentLinkBuilder_ == null) {
           pairAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
         } else {
           pairAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00010000);
+        bitField0_ = (bitField0_ & ~0x00008000);
         fragmentIndex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00020000);
+        bitField0_ = (bitField0_ & ~0x00010000);
         if (splicedForwardAlignmentLinkBuilder_ == null) {
           splicedForwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
         } else {
           splicedForwardAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00040000);
+        bitField0_ = (bitField0_ & ~0x00020000);
         if (splicedBackwardAlignmentLinkBuilder_ == null) {
           splicedBackwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
         } else {
           splicedBackwardAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00080000);
+        bitField0_ = (bitField0_ & ~0x00040000);
         splicedFlags_ = 0;
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         insertSize_ = 0;
-        bitField0_ = (bitField0_ & ~0x00200000);
+        bitField0_ = (bitField0_ & ~0x00100000);
         sampleIndex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00400000);
+        bitField0_ = (bitField0_ & ~0x00200000);
         queryIndexOccurrences_ = 0;
-        bitField0_ = (bitField0_ & ~0x00800000);
+        bitField0_ = (bitField0_ & ~0x00400000);
         ambiguity_ = 0;
-        bitField0_ = (bitField0_ & ~0x01000000);
+        bitField0_ = (bitField0_ & ~0x00800000);
         bamAttributes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x02000000);
+        bitField0_ = (bitField0_ & ~0x01000000);
         readQualityScores_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x04000000);
+        bitField0_ = (bitField0_ & ~0x02000000);
         readOriginIndex_ = 0;
-        bitField0_ = (bitField0_ & ~0x08000000);
+        bitField0_ = (bitField0_ & ~0x04000000);
         return this;
       }
       
@@ -1514,128 +1490,124 @@ public final class Alignments {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.compressedData_ = compressedData_;
+        result.queryIndex_ = queryIndex_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.queryIndex_ = queryIndex_;
+        result.targetIndex_ = targetIndex_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.targetIndex_ = targetIndex_;
+        result.position_ = position_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.position_ = position_;
+        result.matchingReverseStrand_ = matchingReverseStrand_;
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        result.matchingReverseStrand_ = matchingReverseStrand_;
+        result.queryPosition_ = queryPosition_;
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.queryPosition_ = queryPosition_;
+        result.score_ = score_;
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
         }
-        result.score_ = score_;
+        result.numberOfMismatches_ = numberOfMismatches_;
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
         }
-        result.numberOfMismatches_ = numberOfMismatches_;
+        result.numberOfIndels_ = numberOfIndels_;
         if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
           to_bitField0_ |= 0x00000200;
         }
-        result.numberOfIndels_ = numberOfIndels_;
+        result.queryAlignedLength_ = queryAlignedLength_;
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000400;
         }
-        result.queryAlignedLength_ = queryAlignedLength_;
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
-          to_bitField0_ |= 0x00000800;
-        }
         result.targetAlignedLength_ = targetAlignedLength_;
         if (sequenceVariationsBuilder_ == null) {
-          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
             sequenceVariations_ = java.util.Collections.unmodifiableList(sequenceVariations_);
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00000800);
           }
           result.sequenceVariations_ = sequenceVariations_;
         } else {
           result.sequenceVariations_ = sequenceVariationsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        result.queryLength_ = queryLength_;
         if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
           to_bitField0_ |= 0x00001000;
         }
-        result.queryLength_ = queryLength_;
+        result.mappingQuality_ = mappingQuality_;
         if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
           to_bitField0_ |= 0x00002000;
         }
-        result.mappingQuality_ = mappingQuality_;
+        result.pairFlags_ = pairFlags_;
         if (((from_bitField0_ & 0x00008000) == 0x00008000)) {
           to_bitField0_ |= 0x00004000;
-        }
-        result.pairFlags_ = pairFlags_;
-        if (((from_bitField0_ & 0x00010000) == 0x00010000)) {
-          to_bitField0_ |= 0x00008000;
         }
         if (pairAlignmentLinkBuilder_ == null) {
           result.pairAlignmentLink_ = pairAlignmentLink_;
         } else {
           result.pairAlignmentLink_ = pairAlignmentLinkBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00020000) == 0x00020000)) {
-          to_bitField0_ |= 0x00010000;
+        if (((from_bitField0_ & 0x00010000) == 0x00010000)) {
+          to_bitField0_ |= 0x00008000;
         }
         result.fragmentIndex_ = fragmentIndex_;
-        if (((from_bitField0_ & 0x00040000) == 0x00040000)) {
-          to_bitField0_ |= 0x00020000;
+        if (((from_bitField0_ & 0x00020000) == 0x00020000)) {
+          to_bitField0_ |= 0x00010000;
         }
         if (splicedForwardAlignmentLinkBuilder_ == null) {
           result.splicedForwardAlignmentLink_ = splicedForwardAlignmentLink_;
         } else {
           result.splicedForwardAlignmentLink_ = splicedForwardAlignmentLinkBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00080000) == 0x00080000)) {
-          to_bitField0_ |= 0x00040000;
+        if (((from_bitField0_ & 0x00040000) == 0x00040000)) {
+          to_bitField0_ |= 0x00020000;
         }
         if (splicedBackwardAlignmentLinkBuilder_ == null) {
           result.splicedBackwardAlignmentLink_ = splicedBackwardAlignmentLink_;
         } else {
           result.splicedBackwardAlignmentLink_ = splicedBackwardAlignmentLinkBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00080000) == 0x00080000)) {
+          to_bitField0_ |= 0x00040000;
+        }
+        result.splicedFlags_ = splicedFlags_;
         if (((from_bitField0_ & 0x00100000) == 0x00100000)) {
           to_bitField0_ |= 0x00080000;
         }
-        result.splicedFlags_ = splicedFlags_;
+        result.insertSize_ = insertSize_;
         if (((from_bitField0_ & 0x00200000) == 0x00200000)) {
           to_bitField0_ |= 0x00100000;
         }
-        result.insertSize_ = insertSize_;
+        result.sampleIndex_ = sampleIndex_;
         if (((from_bitField0_ & 0x00400000) == 0x00400000)) {
           to_bitField0_ |= 0x00200000;
         }
-        result.sampleIndex_ = sampleIndex_;
+        result.queryIndexOccurrences_ = queryIndexOccurrences_;
         if (((from_bitField0_ & 0x00800000) == 0x00800000)) {
           to_bitField0_ |= 0x00400000;
         }
-        result.queryIndexOccurrences_ = queryIndexOccurrences_;
-        if (((from_bitField0_ & 0x01000000) == 0x01000000)) {
-          to_bitField0_ |= 0x00800000;
-        }
         result.ambiguity_ = ambiguity_;
-        if (((bitField0_ & 0x02000000) == 0x02000000)) {
+        if (((bitField0_ & 0x01000000) == 0x01000000)) {
           bamAttributes_ = new com.google.protobuf.UnmodifiableLazyStringList(
               bamAttributes_);
-          bitField0_ = (bitField0_ & ~0x02000000);
+          bitField0_ = (bitField0_ & ~0x01000000);
         }
         result.bamAttributes_ = bamAttributes_;
-        if (((from_bitField0_ & 0x04000000) == 0x04000000)) {
-          to_bitField0_ |= 0x01000000;
+        if (((from_bitField0_ & 0x02000000) == 0x02000000)) {
+          to_bitField0_ |= 0x00800000;
         }
         result.readQualityScores_ = readQualityScores_;
-        if (((from_bitField0_ & 0x08000000) == 0x08000000)) {
-          to_bitField0_ |= 0x02000000;
+        if (((from_bitField0_ & 0x04000000) == 0x04000000)) {
+          to_bitField0_ |= 0x01000000;
         }
         result.readOriginIndex_ = readOriginIndex_;
         result.bitField0_ = to_bitField0_;
@@ -1656,9 +1628,6 @@ public final class Alignments {
         if (other == edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.getDefaultInstance()) return this;
         if (other.hasMultiplicity()) {
           setMultiplicity(other.getMultiplicity());
-        }
-        if (other.hasCompressedData()) {
-          setCompressedData(other.getCompressedData());
         }
         if (other.hasQueryIndex()) {
           setQueryIndex(other.getQueryIndex());
@@ -1694,7 +1663,7 @@ public final class Alignments {
           if (!other.sequenceVariations_.isEmpty()) {
             if (sequenceVariations_.isEmpty()) {
               sequenceVariations_ = other.sequenceVariations_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00000800);
             } else {
               ensureSequenceVariationsIsMutable();
               sequenceVariations_.addAll(other.sequenceVariations_);
@@ -1707,7 +1676,7 @@ public final class Alignments {
               sequenceVariationsBuilder_.dispose();
               sequenceVariationsBuilder_ = null;
               sequenceVariations_ = other.sequenceVariations_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00000800);
               sequenceVariationsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getSequenceVariationsFieldBuilder() : null;
@@ -1755,7 +1724,7 @@ public final class Alignments {
         if (!other.bamAttributes_.isEmpty()) {
           if (bamAttributes_.isEmpty()) {
             bamAttributes_ = other.bamAttributes_;
-            bitField0_ = (bitField0_ & ~0x02000000);
+            bitField0_ = (bitField0_ & ~0x01000000);
           } else {
             ensureBamAttributesIsMutable();
             bamAttributes_.addAll(other.bamAttributes_);
@@ -1800,32 +1769,32 @@ public final class Alignments {
               break;
             }
             case 8: {
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               queryIndex_ = input.readUInt32();
               break;
             }
             case 16: {
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000004;
               targetIndex_ = input.readUInt32();
               break;
             }
             case 24: {
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000008;
               position_ = input.readUInt32();
               break;
             }
             case 37: {
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000040;
               score_ = input.readFloat();
               break;
             }
             case 40: {
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000020;
               queryPosition_ = input.readUInt32();
               break;
             }
             case 48: {
-              bitField0_ |= 0x00000020;
+              bitField0_ |= 0x00000010;
               matchingReverseStrand_ = input.readBool();
               break;
             }
@@ -1835,27 +1804,27 @@ public final class Alignments {
               break;
             }
             case 64: {
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000080;
               numberOfMismatches_ = input.readUInt32();
               break;
             }
             case 72: {
-              bitField0_ |= 0x00000200;
+              bitField0_ |= 0x00000100;
               numberOfIndels_ = input.readUInt32();
               break;
             }
             case 80: {
-              bitField0_ |= 0x00002000;
+              bitField0_ |= 0x00001000;
               queryLength_ = input.readUInt32();
               break;
             }
             case 88: {
-              bitField0_ |= 0x00000400;
+              bitField0_ |= 0x00000200;
               queryAlignedLength_ = input.readUInt32();
               break;
             }
             case 96: {
-              bitField0_ |= 0x00000800;
+              bitField0_ |= 0x00000400;
               targetAlignedLength_ = input.readUInt32();
               break;
             }
@@ -1866,12 +1835,12 @@ public final class Alignments {
               break;
             }
             case 112: {
-              bitField0_ |= 0x00004000;
+              bitField0_ |= 0x00002000;
               mappingQuality_ = input.readInt32();
               break;
             }
             case 120: {
-              bitField0_ |= 0x00008000;
+              bitField0_ |= 0x00004000;
               pairFlags_ = input.readUInt32();
               break;
             }
@@ -1885,7 +1854,7 @@ public final class Alignments {
               break;
             }
             case 136: {
-              bitField0_ |= 0x00020000;
+              bitField0_ |= 0x00010000;
               fragmentIndex_ = input.readUInt32();
               break;
             }
@@ -1899,17 +1868,17 @@ public final class Alignments {
               break;
             }
             case 152: {
-              bitField0_ |= 0x00100000;
+              bitField0_ |= 0x00080000;
               splicedFlags_ = input.readUInt32();
               break;
             }
             case 160: {
-              bitField0_ |= 0x00200000;
+              bitField0_ |= 0x00100000;
               insertSize_ = input.readUInt32();
               break;
             }
             case 168: {
-              bitField0_ |= 0x00400000;
+              bitField0_ |= 0x00200000;
               sampleIndex_ = input.readUInt32();
               break;
             }
@@ -1922,23 +1891,18 @@ public final class Alignments {
               setSplicedBackwardAlignmentLink(subBuilder.buildPartial());
               break;
             }
-            case 186: {
-              bitField0_ |= 0x00000002;
-              compressedData_ = input.readBytes();
-              break;
-            }
             case 200: {
-              bitField0_ |= 0x00800000;
+              bitField0_ |= 0x00400000;
               queryIndexOccurrences_ = input.readUInt32();
               break;
             }
             case 208: {
-              bitField0_ |= 0x08000000;
+              bitField0_ |= 0x04000000;
               readOriginIndex_ = input.readUInt32();
               break;
             }
             case 216: {
-              bitField0_ |= 0x01000000;
+              bitField0_ |= 0x00800000;
               ambiguity_ = input.readUInt32();
               break;
             }
@@ -1948,7 +1912,7 @@ public final class Alignments {
               break;
             }
             case 442: {
-              bitField0_ |= 0x04000000;
+              bitField0_ |= 0x02000000;
               readQualityScores_ = input.readBytes();
               break;
             }
@@ -1979,46 +1943,22 @@ public final class Alignments {
         return this;
       }
       
-      // optional bytes compressed_data = 23;
-      private com.google.protobuf.ByteString compressedData_ = com.google.protobuf.ByteString.EMPTY;
-      public boolean hasCompressedData() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      public com.google.protobuf.ByteString getCompressedData() {
-        return compressedData_;
-      }
-      public Builder setCompressedData(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        compressedData_ = value;
-        onChanged();
-        return this;
-      }
-      public Builder clearCompressedData() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        compressedData_ = getDefaultInstance().getCompressedData();
-        onChanged();
-        return this;
-      }
-      
       // optional uint32 query_index = 1;
       private int queryIndex_ ;
       public boolean hasQueryIndex() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       public int getQueryIndex() {
         return queryIndex_;
       }
       public Builder setQueryIndex(int value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         queryIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearQueryIndex() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         queryIndex_ = 0;
         onChanged();
         return this;
@@ -2027,19 +1967,19 @@ public final class Alignments {
       // optional uint32 target_index = 2;
       private int targetIndex_ ;
       public boolean hasTargetIndex() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       public int getTargetIndex() {
         return targetIndex_;
       }
       public Builder setTargetIndex(int value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
         targetIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearTargetIndex() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         targetIndex_ = 0;
         onChanged();
         return this;
@@ -2048,19 +1988,19 @@ public final class Alignments {
       // optional uint32 position = 3;
       private int position_ ;
       public boolean hasPosition() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       public int getPosition() {
         return position_;
       }
       public Builder setPosition(int value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000008;
         position_ = value;
         onChanged();
         return this;
       }
       public Builder clearPosition() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000008);
         position_ = 0;
         onChanged();
         return this;
@@ -2069,19 +2009,19 @@ public final class Alignments {
       // optional bool matching_reverse_strand = 6;
       private boolean matchingReverseStrand_ ;
       public boolean hasMatchingReverseStrand() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       public boolean getMatchingReverseStrand() {
         return matchingReverseStrand_;
       }
       public Builder setMatchingReverseStrand(boolean value) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000010;
         matchingReverseStrand_ = value;
         onChanged();
         return this;
       }
       public Builder clearMatchingReverseStrand() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000010);
         matchingReverseStrand_ = false;
         onChanged();
         return this;
@@ -2090,19 +2030,19 @@ public final class Alignments {
       // optional uint32 query_position = 5;
       private int queryPosition_ ;
       public boolean hasQueryPosition() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       public int getQueryPosition() {
         return queryPosition_;
       }
       public Builder setQueryPosition(int value) {
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000020;
         queryPosition_ = value;
         onChanged();
         return this;
       }
       public Builder clearQueryPosition() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000020);
         queryPosition_ = 0;
         onChanged();
         return this;
@@ -2111,19 +2051,19 @@ public final class Alignments {
       // optional float score = 4;
       private float score_ ;
       public boolean hasScore() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       public float getScore() {
         return score_;
       }
       public Builder setScore(float value) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         score_ = value;
         onChanged();
         return this;
       }
       public Builder clearScore() {
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         score_ = 0F;
         onChanged();
         return this;
@@ -2132,19 +2072,19 @@ public final class Alignments {
       // optional uint32 number_of_mismatches = 8;
       private int numberOfMismatches_ ;
       public boolean hasNumberOfMismatches() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       public int getNumberOfMismatches() {
         return numberOfMismatches_;
       }
       public Builder setNumberOfMismatches(int value) {
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000080;
         numberOfMismatches_ = value;
         onChanged();
         return this;
       }
       public Builder clearNumberOfMismatches() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         numberOfMismatches_ = 0;
         onChanged();
         return this;
@@ -2153,19 +2093,19 @@ public final class Alignments {
       // optional uint32 number_of_indels = 9;
       private int numberOfIndels_ ;
       public boolean hasNumberOfIndels() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       public int getNumberOfIndels() {
         return numberOfIndels_;
       }
       public Builder setNumberOfIndels(int value) {
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         numberOfIndels_ = value;
         onChanged();
         return this;
       }
       public Builder clearNumberOfIndels() {
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         numberOfIndels_ = 0;
         onChanged();
         return this;
@@ -2174,19 +2114,19 @@ public final class Alignments {
       // optional uint32 query_aligned_length = 11;
       private int queryAlignedLength_ ;
       public boolean hasQueryAlignedLength() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       public int getQueryAlignedLength() {
         return queryAlignedLength_;
       }
       public Builder setQueryAlignedLength(int value) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         queryAlignedLength_ = value;
         onChanged();
         return this;
       }
       public Builder clearQueryAlignedLength() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000200);
         queryAlignedLength_ = 0;
         onChanged();
         return this;
@@ -2195,19 +2135,19 @@ public final class Alignments {
       // optional uint32 target_aligned_length = 12;
       private int targetAlignedLength_ ;
       public boolean hasTargetAlignedLength() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       public int getTargetAlignedLength() {
         return targetAlignedLength_;
       }
       public Builder setTargetAlignedLength(int value) {
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000400;
         targetAlignedLength_ = value;
         onChanged();
         return this;
       }
       public Builder clearTargetAlignedLength() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000400);
         targetAlignedLength_ = 0;
         onChanged();
         return this;
@@ -2217,9 +2157,9 @@ public final class Alignments {
       private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation> sequenceVariations_ =
         java.util.Collections.emptyList();
       private void ensureSequenceVariationsIsMutable() {
-        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
           sequenceVariations_ = new java.util.ArrayList<edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation>(sequenceVariations_);
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00000800;
          }
       }
       
@@ -2335,7 +2275,7 @@ public final class Alignments {
       public Builder clearSequenceVariations() {
         if (sequenceVariationsBuilder_ == null) {
           sequenceVariations_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00000800);
           onChanged();
         } else {
           sequenceVariationsBuilder_.clear();
@@ -2391,7 +2331,7 @@ public final class Alignments {
           sequenceVariationsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation, edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation.Builder, edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariationOrBuilder>(
                   sequenceVariations_,
-                  ((bitField0_ & 0x00001000) == 0x00001000),
+                  ((bitField0_ & 0x00000800) == 0x00000800),
                   getParentForChildren(),
                   isClean());
           sequenceVariations_ = null;
@@ -2402,19 +2342,19 @@ public final class Alignments {
       // optional uint32 query_length = 10;
       private int queryLength_ ;
       public boolean hasQueryLength() {
-        return ((bitField0_ & 0x00002000) == 0x00002000);
+        return ((bitField0_ & 0x00001000) == 0x00001000);
       }
       public int getQueryLength() {
         return queryLength_;
       }
       public Builder setQueryLength(int value) {
-        bitField0_ |= 0x00002000;
+        bitField0_ |= 0x00001000;
         queryLength_ = value;
         onChanged();
         return this;
       }
       public Builder clearQueryLength() {
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         queryLength_ = 0;
         onChanged();
         return this;
@@ -2423,19 +2363,19 @@ public final class Alignments {
       // optional int32 mapping_quality = 14;
       private int mappingQuality_ ;
       public boolean hasMappingQuality() {
-        return ((bitField0_ & 0x00004000) == 0x00004000);
+        return ((bitField0_ & 0x00002000) == 0x00002000);
       }
       public int getMappingQuality() {
         return mappingQuality_;
       }
       public Builder setMappingQuality(int value) {
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00002000;
         mappingQuality_ = value;
         onChanged();
         return this;
       }
       public Builder clearMappingQuality() {
-        bitField0_ = (bitField0_ & ~0x00004000);
+        bitField0_ = (bitField0_ & ~0x00002000);
         mappingQuality_ = 0;
         onChanged();
         return this;
@@ -2444,19 +2384,19 @@ public final class Alignments {
       // optional uint32 pair_flags = 15;
       private int pairFlags_ ;
       public boolean hasPairFlags() {
-        return ((bitField0_ & 0x00008000) == 0x00008000);
+        return ((bitField0_ & 0x00004000) == 0x00004000);
       }
       public int getPairFlags() {
         return pairFlags_;
       }
       public Builder setPairFlags(int value) {
-        bitField0_ |= 0x00008000;
+        bitField0_ |= 0x00004000;
         pairFlags_ = value;
         onChanged();
         return this;
       }
       public Builder clearPairFlags() {
-        bitField0_ = (bitField0_ & ~0x00008000);
+        bitField0_ = (bitField0_ & ~0x00004000);
         pairFlags_ = 0;
         onChanged();
         return this;
@@ -2467,7 +2407,7 @@ public final class Alignments {
       private com.google.protobuf.SingleFieldBuilder<
           edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> pairAlignmentLinkBuilder_;
       public boolean hasPairAlignmentLink() {
-        return ((bitField0_ & 0x00010000) == 0x00010000);
+        return ((bitField0_ & 0x00008000) == 0x00008000);
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getPairAlignmentLink() {
         if (pairAlignmentLinkBuilder_ == null) {
@@ -2486,7 +2426,7 @@ public final class Alignments {
         } else {
           pairAlignmentLinkBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00008000;
         return this;
       }
       public Builder setPairAlignmentLink(
@@ -2497,12 +2437,12 @@ public final class Alignments {
         } else {
           pairAlignmentLinkBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00008000;
         return this;
       }
       public Builder mergePairAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
         if (pairAlignmentLinkBuilder_ == null) {
-          if (((bitField0_ & 0x00010000) == 0x00010000) &&
+          if (((bitField0_ & 0x00008000) == 0x00008000) &&
               pairAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
             pairAlignmentLink_ =
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(pairAlignmentLink_).mergeFrom(value).buildPartial();
@@ -2513,7 +2453,7 @@ public final class Alignments {
         } else {
           pairAlignmentLinkBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00008000;
         return this;
       }
       public Builder clearPairAlignmentLink() {
@@ -2523,11 +2463,11 @@ public final class Alignments {
         } else {
           pairAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00010000);
+        bitField0_ = (bitField0_ & ~0x00008000);
         return this;
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getPairAlignmentLinkBuilder() {
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return getPairAlignmentLinkFieldBuilder().getBuilder();
       }
@@ -2555,19 +2495,19 @@ public final class Alignments {
       // optional uint32 fragment_index = 17;
       private int fragmentIndex_ ;
       public boolean hasFragmentIndex() {
-        return ((bitField0_ & 0x00020000) == 0x00020000);
+        return ((bitField0_ & 0x00010000) == 0x00010000);
       }
       public int getFragmentIndex() {
         return fragmentIndex_;
       }
       public Builder setFragmentIndex(int value) {
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00010000;
         fragmentIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearFragmentIndex() {
-        bitField0_ = (bitField0_ & ~0x00020000);
+        bitField0_ = (bitField0_ & ~0x00010000);
         fragmentIndex_ = 0;
         onChanged();
         return this;
@@ -2578,7 +2518,7 @@ public final class Alignments {
       private com.google.protobuf.SingleFieldBuilder<
           edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> splicedForwardAlignmentLinkBuilder_;
       public boolean hasSplicedForwardAlignmentLink() {
-        return ((bitField0_ & 0x00040000) == 0x00040000);
+        return ((bitField0_ & 0x00020000) == 0x00020000);
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedForwardAlignmentLink() {
         if (splicedForwardAlignmentLinkBuilder_ == null) {
@@ -2597,7 +2537,7 @@ public final class Alignments {
         } else {
           splicedForwardAlignmentLinkBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00020000;
         return this;
       }
       public Builder setSplicedForwardAlignmentLink(
@@ -2608,12 +2548,12 @@ public final class Alignments {
         } else {
           splicedForwardAlignmentLinkBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00020000;
         return this;
       }
       public Builder mergeSplicedForwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
         if (splicedForwardAlignmentLinkBuilder_ == null) {
-          if (((bitField0_ & 0x00040000) == 0x00040000) &&
+          if (((bitField0_ & 0x00020000) == 0x00020000) &&
               splicedForwardAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
             splicedForwardAlignmentLink_ =
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(splicedForwardAlignmentLink_).mergeFrom(value).buildPartial();
@@ -2624,7 +2564,7 @@ public final class Alignments {
         } else {
           splicedForwardAlignmentLinkBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00020000;
         return this;
       }
       public Builder clearSplicedForwardAlignmentLink() {
@@ -2634,11 +2574,11 @@ public final class Alignments {
         } else {
           splicedForwardAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00040000);
+        bitField0_ = (bitField0_ & ~0x00020000);
         return this;
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getSplicedForwardAlignmentLinkBuilder() {
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00020000;
         onChanged();
         return getSplicedForwardAlignmentLinkFieldBuilder().getBuilder();
       }
@@ -2668,7 +2608,7 @@ public final class Alignments {
       private com.google.protobuf.SingleFieldBuilder<
           edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> splicedBackwardAlignmentLinkBuilder_;
       public boolean hasSplicedBackwardAlignmentLink() {
-        return ((bitField0_ & 0x00080000) == 0x00080000);
+        return ((bitField0_ & 0x00040000) == 0x00040000);
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedBackwardAlignmentLink() {
         if (splicedBackwardAlignmentLinkBuilder_ == null) {
@@ -2687,7 +2627,7 @@ public final class Alignments {
         } else {
           splicedBackwardAlignmentLinkBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00040000;
         return this;
       }
       public Builder setSplicedBackwardAlignmentLink(
@@ -2698,12 +2638,12 @@ public final class Alignments {
         } else {
           splicedBackwardAlignmentLinkBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00040000;
         return this;
       }
       public Builder mergeSplicedBackwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
         if (splicedBackwardAlignmentLinkBuilder_ == null) {
-          if (((bitField0_ & 0x00080000) == 0x00080000) &&
+          if (((bitField0_ & 0x00040000) == 0x00040000) &&
               splicedBackwardAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
             splicedBackwardAlignmentLink_ =
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(splicedBackwardAlignmentLink_).mergeFrom(value).buildPartial();
@@ -2714,7 +2654,7 @@ public final class Alignments {
         } else {
           splicedBackwardAlignmentLinkBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00040000;
         return this;
       }
       public Builder clearSplicedBackwardAlignmentLink() {
@@ -2724,11 +2664,11 @@ public final class Alignments {
         } else {
           splicedBackwardAlignmentLinkBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00080000);
+        bitField0_ = (bitField0_ & ~0x00040000);
         return this;
       }
       public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getSplicedBackwardAlignmentLinkBuilder() {
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00040000;
         onChanged();
         return getSplicedBackwardAlignmentLinkFieldBuilder().getBuilder();
       }
@@ -2756,19 +2696,19 @@ public final class Alignments {
       // optional uint32 spliced_flags = 19;
       private int splicedFlags_ ;
       public boolean hasSplicedFlags() {
-        return ((bitField0_ & 0x00100000) == 0x00100000);
+        return ((bitField0_ & 0x00080000) == 0x00080000);
       }
       public int getSplicedFlags() {
         return splicedFlags_;
       }
       public Builder setSplicedFlags(int value) {
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00080000;
         splicedFlags_ = value;
         onChanged();
         return this;
       }
       public Builder clearSplicedFlags() {
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         splicedFlags_ = 0;
         onChanged();
         return this;
@@ -2777,19 +2717,19 @@ public final class Alignments {
       // optional uint32 insert_size = 20;
       private int insertSize_ ;
       public boolean hasInsertSize() {
-        return ((bitField0_ & 0x00200000) == 0x00200000);
+        return ((bitField0_ & 0x00100000) == 0x00100000);
       }
       public int getInsertSize() {
         return insertSize_;
       }
       public Builder setInsertSize(int value) {
-        bitField0_ |= 0x00200000;
+        bitField0_ |= 0x00100000;
         insertSize_ = value;
         onChanged();
         return this;
       }
       public Builder clearInsertSize() {
-        bitField0_ = (bitField0_ & ~0x00200000);
+        bitField0_ = (bitField0_ & ~0x00100000);
         insertSize_ = 0;
         onChanged();
         return this;
@@ -2798,19 +2738,19 @@ public final class Alignments {
       // optional uint32 sample_index = 21;
       private int sampleIndex_ ;
       public boolean hasSampleIndex() {
-        return ((bitField0_ & 0x00400000) == 0x00400000);
+        return ((bitField0_ & 0x00200000) == 0x00200000);
       }
       public int getSampleIndex() {
         return sampleIndex_;
       }
       public Builder setSampleIndex(int value) {
-        bitField0_ |= 0x00400000;
+        bitField0_ |= 0x00200000;
         sampleIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearSampleIndex() {
-        bitField0_ = (bitField0_ & ~0x00400000);
+        bitField0_ = (bitField0_ & ~0x00200000);
         sampleIndex_ = 0;
         onChanged();
         return this;
@@ -2819,19 +2759,19 @@ public final class Alignments {
       // optional uint32 query_index_occurrences = 25;
       private int queryIndexOccurrences_ ;
       public boolean hasQueryIndexOccurrences() {
-        return ((bitField0_ & 0x00800000) == 0x00800000);
+        return ((bitField0_ & 0x00400000) == 0x00400000);
       }
       public int getQueryIndexOccurrences() {
         return queryIndexOccurrences_;
       }
       public Builder setQueryIndexOccurrences(int value) {
-        bitField0_ |= 0x00800000;
+        bitField0_ |= 0x00400000;
         queryIndexOccurrences_ = value;
         onChanged();
         return this;
       }
       public Builder clearQueryIndexOccurrences() {
-        bitField0_ = (bitField0_ & ~0x00800000);
+        bitField0_ = (bitField0_ & ~0x00400000);
         queryIndexOccurrences_ = 0;
         onChanged();
         return this;
@@ -2840,19 +2780,19 @@ public final class Alignments {
       // optional uint32 ambiguity = 27;
       private int ambiguity_ ;
       public boolean hasAmbiguity() {
-        return ((bitField0_ & 0x01000000) == 0x01000000);
+        return ((bitField0_ & 0x00800000) == 0x00800000);
       }
       public int getAmbiguity() {
         return ambiguity_;
       }
       public Builder setAmbiguity(int value) {
-        bitField0_ |= 0x01000000;
+        bitField0_ |= 0x00800000;
         ambiguity_ = value;
         onChanged();
         return this;
       }
       public Builder clearAmbiguity() {
-        bitField0_ = (bitField0_ & ~0x01000000);
+        bitField0_ = (bitField0_ & ~0x00800000);
         ambiguity_ = 0;
         onChanged();
         return this;
@@ -2861,9 +2801,9 @@ public final class Alignments {
       // repeated string bam_attributes = 50;
       private com.google.protobuf.LazyStringList bamAttributes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureBamAttributesIsMutable() {
-        if (!((bitField0_ & 0x02000000) == 0x02000000)) {
+        if (!((bitField0_ & 0x01000000) == 0x01000000)) {
           bamAttributes_ = new com.google.protobuf.LazyStringArrayList(bamAttributes_);
-          bitField0_ |= 0x02000000;
+          bitField0_ |= 0x01000000;
          }
       }
       public java.util.List<String>
@@ -2904,7 +2844,7 @@ public final class Alignments {
       }
       public Builder clearBamAttributes() {
         bamAttributes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x02000000);
+        bitField0_ = (bitField0_ & ~0x01000000);
         onChanged();
         return this;
       }
@@ -2917,7 +2857,7 @@ public final class Alignments {
       // optional bytes read_quality_scores = 55;
       private com.google.protobuf.ByteString readQualityScores_ = com.google.protobuf.ByteString.EMPTY;
       public boolean hasReadQualityScores() {
-        return ((bitField0_ & 0x04000000) == 0x04000000);
+        return ((bitField0_ & 0x02000000) == 0x02000000);
       }
       public com.google.protobuf.ByteString getReadQualityScores() {
         return readQualityScores_;
@@ -2926,13 +2866,13 @@ public final class Alignments {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x04000000;
+  bitField0_ |= 0x02000000;
         readQualityScores_ = value;
         onChanged();
         return this;
       }
       public Builder clearReadQualityScores() {
-        bitField0_ = (bitField0_ & ~0x04000000);
+        bitField0_ = (bitField0_ & ~0x02000000);
         readQualityScores_ = getDefaultInstance().getReadQualityScores();
         onChanged();
         return this;
@@ -2941,19 +2881,19 @@ public final class Alignments {
       // optional uint32 read_origin_index = 26;
       private int readOriginIndex_ ;
       public boolean hasReadOriginIndex() {
-        return ((bitField0_ & 0x08000000) == 0x08000000);
+        return ((bitField0_ & 0x04000000) == 0x04000000);
       }
       public int getReadOriginIndex() {
         return readOriginIndex_;
       }
       public Builder setReadOriginIndex(int value) {
-        bitField0_ |= 0x08000000;
+        bitField0_ |= 0x04000000;
         readOriginIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearReadOriginIndex() {
-        bitField0_ = (bitField0_ & ~0x08000000);
+        bitField0_ = (bitField0_ & ~0x04000000);
         readOriginIndex_ = 0;
         onChanged();
         return this;
@@ -10017,66 +9957,65 @@ public final class Alignments {
     java.lang.String[] descriptorData = {
       "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol" +
       "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
-      "y.AlignmentEntry\"\325\006\n\016AlignmentEntry\022\024\n\014m" +
-      "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001" +
-      "(\014\022\023\n\013query_index\030\001 \001(\r\022\024\n\014target_index\030" +
-      "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve" +
-      "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r" +
-      "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030" +
-      "\010 \001(\r\022\030\n\020number_of_indels\030\t \001(\r\022\034\n\024query" +
-      "_aligned_length\030\013 \001(\r\022\035\n\025target_aligned_",
-      "length\030\014 \001(\r\0224\n\023sequence_variations\030\r \003(" +
-      "\0132\027.goby.SequenceVariation\022\024\n\014query_leng" +
-      "th\030\n \001(\r\022\027\n\017mapping_quality\030\016 \001(\005\022\022\n\npai" +
-      "r_flags\030\017 \001(\r\0228\n\023pair_alignment_link\030\020 \001" +
-      "(\0132\033.goby.RelatedAlignmentEntry\022\026\n\016fragm" +
-      "ent_index\030\021 \001(\r\022C\n\036spliced_forward_align" +
-      "ment_link\030\022 \001(\0132\033.goby.RelatedAlignmentE" +
-      "ntry\022D\n\037spliced_backward_alignment_link\030" +
-      "\026 \001(\0132\033.goby.RelatedAlignmentEntry\022\025\n\rsp" +
-      "liced_flags\030\023 \001(\r\022\023\n\013insert_size\030\024 \001(\r\022\024",
-      "\n\014sample_index\030\025 \001(\r\022\037\n\027query_index_occu" +
-      "rrences\030\031 \001(\r\022\021\n\tambiguity\030\033 \001(\r\022\026\n\016bam_" +
-      "attributes\0302 \003(\t\022\033\n\023read_quality_scores\030" +
-      "7 \001(\014\022\031\n\021read_origin_index\030\032 \001(\r\"W\n\025Rela" +
-      "tedAlignmentEntry\022\024\n\014target_index\030\001 \001(\r\022" +
-      "\020\n\010position\030\002 \001(\r\022\026\n\016fragment_index\030\003 \001(" +
-      "\r\"g\n\021SequenceVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002" +
-      "to\030\001 \001(\t\022\020\n\010position\030\003 \001(\r\022\022\n\nread_index" +
-      "\030\005 \001(\r\022\022\n\nto_quality\030\004 \001(\014\"\304\005\n\017Alignment" +
-      "Header\022\"\n\032smallest_split_query_index\030\t \001",
-      "(\r\022!\n\031largest_split_query_index\030\013 \001(\r\0223\n" +
-      "\022query_name_mapping\030\001 \001(\0132\027.goby.Identif" +
-      "ierMapping\0224\n\023target_name_mapping\030\002 \001(\0132" +
-      "\027.goby.IdentifierMapping\022\031\n\021number_of_qu" +
-      "eries\030\005 \001(\r\022\031\n\021number_of_targets\030\006 \001(\r\022\037" +
-      "\n\027number_of_aligned_reads\030\007 \001(\r\022\030\n\014query" +
-      "_length\030\003 \003(\rB\002\030\001\022\035\n\025constant_query_leng" +
-      "th\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006sorte" +
-      "d\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_length" +
-      "s_stored_in_entries\030\017 \001(\010\022\024\n\014aligner_nam",
-      "e\030\021 \001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n\007vers" +
-      "ion\030\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\022#\n\033qu" +
-      "ery_indices_were_permuted\030\032 \001(\010\022\037\n\027query" +
-      "_index_occurrences\030# \001(\010\022#\n\033ambiguity_st" +
-      "ored_in_entries\030$ \001(\010\022\037\n\027all_read_qualit" +
-      "y_scores\030( \001(\010\022)\n\013read_origin\030\033 \003(\0132\024.go" +
-      "by.ReadOriginInfo\";\n\021IdentifierMapping\022&" +
-      "\n\010mappings\030\001 \003(\0132\024.goby.IdentifierInfo\"-" +
-      "\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030" +
-      "\002 \002(\r\"\225\001\n\016ReadOriginInfo\022\024\n\014origin_index",
-      "\030\001 \002(\r\022\021\n\torigin_id\030\002 \002(\t\022\016\n\006sample\030\004 \001(" +
-      "\t\022\020\n\010platform\030\005 \001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\r" +
-      "platform_unit\030\014 \001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n" +
-      "\024AlignmentTooManyHits\022\031\n\021aligner_thresho" +
-      "ld\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousL" +
-      "ocation\"b\n\021AmbiguousLocation\022\023\n\013query_in" +
-      "dex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002" +
-      "(\r\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016Alignment" +
-      "Index\022#\n\027target_position_offsets\030\001 \003(\rB\002" +
-      "\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_posi",
-      "tions\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.g" +
-      "oby.alignmentsH\001"
+      "y.AlignmentEntry\"\274\006\n\016AlignmentEntry\022\024\n\014m" +
+      "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \001(\r\022\024" +
+      "\n\014target_index\030\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037" +
+      "\n\027matching_reverse_strand\030\006 \001(\010\022\026\n\016query" +
+      "_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number" +
+      "_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels" +
+      "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025" +
+      "target_aligned_length\030\014 \001(\r\0224\n\023sequence_",
+      "variations\030\r \003(\0132\027.goby.SequenceVariatio" +
+      "n\022\024\n\014query_length\030\n \001(\r\022\027\n\017mapping_quali" +
+      "ty\030\016 \001(\005\022\022\n\npair_flags\030\017 \001(\r\0228\n\023pair_ali" +
+      "gnment_link\030\020 \001(\0132\033.goby.RelatedAlignmen" +
+      "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022C\n\036splice" +
+      "d_forward_alignment_link\030\022 \001(\0132\033.goby.Re" +
+      "latedAlignmentEntry\022D\n\037spliced_backward_" +
+      "alignment_link\030\026 \001(\0132\033.goby.RelatedAlign" +
+      "mentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013inse" +
+      "rt_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q",
+      "uery_index_occurrences\030\031 \001(\r\022\021\n\tambiguit" +
+      "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_" +
+      "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde" +
+      "x\030\032 \001(\r\"W\n\025RelatedAlignmentEntry\022\024\n\014targ" +
+      "et_index\030\001 \001(\r\022\020\n\010position\030\002 \001(\r\022\026\n\016frag" +
+      "ment_index\030\003 \001(\r\"g\n\021SequenceVariation\022\014\n" +
+      "\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010position\030\003 \001(" +
+      "\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto_quality\030\004 \001(" +
+      "\014\"\304\005\n\017AlignmentHeader\022\"\n\032smallest_split_" +
+      "query_index\030\t \001(\r\022!\n\031largest_split_query",
+      "_index\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\013" +
+      "2\027.goby.IdentifierMapping\0224\n\023target_name" +
+      "_mapping\030\002 \001(\0132\027.goby.IdentifierMapping\022" +
+      "\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_" +
+      "targets\030\006 \001(\r\022\037\n\027number_of_aligned_reads" +
+      "\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\035\n\025cons" +
+      "tant_query_length\030\n \001(\r\022\025\n\rtarget_length" +
+      "\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022" +
+      "\'\n\037query_lengths_stored_in_entries\030\017 \001(\010" +
+      "\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligner_versio",
+      "n\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n\017sample_basen" +
+      "ame\030\036 \003(\t\022#\n\033query_indices_were_permuted" +
+      "\030\032 \001(\010\022\037\n\027query_index_occurrences\030# \001(\010\022" +
+      "#\n\033ambiguity_stored_in_entries\030$ \001(\010\022\037\n\027" +
+      "all_read_quality_scores\030( \001(\010\022)\n\013read_or" +
+      "igin\030\033 \003(\0132\024.goby.ReadOriginInfo\";\n\021Iden" +
+      "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I" +
+      "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030" +
+      "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOriginInfo\022" +
+      "\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin_id\030\002 \002(\t",
+      "\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 \001(\t\022\017\n\007li" +
+      "brary\030\010 \001(\t\022\025\n\rplatform_unit\030\014 \001(\t\022\020\n\010ru" +
+      "n_date\030\006 \001(\t\"X\n\024AlignmentTooManyHits\022\031\n\021" +
+      "aligner_threshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027." +
+      "goby.AmbiguousLocation\"b\n\021AmbiguousLocat" +
+      "ion\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_least_num" +
+      "ber_of_hits\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001" +
+      "(\r\"j\n\016AlignmentIndex\022#\n\027target_position_" +
+      "offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036" +
+      "\n\022absolute_positions\030\003 \003(\004B\002\020\001B\'\n#edu.co",
+      "rnell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10096,7 +10035,7 @@ public final class Alignments {
           internal_static_goby_AlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentEntry_descriptor,
-              new java.lang.String[] { "Multiplicity", "CompressedData", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedForwardAlignmentLink", "SplicedBackwardAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", "QueryIndexOccurrences", "Ambiguity", "BamAttributes", "ReadQualityScores", "ReadOriginIndex", },
+              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedForwardAlignmentLink", "SplicedBackwardAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", "QueryIndexOccurrences", "Ambiguity", "BamAttributes", "ReadQualityScores", "ReadOriginIndex", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.Builder.class);
           internal_static_goby_RelatedAlignmentEntry_descriptor =

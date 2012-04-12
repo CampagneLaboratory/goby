@@ -159,10 +159,6 @@
                 <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
             </service>
-            <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
-            </service>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
             <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
                 <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
@@ -224,10 +220,7 @@
                 <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
             </service>
-            <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
-            </service>
+
         </jar>
     </target>
 
