@@ -35,6 +35,7 @@ import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.DefaultSAMRecordFactory;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileWriter;
@@ -80,6 +81,11 @@ public class CompactToSAMMode extends AbstractGobyMode {
      */
     private static final String MODE_DESCRIPTION = "Exports a compact alignment to the SAM/BAM format." +
             "This tool tries to export a Goby alignment comprehensively to the BAM format. Since Goby 2.0.";
+
+    /**
+     * For logging progress.
+     */
+    ProgressLogger progress;
 
     /**
      * BAM/SAM output alignment filename.
@@ -262,6 +268,9 @@ public class CompactToSAMMode extends AbstractGobyMode {
         exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
+        progress = new ProgressLogger(LOG);
+        progress.displayFreeMemory = true;
+        progress.start();
         if (hasStartOrEndPosition) {
             alignmentIterator.iterate(new FileSlice(startPosition, endPosition), basenames);
         } else {
@@ -270,6 +279,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         if (outputSam != null) {
             outputSam.close();
         }
+        progress.stop();
     }
 
     private class CompactToSAMIterateAlignments extends IterateAlignments {
@@ -380,6 +390,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 // This is suitable for single alignment entries or paired end
                 outputSingle(exportData);
             }
+
         }
 
         /**
@@ -514,6 +525,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             }
             outputSam.addAlignment(samRecord);
             numWritten++;
+            progress.lightUpdate();
         }
     }
 

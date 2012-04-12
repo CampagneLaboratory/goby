@@ -392,8 +392,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 addSamAttributes(samRecord, currentEntry);
 
+                currentEntry.setPairFlags(samRecord.getFlags());
                 if (hasPaired) {
-                    currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
                     if (inferredInsertSize != 0) {
                         currentEntry.setInsertSize(inferredInsertSize);
