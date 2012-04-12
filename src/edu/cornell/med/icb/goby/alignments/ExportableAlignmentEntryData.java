@@ -507,16 +507,31 @@ public class ExportableAlignmentEntryData {
             }
         }
 
+        final boolean predefinedQuals = alignmentEntry.hasReadQualityScores();
+
         // Construct read & ref before any sequence variations (indels, mutations)
         final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts;
+
         final int targetIndex = alignmentEntry.getTargetIndex();
-        final boolean predefinedQuals = alignmentEntry.hasReadQualityScores();
+        final char[] predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ?
+                        alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
+        final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
+                        alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
 
         for (int i = 0; i < endOfLoop; i++) {
             final char base = genome.get(targetIndex, i + startPosition - startClip);
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
-                readBases.add('N');
+                if (predefStartClips != null) {
+                    final char clipBase = predefStartClips[i];
+                    if (clipBase == '=') {
+                        readBases.add(base);
+                    } else {
+                        readBases.add(clipBase);
+                    }
+                } else {
+                    readBases.add('N');
+                }
             } else {
                 readBases.add(base);
             }
@@ -619,7 +634,17 @@ public class ExportableAlignmentEntryData {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
             final int readSize = readBases.size();
             for (int i = 0; i < endClip; i++) {
-                readBases.set(readSize - i - 1, 'N');
+                char clipBase;
+                if (predefEndClips == null) {
+                    clipBase = 'N';
+                } else {
+                    clipBase = predefEndClips[i];
+                    if (clipBase == '=') {
+                        // TODO: Get the actual genome base here
+                        clipBase = 'N';
+                    }
+                }
+                readBases.set(readSize - i - 1, clipBase);
             }
         }
         for (final char readBase : readBases) {
@@ -638,7 +663,7 @@ public class ExportableAlignmentEntryData {
         return alignmentEntry.getBamAttributesList();
     }
 
-    public void setReadGroupInfo(ReadOriginInfo readOriginInfo) {
+    public void setReadGroupInfo(final ReadOriginInfo readOriginInfo) {
         this.readOriginInfo = readOriginInfo;
         hasReadGroups = true;
     }
@@ -884,7 +909,6 @@ public class ExportableAlignmentEntryData {
         sb.append("targetName =").append(getTargetName()).append('\n');
         sb.append("fragIndex  =").append(alignmentEntry.getFragmentIndex()).append("\n");
         sb.append("startPos   =").append(getStartPosition()).append("\n");
-        sb.append("startClip  =").append(startClip).append("\n");
         sb.append("startClip  =").append(startClip).append("\n");
         sb.append("endClip    =").append(endClip).append("\n");
         sb.append("queryLength=").append(queryLength).append("\n");
