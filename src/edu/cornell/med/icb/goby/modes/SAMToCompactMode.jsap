@@ -69,6 +69,13 @@
                 are written back to BAM from these fields.
             </help>
         </switch>
+         <switch>
+            <id>preserve-soft-clips</id>
+            <longFlag>preserve-soft-clips</longFlag>
+            <help>When this switch is provided, bases that were soft-clipped by the aligner are preserved. They are put
+                 in the alignment entry fields softClippedBasesLeft and softClippedBasesRight.
+            </help>
+        </switch>
         <switch>
             <id>preserve-all-mapped-qualities</id>
             <longFlag>preserve-all-mapped-qualities</longFlag>

@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Alignments.proto',
   package='goby',
-  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"F\n\x13\x41lignmentCollection\x12/\n\x11\x61lignment_entries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xbc\x06\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x01(\r\x12\x14\n\x0ctarget_index\x18\x02 \x01(\r\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x01(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x14\n\x0cquery_length\x18\n \x01(\r\x12\x17\n\x0fmapping_quality\x18\x0e \x01(\x05\x12\x12\n\npair_flags\x18\x0f \x01(\r\x12\x38\n\x13pair_alignment_link\x18\x10 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x16\n\x0e\x66ragment_index\x18\x11 \x01(\r\x12\x43\n\x1espliced_forward_alignment_link\x18\x12 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x44\n\x1fspliced_backward_alignment_link\x18\x16 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x15\n\rspliced_flags\x18\x13 \x01(\r\x12\x13\n\x0binsert_size\x18\x14 \x01(\r\x12\x14\n\x0csample_index\x18\x15 \x01(\r\x12\x1f\n\x17query_index_occurrences\x18\x19 \x01(\r\x12\x11\n\tambiguity\x18\x1b \x01(\r\x12\x16\n\x0e\x62\x61m_attributes\x18\x32 \x03(\t\x12\x1b\n\x13read_quality_scores\x18\x37 \x01(\x0c\x12\x19\n\x11read_origin_index\x18\x1a \x01(\r\"W\n\x15RelatedAlignmentEntry\x12\x14\n\x0ctarget_index\x18\x01 \x01(\r\x12\x10\n\x08position\x18\x02 \x01(\r\x12\x16\n\x0e\x66ragment_index\x18\x03 \x01(\r\"g\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x01(\t\x12\n\n\x02to\x18\x01 \x01(\t\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x12\n\nread_index\x18\x05 \x01(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xc4\x05\n\x0f\x41lignmentHeader\x12\"\n\x1asmallest_split_query_index\x18\t \x01(\r\x12!\n\x19largest_split_query_index\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1d\n\x15\x63onstant_query_length\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\x12\x0f\n\x07indexed\x18\x0e \x01(\x08\x12\'\n\x1fquery_lengths_stored_in_entries\x18\x0f \x01(\x08\x12\x14\n\x0c\x61ligner_name\x18\x11 \x01(\t\x12\x17\n\x0f\x61ligner_version\x18\x12 \x01(\t\x12\x0f\n\x07version\x18\x19 \x01(\t\x12\x17\n\x0fsample_basename\x18\x1e \x03(\t\x12#\n\x1bquery_indices_were_permuted\x18\x1a \x01(\x08\x12\x1f\n\x17query_index_occurrences\x18# \x01(\x08\x12#\n\x1b\x61mbiguity_stored_in_entries\x18$ \x01(\x08\x12\x1f\n\x17\x61ll_read_quality_scores\x18( \x01(\x08\x12)\n\x0bread_origin\x18\x1b \x03(\x0b\x32\x14.goby.ReadOriginInfo\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"\x95\x01\n\x0eReadOriginInfo\x12\x14\n\x0corigin_index\x18\x01 \x02(\r\x12\x11\n\torigin_id\x18\x02 \x02(\t\x12\x0e\n\x06sample\x18\x04 \x01(\t\x12\x10\n\x08platform\x18\x05 \x01(\t\x12\x0f\n\x07library\x18\x08 \x01(\t\x12\x15\n\rplatform_unit\x18\x0c \x01(\t\x12\x10\n\x08run_date\x18\x06 \x01(\t\"X\n\x14\x41lignmentTooManyHits\x12\x19\n\x11\x61ligner_threshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\r\"j\n\x0e\x41lignmentIndex\x12#\n\x17target_position_offsets\x18\x01 \x03(\rB\x02\x10\x01\x12\x13\n\x07offsets\x18\x02 \x03(\x04\x42\x02\x10\x01\x12\x1e\n\x12\x61\x62solute_positions\x18\x03 \x03(\x04\x42\x02\x10\x01\x42\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
+  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"F\n\x13\x41lignmentCollection\x12/\n\x11\x61lignment_entries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xf9\x06\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x01(\r\x12\x14\n\x0ctarget_index\x18\x02 \x01(\r\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x01(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x14\n\x0cquery_length\x18\n \x01(\r\x12\x17\n\x0fmapping_quality\x18\x0e \x01(\x05\x12\x12\n\npair_flags\x18\x0f \x01(\r\x12\x38\n\x13pair_alignment_link\x18\x10 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x16\n\x0e\x66ragment_index\x18\x11 \x01(\r\x12\x43\n\x1espliced_forward_alignment_link\x18\x12 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x44\n\x1fspliced_backward_alignment_link\x18\x16 \x01(\x0b\x32\x1b.goby.RelatedAlignmentEntry\x12\x15\n\rspliced_flags\x18\x13 \x01(\r\x12\x13\n\x0binsert_size\x18\x14 \x01(\r\x12\x14\n\x0csample_index\x18\x15 \x01(\r\x12\x1f\n\x17query_index_occurrences\x18\x19 \x01(\r\x12\x11\n\tambiguity\x18\x1b \x01(\r\x12\x16\n\x0e\x62\x61m_attributes\x18\x32 \x03(\t\x12\x1b\n\x13read_quality_scores\x18\x37 \x01(\x0c\x12\x19\n\x11read_origin_index\x18\x1a \x01(\r\x12\x1c\n\x14softClippedBasesLeft\x18\x1e \x01(\t\x12\x1d\n\x15softClippedBasesRight\x18\x1f \x01(\t\"W\n\x15RelatedAlignmentEntry\x12\x14\n\x0ctarget_index\x18\x01 \x01(\r\x12\x10\n\x08position\x18\x02 \x01(\r\x12\x16\n\x0e\x66ragment_index\x18\x03 \x01(\r\"g\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x01(\t\x12\n\n\x02to\x18\x01 \x01(\t\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x12\n\nread_index\x18\x05 \x01(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xc4\x05\n\x0f\x41lignmentHeader\x12\"\n\x1asmallest_split_query_index\x18\t \x01(\r\x12!\n\x19largest_split_query_index\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1d\n\x15\x63onstant_query_length\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\x12\x0f\n\x07indexed\x18\x0e \x01(\x08\x12\'\n\x1fquery_lengths_stored_in_entries\x18\x0f \x01(\x08\x12\x14\n\x0c\x61ligner_name\x18\x11 \x01(\t\x12\x17\n\x0f\x61ligner_version\x18\x12 \x01(\t\x12\x0f\n\x07version\x18\x19 \x01(\t\x12\x17\n\x0fsample_basename\x18\x1e \x03(\t\x12#\n\x1bquery_indices_were_permuted\x18\x1a \x01(\x08\x12\x1f\n\x17query_index_occurrences\x18# \x01(\x08\x12#\n\x1b\x61mbiguity_stored_in_entries\x18$ \x01(\x08\x12\x1f\n\x17\x61ll_read_quality_scores\x18( \x01(\x08\x12)\n\x0bread_origin\x18\x1b \x03(\x0b\x32\x14.goby.ReadOriginInfo\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"\x95\x01\n\x0eReadOriginInfo\x12\x14\n\x0corigin_index\x18\x01 \x02(\r\x12\x11\n\torigin_id\x18\x02 \x02(\t\x12\x0e\n\x06sample\x18\x04 \x01(\t\x12\x10\n\x08platform\x18\x05 \x01(\t\x12\x0f\n\x07library\x18\x08 \x01(\t\x12\x15\n\rplatform_unit\x18\x0c \x01(\t\x12\x10\n\x08run_date\x18\x06 \x01(\t\"X\n\x14\x41lignmentTooManyHits\x12\x19\n\x11\x61ligner_threshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\r\"j\n\x0e\x41lignmentIndex\x12#\n\x17target_position_offsets\x18\x01 \x03(\rB\x02\x10\x01\x12\x13\n\x07offsets\x18\x02 \x03(\x04\x42\x02\x10\x01\x12\x1e\n\x12\x61\x62solute_positions\x18\x03 \x03(\x04\x42\x02\x10\x01\x42\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
 
 
 
@@ -240,6 +240,20 @@ _ALIGNMENTENTRY = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='softClippedBasesLeft', full_name='goby.AlignmentEntry.softClippedBasesLeft', index=27,
+      number=30, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='softClippedBasesRight', full_name='goby.AlignmentEntry.softClippedBasesRight', index=28,
+      number=31, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -250,7 +264,7 @@ _ALIGNMENTENTRY = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=99,
-  serialized_end=927,
+  serialized_end=988,
 )
 
 
@@ -291,8 +305,8 @@ _RELATEDALIGNMENTENTRY = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=929,
-  serialized_end=1016,
+  serialized_start=990,
+  serialized_end=1077,
 )
 
 
@@ -347,8 +361,8 @@ _SEQUENCEVARIATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1018,
-  serialized_end=1121,
+  serialized_start=1079,
+  serialized_end=1182,
 )
 
 
@@ -522,8 +536,8 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1124,
-  serialized_end=1832,
+  serialized_start=1185,
+  serialized_end=1893,
 )
 
 
@@ -550,8 +564,8 @@ _IDENTIFIERMAPPING = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1834,
-  serialized_end=1893,
+  serialized_start=1895,
+  serialized_end=1954,
 )
 
 
@@ -585,8 +599,8 @@ _IDENTIFIERINFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1895,
-  serialized_end=1940,
+  serialized_start=1956,
+  serialized_end=2001,
 )
 
 
@@ -655,8 +669,8 @@ _READORIGININFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1943,
-  serialized_end=2092,
+  serialized_start=2004,
+  serialized_end=2153,
 )
 
 
@@ -690,8 +704,8 @@ _ALIGNMENTTOOMANYHITS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2094,
-  serialized_end=2182,
+  serialized_start=2155,
+  serialized_end=2243,
 )
 
 
@@ -732,8 +746,8 @@ _AMBIGUOUSLOCATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2184,
-  serialized_end=2282,
+  serialized_start=2245,
+  serialized_end=2343,
 )
 
 
@@ -774,8 +788,8 @@ _ALIGNMENTINDEX = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2284,
-  serialized_end=2390,
+  serialized_start=2345,
+  serialized_end=2451,
 )
 
 _ALIGNMENTCOLLECTION.fields_by_name['alignment_entries'].message_type = _ALIGNMENTENTRY

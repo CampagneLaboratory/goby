@@ -25,7 +25,6 @@ import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.SAMRecord;
 import org.apache.commons.pool.BaseObjectPool;
 import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.impl.StackObjectPool;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -151,6 +150,7 @@ public class SplicedSamHelper {
         int previousPositionInRead = 0;
         int positionInRead = 0;
         int initialRefPosition = position;
+        int trim = 0;
         while (matcher.find()) {
             final int cigarLength = matcher.group(1).length() + matcher.group(2).length();
             final int readBasesLength = Integer.parseInt(matcher.group(1));
@@ -160,7 +160,9 @@ public class SplicedSamHelper {
 
                 case 'N':
                     //  System.out.println("new CIGAR: "+cigar.substring(previousCigarIndex, cigarIndex));
-                    list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
+                    final Limits limits = new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position);
+                    limits.setTrim(trim);
+                    list.add(limits);
                     previousCigarIndex = cigarIndex + cigarLength; // we exclude the N group from the limits.
                     previousPositionInRead = positionInRead;
                     position += readBasesLength;
@@ -185,7 +187,8 @@ public class SplicedSamHelper {
                         insertSomeInRef(position, initialRefPosition, readBasesLength);
                     }
                     positionInRead += readBasesLength;
-                    previousPositionInRead += readBasesLength;
+                    trim = readBasesLength;
+                    //   previousPositionInRead += readBasesLength;
                     break;
                 default:
 
@@ -196,7 +199,9 @@ public class SplicedSamHelper {
             cigarIndex += cigarLength;
 
         }
-        list.add(new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position));
+        final Limits k = new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position);
+        k.setTrim(trim);
+        list.add(k);
     }
 
     private void insertSomeInRef(int position, int initialRefPosition, int readBasesLength) {
@@ -290,6 +295,9 @@ public class SplicedSamHelper {
                         limit.position,
                         reverseStrand
                 );
+                final int queryPosition = (i != numEntries - 1 ? limit.trim : 0) + limit.readStart;
+                helpers.get(i).setQueryPosition(queryPosition);
+
             } catch (IndexOutOfBoundsException e) {
                 System.out.printf("Another exception: refStartIndex=%d refEndIndex=%d refLength=%d  cigar=%s %s %n",
                         refStartIndex, refEndIndex, sourceReference.length(), samRecord.getCigarString(), e);
@@ -321,7 +329,7 @@ public class SplicedSamHelper {
             numEntries = 1;
             cursorIndex = 0;
             initializeHelpers();
-            helpers.get(0).setSource(queryIndex, sourceQuery, sourceQual, cigar, md, position, reverseStrand,queryLength);
+            helpers.get(0).setSource(queryIndex, sourceQuery, sourceQual, cigar, md, position, reverseStrand, queryLength);
         } else {
 
             final Limits[] limits = getLimits(position, cigarString, md);
@@ -335,9 +343,10 @@ public class SplicedSamHelper {
                         cigarString.substring(limit.cigarStart, limit.cigarEnd),
                         limit.md,
                         limit.position,
-                        reverseStrand  ,queryLength
+                        reverseStrand, queryLength
                 );
-                helpers.get(i).setQueryPosition(limit.readStart);
+                final int queryPosition = (i != numEntries - 1 ? limit.trim : 0) + limit.readStart;
+                helpers.get(i).setQueryPosition(queryPosition);
             }
         }
     }
@@ -378,6 +387,7 @@ public class SplicedSamHelper {
         public String md = "";
         public int refStart;
         public int refEnd;
+        private int trim;
 
         private Limits(final int position, final int cigarStart, final int cigarEnd, int readStart, int readEnd, int refStart, int refEnd) {
             this.cigarStart = cigarStart;
@@ -393,6 +403,10 @@ public class SplicedSamHelper {
          * one-based position.
          */
         public int position;
+
+        public void setTrim(int trim) {
+            this.trim = trim;
+        }
     }
 
 
@@ -454,7 +468,7 @@ public class SplicedSamHelper {
 
 
     public byte[] getSourceQualAsBytes() {
-       return helpers.get(cursorIndex).getSourceQualAsBytes();
+        return helpers.get(cursorIndex).getSourceQualAsBytes();
     }
 
     /**

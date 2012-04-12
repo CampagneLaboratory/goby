@@ -37,16 +37,16 @@ message AlignmentEntry {
     optional uint32 target_index = 2;
     /*
      The position on the target of the start of the alignment between the query and the target.
-     In the following example, position is 3 because the first base of the query was aligned with
-     position 3 of the reference. This example shows that the alignment can start at a mismatch if
-     it was so constructed by the aligner.
+     In the following example, position is 3 because the third base of the query 'C' was aligned with
+     position 3 of the reference (two read bases were soft clipped: "ct"). This example shows that the
+     alignment can start at a mismatch if it was so constructed by the aligner.
 
-      0123456789
-      AAAAGTCAAA  target
-         CGTC     query
-     This field is required (enforced by semantic validation in Goby 2.0+).
-    */
-    optional uint32 position = 3;
+     0123456789
+     AAAAGTCAAA  target
+      ctCGTC     query
+    This field is required (enforced by semantic validation in Goby 2.0+).
+   */
+  optional uint32 position=3;
 
     /*
        True when the query matches the target on the reverse strand
@@ -222,8 +222,8 @@ message AlignmentEntry {
     /*
     Bases that an aligner considered do not belong to the alignment of the read to the reference. Potentially
     erroneous bases, or bases that belong to a different part of the reference genome. Right clipped bases are
-    stored in this field as character bases. The number of
-    bases in softClippedBasesRight is exactly equal to queryLength - targetAlignedLength - queryPosition.
+    stored in this field as character bases. The number of bases in softClippedBasesRight is exactly equal to
+    queryLength - queryAlignedLength - queryPosition.
     */
     optional string softClippedBasesRight = 31;
 }

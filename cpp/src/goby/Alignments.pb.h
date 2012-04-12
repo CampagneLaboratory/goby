@@ -395,6 +395,28 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 read_origin_index() const;
   inline void set_read_origin_index(::google::protobuf::uint32 value);
   
+  // optional string softClippedBasesLeft = 30;
+  inline bool has_softclippedbasesleft() const;
+  inline void clear_softclippedbasesleft();
+  static const int kSoftClippedBasesLeftFieldNumber = 30;
+  inline const ::std::string& softclippedbasesleft() const;
+  inline void set_softclippedbasesleft(const ::std::string& value);
+  inline void set_softclippedbasesleft(const char* value);
+  inline void set_softclippedbasesleft(const char* value, size_t size);
+  inline ::std::string* mutable_softclippedbasesleft();
+  inline ::std::string* release_softclippedbasesleft();
+  
+  // optional string softClippedBasesRight = 31;
+  inline bool has_softclippedbasesright() const;
+  inline void clear_softclippedbasesright();
+  static const int kSoftClippedBasesRightFieldNumber = 31;
+  inline const ::std::string& softclippedbasesright() const;
+  inline void set_softclippedbasesright(const ::std::string& value);
+  inline void set_softclippedbasesright(const char* value);
+  inline void set_softclippedbasesright(const char* value, size_t size);
+  inline ::std::string* mutable_softclippedbasesright();
+  inline ::std::string* release_softclippedbasesright();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -447,6 +469,10 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_read_quality_scores();
   inline void set_has_read_origin_index();
   inline void clear_has_read_origin_index();
+  inline void set_has_softclippedbasesleft();
+  inline void clear_has_softclippedbasesleft();
+  inline void set_has_softclippedbasesright();
+  inline void clear_has_softclippedbasesright();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -476,10 +502,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 ambiguity_;
   ::google::protobuf::RepeatedPtrField< ::std::string> bam_attributes_;
   ::std::string* read_quality_scores_;
+  ::std::string* softclippedbasesleft_;
+  ::std::string* softclippedbasesright_;
   ::google::protobuf::uint32 read_origin_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(27 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(29 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2414,6 +2442,122 @@ inline ::google::protobuf::uint32 AlignmentEntry::read_origin_index() const {
 inline void AlignmentEntry::set_read_origin_index(::google::protobuf::uint32 value) {
   set_has_read_origin_index();
   read_origin_index_ = value;
+}
+
+// optional string softClippedBasesLeft = 30;
+inline bool AlignmentEntry::has_softclippedbasesleft() const {
+  return (_has_bits_[0] & 0x08000000u) != 0;
+}
+inline void AlignmentEntry::set_has_softclippedbasesleft() {
+  _has_bits_[0] |= 0x08000000u;
+}
+inline void AlignmentEntry::clear_has_softclippedbasesleft() {
+  _has_bits_[0] &= ~0x08000000u;
+}
+inline void AlignmentEntry::clear_softclippedbasesleft() {
+  if (softclippedbasesleft_ != &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesleft_->clear();
+  }
+  clear_has_softclippedbasesleft();
+}
+inline const ::std::string& AlignmentEntry::softclippedbasesleft() const {
+  return *softclippedbasesleft_;
+}
+inline void AlignmentEntry::set_softclippedbasesleft(const ::std::string& value) {
+  set_has_softclippedbasesleft();
+  if (softclippedbasesleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesleft_ = new ::std::string;
+  }
+  softclippedbasesleft_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedbasesleft(const char* value) {
+  set_has_softclippedbasesleft();
+  if (softclippedbasesleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesleft_ = new ::std::string;
+  }
+  softclippedbasesleft_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedbasesleft(const char* value, size_t size) {
+  set_has_softclippedbasesleft();
+  if (softclippedbasesleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesleft_ = new ::std::string;
+  }
+  softclippedbasesleft_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_softclippedbasesleft() {
+  set_has_softclippedbasesleft();
+  if (softclippedbasesleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesleft_ = new ::std::string;
+  }
+  return softclippedbasesleft_;
+}
+inline ::std::string* AlignmentEntry::release_softclippedbasesleft() {
+  clear_has_softclippedbasesleft();
+  if (softclippedbasesleft_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = softclippedbasesleft_;
+    softclippedbasesleft_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string softClippedBasesRight = 31;
+inline bool AlignmentEntry::has_softclippedbasesright() const {
+  return (_has_bits_[0] & 0x10000000u) != 0;
+}
+inline void AlignmentEntry::set_has_softclippedbasesright() {
+  _has_bits_[0] |= 0x10000000u;
+}
+inline void AlignmentEntry::clear_has_softclippedbasesright() {
+  _has_bits_[0] &= ~0x10000000u;
+}
+inline void AlignmentEntry::clear_softclippedbasesright() {
+  if (softclippedbasesright_ != &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesright_->clear();
+  }
+  clear_has_softclippedbasesright();
+}
+inline const ::std::string& AlignmentEntry::softclippedbasesright() const {
+  return *softclippedbasesright_;
+}
+inline void AlignmentEntry::set_softclippedbasesright(const ::std::string& value) {
+  set_has_softclippedbasesright();
+  if (softclippedbasesright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesright_ = new ::std::string;
+  }
+  softclippedbasesright_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedbasesright(const char* value) {
+  set_has_softclippedbasesright();
+  if (softclippedbasesright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesright_ = new ::std::string;
+  }
+  softclippedbasesright_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedbasesright(const char* value, size_t size) {
+  set_has_softclippedbasesright();
+  if (softclippedbasesright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesright_ = new ::std::string;
+  }
+  softclippedbasesright_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_softclippedbasesright() {
+  set_has_softclippedbasesright();
+  if (softclippedbasesright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedbasesright_ = new ::std::string;
+  }
+  return softclippedbasesright_;
+}
+inline ::std::string* AlignmentEntry::release_softclippedbasesright() {
+  clear_has_softclippedbasesright();
+  if (softclippedbasesright_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = softclippedbasesright_;
+    softclippedbasesright_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // -------------------------------------------------------------------

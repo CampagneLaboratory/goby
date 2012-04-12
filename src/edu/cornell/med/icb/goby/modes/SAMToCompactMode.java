@@ -99,6 +99,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
             "ignore-read-origin:boolean, When this flag is true do not import read groups.:false"
     );
+    private boolean preserveSoftClips;
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -156,7 +157,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // configure baseclass
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
-
+        preserveSoftClips=jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         bsmap = jsapResult.getBoolean("bsmap");
@@ -386,6 +387,17 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
+                if (preserveSoftClips) {
+                    final int queryPosition = currentEntry.getQueryPosition();
+                    if (queryPosition > 0) {
+                        currentEntry.setSoftClippedBasesLeft(convertBases(samRecord.getReadBases(), 0, queryPosition));
+
+                    }
+                    int queryAlignedLength = samHelper.getQueryAlignedLength();
+                    int queryLength = samHelper.getQueryLength();
+                    currentEntry.setSoftClippedBasesRight(convertBases(samRecord.getReadBases(), queryPosition + queryAlignedLength, queryLength));
+                }
+
                 if (preserveAllMappedQuals) {
 
                     currentEntry.setReadQualityScores(ByteString.copyFrom(samHelper.getSourceQualAsBytes()));
@@ -535,6 +547,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.setReadOriginInfo(readOriginInfoBuilderList);
         progress.stop();
         return numAligns;
+    }
+
+    MutableString convertBasesBuffer = new MutableString();
+
+    private String convertBases(byte[] readBases, int startIndex, int endIndex) {
+        convertBasesBuffer.setLength(endIndex - startIndex);
+        int j=0;
+        for(int i=startIndex;i<endIndex;i++) {
+            convertBasesBuffer.setCharAt(j,(char)readBases[i]);
+            j+=1  ;
+        }
+        return convertBasesBuffer.toString();
     }
 
     private final ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
@@ -717,5 +741,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
+    }
+
+    public void setPreserveSoftClips(boolean flag) {
+        this.preserveSoftClips=flag;
     }
 }
