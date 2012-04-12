@@ -227,7 +227,7 @@ public class ExportableAlignmentEntryData {
      * @return the read bases, containing "-"s for insertions.
      */
     public int getStartPosition() {
-        return alignmentEntry.getPosition() + 1 + startClip;
+        return alignmentEntry.getPosition() + 1;
     }
 
     /**
@@ -508,7 +508,7 @@ public class ExportableAlignmentEntryData {
         // TODO: fix me. Got an error with deletion in the read: quals was longer than
         // TODO: read by the number of bases deleted.
         for (int i = 0; i < endOfLoop; i++) {
-            final char base = genome.get(targetIndex, i + startPosition);
+            final char base = genome.get(targetIndex, i + startPosition - startClip);
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
                 readBases.add('N');
@@ -616,8 +616,7 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
-        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + endClip +
-                alignmentEntry.getTargetAlignedLength();
+        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + alignmentEntry.getTargetAlignedLength();
         if (debug) {
             LOG.debug("\n" + toString());
         }

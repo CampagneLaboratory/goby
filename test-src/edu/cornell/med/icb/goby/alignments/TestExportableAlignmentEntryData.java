@@ -109,12 +109,12 @@ public class TestExportableAlignmentEntryData {
             fail("Couldn't find sam data for queryIndex=" + qi);
         }
         assertEquals("Pair flags are incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("pairFlags")), exportData.getPairFlags());
-        assertEquals("Target name incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("targetIndex")), exportData.getTargetIndex());
-        assertEquals("Target name incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("position")), exportData.getStartPosition());
-        assertEquals("Target name incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("mapq")), exportData.getMappingQuality());
-        assertEquals("Target name incorrect for qi=" + qi, samData.get("cigar"), exportData.getCigarString());
+        assertEquals("targetIndex incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("targetIndex")), exportData.getTargetIndex());
+        assertEquals("position incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("position")), exportData.getStartPosition());
+        assertEquals("mapq incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("mapq")), exportData.getMappingQuality());
+        assertEquals("cigar incorrect for qi=" + qi, samData.get("cigar"), exportData.getCigarString());
         validateSequence(qi, samData.get("read"), exportData.getReadBasesOriginal());
-        assertEquals("Target name incorrect for qi=" + qi, samData.get("mismatches"), "MD:Z:" + exportData.getMismatchString());
+        assertEquals("mismatches incorrect for qi=" + qi, samData.get("mismatches"), "MD:Z:" + exportData.getMismatchString());
     }
 
     private void validateSequence(final int qi, final String expected, final String actual) {
