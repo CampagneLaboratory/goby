@@ -523,7 +523,12 @@ public class CompactToSAMMode extends AbstractGobyMode {
             if (hasReadGroups) {
                 samRecord.setAttribute("RG", toExport.getReadGroup());
             }
-            outputSam.addAlignment(samRecord);
+            try {
+                outputSam.addAlignment(samRecord);
+            } catch (RuntimeException e) {
+                System.out.println(toExport.toString());
+                throw e;
+            }
             numWritten++;
             progress.lightUpdate();
         }

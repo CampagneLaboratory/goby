@@ -30,6 +30,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -79,6 +80,7 @@ public class ExportableAlignmentEntryData {
     private boolean hasReadGroups;
     private String readGroup;
 
+    LinkedList<Integer> deleteQualityIndexes;
 
     /**
      * Marked private so it won't be used, always needs the genome version.
@@ -107,6 +109,8 @@ public class ExportableAlignmentEntryData {
 
         actualReads = new CharArrayList();
         actualQualities = new ByteArrayList();
+
+        deleteQualityIndexes = new LinkedList<Integer>();
 
         reset();
     }
@@ -138,6 +142,8 @@ public class ExportableAlignmentEntryData {
         endTargetPositionZeroBased = 0;
 
         alignmentEntry = null;
+
+        deleteQualityIndexes.clear();
     }
 
     /**
@@ -172,6 +178,8 @@ public class ExportableAlignmentEntryData {
         to.endTargetPositionZeroBased = from.endTargetPositionZeroBased;
 
         to.alignmentEntry = Alignments.AlignmentEntry.newBuilder(from.alignmentEntry).build();
+
+        // No need to propagate deleteQualityIndexes
 
         return to;
     }
@@ -465,7 +473,6 @@ public class ExportableAlignmentEntryData {
         }
         // First obtain the number of indels
         int numInserts = 0;
-        int numDeletes = 0;
         for (final Alignments.SequenceVariation seqvar : alignmentEntry.getSequenceVariationsList()) {
             final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION
             final String tos = seqvar.getTo();      // read bases. '-' means INSERTION
@@ -496,8 +503,6 @@ public class ExportableAlignmentEntryData {
                 }
                 if (from == '-') {
                     numInserts += 1;
-                } else if (to == '-') {
-                    numDeletes += 1;
                 }
             }
         }
@@ -505,8 +510,8 @@ public class ExportableAlignmentEntryData {
         // Construct read & ref before any sequence variations (indels, mutations)
         final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts;
         final int targetIndex = alignmentEntry.getTargetIndex();
-        // TODO: fix me. Got an error with deletion in the read: quals was longer than
-        // TODO: read by the number of bases deleted.
+        final boolean predefinedQuals = alignmentEntry.hasReadQualityScores();
+
         for (int i = 0; i < endOfLoop; i++) {
             final char base = genome.get(targetIndex, i + startPosition - startClip);
             if (i < startClip) {
@@ -518,7 +523,15 @@ public class ExportableAlignmentEntryData {
             refBases.add(base);
 
             // By default, we don't know qualities. Phred score of 127?
-            qualities.add(UNKNOWN_MAPPING_VALUE);  // SAMRecord.UNKNOWN_MAPPING_VALUE is 255, which isn't a byte
+            if (!predefinedQuals) {
+                qualities.add(UNKNOWN_MAPPING_VALUE);  // SAMRecord.UNKNOWN_MAPPING_VALUE is 255, which isn't a byte
+            }
+        }
+        if (predefinedQuals) {
+            for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
+                qualities.add(value);
+            }
+            hasQualities = true;
         }
 
 
@@ -568,6 +581,7 @@ public class ExportableAlignmentEntryData {
                         }
                     }
                     readBases.set(refPosition, to);
+                    deleteQualityIndexes.addFirst(refPosition);
                 } else {
                     // Mutation
                     if (refBases.get(refPosition) != from) {
@@ -591,17 +605,15 @@ public class ExportableAlignmentEntryData {
                 }
             }
         }
-        if (alignmentEntry.hasReadQualityScores()) {
-            qualities.clear();
-            for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
-                qualities.add(value);
-            }
-            hasQualities = true;
+        for (final int deleteQualityIndex : deleteQualityIndexes) {
+            qualities.remove(deleteQualityIndex);
         }
+
         if (numInserts > 0) {
             // Inserts, clip bases to the right so we don't go beyond read length
             refBases.size(refBases.size() - numInserts);
             readBases.size(readBases.size() - numInserts);
+            qualities.size(qualities.size() - numInserts);
         }
         if (endClip > 0) {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
