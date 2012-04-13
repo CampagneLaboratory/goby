@@ -519,7 +519,8 @@ public class ExportableAlignmentEntryData {
                         alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
 
         for (int i = 0; i < endOfLoop; i++) {
-            final char base = genome.get(targetIndex, i + startPosition - startClip);
+            final int genomePosition = i + startPosition - startClip;
+            final char base = genomePosition >= 0 ? genome.get(targetIndex, i + startPosition - startClip) : 'N';
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
                 if (predefStartClips != null) {
@@ -636,15 +637,10 @@ public class ExportableAlignmentEntryData {
             for (int i = 0; i < endClip; i++) {
                 char clipBase;
                 if (predefEndClips == null) {
-                    clipBase = 'N';
+                    readBases.set(readSize - i - 1, 'N');
                 } else {
-                    clipBase = predefEndClips[i];
-                    if (clipBase == '=') {
-                        // TODO: Get the actual genome base here
-                        clipBase = 'N';
-                    }
+                    readBases.set(readSize - i - 1, predefEndClips[i]);
                 }
-                readBases.set(readSize - i - 1, clipBase);
             }
         }
         for (final char readBase : readBases) {
@@ -653,7 +649,7 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
-        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + alignmentEntry.getTargetAlignedLength();
+        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + targetAlignedLength;
         if (debug) {
             LOG.debug("\n" + toString());
         }
