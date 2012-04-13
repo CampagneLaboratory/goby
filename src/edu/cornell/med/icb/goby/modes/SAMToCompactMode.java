@@ -368,7 +368,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
-
+            final int genomeTargetIndex=genome==null? -1:genome.getReferenceIndex(samRecord.getReferenceName());
             for (int i = 0; i < samHelper.getNumEntries(); i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
@@ -391,14 +391,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (preserveSoftClips) {
                     final int leftTrim = samHelper.getNumLeftClipped();
                     if (leftTrim > 0) {
-                        currentEntry.setSoftClippedBasesLeft(convertBases(targetIndex, samRecord.getAlignmentStart()-1, samRecord.getReadBases(), 0, leftTrim));
+                        currentEntry.setSoftClippedBasesLeft(convertBases(genomeTargetIndex, samRecord.getAlignmentStart()-1, samRecord.getReadBases(), 0, leftTrim));
 
                     }
                     final int queryAlignedLength = samHelper.getQueryAlignedLength();
                     final int rightTrim = samHelper.getNumRightClipped();
                     final int queryPosition = currentEntry.getQueryPosition();
                     if (rightTrim > 0) {
-                        currentEntry.setSoftClippedBasesRight(convertBases(targetIndex, samRecord.getAlignmentStart()-1,
+                        currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex, samRecord.getAlignmentStart()-1,
                                 samRecord.getReadBases(), queryPosition + queryAlignedLength, queryPosition + queryAlignedLength + rightTrim));
                     }
                 }
