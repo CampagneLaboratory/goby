@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.ExportableAlignmentEntryData;
 import edu.cornell.med.icb.goby.alignments.FileSlice;
+import edu.cornell.med.icb.goby.alignments.GenomicRange;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.alignments.ReadOriginInfo;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
@@ -271,10 +272,32 @@ public class CompactToSAMMode extends AbstractGobyMode {
         progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         progress.start();
+
+        final int seekTargetIndex = -1;
+        final String seekTargetName = "";
+        final int seekStartPosition = -1;
+        
+        /*
+        final int seekTargetIndex = 5;
+        final String seekTargetName = "6";
+        final int seekStartPosition = 32485524;
+        */
+
         if (hasStartOrEndPosition) {
             alignmentIterator.iterate(new FileSlice(startPosition, endPosition), basenames);
         } else {
-            alignmentIterator.iterate(basenames);
+            if (seekStartPosition > 0 && seekTargetIndex > 0) {
+                final GenomicRange range = new GenomicRange();
+                range.startReferenceIndex = seekTargetIndex;
+                range.startPosition = seekStartPosition;
+                range.startChromosome = seekTargetName;
+                range.endReferenceIndex = seekTargetIndex;
+                range.endPosition = seekStartPosition + 1;
+                range.endChromosome = seekTargetName;
+                alignmentIterator.iterate(range, basenames);
+            } else {
+                alignmentIterator.iterate(basenames);
+            }
         }
         if (outputSam != null) {
             outputSam.close();

@@ -162,6 +162,7 @@ public class SplicedSamHelper {
                     //  System.out.println("new CIGAR: "+cigar.substring(previousCigarIndex, cigarIndex));
                     final Limits limits = new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position);
                     limits.setTrim(trim);
+                    trim = 0;
                     list.add(limits);
                     previousCigarIndex = cigarIndex + cigarLength; // we exclude the N group from the limits.
                     previousPositionInRead = positionInRead;

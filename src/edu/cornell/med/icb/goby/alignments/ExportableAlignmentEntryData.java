@@ -518,9 +518,11 @@ public class ExportableAlignmentEntryData {
         final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
                         alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
 
+        final int genomeLength = genome.getLength(targetIndex);
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
-            final char base = genomePosition >= 0 ? genome.get(targetIndex, i + startPosition - startClip) : 'N';
+            final char base = genomePosition >= 0 || genomePosition < genomeLength ?
+                    genome.get(targetIndex, i + startPosition - startClip) : 'N';
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
                 if (predefStartClips != null) {
@@ -649,7 +651,7 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
-        endTargetPositionZeroBased = alignmentEntry.getPosition() + startClip + targetAlignedLength;
+        endTargetPositionZeroBased = alignmentEntry.getPosition() + targetAlignedLength;
         if (debug) {
             LOG.debug("\n" + toString());
         }
@@ -748,10 +750,15 @@ public class ExportableAlignmentEntryData {
             other.qualities.removeElements(0, otherFirstCigar.size);
             cigarString.append(gap).append('N');
             cigarString.append(other.cigarString);
+            endTargetPositionZeroBased = other.endTargetPositionZeroBased;
         } else {
             invalid = true;
+            cigarString.append(thisLastCigar.toString());
+            other.cigarString.insert(0, otherFirstCigar.toString());
             invalidMessage.append("Splice cigar codes were incorrect for qi=").
-                    append(alignmentEntry.getQueryIndex());
+                    append(alignmentEntry.getQueryIndex()).append("\n");
+            invalidMessage.append("this=").append(toString());
+            invalidMessage.append("other=").append(other.toString());
         }
     }
 

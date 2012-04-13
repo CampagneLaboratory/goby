@@ -591,4 +591,43 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	97	chr10	97392943	255	11M10083N29M	=	64636105	0	
 PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	AGGGCCCCTGGGCGCCGCGGCTCTGCTACTGCTGCTGCCC	A?@AB@?@?=A=AAA@<A<BBBBBBBBBA@<@<BBB@BAA	NM:i:0	XS:A:+	NS:i:0
 
     */
+
+    @Test
+    // To test import of three splice with initial 2-clip.
+    public void testSamToCompactTrickCase15NoGenomeThreeSplice() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-15.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-15");
+        importer.setOutputFile(outputFilename);
+        importer.setPreserveSoftClips(true);
+        importer.setPropagateTargetIds(true);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry second = reader.next();
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry third = reader.next();
+
+        assertEquals(32485524 - 1, first.getPosition());
+        assertEquals(2, first.getQueryPosition());
+        assertEquals("CG", first.getSoftClippedBasesLeft());
+        assertEquals("", first.getSoftClippedBasesRight());
+        assertEquals(6, first.getQueryAlignedLength());
+
+        assertEquals(32485524+6+301-1, second.getPosition());
+        assertEquals(8, second.getQueryPosition());
+        assertEquals("", second.getSoftClippedBasesLeft());
+        assertEquals("", second.getSoftClippedBasesRight());
+        assertEquals(24, second.getQueryAlignedLength());
+
+        assertEquals(32485524+6+301+24+478-1, third.getPosition());
+        assertEquals(32, third.getQueryPosition());
+        assertEquals("", third.getSoftClippedBasesLeft());
+        assertEquals("", third.getSoftClippedBasesRight());
+        assertEquals(3, third.getQueryAlignedLength());
+    }
 }
