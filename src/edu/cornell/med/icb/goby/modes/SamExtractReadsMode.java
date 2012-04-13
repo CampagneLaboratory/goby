@@ -20,28 +20,27 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
+import edu.cornell.med.icb.goby.readers.sam.SAMRecordIterable;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
+import it.unimi.dsi.Util;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMRecordIterator;
 import org.apache.log4j.Logger;
 
-import javax.management.RuntimeErrorException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.LinkedList;
 
 /**
  * Extract reads from a <a href="http://samtools.sourceforge.net/">SAM</a> file.
+ * WARNING: If the file contains pairs, the source SAM/BAM file >>MUST<< be sorted by read name.
  *
  * @author Fabien Campagne
  */
@@ -52,6 +51,11 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     private static final Logger LOG = Logger.getLogger(SamExtractReadsMode.class);
 
     /**
+     * Flag to indicate if log4j was configured.
+     */
+    private boolean debug;
+
+    /**
      * The mode name.
      */
     private static final String MODE_NAME = "sam-extract-reads";
@@ -59,7 +63,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Extract reads from a SAM file.";
+    private static final String MODE_DESCRIPTION = "Extract reads from a SAM file. WARNING: If the file contains pairs, the source SAM/BAM file >>MUST<< be sorted by read name.";
 
     /**
      * The input filename.
@@ -83,7 +87,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
-    private boolean processPairs = false;
     int processAtMost = -1;
 
     /**
@@ -106,7 +109,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
             outputFilename = outputFilename + ".compact-reads";
         }
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
-        processPairs = jsapResult.getBoolean("paired-end");
         processAtMost = jsapResult.getInt("process-at-most", Integer.MAX_VALUE);
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
 
@@ -115,14 +117,26 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
     private QualityEncoding qualityEncoding;
 
+    private final LinkedList<SAMRecord> currentPairedReads = new LinkedList<SAMRecord>();
+    private String currentPairedReadsName = null;
+
+    private long numReadsTotal;
+    private long numPairedReads;
+
     /**
-     * Display sequence variations.
+     * Export reads from bam/sam to compact-reads
      *
      * @throws java.io.IOException error reading / writing
      */
     @Override
     public void execute() throws IOException {
+        debug = Util.log4JIsConfigured();
         final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        boolean finishEarly = false;
+
+        numReadsTotal = 0;
+        numPairedReads = 0;
+
         try {
             final ProgressLogger progress = new ProgressLogger(LOG);
             // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
@@ -130,65 +144,101 @@ public class SamExtractReadsMode extends AbstractGobyMode {
             final SAMFileReader parser = new SAMFileReader(new File(inputFilename), null);
 
             progress.start();
-            int numReads = 0;
-            final Queue<SAMRecord> queue = new ArrayDeque<SAMRecord>(3);
-            final SAMRecordIterator samRecordIterator = parser.iterator();
-            boolean hasMoreElements = samRecordIterator.hasNext();
 
-            while (hasMoreElements) {
-                if (queue.size() < 2) {
-                    // enqueue
-                    if (samRecordIterator.hasNext()) {
-                        queue.add(samRecordIterator.next());
+            for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+                if (!samRecord.getReadPairedFlag()) {
+                    processSingleEndRead(writer, progress, samRecord);
+                } else {
+                    final String currentReadName = samRecord.getReadName();
+                    if (currentPairedReadsName == null) {
+                        // First paired read
+                        currentPairedReadsName = currentReadName;
+                        currentPairedReads.add(samRecord);
+                    } else if (currentReadName.equals(currentPairedReadsName)) {
+                        // Same read name as before
+                        currentPairedReads.add(samRecord);
                     } else {
-
-                        //we  may still have one read in the queue left to process:
-                        hasMoreElements = !queue.isEmpty();
+                        // New read name
+                        processReadPairs(writer, progress, currentPairedReads);
+                        currentPairedReads.add(samRecord);
+                        currentPairedReadsName = currentReadName;
                     }
                 }
-                if (hasMoreElements && queue.size() >= 2) {
-
-
-                    // at least one element left, dequeue it
-                    final SAMRecord first = queue.remove();
-
-                    if (!processPairs) {
-
-                        numReads = processSingleEndRead(writer, progress, numReads, first);
-                    } else {
-                        if (!queue.isEmpty()) {
-                            final SAMRecord second = queue.remove();
-                            if (first.getReadName().equals(second.getReadName())) {
-                                numReads = processPairedEndRead(writer, progress, numReads, first, second);
-                            } else {
-                                System.err.printf("Error: when processing paired-end, two reads must have the same name in sequence. After #reads: %d Offending names %s %s %n",
-                                        numReads,
-                                        first.getReadName(), second.getReadName());
-                                throw new RuntimeException();
-                            }
-                        } else {
-                            System.err.printf("Error: when processing paired-end, two reads must be found for each name. After #reads: %d %n",
-                                    numReads
-                            );
-                            throw new RuntimeException();
-                        }
+                if (numReadsTotal > processAtMost) {
+                    if (debug) {
+                        LOG.info(String.format("Early stop after %d reads.", processAtMost));
                     }
-                }
-
-                if (numReads > processAtMost) {
-                    System.err.printf("Early stop after %d reads.%n", processAtMost);
+                    finishEarly = true;
                     break;
                 }
             }
+            if (!finishEarly && !currentPairedReads.isEmpty()) {
+                // End of file, output the file set of pairs if we have a set
+                processReadPairs(writer, progress, currentPairedReads);
+            }
+            System.out.printf("Total number of reads written %d%n", numReadsTotal);
+            System.out.printf("Number of paired-end reads written %d%n", numPairedReads);
         } finally {
             writer.close();
-
         }
-        System.exit(0);
     }
 
-    private int processPairedEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord first,
-                                     SAMRecord second) throws IOException {
+    private void processReadPairs(final ReadsWriter writer, final ProgressLogger progress,
+                                 final LinkedList<SAMRecord> reads) throws IOException {
+        if (reads.isEmpty()) {
+            return;
+        }
+        String debugOuptut = null;
+        if (debug && LOG.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder("\n");
+            for (final SAMRecord read : reads) {
+                sb.append(String.format("%s:[%s]%d->[%s]%d%n", read.getReadName(),
+                        read.getReferenceName(), read.getAlignmentStart(),
+                        read.getMateReferenceName(), read.getMateAlignmentStart()));
+            }
+            debugOuptut = sb.toString();
+        }
+
+        while (!reads.isEmpty()) {
+            final SAMRecord samRecord1 = reads.removeFirst();
+            final int mateAlignmentStart = samRecord1.getMateAlignmentStart();
+            SAMRecord toRemove = null;
+            for (final SAMRecord potentialMate : reads) {
+                if (potentialMate.getAlignmentStart() == mateAlignmentStart) {
+                    toRemove = potentialMate;
+                    final SAMRecord first;
+                    final SAMRecord second;
+                    if (samRecord1.getFirstOfPairFlag()) {
+                        first = samRecord1;
+                        second = potentialMate;
+                    } else {
+                        first = potentialMate;
+                        second = samRecord1;
+                    }
+                    processPairedEndRead(writer, progress, first, second);
+                    break;
+                }
+            }
+            if (toRemove != null) {
+                reads.remove(toRemove);
+                // We only need one successful pair pairing
+                break;
+            } else {
+                if (reads.isEmpty()) {
+                    processSingleEndRead(writer, progress, samRecord1);
+                    if (debug && LOG.isDebugEnabled()) {
+                        LOG.debug("Couldn't find a mate readName=" + samRecord1.getReadName() + ". Output will be non-paired. Flags=" + EntryFlagHelper.pairToString(samRecord1));
+                        LOG.debug(debugOuptut);
+                    }
+                }
+            }
+        }
+
+        reads.clear();
+    }
+
+    private void processPairedEndRead(final ReadsWriter writer, final ProgressLogger progress,
+                                     final SAMRecord first, final SAMRecord second) throws IOException {
         final String readId = first.getReadName();
         writer.setIdentifier(readId);
         writer.setSequence(byteToString(buffer1, first.getReadBases()));
@@ -203,11 +253,12 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                 false));
         writer.appendEntry();
         progress.lightUpdate();
-        numReads++;
-        return numReads;
+        numPairedReads++;
+        numReadsTotal++;
     }
 
-    private int processSingleEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord samRecord) throws IOException {
+    private void processSingleEndRead(final ReadsWriter writer, final ProgressLogger progress,
+                                     final SAMRecord samRecord) throws IOException {
         final String readId = samRecord.getReadName();
         writer.setIdentifier(readId);
         writer.setSequence(byteToString(buffer1, samRecord.getReadBases()));
@@ -217,8 +268,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                 false));
         writer.appendEntry();
         progress.lightUpdate();
-        numReads++;
-        return numReads;
+        numReadsTotal++;
     }
 
     final MutableString buffer1 = new MutableString();

@@ -53,13 +53,10 @@ public class GobyDriver extends GenericToolsDriver {
         int status = 0;
         try {
             new GobyDriver().configure(args).execute();
-            status = 0;
         } catch (Exception e) {
             e.printStackTrace();
             status = 1;
         }
         System.exit(status);
-
-
     }
 }

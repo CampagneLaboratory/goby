@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import net.sf.samtools.SAMRecord;
+
 /**
  * Class to decode paired end and splice flags from an alignment entry.
  *
@@ -32,8 +34,41 @@ public class EntryFlagHelper {
      * @param entry The entry that contains pair flags.
      * @return An informative string about pairing information stored in flags in the entry.
      */
+    public static String pairToString(final SAMRecord entry) {
+        final StringBuffer sb = new StringBuffer();
+        if (entry.getReadPairedFlag()) {
+            sb.append("PAIRED|");
+        }
+        if (entry.getProperPairFlag()) {
+            sb.append("PROPERLY_PAIRED|");
+        }
+        if (entry.getNotPrimaryAlignmentFlag()) {
+            sb.append("NOT_PRIMARY_ALIGNMENT|");
+        }
+        if (entry.getReadUnmappedFlag()) {
+            sb.append("READ_UNMAPPED|");
+        }
+        if (entry.getMateUnmappedFlag()) {
+            sb.append("MATE_UNMAPPED|");
+        }
+        if (entry.getReadNegativeStrandFlag()) {
+            sb.append("READ_REVERSE_STRAND|");
+        }
+        if (entry.getMateNegativeStrandFlag()) {
+            sb.append("MATE_REVERSE_STRAND|");
+        }
+        if (entry.getFirstOfPairFlag()) {
+            sb.append("FIRST|");
+        }
+        if (entry.getSecondOfPairFlag()) {
+            sb.append("SECOND|");
+        }
+
+        return sb.toString();
+    }
+
     public static String pairToString(final Alignments.AlignmentEntry entry) {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         if (isPaired(entry)) {
             sb.append("PAIRED|");
         }
@@ -72,7 +107,7 @@ public class EntryFlagHelper {
      * @return An informative string about splicing information stored in flags in the entry.
      */
     public static String spliceToString(final Alignments.AlignmentEntry entry) {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         if (isNormalSplice(entry)) {
             sb.append("NORMAL_SPLICE|");
         }
