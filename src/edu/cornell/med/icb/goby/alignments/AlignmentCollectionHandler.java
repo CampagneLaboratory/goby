@@ -614,7 +614,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
 
-        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() ;
+        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() *70 ;
         if (result) {
       //          System.out.println("Using run-length encoding for "+label);
         }
@@ -717,7 +717,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (debug(1)) {
             double average = ((double) written) / list.size();
             typeToNumEntries.put(label, list.size() + typeToNumEntries.getInt(label));
-            typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
+           typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
+           /* if (label.equals("scores"))
+                System.out.printf("written: %d %n",written);*/
+
         }
     }
 

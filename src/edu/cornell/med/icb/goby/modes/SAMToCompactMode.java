@@ -368,7 +368,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
-            final int genomeTargetIndex=genome==null? -1:genome.getReferenceIndex(samRecord.getReferenceName());
+            final int genomeTargetIndex= genome==null? -1:genome.getReferenceIndex(map(genome, samRecord.getReferenceName()));
             for (int i = 0; i < samHelper.getNumEntries(); i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
