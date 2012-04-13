@@ -533,6 +533,7 @@ public class TestSplicedSamHelper {
         assertEquals(15013, first.getPosition());
         assertEquals(3, first.getQueryPosition());
         assertEquals("AAT", first.getSoftClippedBasesLeft());
+        assertEquals("", first.getSoftClippedBasesRight());
         assertEquals(25, first.getQueryAlignedLength());
 
         assertEquals(15795, second.getPosition());
@@ -540,6 +541,7 @@ public class TestSplicedSamHelper {
         assertEquals(1, second.getFragmentIndex());
         assertEquals(5, second.getQueryAlignedLength());
         assertEquals("TC", second.getSoftClippedBasesRight());
+        assertEquals("", second.getSoftClippedBasesLeft());
 
     }
     /*
