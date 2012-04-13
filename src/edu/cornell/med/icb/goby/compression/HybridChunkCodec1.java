@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.*;
 
 /**
- * A codec that writes highly compressed data in one pool, but keeps protobuf message in a separate pool.
+ * A codec that writes highly compressed data in one pool, and keeps left-over uncompressed protobuf messages in a separate pool.
  * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 2:35 PM
@@ -103,6 +103,11 @@ public class HybridChunkCodec1 implements ChunkCodec {
         System.arraycopy(bytes, 4 + compressedSize, leftOver, 0, bytesLeft);
         final Message reducedProtoBuff = gzipCodec.decode(leftOver);
         return handler.decompressCollection(reducedProtoBuff, compressedBytes);
+    }
+
+    @Override
+    public int getSuggestedChunkSize() {
+        return 30000;
     }
 
     @Override

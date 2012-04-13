@@ -55,6 +55,11 @@ public interface ChunkCodec {
 
     Message decode(byte[] bytes) throws IOException;
 
+    /**
+     * Return a suggestion for chunk size, to be used as default.
+     * @return
+     */
+    public int getSuggestedChunkSize();
 
     public void setHandler(ProtobuffCollectionHandler parser) ;
 }

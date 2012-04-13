@@ -78,4 +78,9 @@ public class    GZipChunkCodec implements ChunkCodec {
 
     }
 
+    @Override
+    public int getSuggestedChunkSize() {
+        return 10000;
+    }
+
 }

@@ -78,4 +78,9 @@ public class BZip2ChunkCodec implements ChunkCodec {
 
     }
 
+    @Override
+    public int getSuggestedChunkSize() {
+        return 20000;
+    }
+
 }

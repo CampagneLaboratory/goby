@@ -74,4 +74,9 @@ public class NotCompressedChunkCodec implements ChunkCodec {
 
     }
 
+    @Override
+    public int getSuggestedChunkSize() {
+        return 10000;
+    }
+
 }

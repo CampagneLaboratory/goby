@@ -1,4 +1,7 @@
 Towards Goby 2.0
+ - Make default chunk-size dependent on the type of chunk codec used. This is useful because hybrid compression does
+   better with larger chunk sizes (default chunk size for hybrid is 30000, 20000 for bzip2 and 10000 for gzip). The
+   default chunk size can be overriden with -x MessageChunksWriter:chunk-size=int
  - Add ability to preserve SAM/BAM read groups. Read groups are automatically preserved if present in the input BAM file.
    The concatenate mode automatically reassigns read_origin indices (see field read_origin_index) to prevent conflicts
    when Goby files from different origins are concatenated. The approach we use is to keep the most specific read origin

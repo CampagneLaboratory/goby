@@ -46,10 +46,11 @@ public class MessageChunksWriter {
     public static final int DELIMITER_LENGTH = 7;
     public static final int SIZE_OF_MESSAGE_LENGTH = 4;
     private ChunkCodec chunkCodec = null;
+    private static final int DEFAULT_CHUNK_SIZE = 10000;
     /**
      * Default number of entries per chunk.
      */
-    private int numEntriesPerChunk = 10000;
+    private int numEntriesPerChunk = DEFAULT_CHUNK_SIZE;
     private final DataOutputStream out;
 
     /**
@@ -66,12 +67,13 @@ public class MessageChunksWriter {
     private long currentChunkStartOffset;
     private long writtenBytes = 0;
     private final boolean compressingCodec;
+    private static final int OPTION_NOT_SET = -1;
     @RegisterThis
     public static final DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
             "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
             "template-compression:boolean, when true use template compression.:true",
             "codec:string, name of the chunk codec to use.:gzip",
-            "chunk-size:integer, the number of entries per chunk. :10000");
+            String.format("chunk-size:integer, the number of entries per chunk.:%d",OPTION_NOT_SET));
 
     public static DynamicOptionClient doc() {
         DynamicOptionRegistry.register(AlignmentCollectionHandler.doc());
@@ -94,10 +96,15 @@ public class MessageChunksWriter {
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
         compressingCodec = doc.getBoolean("compressing-codec");
-        numEntriesPerChunk = doc.getInteger("chunk-size");
         final String codecName = doc.getString("codec");
         chunkCodec = ChunkCodecHelper.load(codecName);
         useTemplateCompression = doc.getBoolean("template-compression");
+        numEntriesPerChunk = doc.getInteger("chunk-size");
+        if (numEntriesPerChunk==-1) {
+            // if the option was not set, use the chunk codec suggested chunk size:
+          numEntriesPerChunk=chunkCodec.getSuggestedChunkSize();
+        }
+        LOG.info("Using chunk-size="+numEntriesPerChunk);
     }
 
     /**
