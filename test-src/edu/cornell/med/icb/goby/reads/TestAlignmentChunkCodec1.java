@@ -74,7 +74,46 @@ public class TestAlignmentChunkCodec1 {
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, false);
 
 
-        testRoundTripWithBuiltEntries(codec, collection, false);
+        testRoundTripWithBuiltEntries(codec, collection, false,null);
+    }
+
+   // @Test
+    // enable to test soft clips compression
+    public void testRoundTripWithSoftCLips() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examples, false);
+
+        testRoundTripWithBuiltEntries(codec, collection, false,exampleClips);
+    }
+
+    private class SoftClip {
+        String left;
+        String right;
+
+        private SoftClip(String left, String right) {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    SoftClip[] exampleClips = {new SoftClip("AC", ""), new SoftClip("AACC", ""),
+            new SoftClip("AACC", "TCGGGGG"),
+            new SoftClip("AACC", ""),
+            new SoftClip("AACC", "TCGGGGG"),
+    };
+
+    private void addSoftClips(SoftClip[] exampleClips, Alignments.AlignmentCollection.Builder collection) {
+        int softClipIndex = 0;
+        for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
+            Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
+            element.setSoftClippedBasesLeft(exampleClips[softClipIndex].left);
+            element.setSoftClippedBasesRight(exampleClips[softClipIndex].right);
+            softClipIndex++;
+            if (softClipIndex > exampleClips.length) {
+                softClipIndex = 0;
+            }
+        }
     }
 
     @Test
@@ -84,7 +123,7 @@ public class TestAlignmentChunkCodec1 {
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, true);
 
-        testRoundTripWithBuiltEntries(codec, collection, true);
+        testRoundTripWithBuiltEntries(codec, collection, true,null);
     }
 
     AlignmentExample[] examplesWithDuplicates = {
@@ -226,7 +265,17 @@ public class TestAlignmentChunkCodec1 {
         }
     }
 
-    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection, boolean addReadQual) throws IOException {
+    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection,
+                                               boolean addReadQual,
+                                               SoftClip[]  exampleClips) throws IOException {
+       if (addReadQual) {
+
+            addToQuals(collection);
+        }
+        if (exampleClips!=null) {
+
+            addSoftClips(exampleClips,collection);
+        }
         final ByteArrayOutputStream encoded = codec.encode(collection.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
         Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
@@ -237,6 +286,10 @@ public class TestAlignmentChunkCodec1 {
         if (addReadQual) {
             addToQuals(expected);
             addToQuals(collection);
+        }
+        if (exampleClips!=null) {
+            addSoftClips(exampleClips,expected);
+
         }
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
 
