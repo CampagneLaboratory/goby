@@ -147,7 +147,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentCollection.Builder remainingCollection = Alignments.AlignmentCollection.newBuilder();
         final int size = alignmentCollection.getAlignmentEntriesCount();
         int indexInReducedCollection = 0;
-        //collectStrings(alignmentCollection.getAlignmentEntriesCount(), alignmentCollection);
+        collectStrings(alignmentCollection.getAlignmentEntriesCount(), alignmentCollection);
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
 
@@ -175,7 +175,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void collectStrings(int size, Alignments.AlignmentCollection alignmentCollection) {
 
         int indexInStrings = 0;
-
+        for (int index = 0; index < size; index++) {
+            final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
+            numSoftClipRightBases.add(entry.hasSoftClippedBasesRight() ? entry.getSoftClippedBasesRight().length() : MISSING_VALUE);
+            numSoftClipLeftBases.add(entry.hasSoftClippedBasesLeft() ? entry.getSoftClippedBasesLeft().length() : MISSING_VALUE);
+        }
 
         boolean finished1 = false;
         boolean finished2 = false;
@@ -185,35 +189,27 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             for (int index = 0; index < size; index++) {
                 final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
 
-                if (entry.hasSoftClippedBasesLeft()) {
-
-                    final String softClippedBasesLeft = entry.getSoftClippedBasesLeft();
-                    if (indexInStrings < softClippedBasesLeft.length()) {
+                final int numSoftClipLeftBasesInt = numSoftClipLeftBases.getInt(index);
+                if (numSoftClipLeftBasesInt != MISSING_VALUE) {
+                    if (indexInStrings < numSoftClipLeftBasesInt) {
+                        final String softClippedBasesLeft = entry.getSoftClippedBasesLeft();
                         softClipLeftBases.add(softClippedBasesLeft.charAt(indexInStrings));
                         finished1 = false;
-                    } else {
-                        softClipLeftBases.add(MISSING_VALUE);
                     }
                 }
-                if (entry.hasSoftClippedBasesRight()) {
-                    final String softClippedBasesRight = entry.getSoftClippedBasesRight();
-                    if (indexInStrings < softClippedBasesRight.length()) {
+                final int numSoftClipRightBasesInt = numSoftClipRightBases.getInt(index);
+                if (numSoftClipRightBasesInt != MISSING_VALUE) {
+                    if (indexInStrings < numSoftClipRightBasesInt) {
+                        final String softClippedBasesRight = entry.getSoftClippedBasesRight();
+
                         softClipRightBases.add(softClippedBasesRight.charAt(indexInStrings));
                         finished2 = false;
-                    } else {
-                        softClipRightBases.add(MISSING_VALUE);
                     }
                 }
             }
             indexInStrings++;
         }
-        for (int index = 0; index < size; index++) {
-            final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
-            hasSoftClipRightBases.add(entry.hasSoftClippedBasesRight() ? 1 : 0);
-            hasSoftClipLeftBases.add(entry.hasSoftClippedBasesLeft() ? 1 : 0);
 
-
-        }
     }
 
     private void restoreStrings(Alignments.AlignmentCollection.Builder alignmentCollection) {
@@ -222,27 +218,57 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         boolean finished1 = false;
         boolean finished2 = false;
         ObjectArrayList<MutableString> softClipsLeft = new ObjectArrayList<MutableString>();
+        ObjectArrayList<MutableString> softClipsRight = new ObjectArrayList<MutableString>();
         softClipsLeft.size(size);
+        softClipsRight.size(size);
         for (int index = 0; index < size; index++) {
 
-            if (index < hasSoftClipLeftBases.size()) {
-                softClipsLeft.set(index, hasSoftClipLeftBases.get(index) == 1 ? new MutableString() : null);
+            if (index < numSoftClipLeftBases.size()) {
+                final int stringLength = numSoftClipLeftBases.getInt(index);
+                if (stringLength != MISSING_VALUE) {
+
+                    final MutableString mutableString = new MutableString();
+                    mutableString.setLength(stringLength);
+                    softClipsLeft.set(index, mutableString);
+                }
+            }
+
+            if (index < numSoftClipRightBases.size()) {
+                final int stringLength = numSoftClipRightBases.getInt(index);
+                if (stringLength != MISSING_VALUE) {
+
+                    final MutableString mutableString = new MutableString();
+                    mutableString.setLength(stringLength);
+                    softClipsRight.set(index, mutableString);
+                }
             }
 
         }
-        int i = 0;
+        int iLeft = 0;
+        int iRight = 0;
         while (!(finished1 && finished2)) {
             finished1 = true;
-          //  finished2 = true;
+            finished2 = true;
             for (int index = 0; index < size; index++) {
-                final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
+                final int numSoftClipLeftBasesInt = numSoftClipLeftBases.getInt(index);
+                if (numSoftClipLeftBasesInt != MISSING_VALUE && indexInStrings < numSoftClipLeftBasesInt) {
+                    final MutableString mutableString = softClipsLeft.get(index);
+                    if (mutableString != null) {
+                        final int anInt = softClipLeftBases.getInt(iLeft++);
 
-                final MutableString mutableString = softClipsLeft.get(index);
-                if (mutableString != null) {
-                    final int anInt = softClipLeftBases.getInt(i++);
-                    if (anInt != MISSING_VALUE) {
-                        mutableString.append((char) anInt);
+                        mutableString.setCharAt(indexInStrings, (char) anInt);
                         finished1 = false;
+                    }
+                }
+                final int numSoftClipRightBasesInt = numSoftClipRightBases.getInt(index);
+
+                if (numSoftClipRightBasesInt != MISSING_VALUE && indexInStrings < numSoftClipRightBasesInt) {
+                    final MutableString mutableString = softClipsRight.get(index);
+                    if (mutableString != null) {
+                        final int anInt = softClipRightBases.getInt(iRight++);
+
+                        mutableString.setCharAt(indexInStrings, (char) anInt);
+                        finished2 = false;
                     }
                 }
             }
@@ -251,10 +277,19 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         for (int index = 0; index < size; index++) {
             Alignments.AlignmentEntry.Builder builder = alignmentCollection.getAlignmentEntriesBuilder(index);
-            final MutableString mutableString = softClipsLeft.get(index);
-            if (mutableString != null) {
-                builder.setSoftClippedBasesLeft(mutableString.toString());
+            {
+                final MutableString mutableString = softClipsLeft.get(index);
+                if (mutableString != null) {
+                    builder.setSoftClippedBasesLeft(mutableString.toString());
+                }
             }
+            {
+                final MutableString mutableString = softClipsRight.get(index);
+                if (mutableString != null) {
+                    builder.setSoftClippedBasesRight(mutableString.toString());
+                }
+            }
+
         }
     }
 
@@ -288,7 +323,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 originalIndex++;
             }
         }
-        // restoreStrings(result);
+        restoreStrings(result);
         ++chunkIndex;
         return result.build();
     }
@@ -579,9 +614,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
 
-        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() * .70;
+        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() ;
         if (result) {
-            //    System.out.println("Using run-length encoding for "+label);
+      //          System.out.println("Using run-length encoding for "+label);
         }
         return result;
     }
@@ -728,8 +763,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private IntArrayList multiplicities = new IntArrayList();
 
-    private IntList hasSoftClipLeftBases = new IntArrayList();
-    private IntList hasSoftClipRightBases = new IntArrayList();
+    private IntList numSoftClipLeftBases = new IntArrayList();
+    private IntList numSoftClipRightBases = new IntArrayList();
     private IntList softClipLeftBases = new IntArrayList();
     private IntList softClipRightBases = new IntArrayList();
 
@@ -784,8 +819,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         if (streamVersion >= 6) {
 
-            decodeArithmetic("hasSoftClipLeftBases", numEntriesInChunk, bitInput, hasSoftClipLeftBases);
-            decodeArithmetic("hasSoftClipRightBases", numEntriesInChunk, bitInput, hasSoftClipRightBases);
+            decodeArithmetic("softClipLeftBasesNum", numEntriesInChunk, bitInput, numSoftClipLeftBases);
+            decodeArithmetic("softClipRightBasesNum", numEntriesInChunk, bitInput, numSoftClipRightBases);
             decodeArithmetic("softClipLeftBases", numEntriesInChunk, bitInput, softClipLeftBases);
             decodeArithmetic("softClipRightBases", numEntriesInChunk, bitInput, softClipRightBases);
         }
@@ -873,8 +908,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("pairFlags", pairFlags, out);
         writeArithmetic("scores", scores, out);
 
-        writeArithmetic("hasSoftClipLeftBases", hasSoftClipLeftBases, out);
-        writeArithmetic("hasSoftClipRightBases", hasSoftClipRightBases, out);
+        writeArithmetic("softClipLeftBasesNum", numSoftClipLeftBases, out);
+        writeArithmetic("softClipRightBasesNum", numSoftClipRightBases, out);
         writeArithmetic("softClipLeftBases", softClipLeftBases, out);
         writeArithmetic("softClipRightBases", softClipRightBases, out);
     }
@@ -926,8 +961,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         pairFlags.clear();
         scores.clear();
 
-        hasSoftClipLeftBases.clear();
-        hasSoftClipRightBases.clear();
+        numSoftClipLeftBases.clear();
+        numSoftClipRightBases.clear();
         softClipLeftBases.clear();
         softClipRightBases.clear();
     }

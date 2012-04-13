@@ -324,6 +324,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int numProperlyPaired = 0;
         int numFirstInPair = 0;
         int numSecondInPair = 0;
+        boolean hasSoftClips=false;
 
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
@@ -338,7 +339,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.observe(entry.getQueryIndex());
-
+            hasSoftClips|=entry.hasSoftClippedBasesLeft();
+            hasSoftClips|=entry.hasSoftClippedBasesRight();
             // check entry then header for the query length
 
             final double queryLength = entry.getQueryLength();
@@ -384,7 +386,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
         stream.printf("Percent second in pair = %,.2f %% %n", divide(numSecondInPair, numEntries) * 100d);
 
-
+        stream.printf("Aligment entries have some softClips: %b %n",hasSoftClips);
     }
 
     private double divide(final long a, final long b) {
