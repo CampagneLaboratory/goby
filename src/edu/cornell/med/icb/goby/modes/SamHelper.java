@@ -333,7 +333,7 @@ public class SamHelper {
     }
 
     public int getQueryPosition() {
-        return queryPosition;
+        return queryPosition ;
     }
 
     public boolean isReverseStrand() {

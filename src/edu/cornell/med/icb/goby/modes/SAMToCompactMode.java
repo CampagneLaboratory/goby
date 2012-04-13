@@ -157,7 +157,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // configure baseclass
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
-        preserveSoftClips=jsapResult.getBoolean("preserve-soft-clips");
+        preserveSoftClips = jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         bsmap = jsapResult.getBoolean("bsmap");
@@ -388,14 +388,17 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (preserveSoftClips) {
-                    final int queryPosition = currentEntry.getQueryPosition();
-                    if (queryPosition > 0) {
-                        currentEntry.setSoftClippedBasesLeft(convertBases(samRecord.getReadBases(), 0, queryPosition));
+                    final int leftTrim = samHelper.getNumLeftClipped();
+                    if (leftTrim > 0) {
+                        currentEntry.setSoftClippedBasesLeft(convertBases(samRecord.getReadBases(), 0, leftTrim));
 
                     }
-                    int queryAlignedLength = samHelper.getQueryAlignedLength();
-                    int queryLength = samHelper.getQueryLength();
-                    currentEntry.setSoftClippedBasesRight(convertBases(samRecord.getReadBases(), queryPosition + queryAlignedLength, queryLength));
+                    final int queryAlignedLength = samHelper.getQueryAlignedLength();
+                    final int rightTrim = samHelper.getNumRightClipped();
+                    final int queryPosition = currentEntry.getQueryPosition();
+                    if (rightTrim > 0) {
+                        currentEntry.setSoftClippedBasesRight(convertBases(samRecord.getReadBases(), queryPosition + queryAlignedLength, queryPosition + queryAlignedLength + rightTrim));
+                    }
                 }
 
                 if (preserveAllMappedQuals) {
@@ -553,10 +556,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private String convertBases(byte[] readBases, int startIndex, int endIndex) {
         convertBasesBuffer.setLength(endIndex - startIndex);
-        int j=0;
-        for(int i=startIndex;i<endIndex;i++) {
-            convertBasesBuffer.setCharAt(j,(char)readBases[i]);
-            j+=1  ;
+        int j = 0;
+        for (int i = startIndex; i < endIndex; i++) {
+            convertBasesBuffer.setCharAt(j, (char) readBases[i]);
+            j += 1;
         }
         return convertBasesBuffer.toString();
     }
@@ -744,6 +747,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     public void setPreserveSoftClips(boolean flag) {
-        this.preserveSoftClips=flag;
+        this.preserveSoftClips = flag;
     }
 }
