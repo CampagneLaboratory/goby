@@ -46,7 +46,7 @@ message AlignmentEntry {
       ctCGTC     query
     This field is required (enforced by semantic validation in Goby 2.0+).
    */
-  optional uint32 position=3;
+    optional uint32 position = 3;
 
     /*
        True when the query matches the target on the reverse strand
@@ -215,15 +215,17 @@ message AlignmentEntry {
     /*
     Bases that an aligner considered do not belong to the alignment of the read to the reference. Potentially
     erroneous bases, or bases that belong to a different part of the reference genome. Left clipped bases are
-    stored in this field as character bases. For instance "AG" for two soft-clipped bases. The number of
-    bases in softClippedBasesLeft is exactly equal to queryPosition.
+    stored in this field as character bases, or as an equal sign character '=' when the clipped base did match
+    the reference base. For instance "A=G" for three soft-clipped bases, the middle one matching the genome at
+    this position. The number of bases in softClippedBasesLeft is exactly equal to queryPosition.
     */
     optional string softClippedBasesLeft = 30;
     /*
     Bases that an aligner considered do not belong to the alignment of the read to the reference. Potentially
     erroneous bases, or bases that belong to a different part of the reference genome. Right clipped bases are
-    stored in this field as character bases. The number of bases in softClippedBasesRight is exactly equal to
-    queryLength - queryAlignedLength - queryPosition.
+    stored in this field as character bases, or as an equal sign character '=' when the clipped base did match
+    the reference base. The number of bases in softClippedBasesRight is exactly equal
+    to  queryLength - queryAlignedLength - queryPosition.
     */
     optional string softClippedBasesRight = 31;
 }

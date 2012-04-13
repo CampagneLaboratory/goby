@@ -168,24 +168,9 @@ public class SplicedSamHelper {
                     position += readBasesLength;
                     previousPosition = position;
                     break;
-                case 'I': // insertion in read
-                    if (usingGenome) {
-                        positionInRead += readBasesLength;
-                        position += readBasesLength;
-                    }
-                    break;
 
-                case 'D':
-                    if (usingGenome) {
-                        // deletion in read
-                        insertSomeInRef(position, initialRefPosition, readBasesLength);
-                    }
-                    break;
                 case 'S':
-                    if (usingGenome) {
-                        // soft clip in the reference for so many bases.
-                        insertSomeInRef(position, initialRefPosition, readBasesLength);
-                    }
+
                     positionInRead += readBasesLength;
                     trim = readBasesLength;
                     //   previousPositionInRead += readBasesLength;
@@ -219,6 +204,8 @@ public class SplicedSamHelper {
     public void setQualityEncoding(QualityEncoding qualityEncoding) {
         encoding = qualityEncoding;
     }
+
+
 
     private class SamHelperFactory extends BasePoolableObjectFactory<SamHelper> {
         // for makeObject we'll simply return a new buffer
@@ -535,5 +522,6 @@ public class SplicedSamHelper {
     public boolean isReverseStrand() {
         return helpers.get(cursorIndex).isReverseStrand();
     }
+
 
 }

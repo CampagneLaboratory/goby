@@ -260,7 +260,7 @@ public class TestSplicedSamHelper {
 
         Assert.assertEquals(0, second.getPairAlignmentLink().getFragmentIndex());
         assertTrue("second must have spliced forward link", second.hasSplicedForwardAlignmentLink());
-        assertFalse("second must have spliced backward link",second.hasSplicedBackwardAlignmentLink());
+        assertFalse("second must have spliced backward link", second.hasSplicedBackwardAlignmentLink());
 
 
     }
@@ -444,7 +444,6 @@ public class TestSplicedSamHelper {
     }
 
 
-
     @Test
     // variation after splice
     public void testSamToCompactTrickCase10NoGenome() throws IOException {
@@ -486,7 +485,7 @@ public class TestSplicedSamHelper {
 
     }
 
-     @Test
+    @Test
     // like 9 no genome
     public void testSamToCompactTrickCase12NoGenome() throws IOException {
 
@@ -513,7 +512,7 @@ public class TestSplicedSamHelper {
         assertEquals(7, second.getQueryAlignedLength());
     }
 
-     @Test
+    @Test
     // To test import of soft clips:
     public void testSamToCompactTrickCase13NoGenomeSoftClips() throws IOException {
 
@@ -521,8 +520,8 @@ public class TestSplicedSamHelper {
         importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-13.sam");
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-13");
         importer.setOutputFile(outputFilename);
-         importer.setPreserveSoftClips(true);
-         importer.execute();
+        importer.setPreserveSoftClips(true);
+        importer.execute();
 
         AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
         assertTrue(reader.hasNext());
@@ -537,6 +536,49 @@ public class TestSplicedSamHelper {
         assertEquals(25, first.getQueryAlignedLength());
 
         assertEquals(15795, second.getPosition());
+        assertEquals(28, second.getQueryPosition());
+        assertEquals(1, second.getFragmentIndex());
+        assertEquals(5, second.getQueryAlignedLength());
+        assertEquals("", second.getSoftClippedBasesLeft());
+        assertEquals("TC", second.getSoftClippedBasesRight());
+
+    }
+
+    @Test
+    // To test import of soft clips:
+    public void testSamToCompactTrickCase13SoftClipsWithGenome() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-14.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-14");
+
+        MutableString seq = new MutableString();
+
+        seq.append("NNNNCAGTGCCCACCTTGGCTCGTGGCTCTCACTTGCTCNNNNNNNNNNNN");
+        for (int i = 0; i < 10; i++) {
+            seq.insert(28, '-');
+        }
+        String[] refs = {seq.toString()};
+
+        RandomAccessSequenceTestSupport genomeTestSupport = new RandomAccessSequenceTestSupport(refs);
+        importer.setGenome(genomeTestSupport);
+        importer.setOutputFile(outputFilename);
+        importer.setPreserveSoftClips(true);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry second = reader.next();
+
+        assertEquals(4, first.getPosition());
+        assertEquals(3, first.getQueryPosition());
+        assertEquals("A=T", first.getSoftClippedBasesLeft());
+        assertEquals("", first.getSoftClippedBasesRight());
+        assertEquals(25, first.getQueryAlignedLength());
+
+        assertEquals(40-1, second.getPosition());
         assertEquals(28, second.getQueryPosition());
         assertEquals(1, second.getFragmentIndex());
         assertEquals(5, second.getQueryAlignedLength());
