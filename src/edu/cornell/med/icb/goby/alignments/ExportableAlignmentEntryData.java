@@ -95,7 +95,7 @@ public class ExportableAlignmentEntryData {
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
                                         final QualityEncoding qualityEncoding) {
-        debug = Util.log4JIsConfigured();
+        debug = Util.log4JIsConfigured() && LOG.isDebugEnabled();
         this.genome = genome;
         this.qualityEncoding = qualityEncoding;
 
