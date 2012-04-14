@@ -521,7 +521,7 @@ public class ExportableAlignmentEntryData {
         final int genomeLength = genome.getLength(targetIndex);
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
-            final char base = genomePosition >= 0 || genomePosition < genomeLength ?
+            final char base = genomePosition >= 0 && genomePosition < genomeLength ?
                     genome.get(targetIndex, i + startPosition - startClip) : 'N';
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
