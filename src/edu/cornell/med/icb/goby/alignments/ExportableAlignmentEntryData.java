@@ -453,7 +453,7 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
         endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition();
-        final int readLength=alignmentEntry.getQueryLength();
+        final int readLength = alignmentEntry.getQueryLength();
         qualities.size(readLength);
         this.alignmentEntry = alignmentEntry;
 
@@ -518,7 +518,9 @@ public class ExportableAlignmentEntryData {
                 alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
         final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
                 alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
-
+        //TODO Can we garantee that targetIndex in the alignment matches the same reference in the genome?
+        //TODO consider whether the index should be transformed to an ID using the alignment target id map
+        //TODO and queried in the genome with that id.
         final int genomeLength = genome.getLength(targetIndex);
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
