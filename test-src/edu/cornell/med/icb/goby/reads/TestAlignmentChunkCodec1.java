@@ -74,7 +74,7 @@ public class TestAlignmentChunkCodec1 {
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, false);
 
 
-        testRoundTripWithBuiltEntries(codec, collection, false, null);
+        testRoundTripWithBuiltEntries(codec, builtEntries, collection, false, null);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class TestAlignmentChunkCodec1 {
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, false);
 
-        testRoundTripWithBuiltEntries(codec, collection, false, exampleClips);
+        testRoundTripWithBuiltEntries(codec, builtEntries, collection, false, exampleClips);
     }
 
     private class SoftClip {
@@ -127,7 +127,7 @@ public class TestAlignmentChunkCodec1 {
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples, true);
 
-        testRoundTripWithBuiltEntries(codec, collection, true, null);
+        testRoundTripWithBuiltEntries(codec, builtEntries, collection, false, null);
     }
 
     AlignmentExample[] examplesWithDuplicates = {
@@ -159,6 +159,7 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
+
     @Test
     public void roundTripMoreWithQualScores() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -168,7 +169,12 @@ public class TestAlignmentChunkCodec1 {
         addToQuals(collection);
         assertRoundTripMatchExpected(codec, collection);
     }
-
+    private void clearReadQualityScores(Alignments.AlignmentCollection.Builder collection) {
+            for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
+                Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
+            element.clearReadQualityScores();
+            }
+    }
     private void addToQuals(Alignments.AlignmentCollection.Builder collection) {
         for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
             Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
@@ -269,32 +275,32 @@ public class TestAlignmentChunkCodec1 {
         }
     }
 
-    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection,
+    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec,
+                                               ObjectArrayList<Alignments.AlignmentEntry.Builder> expectedCollection,
+                                               Alignments.AlignmentCollection.Builder collection,
                                                boolean addReadQual,
                                                SoftClip[] exampleClips) throws IOException {
+        Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
+
+        for (final Alignments.AlignmentEntry.Builder entryBuilder : expectedCollection) {
+
+            expected.addAlignmentEntries(entryBuilder);
+        }
+
         if (addReadQual) {
 
+            addToQuals(expected);
             addToQuals(collection);
+        } else {
+           clearReadQualityScores(collection);
         }
         if (exampleClips != null) {
 
+            addSoftClips(exampleClips, expected);
             addSoftClips(exampleClips, collection);
         }
         final ByteArrayOutputStream encoded = codec.encode(collection.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
-        Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
-        for (final Alignments.AlignmentEntry.Builder entryBuilder : builtEntries) {
-
-            expected.addAlignmentEntries(entryBuilder);
-        }
-        if (addReadQual) {
-            addToQuals(expected);
-            addToQuals(collection);
-        }
-        if (exampleClips != null) {
-            addSoftClips(exampleClips, expected);
-
-        }
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
 
     }
