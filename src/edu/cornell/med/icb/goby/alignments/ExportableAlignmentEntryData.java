@@ -442,6 +442,7 @@ public class ExportableAlignmentEntryData {
     public void buildFrom(final Alignments.AlignmentEntry alignmentEntry,
                           final CharList actualReadsSrc, final ByteList actualQualitiesSrc) {
         reset();
+        final boolean predefinedQuals = alignmentEntry.hasReadQualityScores();
 
         reverseStrand = alignmentEntry.getMatchingReverseStrand();
         setActualReads(actualReadsSrc, reverseStrand);
@@ -454,9 +455,11 @@ public class ExportableAlignmentEntryData {
         endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition();
         final int readLength = alignmentEntry.getQueryLength();
-        qualities.size(readLength);
-        this.alignmentEntry = alignmentEntry;
 
+        this.alignmentEntry = alignmentEntry;
+        if (predefinedQuals) {
+             qualities.size(readLength);
+        }
         if (hasReadGroups) {
             final int readOriginIndex = alignmentEntry.getReadOriginIndex();
             final Alignments.ReadOriginInfo info = readOriginInfo.getInfo(readOriginIndex);
@@ -472,11 +475,13 @@ public class ExportableAlignmentEntryData {
                 readGroup = info.getOriginId();
             }
         }
+
         // First obtain the number of indels
         int numInserts = 0;
+        int numDeletions = 0;
         for (final Alignments.SequenceVariation seqvar : alignmentEntry.getSequenceVariationsList()) {
-            final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION
-            final String tos = seqvar.getTo();      // read bases. '-' means INSERTION
+            final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION in the read
+            final String tos = seqvar.getTo();      // read bases. '-' means deletion
             final int fromsLength = froms.length();
             final int tosLength = tos.length();
             if (fromsLength != tosLength) {
@@ -508,10 +513,10 @@ public class ExportableAlignmentEntryData {
             }
         }
 
-        final boolean predefinedQuals = alignmentEntry.hasReadQualityScores();
 
         // Construct read & ref before any sequence variations (indels, mutations)
-        final int endOfLoop = targetAlignedLength + startClip + endClip + numInserts;
+        final int endOfLoop =Math.max(queryAlignedLength + startClip + endClip ,
+                targetAlignedLength + startClip + endClip + numInserts);
 
         final int targetIndex = alignmentEntry.getTargetIndex();
         final char[] predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ?
@@ -561,8 +566,8 @@ public class ExportableAlignmentEntryData {
             if (debug) {
                 LOG.debug(seqVarToString(seqvar));
             }
-            final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION
-            final String tos = seqvar.getTo();      // read bases. '-' means INSERTION
+            final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION in the read
+            final String tos = seqvar.getTo();      // read bases. '-' means INSERTION in the reference
             final int startRefPosition = seqvar.getPosition();   // refPosition, 1-based, always numbered from left
             final byte[] toQuals = seqvar.hasToQuality() ? seqvar.getToQuality().toByteArray() : null;
             for (int i = 0; i < froms.length(); i++) {
@@ -816,7 +821,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Now that we have constructed the ref and read bases including seqvars, construct the cigarString
-     * and misamtchString (MD:Z for SAM).
+     * and mismatchString (MD:Z for SAM).
      * for this alignment.
      */
     private void observeReadRefDifferences() {

@@ -96,6 +96,7 @@ public class TestExportableAlignmentEntryData {
             }
             System.out.printf("Processing queryIndex=%d with description '%s'%n", alignmentEntry.getQueryIndex(),
                     actualReadsEntry.readName);
+
             exportData.buildFrom(alignmentEntry, actualReadsEntry.readBases, actualReadsEntry.readQuals);
             assertFalse(exportData.getInvalidMessage(), exportData.isInvalid());
             validateEntry(exportData, samDetailsMap.get(exportData.getQueryIndex()));
@@ -115,6 +116,7 @@ public class TestExportableAlignmentEntryData {
         assertEquals("cigar incorrect for qi=" + qi, samData.get("cigar"), exportData.getCigarString());
         validateSequence(qi, samData.get("read"), exportData.getReadBasesOriginal());
         assertEquals("mismatches incorrect for qi=" + qi, samData.get("mismatches"), "MD:Z:" + exportData.getMismatchString());
+        assertEquals("read length and qual length must match for qi="+qi,exportData.getReadBases().size(),exportData.getReadQualities().size());
     }
 
     private void validateSequence(final int qi, final String expected, final String actual) {
