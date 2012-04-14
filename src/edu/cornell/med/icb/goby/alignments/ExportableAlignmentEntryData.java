@@ -468,7 +468,7 @@ public class ExportableAlignmentEntryData {
                     LOG.debug(invalidMessage.toString());
                 }
             } else {
-                readGroup=info.getOriginId();
+                readGroup = info.getOriginId();
             }
         }
         // First obtain the number of indels
@@ -514,9 +514,9 @@ public class ExportableAlignmentEntryData {
 
         final int targetIndex = alignmentEntry.getTargetIndex();
         final char[] predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ?
-                        alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
+                alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
         final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
-                        alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
+                alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
 
         final int genomeLength = genome.getLength(targetIndex);
         for (int i = 0; i < endOfLoop; i++) {
@@ -544,12 +544,6 @@ public class ExportableAlignmentEntryData {
             if (!predefinedQuals) {
                 qualities.add(UNKNOWN_MAPPING_VALUE);  // SAMRecord.UNKNOWN_MAPPING_VALUE is 255, which isn't a byte
             }
-        }
-        if (predefinedQuals) {
-            for (final byte value : alignmentEntry.getReadQualityScores().toByteArray()) {
-                qualities.add(value);
-            }
-            hasQualities = true;
         }
 
 
@@ -633,6 +627,7 @@ public class ExportableAlignmentEntryData {
             readBases.size(readBases.size() - numInserts);
             qualities.size(qualities.size() - numInserts);
         }
+
         if (endClip > 0) {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
             final int readSize = readBases.size();
@@ -651,6 +646,12 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
+        if (predefinedQuals) {
+            // discard everything we have done before since we know exactly what the quality scores
+            // were:
+            qualities = ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray());
+            hasQualities = true;
+        }
         endTargetPositionZeroBased = alignmentEntry.getPosition() + targetAlignedLength;
         if (debug) {
             LOG.debug("\n" + toString());
@@ -692,6 +693,7 @@ public class ExportableAlignmentEntryData {
     /**
      * Merge the splice fragments into a single ExportableAlignmentEntryData. Fragments should already be in
      * their correct order based on the underlying goby alignment's next/previous splice fragments.
+     *
      * @param fragments splice fragments to merge.
      * @return the merge of fragments
      */
@@ -794,6 +796,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Obtain the last cigar element.
+     *
      * @return a CigarElement
      */
     public GobyCigarElement removeLastCigar() {
@@ -1023,11 +1026,13 @@ public class ExportableAlignmentEntryData {
         int size;
         char code;
         int cigarWidth;
+
         protected GobyCigarElement(final String sizeStr, final char code) {
             size = Integer.parseInt(sizeStr);
             this.code = code;
             cigarWidth = sizeStr.length() + 1;
         }
+
         public String toString() {
             return String.format("%d%c", size, code);
         }
