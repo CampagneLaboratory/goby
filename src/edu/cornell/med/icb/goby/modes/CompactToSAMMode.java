@@ -20,33 +20,18 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ExportableAlignmentEntryData;
-import edu.cornell.med.icb.goby.alignments.FileSlice;
-import edu.cornell.med.icb.goby.alignments.GenomicRange;
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
-import edu.cornell.med.icb.goby.alignments.ReadOriginInfo;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.Util;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
-import net.sf.samtools.DefaultSAMRecordFactory;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileWriter;
-import net.sf.samtools.SAMFileWriterFactory;
-import net.sf.samtools.SAMProgramRecord;
-import net.sf.samtools.SAMReadGroupRecord;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMRecordFactory;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -265,7 +250,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         debug = Util.log4JIsConfigured();
-        queryIndexToFragmentsMap = new Int2ObjectArrayMap<Int2ObjectMap<ExportableAlignmentEntryData>>();
+        queryIndexToFragmentsMap = new Int2ObjectAVLTreeMap<Int2ObjectMap<ExportableAlignmentEntryData>> ();
         exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
@@ -395,14 +380,16 @@ public class CompactToSAMMode extends AbstractGobyMode {
             if (alignmentEntry.hasSplicedForwardAlignmentLink() ||
                     alignmentEntry.hasSplicedBackwardAlignmentLink()) {
                 splicedFragment = true;
-                fragIndexToAlignmentsMap = queryIndexToFragmentsMap.get(alignmentEntry.getQueryIndex());
+                final int queryIndex = alignmentEntry.getQueryIndex();
+                fragIndexToAlignmentsMap = queryIndexToFragmentsMap.get(queryIndex);
                 if (fragIndexToAlignmentsMap == null) {
-                    fragIndexToAlignmentsMap = new Int2ObjectArrayMap<ExportableAlignmentEntryData>();
-                    queryIndexToFragmentsMap.put(alignmentEntry.getQueryIndex(), fragIndexToAlignmentsMap);
+                    fragIndexToAlignmentsMap = new Int2ObjectAVLTreeMap<ExportableAlignmentEntryData>();
+                    queryIndexToFragmentsMap.put(queryIndex, fragIndexToAlignmentsMap);
                 }
                 fragIndexToAlignmentsMap.put(exportData.getAlignmentEntry().getFragmentIndex(),
                         ExportableAlignmentEntryData.duplicateFrom(exportData));
-                findCompleteSpliceFragments(fragIndexToAlignmentsMap);
+                findCompleteSpliceFragments(fragIndexToAlignmentsMap, queryIndexToFragmentsMap,queryIndex);
+
             }
 
             if (splicedFragment) {
@@ -426,9 +413,11 @@ public class CompactToSAMMode extends AbstractGobyMode {
          * NOTE: for performance completeSpliceFragments is used repeatedly.
          *
          * @param fragIndexToAlignmentsMap the list of found fragments for a desired query index.
+         * @param queryIndexToFragmentsMap
+         * @param queryIndex
          */
         private void findCompleteSpliceFragments(
-                final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap) {
+                final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap, Int2ObjectMap<Int2ObjectMap<ExportableAlignmentEntryData>> queryIndexToFragmentsMap, int queryIndex) {
             for (final Map.Entry<Integer, ExportableAlignmentEntryData> entry :
                     fragIndexToAlignmentsMap.entrySet()) {
                 // For THIS entry, see if all related forward/backward fragments exists in in  fragIndexToAlignmentsMap
@@ -456,6 +445,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
                         completeSpliceFragments.add(fragIndexToAlignmentsMap.get(fragIndex));
                         fragIndexToAlignmentsMap.remove(fragIndex);
                     }
+                    // since we have a complete list, we can now forget the queryIndex and its fragments:
+                    queryIndexToFragmentsMap.remove(queryIndex);
                     break;
                 }
             }

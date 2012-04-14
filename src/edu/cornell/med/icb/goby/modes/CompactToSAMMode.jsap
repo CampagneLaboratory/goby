@@ -28,7 +28,9 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The SAM/BAM output file to output to.</help>
+            <help>The SAM/BAM output file to output to. Please note that if the file ends in .bam, a BAM file will be
+                written, whereas if the file ends in .sam, a BAM file will be written instead.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>input-genome</id>
