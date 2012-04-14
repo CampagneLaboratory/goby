@@ -453,7 +453,8 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
         endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition();
-
+        final int readLength=alignmentEntry.getQueryLength();
+        qualities.size(readLength);
         this.alignmentEntry = alignmentEntry;
 
         if (hasReadGroups) {
