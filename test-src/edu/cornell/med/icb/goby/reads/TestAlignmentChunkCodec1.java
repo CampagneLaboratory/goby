@@ -284,7 +284,7 @@ public class TestAlignmentChunkCodec1 {
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
         Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
         for (final Alignments.AlignmentEntry.Builder entryBuilder : builtEntries) {
-            addReadQuals(addReadQual, entryBuilder);
+
             expected.addAlignmentEntries(entryBuilder);
         }
         if (addReadQual) {
