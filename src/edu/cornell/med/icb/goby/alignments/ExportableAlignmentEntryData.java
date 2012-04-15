@@ -509,8 +509,20 @@ public class ExportableAlignmentEntryData {
                 }
                 if (from == '-') {
                     numInserts += 1;
+                } else if (to == '-') {
+                    numDeletions += 1;
                 }
             }
+        }
+
+        if (queryAlignedLength + numDeletions != targetAlignedLength + numInserts) {
+            invalid = true;
+            invalidMessage.append(
+                    String.format("Error with queryIndex=%d. " +
+                            "queryAlignedLength(%d) + numDeletions(%d) != targetAlignedLength(%d) + numInserts(%d)",
+                            alignmentEntry.getQueryIndex(), queryAlignedLength, numDeletions,
+                            targetAlignedLength, numInserts));
+            return;
         }
 
 
