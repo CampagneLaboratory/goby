@@ -337,18 +337,27 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     public void displayStats() {
         if (debug(1)) {
+
+            double totalBpb = divide(writtenBits, writtenBases);
+
             for (String label : typeToNumEntries.keySet()) {
                 int n = typeToNumEntries.getInt(label);
                 long written = typeToWrittenBits.getLong(label);
                 double average = (double) written / (double) n;
+                double averageBitPerBase = (double) written / (double) writtenBases;
+                // LOG.info
+                //       (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
+                //             written, average));
                 LOG.info
-                        (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
-                                written, average));
+                        (String.format("encoded %d %s in %d bits, average %g bpb. %2.2f%% ", n, label,
+                                written, averageBitPerBase, averageBitPerBase / totalBpb * 100));
                 statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n)));
                 statsWriter.flush();
+                totalBpb += averageBitPerBase;
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
             LOG.info(String.format("Overall: bits per aligned bases= %g", divide(writtenBits, writtenBases)));
+
         }
     }
 
@@ -592,6 +601,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             System.err.println("\nwriting " + label);
             System.err.flush();
         }
+
         final long writtenStart = out.writtenBits();
         IntArrayList encodedLengths = new IntArrayList();
         IntArrayList encodedValues = new IntArrayList();
@@ -614,9 +624,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
 
-        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() *70 ;
+        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() * 70;
         if (result) {
-      //          System.out.println("Using run-length encoding for "+label);
+            //      System.out.println("Using run-length encoding for "+label);
         }
         return result;
     }
@@ -717,9 +727,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (debug(1)) {
             double average = ((double) written) / list.size();
             typeToNumEntries.put(label, list.size() + typeToNumEntries.getInt(label));
-           typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
-           /* if (label.equals("scores"))
-                System.out.printf("written: %d %n",written);*/
+            typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
+            /* if (label.equals("scores"))
+          System.out.printf("written: %d %n",written);*/
 
         }
     }
@@ -996,6 +1006,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
             deltaPositions.add(position - previousPosition);
             deltaTargetIndices.add(targetIndex - previousTargetIndex);
+            //       System.out.printf("entry delta position: %d delta-target=%d %n",position - previousPosition, targetIndex - previousTargetIndex);
         }
 
         final int queryIndex = source.getQueryIndex();
@@ -1005,7 +1016,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         previousTargetIndex = targetIndex;
 
         if (debug(1) && source.hasQueryLength()) {
-            writtenBases += source.getQueryAlignedLength();
+            writtenBases += source.hasReadQualityScores() ? source.getQueryLength() : source.getQueryAlignedLength();
         }
         result.clearQueryIndex();
 
@@ -1093,7 +1104,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             insertSizes.add(MISSING_VALUE);
         }
 
-        queryAlignedLengths.add(source.hasQueryAlignedLength() ? source.getQueryAlignedLength() : MISSING_VALUE);
+        queryAlignedLengths.add(source.hasQueryAlignedLength() ?
+                modelQueryAlignedLength(source.getQueryAlignedLength(), source.getTargetAlignedLength()) :
+                MISSING_VALUE);
         targetAlignedLengths.add(source.hasTargetAlignedLength() ? source.getTargetAlignedLength() : MISSING_VALUE);
         fragmentIndices.add(source.hasFragmentIndex() ? source.getFragmentIndex() : MISSING_VALUE);
         variationCount.add(source.getSequenceVariationsCount());
@@ -1152,6 +1165,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentEntry alignmentEntry = result.build();
         //   System.out.println(alignmentEntry);
         return alignmentEntry;
+    }
+
+    public static int modelQueryAlignedLength(final int queryAlignedLength, final int targetAlignedLength) {
+        return Fast.int2nat(queryAlignedLength - targetAlignedLength);
+        // codedValue=   queryAlignedLength-targetAlignedLength
+        //  queryAlignedLength=  codedValue+targetAlignedLength
+    }
+
+    public static int decodeQueryAlignedLength(int codedValue, int targetAlignedLength) {
+        return Fast.nat2int(codedValue) + targetAlignedLength;
     }
 
     private boolean fastEquals(final Object o1, final Object o2) {
@@ -1296,17 +1319,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (queryLength != MISSING_VALUE) {
             result.setQueryLength(queryLength);
         }
-        anInt = queryAlignedLengths.getInt(index);
-        if (anInt != MISSING_VALUE) {
-            result.setQueryAlignedLength(anInt);
-        }
+
         anInt = queryPositions.getInt(index);
         if (anInt != MISSING_VALUE) {
             result.setQueryPosition(anInt);
         }
-        anInt = targetAlignedLengths.getInt(index);
+        final int targetAlignedLength = targetAlignedLengths.getInt(index);
+        if (targetAlignedLength != MISSING_VALUE) {
+            result.setTargetAlignedLength(targetAlignedLength);
+        }
+        anInt = queryAlignedLengths.getInt(index);
         if (anInt != MISSING_VALUE) {
-            result.setTargetAlignedLength(anInt);
+            result.setQueryAlignedLength(decodeQueryAlignedLength(anInt, targetAlignedLength));
         }
         anInt = sampleIndices.getInt(index);
         if (anInt != MISSING_VALUE) {
@@ -1431,6 +1455,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         return result.build();
     }
+
 
     /**
      * Decode the insert size given the already stored positions, an arithmetic expression linking position and insert size,

@@ -74,6 +74,7 @@ class LinkInfo {
     public Alignments.RelatedAlignmentEntry code(final boolean hasLink, final boolean entryMatchingReverseStrand,
                                                  final Alignments.RelatedAlignmentEntry relatedLink) {
         hasLinks.add(hasLink ? 1 : 0);
+        //return null;
         if (!hasLink) {
             return null;
         }

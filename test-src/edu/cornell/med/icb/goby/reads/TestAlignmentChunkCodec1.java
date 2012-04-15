@@ -159,6 +159,14 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
+    @Test
+    public void testCodeDecode(){
+
+        int q=3;int t=5;
+        int code=AlignmentCollectionHandler.modelQueryAlignedLength(q,t)  ;
+      int  qdecode=         AlignmentCollectionHandler.decodeQueryAlignedLength(code,t);
+        assertEquals(qdecode, q);
+    }
 
     @Test
     public void roundTripMoreWithQualScores() throws IOException {
