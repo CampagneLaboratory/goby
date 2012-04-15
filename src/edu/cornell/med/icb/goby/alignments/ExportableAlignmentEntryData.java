@@ -519,9 +519,10 @@ public class ExportableAlignmentEntryData {
             invalid = true;
             invalidMessage.append(
                     String.format("Error with queryIndex=%d. " +
-                            "queryAlignedLength(%d) + numDeletions(%d) != targetAlignedLength(%d) + numInserts(%d)",
+                            "queryAlignedLength(%d) + numDeletions(%d) != targetAlignedLength(%d) + numInserts(%d). %n" +
+                            "Alignment entry was: %s ",
                             alignmentEntry.getQueryIndex(), queryAlignedLength, numDeletions,
-                            targetAlignedLength, numInserts));
+                            targetAlignedLength, numInserts, alignmentEntry.toBuilder().toString()));
             return;
         }
 
