@@ -540,6 +540,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             try {
                 outputSam.addAlignment(samRecord);
             } catch (RuntimeException e) {
+                System.out.println("entry: \n"+toExport.getAlignmentEntry().toString());
                 System.out.println(toExport.toString());
                 throw e;
             }
