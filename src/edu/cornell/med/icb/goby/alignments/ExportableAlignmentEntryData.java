@@ -522,7 +522,7 @@ public class ExportableAlignmentEntryData {
                             "queryAlignedLength(%d) + numDeletions(%d) != targetAlignedLength(%d) + numInserts(%d). %n" +
                             "Alignment entry was: %s ",
                             alignmentEntry.getQueryIndex(), queryAlignedLength, numDeletions,
-                            targetAlignedLength, numInserts, alignmentEntry.toBuilder().toString()));
+                            targetAlignedLength, numInserts, alignmentEntry.toString()));
             return;
         }
 
