@@ -662,7 +662,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals("TGCT", first.getSoftClippedBasesRight());
         assertEquals(51, first.getQueryAlignedLength());
         assertEquals(50, first.getTargetAlignedLength());
-        assertEquals(4, first.getSequenceVariationsCount());
+        assertEquals(9, first.getSequenceVariationsCount());
         assertEquals("T", first.getSequenceVariations(0).getFrom());
         assertEquals("C", first.getSequenceVariations(0).getTo());
 
@@ -672,8 +672,14 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals("C", first.getSequenceVariations(2).getFrom());
         assertEquals("A", first.getSequenceVariations(2).getTo());
 
-        assertEquals("-T", first.getSequenceVariations(3).getFrom());
-        assertEquals("CG", first.getSequenceVariations(3).getTo());
+        assertEquals("T", first.getSequenceVariations(3).getFrom());
+        assertEquals("C", first.getSequenceVariations(3).getTo());
+
+        assertEquals("-GCA", first.getSequenceVariations(4).getFrom());
+        assertEquals("GCAG", first.getSequenceVariations(4).getTo());
+
+         assertEquals("GT", first.getSequenceVariations(5).getFrom());
+        assertEquals("TC", first.getSequenceVariations(5).getTo());
 
         //second's CIGAR is 20S48M
         assertEquals(190246 - 1, second.getPosition());

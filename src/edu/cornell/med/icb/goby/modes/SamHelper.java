@@ -457,7 +457,7 @@ public class SamHelper {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying md=%s", md));
         }
-        int position =  numLeftClipped;
+        int position = numLeftClipped;
         final Matcher matcher = MD_REGEX.matcher(md);
         while (matcher.find()) {
             final String mdPart = matcher.group();
@@ -467,20 +467,26 @@ public class SamHelper {
                 position += length;
 
             } else if (mdPart.charAt(0) == '^') {
-                if (ref.charAt(position) == '-') {
-                    position++;
-                }
+
                 // Adjust the ref with these characters, ignoring the ^ character so start at 1
                 for (int i = 1; i < mdPart.length(); i++) {
+                    final char previousRefBase = ref.charAt(position);
                     ref.setCharAt(position++, mdPart.charAt(i));
+                    if (previousRefBase == '-') {  // we just removed a gap, so we put it back:
+                        ref.insert(position, '-');
+                        ref.setLength(ref.length()-1);
+                    }
                 }
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for (int i = 0; i < mdPart.length(); i++) {
-                    if (ref.charAt(position) == '-') {
-                        position++;
-                    }
+                    final char previousRefBase = ref.charAt(position);
+
                     ref.setCharAt(position++, Character.toLowerCase(mdPart.charAt(i)));
+                    if (previousRefBase == '-') { // we just removed a gap, so we put it back:
+                        ref.insert(position, '-');
+                        ref.setLength(ref.length()-1)                       ;
+                    }
                     numMisMatches++;
                 }
             }
