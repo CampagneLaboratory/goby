@@ -83,7 +83,7 @@ public class SamHelper {
     private MutableString logval = new MutableString();
 
     private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
-    private static boolean debug=true;
+    private static boolean debug = true;
 
 
     public SamHelper() {
@@ -337,7 +337,7 @@ public class SamHelper {
     }
 
     public int getQueryPosition() {
-        return queryPosition ;
+        return queryPosition;
     }
 
     public boolean isReverseStrand() {
@@ -401,9 +401,7 @@ public class SamHelper {
                     break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
-                    if (posInReads + length > sourceQuery.length()) {
-                        System.out.println("STOP");
-                    }
+
                     query.append(sourceQuery.substring(posInReads, posInReads + length));
                     if (sourceQual.length() != 0) {
                         qual.append(sourceQual.substring(posInReads, posInReads + length));
@@ -459,18 +457,19 @@ public class SamHelper {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying md=%s", md));
         }
-        int position = numLeftClipped;
+        int position =  numLeftClipped;
         final Matcher matcher = MD_REGEX.matcher(md);
         while (matcher.find()) {
             final String mdPart = matcher.group();
             if (NUMERIC_REGEX.matcher(mdPart).matches()) {
-           try {
+
                 final int length = Integer.parseInt(mdPart);
                 position += length;
-           } catch (NumberFormatException e) {
-               System.out.println("STOP");
-           }
+
             } else if (mdPart.charAt(0) == '^') {
+                if (ref.charAt(position) == '-') {
+                    position++;
+                }
                 // Adjust the ref with these characters, ignoring the ^ character so start at 1
                 for (int i = 1; i < mdPart.length(); i++) {
                     ref.setCharAt(position++, mdPart.charAt(i));
@@ -478,6 +477,9 @@ public class SamHelper {
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for (int i = 0; i < mdPart.length(); i++) {
+                    if (ref.charAt(position) == '-') {
+                        position++;
+                    }
                     ref.setCharAt(position++, Character.toLowerCase(mdPart.charAt(i)));
                     numMisMatches++;
                 }
@@ -730,7 +732,8 @@ public class SamHelper {
      * When appending two cigar strings, if the left ends with the same code as the right stars with,
      * this will combine those two into a single code. Such as appendTo="2S45M" + appendFrom="25M2S"
      * the result will be appendTo=="2S70M2S".
-     * @param appendTo the cigar string we are appending to
+     *
+     * @param appendTo   the cigar string we are appending to
      * @param appendFrom the cigar string we are appending from
      */
     public static void appendCigar(final MutableString appendTo, final MutableString appendFrom) {
@@ -770,7 +773,8 @@ public class SamHelper {
      * When one has two MD:Z mismatch strings, if the left ends with a number and the right ends with a number,
      * you cannot just concatenate left+right, you must take the left number and add it to the right number.
      * If appendTo="10TCC25" + appendFrom="15^TCC10" will result in appendTo=="10TCC40^TCC10".
-     * @param appendTo the mismatchString we are appending to
+     *
+     * @param appendTo   the mismatchString we are appending to
      * @param appendFrom the mismatchString we are appending from
      */
     public static void appendMismatches(final MutableString appendTo, final MutableString appendFrom) {

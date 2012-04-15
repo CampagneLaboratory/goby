@@ -144,7 +144,7 @@ public class TestSplicedSamHelper {
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());
 
-         // full quality scores are returned on the first cursor only
+        // full quality scores are returned on the first cursor only
         assertEquals(null, samHelper.getSourceQual());
         assertEquals(null, samHelper.getSourceQualAsBytes());
         assertEquals(18339 - 1 + 6371 + bases_0_28.length(), samHelper.getPosition());
@@ -582,7 +582,7 @@ public class TestSplicedSamHelper {
         assertEquals("", first.getSoftClippedBasesRight());
         assertEquals(25, first.getQueryAlignedLength());
 
-        assertEquals(40-1, second.getPosition());
+        assertEquals(40 - 1, second.getPosition());
         assertEquals(28, second.getQueryPosition());
         assertEquals(1, second.getFragmentIndex());
         assertEquals(5, second.getQueryAlignedLength());
@@ -622,16 +622,67 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals("", first.getSoftClippedBasesRight());
         assertEquals(6, first.getQueryAlignedLength());
 
-        assertEquals(32485524+6+301-1, second.getPosition());
+        assertEquals(32485524 + 6 + 301 - 1, second.getPosition());
         assertEquals(8, second.getQueryPosition());
         assertEquals("", second.getSoftClippedBasesLeft());
         assertEquals("", second.getSoftClippedBasesRight());
         assertEquals(24, second.getQueryAlignedLength());
 
-        assertEquals(32485524+6+301+24+478-1, third.getPosition());
+        assertEquals(32485524 + 6 + 301 + 24 + 478 - 1, third.getPosition());
         assertEquals(32, third.getQueryPosition());
         assertEquals("", third.getSoftClippedBasesLeft());
         assertEquals("", third.getSoftClippedBasesRight());
         assertEquals(3, third.getQueryAlignedLength());
+    }
+
+    @Test
+    // Failed on server when converting back to BAM because query_aligned_length and target_aligned_length differ
+    // without an apparent indel
+    public void testSamToCompactTrickCase16() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-16.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-16");
+        importer.setOutputFile(outputFilename);
+        importer.setPreserveSoftClips(true);
+        importer.setPropagateTargetIds(true);
+        importer.execute();
+        // cigar is  13S21M1I29M4S   13 21 -1 29 4
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry second = reader.next();
+        assertFalse(reader.hasNext());
+
+
+        assertEquals(190077 - 1, first.getPosition());
+        assertEquals(13, first.getQueryPosition());
+        assertEquals("AGTGGCAGCACGA", first.getSoftClippedBasesLeft());
+        assertEquals("TGCT", first.getSoftClippedBasesRight());
+        assertEquals(51, first.getQueryAlignedLength());
+        assertEquals(50, first.getTargetAlignedLength());
+        assertEquals(4, first.getSequenceVariationsCount());
+        assertEquals("T", first.getSequenceVariations(0).getFrom());
+        assertEquals("C", first.getSequenceVariations(0).getTo());
+
+        assertEquals("T", first.getSequenceVariations(1).getFrom());
+        assertEquals("A", first.getSequenceVariations(1).getTo());
+
+        assertEquals("C", first.getSequenceVariations(2).getFrom());
+        assertEquals("A", first.getSequenceVariations(2).getTo());
+
+        assertEquals("-T", first.getSequenceVariations(3).getFrom());
+        assertEquals("CG", first.getSequenceVariations(3).getTo());
+
+        //second's CIGAR is 20S48M
+        assertEquals(190246 - 1, second.getPosition());
+        assertEquals(20, second.getQueryPosition());
+        assertEquals("CAGTGTCGTGGCTGCACGCC", second.getSoftClippedBasesLeft());
+        assertEquals("", second.getSoftClippedBasesRight());
+        assertEquals(48, second.getQueryAlignedLength());
+        assertEquals(48, second.getQueryAlignedLength());
+
+
     }
 }
