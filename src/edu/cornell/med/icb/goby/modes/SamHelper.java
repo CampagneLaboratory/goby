@@ -117,8 +117,11 @@ public class SamHelper {
         sequenceVariations.clear();
     }
 
-    public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
-                          final CharSequence cigar, final CharSequence md, final int position,
+    public void setSource(final int queryIndex, final CharSequence sourceQuery,
+                          final CharSequence sourceQual,
+                          final CharSequence cigar,
+                          final CharSequence md,
+                          final int position,
                           final boolean reverseStrand,
                           int readLength) {
         this.queryLength = readLength;
@@ -164,8 +167,10 @@ public class SamHelper {
         setSourceWithReference(queryIndex, sourceRef, sourceQuery, sourceQual, position, reverseStrand);
     }
 
-    public void setSourceWithReference(final int queryIndex, final CharSequence sourceRef, final CharSequence sourceQuery,
-                                       final CharSequence sourceQual, final int position, final boolean reverseStrand) {
+    public void setSourceWithReference(final int queryIndex, final CharSequence sourceRef,
+                                       final CharSequence sourceQuery,
+                                       final CharSequence sourceQual, final int position,
+                                       final boolean reverseStrand) {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSourceWithReference --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -242,7 +247,6 @@ public class SamHelper {
 
     public byte[] getSourceQualAsBytes() {
 
-        // TODO should return only the part of the quality scores for the range represented by this helper.
         final int length = sourceQual.length();
         final byte[] result = new byte[length];
         for (int i = 0; i < length; i++) {

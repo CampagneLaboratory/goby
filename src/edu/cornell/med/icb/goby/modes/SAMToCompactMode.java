@@ -325,7 +325,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
             assert queryIndex >= 0 : " Query index must never be negative.";
 
-            if (bsmap ) {
+            if (bsmap) {
                 // TODO reenable this path if we get a genome. For now, just use the genome to get soft clips.
                 referenceString.setLength(0);
                 if (bsmap) {    // reference sequence is provided in the XR attribute:
@@ -368,7 +368,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
-            final int genomeTargetIndex= genome==null? -1:genome.getReferenceIndex(map(genome, samRecord.getReferenceName()));
+            final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(map(genome, samRecord.getReferenceName()));
             for (int i = 0; i < samHelper.getNumEntries(); i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
@@ -391,21 +391,24 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (preserveSoftClips) {
                     final int leftTrim = samHelper.getNumLeftClipped();
                     if (leftTrim > 0) {
-                        currentEntry.setSoftClippedBasesLeft(convertBases(genomeTargetIndex, samRecord.getAlignmentStart()-1, samRecord.getReadBases(), 0, leftTrim));
+                        currentEntry.setSoftClippedBasesLeft(convertBases(genomeTargetIndex, samRecord.getAlignmentStart() - 1, samRecord.getReadBases(), 0, leftTrim));
 
                     }
                     final int queryAlignedLength = samHelper.getQueryAlignedLength();
                     final int rightTrim = samHelper.getNumRightClipped();
                     final int queryPosition = currentEntry.getQueryPosition();
                     if (rightTrim > 0) {
-                        currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex, samRecord.getAlignmentStart()-1,
+                        currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex, samRecord.getAlignmentStart() - 1,
                                 samRecord.getReadBases(), queryPosition + queryAlignedLength, queryPosition + queryAlignedLength + rightTrim));
                     }
                 }
 
                 if (preserveAllMappedQuals) {
 
-                    currentEntry.setReadQualityScores(ByteString.copyFrom(samHelper.getSourceQualAsBytes()));
+                    final byte[] sourceQualAsBytes = samHelper.getSourceQualAsBytes();
+                    if (sourceQualAsBytes != null) {
+                        currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
+                    }
                 }
                 addSamAttributes(samRecord, currentEntry);
 
@@ -559,14 +562,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private String convertBases(int referenceIndex, int positionStartOfRead, byte[] readBases, int startIndex, int endIndex) {
         if (genome != null) {
-            genome.getRange(referenceIndex, positionStartOfRead , endIndex -startIndex, bases);
+            genome.getRange(referenceIndex, positionStartOfRead, endIndex - startIndex, bases);
 
         }
         convertBasesBuffer.setLength(endIndex - startIndex);
         int j = 0;
         for (int i = startIndex; i < endIndex; i++) {
             final char readBase = (char) readBases[i];
-            final char refBase = genome != null ? bases.charAt(i-startIndex) : '!';
+            final char refBase = genome != null ? bases.charAt(i - startIndex) : '!';
             convertBasesBuffer.setCharAt(j, refBase == readBase ? '=' : readBase);
             j += 1;
         }

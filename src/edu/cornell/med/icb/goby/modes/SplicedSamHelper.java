@@ -456,7 +456,11 @@ public class SplicedSamHelper {
 
 
     public byte[] getSourceQualAsBytes() {
+        if (cursorIndex==0) {
         return helpers.get(cursorIndex).getSourceQualAsBytes();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -469,7 +473,9 @@ public class SplicedSamHelper {
     }
 
     public MutableString getQual() {
+
         return helpers.get(cursorIndex).getQual();
+
     }
 
     public QualityEncoding getQualityEncoding() {
@@ -509,7 +515,11 @@ public class SplicedSamHelper {
     }
 
     public MutableString getSourceQual() {
+        if (cursorIndex==0) {
         return helpers.get(cursorIndex).getSourceQual();
+        } else {
+            return null;
+        }
     }
 
     public MutableString getSourceQuery() {

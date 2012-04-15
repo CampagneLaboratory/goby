@@ -143,6 +143,10 @@ public class TestSplicedSamHelper {
         assertEquals(bases_28_35, samHelper.getQuery().toString());
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());
+
+         // full quality scores are returned on the first cursor only
+        assertEquals(null, samHelper.getSourceQual());
+        assertEquals(null, samHelper.getSourceQualAsBytes());
         assertEquals(18339 - 1 + 6371 + bases_0_28.length(), samHelper.getPosition());
     }
 
