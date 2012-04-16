@@ -631,7 +631,7 @@ public class ExportableAlignmentEntryData {
                         }
                     }
                     readBases.set(refPosition, to);
-                    if (toQual != null) {
+                    if (toQual != null && !predefinedQuals) {
                         qualities.set(refPosition, toQual);
                         hasQualities = true;
                     }
