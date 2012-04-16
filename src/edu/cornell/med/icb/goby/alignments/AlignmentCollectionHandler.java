@@ -71,6 +71,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private final boolean useArithmeticCoding = true;
     private final boolean useHuffmanCoding = false;
     private int streamVersion;
+    private int numReadQualScoresIndex;
 
 
     public static DynamicOptionClient doc() {
@@ -968,6 +969,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         backwardSpliceLinks.reset();
         qualScoreIndex = 0;
         numReadQualityScores.clear();
+        numReadQualScoresIndex=0;
         allReadQualityScores.clear();
         sampleIndices.clear();
         readOriginIndices.clear();
@@ -1052,6 +1054,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             numReadQualityScores.add(size);
             for (int i = 0; i < size; i++) {
                 allReadQualityScores.add(quals.byteAt(i));
+                qualScoreIndex++;
             }
         } else {
             numReadQualityScores.add(0);
@@ -1282,7 +1285,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             deltaPosIndex++;
         }
         if (streamVersion >= 2) {
-            final int numReadQualScores = numReadQualityScores.get(index);
+            final int numReadQualScores = numReadQualityScores.get(numReadQualScoresIndex++);
             if (numReadQualScores > 0) {
 
                 final byte[] scores = new byte[numReadQualScores];
