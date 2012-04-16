@@ -622,7 +622,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
                     // ignore MD and RG since we store them natively..
                     //    System.out.printf("Preserving token=%s%n", token);
-                    currentEntry.addBamAttributes(token);
+                    currentEntry.addBamAttributes(token.replaceAll("\n",""));
                 }
             }
         }
@@ -761,5 +761,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     public void setPreserveSoftClips(boolean flag) {
         this.preserveSoftClips = flag;
+    }
+
+    public void setPreserveReadQualityScores(boolean flag) {
+        this.preserveAllMappedQuals=flag;
+    }
+
+    public void setPreserveAllTags(boolean flag) {
+        this.preserveAllTags=flag;
     }
 }

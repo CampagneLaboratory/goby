@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -118,7 +119,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
     private SAMRecordFactory samRecordFactory;
 
-    private DualRandomAccessSequenceCache genome;
+    private RandomAccessSequenceInterface genome;
 
     private ExportableAlignmentEntryData exportData;
 
@@ -204,7 +205,8 @@ public class CompactToSAMMode extends AbstractGobyMode {
      * @param args command line arguments
      * @return this object for chaining
      * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws com.martiansoftware.jsap.JSAPException
+     *                             error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -221,7 +223,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
         genome = new DualRandomAccessSequenceCache();
         try {
-            genome.load(inputGenome);
+            ((DualRandomAccessSequenceCache)genome).load(inputGenome);
         } catch (ClassNotFoundException e) {
             throw new IOException("Could not load genome", e);
         }
@@ -250,18 +252,20 @@ public class CompactToSAMMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         debug = Util.log4JIsConfigured();
-        queryIndexToFragmentsMap = new Int2ObjectAVLTreeMap<Int2ObjectMap<ExportableAlignmentEntryData>> ();
+        queryIndexToFragmentsMap = new Int2ObjectAVLTreeMap<Int2ObjectMap<ExportableAlignmentEntryData>>();
         exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
         progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         progress.start();
-
+        if (alignmentIterator == null) {
+            alignmentIterator = new CompactToSAMIterateAlignments();
+        }
         final int seekTargetIndex = -1;
         final String seekTargetName = "";
         final int seekStartPosition = -1;
-        
+
         /*
         final int seekTargetIndex = 5;
         final String seekTargetName = "6";
@@ -332,10 +336,10 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
         private void exportReadGroups(final AlignmentReader alignmentReader) {
             readOriginInfo = alignmentReader.getReadOriginInfo();
-            if (readOriginInfo.size()>0) {
-                hasReadGroups=true;
+            if (readOriginInfo.size() > 0) {
+                hasReadGroups = true;
                 // Goby alignment has read origin information, export as BAM read groups:
-                for (final Alignments.ReadOriginInfo roi:readOriginInfo.getPbList()) {
+                for (final Alignments.ReadOriginInfo roi : readOriginInfo.getPbList()) {
                     final SAMReadGroupRecord readGroup = new SAMReadGroupRecord(roi.getOriginId());
                     if (roi.hasSample()) {
                         readGroup.setSample(roi.getSample());
@@ -355,7 +359,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
                             readGroup.setRunDate(GOBY_DATE_FORMAT.parse(runDate));
                         } catch (ParseException e) {
-                            LOG.error("Unable to parse Goby date: "+runDate+" ignoring runDate read origin.");
+                            LOG.error("Unable to parse Goby date: " + runDate + " ignoring runDate read origin.");
                         }
                     }
                     samHeader.addReadGroup(readGroup);
@@ -388,7 +392,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 }
                 fragIndexToAlignmentsMap.put(exportData.getAlignmentEntry().getFragmentIndex(),
                         ExportableAlignmentEntryData.duplicateFrom(exportData));
-                findCompleteSpliceFragments(fragIndexToAlignmentsMap, queryIndexToFragmentsMap,queryIndex);
+                findCompleteSpliceFragments(fragIndexToAlignmentsMap, queryIndexToFragmentsMap, queryIndex);
 
             }
 
@@ -455,9 +459,10 @@ public class CompactToSAMMode extends AbstractGobyMode {
         /**
          * Used to walk, forward or backward, the splice fragments. Helps with determining if we have
          * all the fragments for a single spliced alignment entry.
+         *
          * @param fragIndexToAlignmentsMap the map of fragment index to alignment entry
-         * @param requiredRelated the related splice fragment we are walking from
-         * @param walkForward true if we are walking forward
+         * @param requiredRelated          the related splice fragment we are walking from
+         * @param walkForward              true if we are walking forward
          */
         private void walkFragments(final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap,
                                    final Alignments.RelatedAlignmentEntry requiredRelated, final boolean walkForward) {
@@ -499,6 +504,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
          * Output a single alignment segment. If paired end, this will output of the pair halfs.
          * Spliced alignments will be written with outputMultiFragments once all the fragments of
          * that alignment have bee encountered.
+         *
          * @param toExport the alignment entry to output
          */
         private void outputSingle(final ExportableAlignmentEntryData toExport) {
@@ -526,7 +532,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 final String[] tokens = bamAttribute.split(":");
                 samRecord.setAttribute(tokens[0], getValue(tokens));
                 if (debug) {
-                    LOG.debug(String.format("Writing %s:%s",tokens[0],getValue(tokens)));
+                    LOG.debug(String.format("Writing %s:%s", tokens[0], getValue(tokens)));
                 }
             }
             if (toExport.hasMate()) {
@@ -540,7 +546,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             try {
                 outputSam.addAlignment(samRecord);
             } catch (RuntimeException e) {
-                System.out.println("entry: \n"+toExport.getAlignmentEntry().toString());
+                System.out.println("entry: \n" + toExport.getAlignmentEntry().toString());
                 System.out.println(toExport.toString());
                 throw e;
             }
@@ -552,13 +558,13 @@ public class CompactToSAMMode extends AbstractGobyMode {
     private Object getValue(final String[] tokens) {
         final String type = tokens[1];
         if ("Z".equals(type)) {
-            return "Z:"+tokens[2];
+            return tokens[2];
         }
         if ("i".equals(type)) {
-            return "i:"+Integer.parseInt(tokens[2]);
+            return Integer.parseInt(tokens[2]);
         }
         if ("A".equals(type)) {
-            return "A:"+tokens[2].charAt(0);
+            return  tokens[2].charAt(0);
         }
         LOG.warn("Attribute type %c is currently not supported, storing as string type");
         return tokens[2];
@@ -568,6 +574,9 @@ public class CompactToSAMMode extends AbstractGobyMode {
         return bamAttribute.split(":")[0];
     }
 
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome=genome;
+    }
     /**
      * Main method.
      *
