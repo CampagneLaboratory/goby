@@ -52,9 +52,9 @@ import java.util.Map;
  */
 public class AlignmentToTextMode extends AbstractGobyMode {
     /**
-       * Used to log debug and informational messages.
-       */
-      private static final Log LOG = LogFactory.getLog(AlignmentToTextMode.class);
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(AlignmentToTextMode.class);
 
     /**
      * The mode name.
@@ -218,7 +218,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
             final StringBuilder output = new StringBuilder();
 
-            for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
+            final int multiplicity = alignmentEntry.hasMultiplicity()?alignmentEntry.getMultiplicity():1;
+            for (int i = 0; i < multiplicity; ++i) {
                 output.setLength(0);
                 final int queryIndex = alignmentEntry.getQueryIndex();
 
@@ -240,12 +241,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
                                 alignmentEntry.getScore(),
                                 alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255,
-                                alignmentEntry.hasPairFlags() ? EntryFlagHelper.pairToString(alignmentEntry): "",
+                                alignmentEntry.hasPairFlags() ? EntryFlagHelper.pairToString(alignmentEntry) : "",
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
-                                alignmentEntry.hasSplicedFlags() ?  EntryFlagHelper.spliceToString(alignmentEntry): "",
+                                alignmentEntry.hasSplicedFlags() ? EntryFlagHelper.spliceToString(alignmentEntry) : "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedForwardAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
@@ -291,16 +292,16 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         }
                         break;
                     case PROTOTEXT:
-                          if (numWritten < maxToOutput) {
-                             try {
-                                 outputStream.println("{");
-                                     TextFormat.print(alignmentEntry,outputStream);
-                                  outputStream.println("}");
-                             } catch (IOException e) {
-                                 LOG.error("cannot format protobuff to text",e);
-                             }
-
-                          }
+                        if (numWritten < maxToOutput) {
+                            try {
+                                outputStream.println("{");
+                                TextFormat.print(alignmentEntry, outputStream);
+                                outputStream.println("}");
+                            } catch (IOException e) {
+                                LOG.error("cannot format protobuff to text", e);
+                            }
+                            numWritten++;
+                        }
                         break;
                 }
             }
