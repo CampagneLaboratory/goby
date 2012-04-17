@@ -3112,6 +3112,10 @@ public final class Alignments {
     // optional uint32 fragment_index = 3;
     boolean hasFragmentIndex();
     int getFragmentIndex();
+    
+    // optional uint32 optimized_index = 50;
+    boolean hasOptimizedIndex();
+    int getOptimizedIndex();
   }
   public static final class RelatedAlignmentEntry extends
       com.google.protobuf.GeneratedMessage
@@ -3172,10 +3176,21 @@ public final class Alignments {
       return fragmentIndex_;
     }
     
+    // optional uint32 optimized_index = 50;
+    public static final int OPTIMIZED_INDEX_FIELD_NUMBER = 50;
+    private int optimizedIndex_;
+    public boolean hasOptimizedIndex() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public int getOptimizedIndex() {
+      return optimizedIndex_;
+    }
+    
     private void initFields() {
       targetIndex_ = 0;
       position_ = 0;
       fragmentIndex_ = 0;
+      optimizedIndex_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3198,6 +3213,9 @@ public final class Alignments {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeUInt32(3, fragmentIndex_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt32(50, optimizedIndex_);
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -3218,6 +3236,10 @@ public final class Alignments {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, fragmentIndex_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(50, optimizedIndex_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3349,6 +3371,8 @@ public final class Alignments {
         bitField0_ = (bitField0_ & ~0x00000002);
         fragmentIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
+        optimizedIndex_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       
@@ -3399,6 +3423,10 @@ public final class Alignments {
           to_bitField0_ |= 0x00000004;
         }
         result.fragmentIndex_ = fragmentIndex_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.optimizedIndex_ = optimizedIndex_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3423,6 +3451,9 @@ public final class Alignments {
         }
         if (other.hasFragmentIndex()) {
           setFragmentIndex(other.getFragmentIndex());
+        }
+        if (other.hasOptimizedIndex()) {
+          setOptimizedIndex(other.getOptimizedIndex());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -3468,6 +3499,11 @@ public final class Alignments {
             case 24: {
               bitField0_ |= 0x00000004;
               fragmentIndex_ = input.readUInt32();
+              break;
+            }
+            case 400: {
+              bitField0_ |= 0x00000008;
+              optimizedIndex_ = input.readUInt32();
               break;
             }
           }
@@ -3535,6 +3571,27 @@ public final class Alignments {
       public Builder clearFragmentIndex() {
         bitField0_ = (bitField0_ & ~0x00000004);
         fragmentIndex_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // optional uint32 optimized_index = 50;
+      private int optimizedIndex_ ;
+      public boolean hasOptimizedIndex() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      public int getOptimizedIndex() {
+        return optimizedIndex_;
+      }
+      public Builder setOptimizedIndex(int value) {
+        bitField0_ |= 0x00000008;
+        optimizedIndex_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearOptimizedIndex() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        optimizedIndex_ = 0;
         onChanged();
         return this;
       }
@@ -10167,45 +10224,45 @@ public final class Alignments {
       "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_" +
       "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde" +
       "x\030\032 \001(\r\022\034\n\024softClippedBasesLeft\030\036 \001(\t\022\035\n" +
-      "\025softClippedBasesRight\030\037 \001(\t\"W\n\025RelatedA" +
+      "\025softClippedBasesRight\030\037 \001(\t\"p\n\025RelatedA" +
       "lignmentEntry\022\024\n\014target_index\030\001 \001(\r\022\020\n\010p" +
-      "osition\030\002 \001(\r\022\026\n\016fragment_index\030\003 \001(\r\"g\n" +
-      "\021SequenceVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001" +
-      " \001(\t\022\020\n\010position\030\003 \001(\r\022\022\n\nread_index\030\005 \001" +
-      "(\r\022\022\n\nto_quality\030\004 \001(\014\"\304\005\n\017AlignmentHead",
-      "er\022\"\n\032smallest_split_query_index\030\t \001(\r\022!" +
-      "\n\031largest_split_query_index\030\013 \001(\r\0223\n\022que" +
-      "ry_name_mapping\030\001 \001(\0132\027.goby.IdentifierM" +
-      "apping\0224\n\023target_name_mapping\030\002 \001(\0132\027.go" +
-      "by.IdentifierMapping\022\031\n\021number_of_querie" +
-      "s\030\005 \001(\r\022\031\n\021number_of_targets\030\006 \001(\r\022\037\n\027nu" +
-      "mber_of_aligned_reads\030\007 \001(\r\022\030\n\014query_len" +
-      "gth\030\003 \003(\rB\002\030\001\022\035\n\025constant_query_length\030\n" +
-      " \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006sorted\030\r " +
-      "\001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_lengths_st",
-      "ored_in_entries\030\017 \001(\010\022\024\n\014aligner_name\030\021 " +
-      "\001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n\007version\030" +
-      "\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\022#\n\033query_" +
-      "indices_were_permuted\030\032 \001(\010\022\037\n\027query_ind" +
-      "ex_occurrences\030# \001(\010\022#\n\033ambiguity_stored" +
-      "_in_entries\030$ \001(\010\022\037\n\027all_read_quality_sc" +
-      "ores\030( \001(\010\022)\n\013read_origin\030\033 \003(\0132\024.goby.R" +
-      "eadOriginInfo\";\n\021IdentifierMapping\022&\n\010ma" +
-      "ppings\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Id" +
-      "entifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(",
-      "\r\"\225\001\n\016ReadOriginInfo\022\024\n\014origin_index\030\001 \002" +
-      "(\r\022\021\n\torigin_id\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n" +
-      "\010platform\030\005 \001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\rplat" +
-      "form_unit\030\014 \001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n\024Ali" +
-      "gnmentTooManyHits\022\031\n\021aligner_threshold\030\002" +
-      " \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocat" +
-      "ion\"b\n\021AmbiguousLocation\022\023\n\013query_index\030" +
-      "\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027" +
-      "\n\017length_of_match\030\003 \001(\r\"j\n\016AlignmentInde" +
-      "x\022#\n\027target_position_offsets\030\001 \003(\rB\002\020\001\022\023",
-      "\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_position" +
-      "s\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.goby." +
-      "alignmentsH\001"
+      "osition\030\002 \001(\r\022\026\n\016fragment_index\030\003 \001(\r\022\027\n" +
+      "\017optimized_index\0302 \001(\r\"g\n\021SequenceVariat" +
+      "ion\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010positio" +
+      "n\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto_qualit",
+      "y\030\004 \001(\014\"\304\005\n\017AlignmentHeader\022\"\n\032smallest_" +
+      "split_query_index\030\t \001(\r\022!\n\031largest_split" +
+      "_query_index\030\013 \001(\r\0223\n\022query_name_mapping" +
+      "\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023targe" +
+      "t_name_mapping\030\002 \001(\0132\027.goby.IdentifierMa" +
+      "pping\022\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021numb" +
+      "er_of_targets\030\006 \001(\r\022\037\n\027number_of_aligned" +
+      "_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\035" +
+      "\n\025constant_query_length\030\n \001(\r\022\025\n\rtarget_" +
+      "length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030",
+      "\016 \001(\010\022\'\n\037query_lengths_stored_in_entries" +
+      "\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligner_" +
+      "version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n\017sample" +
+      "_basename\030\036 \003(\t\022#\n\033query_indices_were_pe" +
+      "rmuted\030\032 \001(\010\022\037\n\027query_index_occurrences\030" +
+      "# \001(\010\022#\n\033ambiguity_stored_in_entries\030$ \001" +
+      "(\010\022\037\n\027all_read_quality_scores\030( \001(\010\022)\n\013r" +
+      "ead_origin\030\033 \003(\0132\024.goby.ReadOriginInfo\";" +
+      "\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\0132\024." +
+      "goby.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n",
+      "\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOrigi" +
+      "nInfo\022\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin_id" +
+      "\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 \001(\t" +
+      "\022\017\n\007library\030\010 \001(\t\022\025\n\rplatform_unit\030\014 \001(\t" +
+      "\022\020\n\010run_date\030\006 \001(\t\"X\n\024AlignmentTooManyHi" +
+      "ts\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004hits\030\001 " +
+      "\003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguou" +
+      "sLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_lea" +
+      "st_number_of_hits\030\002 \002(\r\022\027\n\017length_of_mat" +
+      "ch\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027target_pos",
+      "ition_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004" +
+      "B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B\002\020\001B\'\n#" +
+      "edu.cornell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10233,7 +10290,7 @@ public final class Alignments {
           internal_static_goby_RelatedAlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_RelatedAlignmentEntry_descriptor,
-              new java.lang.String[] { "TargetIndex", "Position", "FragmentIndex", },
+              new java.lang.String[] { "TargetIndex", "Position", "FragmentIndex", "OptimizedIndex", },
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder.class);
           internal_static_goby_SequenceVariation_descriptor =

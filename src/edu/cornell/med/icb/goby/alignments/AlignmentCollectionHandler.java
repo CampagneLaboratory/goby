@@ -60,7 +60,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "stats-filename:string, the file where to append statistics to:compress-stats.tsv",
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
-            "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false"
+            "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
+            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
     private String statsFilename;
@@ -72,7 +73,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private final boolean useHuffmanCoding = false;
     private int streamVersion;
     private int numReadQualScoresIndex;
+    public boolean enableDomainOptimizations = false;
+    private boolean useTemplateBasedCompression = true;
+    private int linkOffsetOptimizationIndex;
 
+    public boolean isEnableDomainOptimizations() {
+        return enableDomainOptimizations;
+    }
+
+    public void setEnableDomainOptimizations(boolean enableDomainOptimizations) {
+        this.enableDomainOptimizations = enableDomainOptimizations;
+    }
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -90,13 +101,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     //Two types of encoding currently supported for query indices:
     private static final int DELTA_ENCODING_SCHEME = 0;
     private static final int MINIMAL_BINARY_ENCODING_SCHEME = 1;
-    private static final int MISSING_VALUE = -1;
+    static final int MISSING_VALUE = -1;
     private boolean multiplicityFieldsAllMissing = true;
     private long writtenBits;
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
     private int varToQualLengthIndex = 0;
-    private boolean useTemplateBasedCompression = true;
+
     private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
     public AlignmentCollectionHandler() {
@@ -105,6 +116,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         debug = doc().getInteger("debug-level");
         storeReadOrigins = !doc().getBoolean("ignore-read-origin");
+        enableDomainOptimizations = !doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
 
@@ -139,7 +151,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 6;
+    public static final int VERSION = 7;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -148,6 +160,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentCollection.Builder remainingCollection = Alignments.AlignmentCollection.newBuilder();
         final int size = alignmentCollection.getAlignmentEntriesCount();
         int indexInReducedCollection = 0;
+        collectLinkLists(alignmentCollection);
         collectStrings(alignmentCollection.getAlignmentEntriesCount(), alignmentCollection);
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
@@ -172,6 +185,40 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         ++chunkIndex;
         return remainingCollection.build();
     }
+
+    Int2ObjectMap<IntArrayList> queryIndexToPositionList = new Int2ObjectOpenHashMap<IntArrayList>();
+    Int2ObjectMap<IntArrayList> queryIndex2EntryIndices = new Int2ObjectOpenHashMap<IntArrayList>();
+    Int2ObjectMap<IntArrayList> queryIndex2FragmentIndices = new Int2ObjectOpenHashMap<IntArrayList>();
+
+    private void collectLinkLists(Alignments.AlignmentCollectionOrBuilder alignmentCollection) {
+        int entryIndex = 0;
+        // collect positions for each query index:
+        for (final Alignments.AlignmentEntry entry : alignmentCollection.getAlignmentEntriesList()) {
+
+            final int queryIndex = entry.getQueryIndex();
+            IntArrayList list = queryIndexToPositionList.get(queryIndex);
+            IntArrayList listOfIndices = queryIndex2EntryIndices.get(queryIndex);
+            IntArrayList listOfFragmentIndices = queryIndex2FragmentIndices.get(queryIndex);
+            if (list == null) {
+                list = new IntArrayList();
+                listOfIndices = new IntArrayList();
+                listOfFragmentIndices = new IntArrayList();
+                queryIndexToPositionList.put(queryIndex, list);
+                queryIndex2EntryIndices.put(queryIndex, listOfIndices);
+                queryIndex2FragmentIndices.put(queryIndex, listOfFragmentIndices);
+            }
+
+
+            list.add(entry.getPosition());
+            listOfIndices.add(entryIndex);
+            listOfFragmentIndices.add(entry.getFragmentIndex());
+            entryIndex++;
+
+
+        }
+
+    }
+
 
     private void collectStrings(int size, Alignments.AlignmentCollection alignmentCollection) {
 
@@ -325,8 +372,71 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
         }
         restoreStrings(result);
+        restoreLinks(result);
         ++chunkIndex;
         return result.build();
+    }
+
+    private void restoreLinks(Alignments.AlignmentCollection.Builder alignmentCollection) {
+        queryIndexToPositionList.clear();
+        collectLinkLists(alignmentCollection);
+
+        final int size = alignmentCollection.getAlignmentEntriesCount();
+
+        for (int index = 0; index < size; index++) {
+            final Alignments.AlignmentEntry.Builder entry = alignmentCollection.getAlignmentEntriesBuilder(index);
+            final IntArrayList positionList = queryIndexToPositionList.get(entry.getQueryIndex());
+            final IntArrayList fragmentList = queryIndex2FragmentIndices.get(entry.getQueryIndex());
+            final int queryIndex = entry.getQueryIndex();
+            if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
+
+                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
+                recoverLink(alignmentCollection, entry, positionList, fragmentList,queryIndex, linkBuilder);
+            }
+
+            if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
+
+                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
+            }
+            if (entry.hasSplicedBackwardAlignmentLink() && entry.getSplicedBackwardAlignmentLink().hasOptimizedIndex()) {
+
+                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedBackwardAlignmentLinkBuilder();
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
+            }
+        }
+    }
+
+    private void recoverLink(Alignments.AlignmentCollection.Builder alignmentCollection, Alignments.AlignmentEntry.Builder entry, IntArrayList positionList, IntArrayList fragmentList, int queryIndex, Alignments.RelatedAlignmentEntry.Builder linkBuilder) {
+        final int indexOffset = linkBuilder.getOptimizedIndex();
+        final int position = entry.getPosition();
+        int index = 0;
+        int thisEntryIndex = -1;
+        for (final int value : positionList) {
+            if (value == position && fragmentList.get(index)==entry.getFragmentIndex()) {
+                thisEntryIndex = index;
+            }
+            index++;
+        }
+        final int optimizedIndex = indexOffset + thisEntryIndex;
+
+        //   final int linkIndex = Fast.nat2int(linkOffset) + thisEntryIndex;
+        final IntArrayList listOfIndices = queryIndex2EntryIndices.get(queryIndex);
+        final int otherEntryIndex = listOfIndices.get(optimizedIndex);
+        final Alignments.AlignmentEntry otherEntry = alignmentCollection.getAlignmentEntries(otherEntryIndex);
+        linkBuilder.setPosition(otherEntry.getPosition());
+        linkBuilder.setFragmentIndex(otherEntry.getFragmentIndex());
+        linkBuilder.clearOptimizedIndex();
+    }
+
+    int findIndex(IntSortedSet list, int position) {
+        int index = 0;
+        for (int value : list.toIntArray()) {
+            if (value == position) return index;
+            index += 1;
+        }
+        return -1;
+
     }
 
 
@@ -781,6 +891,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList numSoftClipRightBases = new IntArrayList();
     private IntList softClipLeftBases = new IntArrayList();
     private IntList softClipRightBases = new IntArrayList();
+    protected IntList linkOffsetOptimization = new IntArrayList();
 
 
     private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
@@ -838,6 +949,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             decodeArithmetic("softClipLeftBases", numEntriesInChunk, bitInput, softClipLeftBases);
             decodeArithmetic("softClipRightBases", numEntriesInChunk, bitInput, softClipRightBases);
         }
+        if (streamVersion >= 7) {
+            decodeArithmetic("linkOffsetOptimization", numEntriesInChunk, bitInput, linkOffsetOptimization);
+        }
+
         return streamVersion;
     }
 
@@ -926,11 +1041,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("softClipRightBasesNum", numSoftClipRightBases, out);
         writeArithmetic("softClipLeftBases", softClipLeftBases, out);
         writeArithmetic("softClipRightBases", softClipRightBases, out);
+
+        writeArithmetic("linkOffsetOptimization", linkOffsetOptimization, out);
     }
 
     private void reset() {
         multiplicityFieldsAllMissing = true;
-
+        queryIndexToPositionList.clear();
         previousPosition = -1;
         previousTargetIndex = -1;
         deltaPositions.clear();
@@ -969,7 +1086,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         backwardSpliceLinks.reset();
         qualScoreIndex = 0;
         numReadQualityScores.clear();
-        numReadQualScoresIndex=0;
+        numReadQualScoresIndex = 0;
         allReadQualityScores.clear();
         sampleIndices.clear();
         readOriginIndices.clear();
@@ -980,6 +1097,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         numSoftClipRightBases.clear();
         softClipLeftBases.clear();
         softClipRightBases.clear();
+
+        linkOffsetOptimization.clear();
+        linkOffsetOptimizationIndex = 0;
+        queryIndex2EntryIndices.clear();
+        queryIndex2FragmentIndices.clear();
+        queryIndexToPositionList.clear();
     }
 
     private final LinkInfo pairLinks = new LinkInfo(this, "pairs");
@@ -1025,7 +1148,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         recordVariationQualitiesAndClear(source, result, result.getSequenceVariationsList());
 
         final boolean entryMatchingReverseStrand = source.getMatchingReverseStrand();
-        Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), entryMatchingReverseStrand,
+        Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), source,
                 source.getPairAlignmentLink());
         if (link == null) {
             result.clearPairAlignmentLink();
@@ -1033,14 +1156,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             result.setPairAlignmentLink(link);
         }
 
-        link = forwardSpliceLinks.code(source.hasSplicedForwardAlignmentLink(), entryMatchingReverseStrand, source.getSplicedForwardAlignmentLink());
+        link = forwardSpliceLinks.code(source.hasSplicedForwardAlignmentLink(), source, source.getSplicedForwardAlignmentLink());
         if (link == null) {
             result.clearSplicedForwardAlignmentLink();
         } else {
             result.setSplicedForwardAlignmentLink(link);
         }
 
-        link = backwardSpliceLinks.code(source.hasSplicedBackwardAlignmentLink(), entryMatchingReverseStrand, source.getSplicedBackwardAlignmentLink());
+        link = backwardSpliceLinks.code(source.hasSplicedBackwardAlignmentLink(), source, source.getSplicedBackwardAlignmentLink());
         if (link == null) {
             result.clearSplicedBackwardAlignmentLink();
         } else {
@@ -1351,16 +1474,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (anInt != MISSING_VALUE) {
             result.setScore(Float.intBitsToFloat(anInt));
         }
-        final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand() ? result.getMatchingReverseStrand() : false;
-        Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getPairAlignmentLink());
+        Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, result, reduced.getPairAlignmentLink());
         if (link != null) {
             result.setPairAlignmentLink(link);
         }
-        link = forwardSpliceLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getSplicedForwardAlignmentLink());
+        link = forwardSpliceLinks.decode(originalIndex, result, reduced.getSplicedForwardAlignmentLink());
         if (link != null) {
             result.setSplicedForwardAlignmentLink(link);
         }
-        link = backwardSpliceLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getSplicedBackwardAlignmentLink());
+        link = backwardSpliceLinks.decode(originalIndex, result, reduced.getSplicedBackwardAlignmentLink());
         if (link != null) {
             result.setSplicedBackwardAlignmentLink(link);
         }
@@ -1385,6 +1507,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
             final int recodedReadIndex = varReadIndex.getInt(varPositionIndex);
+            final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand() ? result.getMatchingReverseStrand() : false;
             final int readIndex = entryMatchingReverseStrand ? recodedReadIndex + (queryLength - position) - 5 : -recodedReadIndex + position + 5;
             varBuilder.setReadIndex(readIndex);
             //  System.out.printf("%c DECODING position=%d queryLength=%d recodedReadIndex=%d readIndex=%d  %n",
@@ -1496,4 +1619,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int varFromToIndex = 0;
 
 
+    public int getNextLinkOptimizationOffset() {
+        if (!enableDomainOptimizations) {
+            return MISSING_VALUE;
+        }
+        return linkOffsetOptimization.get(linkOffsetOptimizationIndex++);
+    }
 }

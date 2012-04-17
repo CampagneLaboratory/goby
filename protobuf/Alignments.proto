@@ -253,6 +253,7 @@ message RelatedAlignmentEntry {
     */
     optional uint32 fragment_index = 3;
 
+    optional uint32 optimized_index=50;
 }
 
 /*

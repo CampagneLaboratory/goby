@@ -160,11 +160,12 @@ public class TestAlignmentChunkCodec1 {
     }
 
     @Test
-    public void testCodeDecode(){
+    public void testCodeDecode() {
 
-        int q=3;int t=5;
-        int code=AlignmentCollectionHandler.modelQueryAlignedLength(q,t)  ;
-      int  qdecode=         AlignmentCollectionHandler.decodeQueryAlignedLength(code,t);
+        int q = 3;
+        int t = 5;
+        int code = AlignmentCollectionHandler.modelQueryAlignedLength(q, t);
+        int qdecode = AlignmentCollectionHandler.decodeQueryAlignedLength(code, t);
         assertEquals(qdecode, q);
     }
 
@@ -177,12 +178,14 @@ public class TestAlignmentChunkCodec1 {
         addToQuals(collection);
         assertRoundTripMatchExpected(codec, collection);
     }
+
     private void clearReadQualityScores(Alignments.AlignmentCollection.Builder collection) {
-            for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
-                Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
+        for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
+            Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
             element.clearReadQualityScores();
-            }
+        }
     }
+
     private void addToQuals(Alignments.AlignmentCollection.Builder collection) {
         for (int i = 0; i < collection.getAlignmentEntriesCount(); i++) {
             Alignments.AlignmentEntry.Builder element = collection.getAlignmentEntriesBuilder(i);
@@ -228,12 +231,60 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection, false);
     }
 
-    @Test
-
-    public void roundTripExamplePairedEnd() throws IOException {
+    //  @Test
+    // will not run on server.
+    public void roundTripLarge2() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/BAM-redo/ZHUUJKS-all-quals.entries", 0, 100000);
+
+        assertRoundTripMatchExpected(codec, collection, false);
+    }
+
+    @Test
+    public void roundTripExamplePairedEndDomainOptimizations() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+
+        final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
+        alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        codec.setHandler(alignmentCollectionHandler);
         final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 1000);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripExamplePairedEnd() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+
+        final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
+        alignmentCollectionHandler.setEnableDomainOptimizations(false);
+        codec.setHandler(alignmentCollectionHandler);
+        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 1000);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripExamplePairedSpliced() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+
+        final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
+        alignmentCollectionHandler.setEnableDomainOptimizations(false);
+        codec.setHandler(alignmentCollectionHandler);
+        final Alignments.AlignmentCollection.Builder collection = loadCollectionNoPerm("test-data/alignment-hybrid-codec/EJOYQAZ-small.entries", 0, 1000);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripExamplePairedSplicedDomainOptimizations() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+
+        final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
+        alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        codec.setHandler(alignmentCollectionHandler);
+        final Alignments.AlignmentCollection.Builder collection = loadCollectionNoPerm("test-data/alignment-hybrid-codec/EJOYQAZ-small.entries", 0, 1000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
@@ -283,6 +334,26 @@ public class TestAlignmentChunkCodec1 {
         }
     }
 
+    private Alignments.AlignmentCollection.Builder loadCollectionNoPerm(String filename, int firstElementToLoad, int maxElementsToLoad) throws IOException {
+        final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(filename);
+        try {
+            int counter = 0;
+            for (Alignments.AlignmentEntry entry : reader) {
+                if (counter >= firstElementToLoad) {
+                    collectionBuilder.addAlignmentEntries(entry);
+                    if (counter > maxElementsToLoad) {
+                        break;
+                    }
+                }
+                counter++;
+            }
+            return collectionBuilder;
+        } finally {
+            reader.close();
+        }
+    }
+
     private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec,
                                                ObjectArrayList<Alignments.AlignmentEntry.Builder> expectedCollection,
                                                Alignments.AlignmentCollection.Builder collection,
@@ -300,7 +371,7 @@ public class TestAlignmentChunkCodec1 {
             addToQuals(expected);
             addToQuals(collection);
         } else {
-           clearReadQualityScores(collection);
+            clearReadQualityScores(collection);
         }
         if (exampleClips != null) {
 

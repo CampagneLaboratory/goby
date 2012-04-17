@@ -408,7 +408,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final byte[] sourceQualAsBytes = samHelper.getSourceQualAsBytes();
                     if (sourceQualAsBytes != null) {
                         currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
-                    }
+                    } /*else {
+                        currentEntry.clearReadQualityScores();
+                    }   */
                 }
                 addSamAttributes(samRecord, currentEntry);
 

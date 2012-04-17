@@ -21,7 +21,9 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import edu.cornell.med.icb.goby.util.TestFiles;
 import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
@@ -33,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 
@@ -685,4 +688,93 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
 
 
     }
+
+    //@Test
+    // We cannot really test without a genome corresponding to each sam file.
+    public void testRoundTrips() throws IOException {
+        File dir = new File("test-data/splicedsamhelper/");
+        File[] files = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                if (s.startsWith("tricky-spliced-") && s.endsWith(".sam")) return true;
+                else return false;
+            }
+        });
+
+        for (File inputFile : files) {
+            String filename = inputFile.getAbsolutePath();
+            boolean preserveSoftClips = true;
+            boolean preserveAllReadQuals = true;
+            String importedBasename = importFile(filename, preserveSoftClips, preserveAllReadQuals);
+            String exportedSamFilename = exportFile(importedBasename);
+
+            TestFiles tester = new TestFiles();
+            tester.assertEquals(inputFile, new File(exportedSamFilename));
+        }
+
+    }
+
+    private String exportFile(String importedBasename) throws IOException {
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "round-trip-output" + counterSam++ + ".sam");
+
+        CompactToSAMMode exporter = new CompactToSAMMode();
+        exporter.setInputBasename(importedBasename);
+        exporter.setOutput(outputFilename);
+        RandomAccessSequenceInterface genomeTestSupport = new RandomAccessSequenceInterface() {
+
+            @Override
+            public char get(int referenceIndex, int position) {
+                return 'A';
+            }
+
+            @Override
+            public int getLength(int targetIndex) {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public void getRange(int referenceIndex, int position, int length, MutableString bases) {
+                bases.setLength(0);
+                for (int i=0;i<length; i++) {
+                    bases.append('A');
+                }
+            }
+
+            @Override
+            public int getReferenceIndex(String referenceId) {
+                return 0;
+            }
+
+            @Override
+            public String getReferenceName(int index) {
+                return "ref-id";
+            }
+
+            @Override
+            public int size() {
+                return 5;
+            }
+        };
+        exporter.setGenome(genomeTestSupport);
+        exporter.execute();
+        return outputFilename;
+    }
+
+    private int counterGoby = 1;
+    private int counterSam = 1;
+
+    private String importFile(String filename, boolean preserveSoftClips, boolean preserveAllReadQuals) throws IOException {
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile(filename);
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "round-trip-input-alignment-" + counterGoby++);
+        importer.setOutputFile(outputFilename);
+        importer.setPreserveSoftClips(preserveSoftClips);
+        importer.setPropagateTargetIds(true);
+        importer.setPreserveReadQualityScores(true);
+        importer.setPreserveAllTags(true);
+
+        importer.execute();
+        return outputFilename;
+    }
+
 }

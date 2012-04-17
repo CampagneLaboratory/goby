@@ -593,6 +593,13 @@ class RelatedAlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 fragment_index() const;
   inline void set_fragment_index(::google::protobuf::uint32 value);
   
+  // optional uint32 optimized_index = 50;
+  inline bool has_optimized_index() const;
+  inline void clear_optimized_index();
+  static const int kOptimizedIndexFieldNumber = 50;
+  inline ::google::protobuf::uint32 optimized_index() const;
+  inline void set_optimized_index(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.RelatedAlignmentEntry)
  private:
   inline void set_has_target_index();
@@ -601,15 +608,18 @@ class RelatedAlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_position();
   inline void set_has_fragment_index();
   inline void clear_has_fragment_index();
+  inline void set_has_optimized_index();
+  inline void clear_has_optimized_index();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
   ::google::protobuf::uint32 target_index_;
   ::google::protobuf::uint32 position_;
   ::google::protobuf::uint32 fragment_index_;
+  ::google::protobuf::uint32 optimized_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2628,6 +2638,28 @@ inline ::google::protobuf::uint32 RelatedAlignmentEntry::fragment_index() const 
 inline void RelatedAlignmentEntry::set_fragment_index(::google::protobuf::uint32 value) {
   set_has_fragment_index();
   fragment_index_ = value;
+}
+
+// optional uint32 optimized_index = 50;
+inline bool RelatedAlignmentEntry::has_optimized_index() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void RelatedAlignmentEntry::set_has_optimized_index() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void RelatedAlignmentEntry::clear_has_optimized_index() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void RelatedAlignmentEntry::clear_optimized_index() {
+  optimized_index_ = 0u;
+  clear_has_optimized_index();
+}
+inline ::google::protobuf::uint32 RelatedAlignmentEntry::optimized_index() const {
+  return optimized_index_;
+}
+inline void RelatedAlignmentEntry::set_optimized_index(::google::protobuf::uint32 value) {
+  set_has_optimized_index();
+  optimized_index_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -41,9 +41,12 @@
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
-            <help>Indicates that the query indices should be adjusted to remove clashes among alignment inputs. Use this options to concatenate alignments built from different split of a large read file (such splits can be created with reformat-compact-reads).  </help>
+            <help>Indicates that the query indices should be adjusted to remove clashes among alignment inputs. Use this
+                options to concatenate alignments built from different split of a large read file (such splits can be
+                created with reformat-compact-reads).
+            </help>
         </flaggedOption>
-                <flaggedOption>
+        <flaggedOption>
             <id>adjust-sample-indices</id>
             <longFlag>adjust-sample-indices</longFlag>
             <defaults>
@@ -52,13 +55,20 @@
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
-            <help>Indicates that the file origin of each entry should be recorded by setting the sampleIndex field on each entry. SampleIndex will be zero for the first reader on the command line, one for the next and so on. This option should be set when concatenating alignments from independent sample, when it is important to track which file contained the entry, but not for instance when concatenating several pieces of the same sample file aligned in parallel on different machines.   </help>
+            <help>Indicates that the file origin of each entry should be recorded by setting the sampleIndex field on
+                each entry. SampleIndex will be zero for the first reader on the command line, one for the next and so
+                on. This option should be set when concatenating alignments from independent sample, when it is
+                important to track which file contained the entry, but not for instance when concatenating several
+                pieces of the same sample file aligned in parallel on different machines.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>genome</id>
             <longFlag>genome</longFlag>
             <required>false</required>
-            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the compressed, random access files this mode needs. </help>
+            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the
+                compressed, random access files this mode needs.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>processor</id>
@@ -68,7 +78,11 @@
             <defaults>
                 <string>NONE</string>
             </defaults>
-            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
+            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment
+                entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a
+                processor that realigns reads in the proximity of indels will be used. Please note that this feature is
+                experimental (Since Goby 1.9.7).
+            </help>
         </flaggedOption>
         <!--flaggedOption>
             <id>codec</id>
@@ -79,12 +93,25 @@
             <required>false</required>
             <help>The name of a codec. When provided, the coded is used to compress alignment entries.</help>
         </flaggedOption-->
-         <!--flaggedOption>
+        <!--flaggedOption>
             <id>dynamic-options</id>
             <shortFlag>y</shortFlag>
             <required>false</required>
             <allowMultipleDeclarations>true</allowMultipleDeclarations>
             <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (without short class name without package), key identifies the option to change and value is the new value for the option. </help>
         </flaggedOption-->
+        <flaggedOption>
+            <id>max-entries</id>
+            <longFlag>max-entries</longFlag>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The maximum number of entries to process before stopping. -1 will process all entries, but a positive
+                integer n will only write up to n entries (useful to extract small subsets of large alignments).
+            </help>
+        </flaggedOption>
     </parameters>
 </jsap>

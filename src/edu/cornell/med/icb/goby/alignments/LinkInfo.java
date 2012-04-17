@@ -18,12 +18,15 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.bits.Fast;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * @author Fabien Campagne
@@ -48,11 +51,15 @@ class LinkInfo {
     private final String FRAGMENTS_LABEL;
     private final AlignmentCollectionHandler handler;
     private int fragmentIndex;
+    private Int2ObjectMap<IntArrayList> queryIndex2PositionList;
+    private Int2ObjectMap<IntArrayList> queryIndex2FragmentIndexList;
 
 
     LinkInfo(final AlignmentCollectionHandler handler, final String label) {
         this.handler = handler;
         this.label = label;
+        this.queryIndex2PositionList = handler.queryIndexToPositionList;
+        this.queryIndex2FragmentIndexList = handler.queryIndex2FragmentIndices;
         HAS_LINK_LABEL = "has" + label;
         POS_LABEL = label + "-pos";
         TARGETS_LABEL = label + "-targets";
@@ -67,16 +74,23 @@ class LinkInfo {
         index = 0;
         deltaPositionIndex = 0;
         fragmentIndex = 0;
-        previousPositionPositiveStrand=0;
-        previousPositionNegativeStrand=0;
+        previousPositionPositiveStrand = 0;
+        previousPositionNegativeStrand = 0;
     }
 
-    public Alignments.RelatedAlignmentEntry code(final boolean hasLink, final boolean entryMatchingReverseStrand,
+    public Alignments.RelatedAlignmentEntry code(final boolean hasLink, final Alignments.AlignmentEntry entry,
                                                  final Alignments.RelatedAlignmentEntry relatedLink) {
+
         hasLinks.add(hasLink ? 1 : 0);
+
         //return null;
         if (!hasLink) {
             return null;
+        }
+        if (handler.enableDomainOptimizations) {
+            if (canOptimize(entry, relatedLink)) {
+                return null;
+            }
         }
         final int position = relatedLink.getPosition();
         final int targetIndex = relatedLink.getTargetIndex();
@@ -89,6 +103,7 @@ class LinkInfo {
         } else {
             justResetPos = true;
         }
+        boolean entryMatchingReverseStrand = entry.getMatchingReverseStrand();
         if (!justResetPos) {
 
             final int deltaPairPos = position - (entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand);
@@ -114,11 +129,79 @@ class LinkInfo {
 
     }
 
+    private boolean canOptimize(Alignments.AlignmentEntry entry, Alignments.RelatedAlignmentEntry relatedLink) {
+        final IntArrayList positionList = queryIndex2PositionList.get(entry.getQueryIndex());
+        final IntArrayList fragmentList = queryIndex2FragmentIndexList.get(entry.getQueryIndex());
+        assert positionList != null : "positionList must be found for queryIndex=" + entry.getQueryIndex();
+        final int position = entry.getPosition();
+        final int linkPosition = relatedLink.getPosition();
+        int countForPos = 0;
+        int countForLinkPos = 0;
+        int index = 0;
+        int thisEntryIndex = -1;
+        int linkIndex = -1;
+        final int entryFragmentIndex = entry.getFragmentIndex();
+        final int linkFragmentIndex = relatedLink.getFragmentIndex();
+        for (final int pos : positionList) {
+
+            if (pos == position && fragmentList.get(index)== entryFragmentIndex) {
+                countForPos++;
+                thisEntryIndex = index;
+            }
+            if (pos == linkPosition && fragmentList.get(index)== linkFragmentIndex) {
+                countForLinkPos++;
+                linkIndex = index;
+            }
+            index += 1;
+        }
+
+        //final int thisEntryIndex = Collections.binarySearch(positionList, position);
+
+        if (countForPos > 1 || countForLinkPos > 1 || entry.getTargetIndex() != relatedLink.getTargetIndex()
+                || linkIndex < 0 ||thisEntryIndex<0) {
+            handler.linkOffsetOptimization.add(AlignmentCollectionHandler.MISSING_VALUE);
+            return false;
+        } else {
+            final int linkOffset = Fast.int2nat(linkIndex - thisEntryIndex);
+            // linkIndex=Fast.nat2int(linkOffset)+thisEntryIndex
+            handler.linkOffsetOptimization.add(linkOffset);
+            return true;
+        }
+
+
+    }
+
+    private Alignments.RelatedAlignmentEntry wasOptimized(Alignments.AlignmentEntry.Builder entry, Alignments.RelatedAlignmentEntry source) {
+
+        final int linkOffset = handler.getNextLinkOptimizationOffset();
+        if (linkOffset == AlignmentCollectionHandler.MISSING_VALUE) {
+            return null;
+        } else {
+
+            Alignments.RelatedAlignmentEntry.Builder result = source != null ? Alignments.RelatedAlignmentEntry.newBuilder(source) :
+                    Alignments.RelatedAlignmentEntry.newBuilder();
+            //    final int thisEntryIndex = Collections.binarySearch(list, entry.getPosition());
+            //   final int linkIndex = Fast.nat2int(linkOffset) + thisEntryIndex;
+            // store linkOffset temporarily in the optimized index field. We will resolve this to actual position and fragment index
+            // after all entries have been decoded.
+            result.setOptimizedIndex(Fast.nat2int(linkOffset));
+            result.setTargetIndex(entry.getTargetIndex());
+            return result.buildPartial();
+        }
+
+    }
+
     int deltaPositionIndex;
 
-    public Alignments.RelatedAlignmentEntry decode(int originalIndex, final boolean entryMatchingReverseStrand,
+    public Alignments.RelatedAlignmentEntry decode(final int originalIndex, final Alignments.AlignmentEntry.Builder entry,
                                                    final Alignments.RelatedAlignmentEntry source) {
         if (hasLinks.getInt(originalIndex) == 1) {
+            final Alignments.RelatedAlignmentEntry optimizedAway = wasOptimized(entry, source);
+            if (optimizedAway != null) {
+                return optimizedAway;
+            }
+            final boolean entryMatchingReverseStrand = entry.hasMatchingReverseStrand() ? entry.getMatchingReverseStrand() : false;
+
             Alignments.RelatedAlignmentEntry.Builder result = source != null ? Alignments.RelatedAlignmentEntry.newBuilder(source) :
                     Alignments.RelatedAlignmentEntry.newBuilder();
 
@@ -136,7 +219,7 @@ class LinkInfo {
             if (index > 0 && !justResetPos) {
 
                 // keep track of previous positions for each strand the entry is on. This helps because these positions
-               // are typically shifted by about insert size
+                // are typically shifted by about insert size
                 final int previousPosition = entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand;
                 position = deltaPositions.getInt(deltaPositionIndex) + previousPosition;
                 targetIndex = deltaTargetIndices.getInt(deltaPositionIndex) + previousTargetIndex;
@@ -160,12 +243,13 @@ class LinkInfo {
         }
     }
 
+
     public void write(final OutputBitStream out) throws IOException {
 
-       handler.writeArithmetic(whenDebug(HAS_LINK_LABEL), hasLinks, out);
+        handler.writeArithmetic(whenDebug(HAS_LINK_LABEL), hasLinks, out);
         //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
         handler.writeArithmetic(whenDebug(POS_LABEL), deltaPositions, out);
-   //    handler.writeRiceCoding(whenDebug(POS_LABEL), deltaPositions, out);
+        //    handler.writeRiceCoding(whenDebug(POS_LABEL), deltaPositions, out);
         handler.writeArithmetic(whenDebug(TARGETS_LABEL), deltaTargetIndices, out);
         handler.writeArithmetic(whenDebug(FRAGMENTS_LABEL), fragmentIndices, out);
     }

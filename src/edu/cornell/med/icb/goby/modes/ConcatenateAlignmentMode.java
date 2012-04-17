@@ -52,6 +52,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(ConcatenateAlignmentMode.class);
+    private int maxEntriesToProcess = Integer.MAX_VALUE;
 
     public void setIgnoreTmh(boolean ignoreTmh) {
         this.ignoreTmh = ignoreTmh;
@@ -137,6 +138,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         //final String codecName = jsapResult.getString("codec", null);
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
         DynamicOptionRegistry.register(AlignmentWriter.doc());
+        maxEntriesToProcess = jsapResult.getInt("max-entries", Integer.MAX_VALUE);
+        if (maxEntriesToProcess == -1) {
+            maxEntriesToProcess = Integer.MAX_VALUE;
+        }
 
         return this;
     }
@@ -205,8 +210,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         }
         assert processor != null : "processor cannot be null";
         Alignments.AlignmentEntry entry;
+        int counter = 0;
         while ((entry = processor.nextRealignedEntry(0, 0)) != null) {
-
+            if (counter++ > maxEntriesToProcess) break;
             // query lengths are now always stored in the entry..
             writer.appendEntry(entry);
 
