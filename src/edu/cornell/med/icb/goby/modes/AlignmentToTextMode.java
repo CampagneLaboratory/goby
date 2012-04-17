@@ -218,7 +218,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
             final StringBuilder output = new StringBuilder();
 
-            final int multiplicity = alignmentEntry.hasMultiplicity()?alignmentEntry.getMultiplicity():1;
+            final int multiplicity = alignmentEntry.getMultiplicity();
             for (int i = 0; i < multiplicity; ++i) {
                 output.setLength(0);
                 final int queryIndex = alignmentEntry.getQueryIndex();

@@ -287,6 +287,9 @@ public class AlignmentWriter implements Closeable {
 
         maxTargetIndex = Math.max(newEntry.getTargetIndex(), maxTargetIndex);
         permutator.makeSmallIndices(newEntry);
+        if (newEntry.hasMultiplicity() && newEntry.getMultiplicity() == 1) {
+            newEntry.clearMultiplicity();
+        }
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
         this.collectionBuilder.addAlignmentEntries(builtEntry);
@@ -295,7 +298,7 @@ public class AlignmentWriter implements Closeable {
         newEntry = Alignments.AlignmentEntry.newBuilder();
     }
 
-    private void writeIndexEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
+    private void writeIndexEntry(final Alignments.AlignmentEntryOrBuilder builtEntry) throws IOException {
         // detect when all entries have query-index-occurrences:
         entriesHaveQueryIndexOccurrences &= builtEntry.hasQueryIndexOccurrences();
 
@@ -368,7 +371,12 @@ public class AlignmentWriter implements Closeable {
             // update the unique query length set
             uniqueQueryLengths.add(entry.getQueryLength());
         }
-
+        if (entry.hasMultiplicity() && entry.getMultiplicity() == 1) {
+            // we remove the multiplicity field, since there is no point in storing the default value:
+            newEntry = Alignments.AlignmentEntry.newBuilder(entry);
+            newEntry.clearMultiplicity();
+            entry = newEntry.build();
+        }
         maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
         entry = permutator.makeSmallIndices(entry);
         collectionBuilder.addAlignmentEntries(entry);

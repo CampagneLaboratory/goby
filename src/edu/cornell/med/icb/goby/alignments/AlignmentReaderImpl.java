@@ -412,8 +412,6 @@ public class
             throw new NoSuchElementException();
         }
         try {
-            final int position = nextEntry.getPosition();
-            final int targetIndex = nextEntry.getTargetIndex();
             if (LOG.isTraceEnabled()) {
                 if (back == null) {
                     identifiers = getTargetIdentifiers();
@@ -422,6 +420,12 @@ public class
 
                 LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()),
                         nextEntry.getPosition()));
+            }
+            if (!nextEntry.hasMultiplicity()) {
+                // set the default multiplicity when the field was not defined.
+                Alignments.AlignmentEntry.Builder builder=Alignments.AlignmentEntry.newBuilder(nextEntry);
+                builder.setMultiplicity(1);
+                nextEntry=builder.build();
             }
             return nextEntry;
 
