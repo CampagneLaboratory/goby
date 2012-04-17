@@ -151,7 +151,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 7;
+    public static final int VERSION = 8;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -391,7 +391,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
 
                 final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList,queryIndex, linkBuilder);
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
             }
 
             if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
@@ -413,7 +413,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         int index = 0;
         int thisEntryIndex = -1;
         for (final int value : positionList) {
-            if (value == position && fragmentList.get(index)==entry.getFragmentIndex()) {
+            if (value == position && fragmentList.get(index) == entry.getFragmentIndex()) {
                 thisEntryIndex = index;
             }
             index++;
@@ -734,8 +734,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
-        float ratioListSizes=((float)encodedLengths.size() + encodedValues.size()) /(float)list.size();
-        final boolean result = encodedLengths.size() > 10 && ratioListSizes<1 ;
+        float ratioListSizes = ((float) encodedLengths.size() + encodedValues.size()) / (float) list.size();
+        final boolean result = encodedLengths.size() > 10 && ratioListSizes < 1;
 
         if (result) {
             //      System.out.println("Using run-length encoding for "+label);
@@ -899,6 +899,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         streamVersion = bitInput.readDelta();
 
         assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
+        if (streamVersion >= 8) {
+            enableDomainOptimizations = bitInput.readBit() == 1;
+        }
         multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
         decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
@@ -954,6 +957,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             decodeArithmetic("linkOffsetOptimization", numEntriesInChunk, bitInput, linkOffsetOptimization);
         }
 
+
         return streamVersion;
     }
 
@@ -1001,6 +1005,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
         out.writeDelta(VERSION);
+        out.writeBit(enableDomainOptimizations);
         out.writeBit(multiplicityFieldsAllMissing);
 
         writeArithmetic("positions", deltaPositions, out);
