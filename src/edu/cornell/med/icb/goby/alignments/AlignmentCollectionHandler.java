@@ -734,8 +734,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
+        float ratioListSizes=((float)encodedLengths.size() + encodedValues.size()) /(float)list.size();
+        final boolean result = encodedLengths.size() > 10 && ratioListSizes<1 ;
 
-        final boolean result = encodedLengths.size() > 10 && (encodedLengths.size() + encodedValues.size()) < list.size() * 70;
         if (result) {
             //      System.out.println("Using run-length encoding for "+label);
         }
