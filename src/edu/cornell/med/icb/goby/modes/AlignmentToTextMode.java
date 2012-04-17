@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import com.google.protobuf.TextFormat;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
@@ -32,6 +33,8 @@ import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -48,6 +51,11 @@ import java.util.Map;
  * @author Fabien Campagne
  */
 public class AlignmentToTextMode extends AbstractGobyMode {
+    /**
+       * Used to log debug and informational messages.
+       */
+      private static final Log LOG = LogFactory.getLog(AlignmentToTextMode.class);
+
     /**
      * The mode name.
      */
@@ -92,7 +100,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     enum OutputFormat {
         PLAIN,
         // SAM,
-        HTML
+        HTML,
+        PROTOTEXT
     }
 
     private OutputFormat outputFormat;
@@ -281,63 +290,18 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             numWritten++;
                         }
                         break;
-                    /*
-                    case SAM:
-                        if (numWritten < maxToOutput) {
-                            final int flag;
-                            startPosition++;  // SAM is 1-based
-                            if (alignmentEntry.hasPairFlags()) {
-                                flag = alignmentEntry.getPairFlags();
-                            } else {
-                                // strand is encoded in 000010000 (binary), shift left by 4 bits.
-                                flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;
-                            }
-                            final int mappingQuality;
-                            if (alignmentEntry.hasMappingQuality()) {
-                                mappingQuality = alignmentEntry.getMappingQuality();
-                            } else {
-                                mappingQuality = 255;
-                            }
-                            final String cigar = calculateCigar(alignmentEntry);
-                            final int targetIndex = alignmentEntry.getTargetIndex();
+                    case PROTOTEXT:
+                          if (numWritten < maxToOutput) {
+                             try {
+                                 outputStream.println("{");
+                                     TextFormat.print(alignmentEntry,outputStream);
+                                  outputStream.println("}");
+                             } catch (IOException e) {
+                                 LOG.error("cannot format protobuff to text",e);
+                             }
 
-                            String MRNM = "=";
-                            int mPos = startPosition;
-                            int inferredInsertSize = 0;
-                            if (alignmentEntry.hasPairAlignmentLink()) {
-                                final int pairTargetIndex = alignmentEntry.getPairAlignmentLink().getTargetIndex();
-                                mPos = alignmentEntry.getPairAlignmentLink().getPosition() + 1;
-                                if (pairTargetIndex != targetIndex) {
-                                    MRNM = getReferenceId(pairTargetIndex).toString();
-                                }
-                            }
-
-                            final int readLength;
-                            // check entry then header for the query/read length otherwise use default
-
-                            readLength = alignmentEntry.getQueryLength();
-
-
-                            final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
-
-                            final String readQualities = "........";  // TODO - should make this the correct length
-                            outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
-                                    hasReadIds ? readIds.getId(queryIndex) : queryIndex,
-                                    flag,
-                                    getReferenceId(targetIndex),
-                                    startPosition,
-                                    mappingQuality,
-                                    cigar,
-                                    MRNM,
-                                    mPos,
-                                    inferredInsertSize,
-                                    readSequence,
-                                    readQualities,
-                                    getTags(alignmentEntry, readLength));
-                            numWritten++;
-                        }
+                          }
                         break;
-                        */
                 }
             }
         }
