@@ -22,7 +22,6 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;

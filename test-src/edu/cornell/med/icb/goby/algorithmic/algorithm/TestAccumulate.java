@@ -19,10 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriterI;
@@ -83,10 +80,10 @@ public class TestAccumulate {
     @Test
     public void testBaseCountPipeLine() throws IOException {
         final String basename = FilenameUtils.concat(testDir, "align-reads");
-        AlignmentWriter alignmentWriter = null;
+        AlignmentWriterImpl alignmentWriter = null;
         try {
            int constantQueryLength=40;
-            alignmentWriter = new AlignmentWriter(basename);
+            alignmentWriter = new AlignmentWriterImpl(basename);
             Alignments.AlignmentEntry.Builder currentEntry = alignmentWriter.getAlignmentEntry();
             currentEntry.setScore(30);
             currentEntry.setPosition(5);

@@ -1,4 +1,9 @@
 Towards Goby 2.0
+ - Refactor AlignmentWriter to introduce an interface and make it easier to create facades that modify the behaviour
+   of the default writer. For instance, such a facade is BufferedSortingAlignmentWriter, which keeps a number of entries
+   in memory to re-sort these entries by genomic position. This feature is used when importing already sorted SAM/BAM
+   files to create sorted Goby alignments and the files contain spliced alignments that would cause mis-ordering during
+   conversion.
  - Make default chunk-size dependent on the type of chunk codec used. This is useful because hybrid compression does
    better with larger chunk sizes (default chunk size for hybrid is 30000, 20000 for bzip2 and 10000 for gzip). The
    default chunk size can be overriden with -x MessageChunksWriter:chunk-size=int
@@ -56,6 +61,7 @@ Towards Goby 2.0
  - Add test and fix for bug that went back to start of alignment file, even though iterate alignment was created for a
    slice of input. The problem only affected the IterateAlignments class because it was calling reposition(0,0) and the
    method did not enforce slice limits.
+ - The code base was simplified by removing the now obsolete align mode.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3

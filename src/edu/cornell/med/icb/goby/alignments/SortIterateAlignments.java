@@ -85,7 +85,7 @@ public class SortIterateAlignments extends IterateAlignments {
         Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
     }
 
-    public void write(final AlignmentWriter writer) throws IOException {
+    public void write(final AlignmentWriterImpl writer) throws IOException {
         // too many hits is prepared as for Merge:
         try {
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());

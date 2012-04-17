@@ -42,8 +42,8 @@ public class TestSpliceSites {
      */
     public void writeSplicedTestAlignment() throws IOException {
         final String basename = "spliced-1";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 1;

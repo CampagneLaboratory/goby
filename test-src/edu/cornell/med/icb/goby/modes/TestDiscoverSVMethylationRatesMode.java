@@ -635,7 +635,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
 
     private static void writeAlignment(String[] basenames, int basenameIndex, char toBase) throws IOException {
 
-        AlignmentWriter writer = new AlignmentWriter(basenames[basenameIndex]);
+        AlignmentWriter writer = new AlignmentWriterImpl(basenames[basenameIndex]);
         writer.setTargetLengths(new int[]{10000});
         writer.setSorted(true);
         writer.setTargetIdentifiersArray(new String[]{"target1"});

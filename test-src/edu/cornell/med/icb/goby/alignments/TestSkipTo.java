@@ -66,8 +66,8 @@ public class TestSkipTo {
     @Test
     public void testFewSkips1() throws IOException {
         final String basename = "align-skip-to-1";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
@@ -129,8 +129,8 @@ public class TestSkipTo {
     @Test
     public void testFewSkips1_WithConcat() throws IOException {
         final String basename = "align-skip-to-1-concat";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
@@ -214,8 +214,8 @@ public class TestSkipTo {
     @Test
     public void testFewSkips2() throws IOException {
         final String basename = "align-skip-to-2";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
@@ -271,8 +271,8 @@ public class TestSkipTo {
     @Test
     public void testEmptyAlignment() throws IOException {
         final String basename = "align-skip-to-3";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
@@ -305,8 +305,8 @@ public class TestSkipTo {
     @Test
     public void testFewSkips4() throws IOException {
         final String basename = "align-skip-to-2";
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;

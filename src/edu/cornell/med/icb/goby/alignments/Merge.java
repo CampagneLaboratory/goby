@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -183,7 +182,7 @@ public class Merge {
         int skippedTooManyHits = 0;
         int skippedNotBestScore = 0;
 
-        final AlignmentWriter writer = new AlignmentWriter(outputFile);
+        final AlignmentWriterImpl writer = new AlignmentWriterImpl(outputFile);
         progress = new ProgressLogger(LOG);
         progress.expectedUpdates = totalNumberOfEntries;
         progress.start();
@@ -215,7 +214,9 @@ public class Merge {
                     if (!tmhReader.isQueryAmbiguous(queryIndex, k, matchLength)) {
                         //switch in the mergedTargetIndex and append to writer:
                         final int newTargetIndex = referenceIndexPermutation.get(inputFileIndex)[entry.getTargetIndex()];
-                        writer.appendEntry(entry, newTargetIndex);
+                        Alignments.AlignmentEntry entry1 = entry;
+                        entry1 = entry1.newBuilderForType().mergeFrom(entry1).setTargetIndex(newTargetIndex).build();
+                        writer.appendEntry(entry1);
                         wrote += entry.getMultiplicity();
                         queriesIndicesAligned.add(entry.getQueryIndex());
                     } else {

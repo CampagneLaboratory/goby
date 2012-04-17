@@ -191,7 +191,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         // file with this information
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
-        final AlignmentWriter writer = transferIds.getWriter();
+        final AlignmentWriterImpl writer = transferIds.getWriter();
 
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
@@ -475,7 +475,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
     public class TransferIds {
         private ReadSet readIndexFilter;
-        private AlignmentWriter writer;
+        private AlignmentWriterImpl writer;
         private IndexedIdentifier targetIds;
         public int numberOfReads = -1;
         public int numberOfReadsForSplit;
@@ -485,7 +485,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             return readIndexFilter;
         }
 
-        public AlignmentWriter getWriter() {
+        public AlignmentWriterImpl getWriter() {
             return writer;
         }
 
@@ -548,7 +548,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 readIndexFilter.load(readIndexFilterFile);
             }
 
-            writer = new AlignmentWriter(outputFile);
+            writer = new AlignmentWriterImpl(outputFile);
             targetIds = new IndexedIdentifier();
 
             // first write reference ids to compact header, if these ids are provided on the command line:

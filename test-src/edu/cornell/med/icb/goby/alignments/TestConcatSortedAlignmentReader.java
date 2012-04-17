@@ -125,8 +125,8 @@ public class TestConcatSortedAlignmentReader {
     @Before
     public void setUp() throws IOException {
 
-        final AlignmentWriter writer1 =
-                new AlignmentWriter(basename1);
+        final AlignmentWriterImpl writer1 =
+                new AlignmentWriterImpl(basename1);
         writer1.setNumAlignmentEntriesPerChunk(1000);
         writer1.setTargetLengths(new int[]{10000, 10000});
         // we write this alignment sorted:
@@ -140,8 +140,8 @@ public class TestConcatSortedAlignmentReader {
 
         writer1.close();
 
-        final AlignmentWriter writer2 =
-                new AlignmentWriter(basename2);
+        final AlignmentWriterImpl writer2 =
+                new AlignmentWriterImpl(basename2);
         writer2.setNumAlignmentEntriesPerChunk(1000);
         writer2.setTargetLengths(new int[]{10000, 10000});
         // we write this alignment sorted:
@@ -154,8 +154,8 @@ public class TestConcatSortedAlignmentReader {
 
         writer2.close();
 
-        final AlignmentWriter writer3 =
-                new AlignmentWriter(basename3);
+        final AlignmentWriterImpl writer3 =
+                new AlignmentWriterImpl(basename3);
         writer3.setNumAlignmentEntriesPerChunk(1000);
         writer3.setTargetLengths(new int[]{10000, 10000});
 
@@ -172,7 +172,7 @@ public class TestConcatSortedAlignmentReader {
     }
 
 
-    private void append(final AlignmentWriter writer, final int referenceIndex, final int position) throws IOException {
+    private void append(final AlignmentWriterImpl writer, final int referenceIndex, final int position) throws IOException {
         writer.setAlignmentEntry(0, referenceIndex, position, 1, false,50);
 
         writer.appendEntry();

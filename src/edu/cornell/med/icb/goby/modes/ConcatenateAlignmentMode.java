@@ -20,11 +20,11 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.AlignmentHelper;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
@@ -137,7 +137,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
         //final String codecName = jsapResult.getString("codec", null);
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
-        DynamicOptionRegistry.register(AlignmentWriter.doc());
+        DynamicOptionRegistry.register(AlignmentWriterImpl.doc());
         maxEntriesToProcess = jsapResult.getInt("max-entries", Integer.MAX_VALUE);
         if (maxEntriesToProcess == -1) {
             maxEntriesToProcess = Integer.MAX_VALUE;
@@ -154,7 +154,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         final String outputFilename = outputFile;
-        final AlignmentWriter writer = new AlignmentWriter(outputFilename);
+        final AlignmentWriterImpl writer = new AlignmentWriterImpl(outputFilename);
         final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         final boolean allSorted = isAllSorted(upgrade, basenames);
         if (allSorted) {
@@ -294,6 +294,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     }
 
     public File[] getOutputFiles() {
-        return AbstractAligner.buildResults(outputFile);
+        return AlignmentHelper.buildResults(outputFile);
     }
 }

@@ -52,8 +52,8 @@ public class TestAlignmentIndex {
 
         int[] targetLengths = new int[]{100, 50, 20, 10, 5};
         final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-1");
-        final AlignmentWriter writer =
-                new AlignmentWriter(basename1);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basename1);
         writer.setTargetLengths(targetLengths);
         writer.setNumAlignmentEntriesPerChunk(1);
         writer.setSorted(true);
@@ -96,8 +96,8 @@ public class TestAlignmentIndex {
 
         int[] targetLengths = new int[]{100, 50, 20, 10, 5};
         final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
-        final AlignmentWriter writer =
-                new AlignmentWriter(basename1);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basename1);
         writer.setTargetLengths(targetLengths);
         writer.setNumAlignmentEntriesPerChunk(1);
         writer.setSorted(true);
@@ -151,8 +151,8 @@ public class TestAlignmentIndex {
 
         int[] targetLengths = new int[]{100, 50, 20, 10, 5};
         final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
-        final AlignmentWriter writer =
-                new AlignmentWriter(basename1);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basename1);
         writer.setTargetLengths(targetLengths);
         writer.setNumAlignmentEntriesPerChunk(1);
         writer.setSorted(true);
@@ -191,8 +191,8 @@ public class TestAlignmentIndex {
     public void testReposition() throws IOException {
          int[] targetLengths = new int[]{100, 50, 20, 10, 5};
         final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
-        final AlignmentWriter writer =
-                new AlignmentWriter(basename1);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basename1);
         writer.setTargetLengths(targetLengths);
         writer.setNumAlignmentEntriesPerChunk(1);
         writer.setSorted(true);

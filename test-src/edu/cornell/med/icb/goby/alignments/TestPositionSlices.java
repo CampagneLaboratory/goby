@@ -214,8 +214,8 @@ public class TestPositionSlices {
     }
 
     private void buildAlignment(String basename) throws IOException {
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
         writer.setNumAlignmentEntriesPerChunk(2);
 
         final int numTargets = 3;

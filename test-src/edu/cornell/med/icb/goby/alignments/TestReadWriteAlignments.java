@@ -64,8 +64,8 @@ public class TestReadWriteAlignments {
 
     @Test
     public void readWriteEntries101() throws IOException {
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         writer.setNumAlignmentEntriesPerChunk(1000);
         final int numReads = 2000;
         final int numTargets = 10;
@@ -107,7 +107,7 @@ public class TestReadWriteAlignments {
     @Test
     public void writeEmptyIds() throws IOException {
         final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-emptyids"));
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-emptyids"));
         final IndexedIdentifier queryIds = new IndexedIdentifier();
         assertNotNull(queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
@@ -127,7 +127,7 @@ public class TestReadWriteAlignments {
         targetIds.put(new MutableString("target:1"), 1);
 
         final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
 
         assertNotNull(queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
@@ -155,7 +155,7 @@ public class TestReadWriteAlignments {
         targetIds.put(new MutableString("target:1"), 1);
 
         final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
 
         assertNotNull("Query ids should not be null", queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
@@ -191,7 +191,7 @@ public class TestReadWriteAlignments {
         targetIds.put(new MutableString("target:1"), 1);
 
         final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
+                new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
 
         assertNotNull("Query ids should not be null", queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
@@ -221,7 +221,7 @@ public class TestReadWriteAlignments {
      */
     @Test
     public void constantQueryLengths() throws IOException {
-        final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(
+        final AlignmentWriter writer = new AlignmentWriterImpl(FilenameUtils.concat(
                 BASE_TEST_DIR, "constant-query-lengths"));
 
         for (int queryIndex = 0; queryIndex < 4; queryIndex++) {
@@ -256,7 +256,7 @@ public class TestReadWriteAlignments {
     @Test
     public void nonConstantQueryLengths() throws IOException {
         final int[] queryLengths = {11, 21, 12, 42};
-        final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(
+        final AlignmentWriter writer = new AlignmentWriterImpl(FilenameUtils.concat(
                 BASE_TEST_DIR, "non-constant-query-lengths"));
 
         int queryIndex = 0;

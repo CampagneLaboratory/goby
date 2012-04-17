@@ -608,7 +608,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-15");
         importer.setOutputFile(outputFilename);
         importer.setPreserveSoftClips(true);
-        importer.setPropagateTargetIds(true);
+      //  importer.setPropagateTargetIds(true);
         importer.execute();
 
         AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
@@ -648,7 +648,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-16");
         importer.setOutputFile(outputFilename);
         importer.setPreserveSoftClips(true);
-        importer.setPropagateTargetIds(true);
+      //  importer.setPropagateTargetIds(true);
         importer.execute();
         // cigar is  13S21M1I29M4S   13 21 -1 29 4
         AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
@@ -769,7 +769,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "round-trip-input-alignment-" + counterGoby++);
         importer.setOutputFile(outputFilename);
         importer.setPreserveSoftClips(preserveSoftClips);
-        importer.setPropagateTargetIds(true);
+      //  importer.setPropagateTargetIds(true);
         importer.setPreserveReadQualityScores(true);
         importer.setPreserveAllTags(true);
 

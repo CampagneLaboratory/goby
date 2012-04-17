@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Fabien Campagne
@@ -214,7 +213,7 @@ public class TestConcatAlignmentReader {
     public void setUp() throws IOException {
         {
             outputBasename1 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-101");
-            final AlignmentWriter writer = new AlignmentWriter(outputBasename1);
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(outputBasename1);
             writer.setNumAlignmentEntriesPerChunk(1000);
             writer.setAlignerName("first-aligner");
             writer.setAlignerVersion("version-first-aligner");
@@ -253,7 +252,7 @@ public class TestConcatAlignmentReader {
         }
         {
             outputBasename2 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-102");
-            final AlignmentWriter writer = new AlignmentWriter(outputBasename2);
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(outputBasename2);
             writer.setAlignerName("second-aligner");
             writer.setAlignerVersion("version-second-aligner");
             writer.setNumAlignmentEntriesPerChunk(1000);

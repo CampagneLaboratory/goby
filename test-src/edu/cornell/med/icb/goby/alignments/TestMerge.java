@@ -368,7 +368,7 @@ public class TestMerge {
     @Before
     public void setUp() throws IOException {
         {
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 2000;
             final int numQuery = 10;
@@ -387,8 +387,8 @@ public class TestMerge {
         }
 
         {
-            final AlignmentWriter writer =
-                    new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "transcript-101"));
+            final AlignmentWriterImpl writer =
+                    new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "transcript-101"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 5;
             int position = 1;
@@ -430,7 +430,7 @@ public class TestMerge {
 
         {
             // Will have too many hits info created for it:
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 2000;
             final int numQuery = 10;
@@ -449,7 +449,7 @@ public class TestMerge {
 
         {
             // Will have too many hits info created for it:
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 2000;
             final int numQuery = 10;
@@ -468,7 +468,7 @@ public class TestMerge {
 
         {
             // Will have too many hits info created for it:
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-105"));
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-105"));
             System.out.println("preparing 105");
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 2;
@@ -498,7 +498,7 @@ public class TestMerge {
 
         {
             // Will have too many hits info created for it:
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-106"));
+            final AlignmentWriterImpl writer = new AlignmentWriterImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-106"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 2;
             final int numQuery = 10;

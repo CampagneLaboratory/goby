@@ -20,13 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Merge;
-import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.util.ICBStringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -515,7 +509,7 @@ public class SortMode extends AbstractGobyMode {
 
                     final String subBasename = "sorted-" + toSort.tag;
                     final String subOutputFilename = tempDir + "/" + subBasename;
-                    final AlignmentWriter writer = new AlignmentWriter(subOutputFilename);
+                    final AlignmentWriterImpl writer = new AlignmentWriterImpl(subOutputFilename);
                     alignmentIterator.setOutputFilename(subOutputFilename);
                     alignmentIterator.setBasename(subBasename);
 
@@ -601,7 +595,7 @@ public class SortMode extends AbstractGobyMode {
                         final String subBasename = "sorted-" + merged.tag;
                         subOutputFilename = tempDir + "/" + subBasename;
                     }
-                    final AlignmentWriter writer = new AlignmentWriter(subOutputFilename);
+                    final AlignmentWriter writer = new AlignmentWriterImpl(subOutputFilename);
 
                     if (concatReader.getTargetLength() != null) {
                         writer.setTargetLengths(concatReader.getTargetLength());

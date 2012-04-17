@@ -68,8 +68,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-concat";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
@@ -144,8 +144,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-concat-two-mutations";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
@@ -207,8 +207,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-concat-two-mutations-small";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
@@ -382,8 +382,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-concat";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
@@ -459,8 +459,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-concat";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
@@ -524,8 +524,8 @@ public class TestIterateSortedAlignment {
 
         final String basename = "align-skip-to-1-contact-two-targets";
         final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
-        final AlignmentWriter writer =
-                new AlignmentWriter(basenamePath);
+        final AlignmentWriterImpl writer =
+                new AlignmentWriterImpl(basenamePath);
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;

@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import static org.junit.Assert.fail;
@@ -65,7 +66,7 @@ public class TestAlignmentToPileupMode {
     public void setUp() throws IOException {
 
 
-        AlignmentWriter writer = new AlignmentWriter(basename1);
+        AlignmentWriter writer = new AlignmentWriterImpl(basename1);
         final Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder();
         builder.setQueryLength(11);
         builder.setQueryIndex(1);

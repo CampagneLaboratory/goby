@@ -21,9 +21,8 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
@@ -43,6 +42,7 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
+import sun.tools.jstat.Alignment;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,7 +57,7 @@ import java.util.List;
  *
  * @author Fabien Campagne
  */
-public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
+public class SAMToCompactMode extends AbstractGobyMode {
 
     /**
      * Used to log debug and informational messages.
@@ -100,6 +100,15 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             "ignore-read-origin:boolean, When this flag is true do not import read groups.:false"
     );
     private boolean preserveSoftClips;
+    private int numberOfReads;
+    private int numberOfReadsFromCommandLine;
+    private int largestQueryIndex;
+    private int smallestQueryIndex;
+    private String inputFile;
+    private boolean thirdPartyInput=true;
+    private int mParameter = 1;
+    private String outputFile;
+
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -114,12 +123,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
 
-    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
-    @Override
+
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -155,8 +163,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         // configure baseclass
-        super.configure(args);
+
         final JSAPResult jsapResult = parseJsapArguments(args);
+        inputFile = jsapResult.getString("input");
+        outputFile = jsapResult.getString("output");
+
         preserveSoftClips = jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
@@ -175,6 +186,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             }
             System.err.println("Done loading genome ");
         }
+        mParameter = jsapResult.getInt("ambiguity-threshold");
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         sortedInput = jsapResult.getBoolean("sorted");
@@ -184,19 +196,38 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // is way too slow to run unintentionally in production!
         debug = Util.log4JIsConfigured();
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
-        DynamicOptionRegistry.register(AlignmentWriter.doc());
+        DynamicOptionRegistry.register(AlignmentWriterImpl.doc());
         DynamicOptionRegistry.register(QueryIndexPermutation.doc());
         return this;
     }
 
+    @Override
+    public void execute() throws IOException {
+        // read target/query identifier lookup table, and initialize output alignment
+        // file with this information
+
+        // initialize too-many-hits output file
+        final AlignmentTooManyHitsWriter tmhWriter =
+                new AlignmentTooManyHitsWriter(outputFile, mParameter);
+
+        try {
+            scan(tmhWriter);
+
+
+        } finally {
+
+            tmhWriter.close();
+        }
+    }
+
     boolean sortedInput;
 
-    @Override
-    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds,
-                       final AlignmentWriter writer, final AlignmentTooManyHitsWriter tmhWriter)
+    protected int scan(AlignmentTooManyHitsWriter tmhWriter)
             throws IOException {
         int numAligns = 0;
-
+        IndexedIdentifier targetIds = new IndexedIdentifier();
+        AlignmentWriter destinationWriter = new AlignmentWriterImpl(outputFile);
+        final AlignmentWriter writer = new BufferedSortingAlignmentWriter(destinationWriter, 10000);
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
@@ -237,7 +268,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
                 final SAMSequenceRecord seq = samHeader.getSequence(i);
-                final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+                final int targetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
                 targetLengths[targetIndex] = seq.getSequenceLength();
             }
             writer.setTargetLengths(targetLengths);
@@ -261,7 +292,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 continue;
             }
-            final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
+            final int targetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             if (sortedInput) {
                 // check that input entries are indeed in sort order. Abort otherwise.
@@ -322,7 +353,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             readMaxOccurence *= readIsSpliced ? 2 : 1;
             final String readName = samRecord.getReadName();
 
-            final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
+            final int queryIndex = nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
             assert queryIndex >= 0 : " Query index must never be negative.";
 
             if (bsmap) {
@@ -358,14 +389,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // positions reported by BWA appear to start at 1. We convert to start at zero.
             int multiplicity = 1;
 
-            // we have a multiplicity filter. Use it to determine multiplicity.
-            if (readIndexFilter != null) {
-                /* Multiplicity of a read is the number of times the (exact) sequence
-          of the read is identically repeated across a sample file.  The filter
-          removes duplicates to avoid repeating the same alignments.  Once
-          aligned, these are recorded multiplicity times. */
-                multiplicity = readIndexFilter.getMultiplicity(queryIndex);
-            }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
             final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(map(genome, samRecord.getReferenceName()));
@@ -487,7 +510,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                                 final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                                         Alignments.RelatedAlignmentEntry.newBuilder();
 
-                                final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
+                                final int mateTargetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
                                 final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // samhelper returns zero-based positions compatible with Goby.
                                 relatedBuilder.setFragmentIndex(mateFragmentIndex);
                                 relatedBuilder.setPosition(mateAlignmentStart);
@@ -519,9 +542,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         samIterator.close();
 
-        if (readIndexFilter != null) {
-            writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
-        }
 
         writer.putStatistic("number-of-entries-written", numAligns);
         writer.setNumQueries(Math.max(numberOfReads, numberOfReadsFromCommandLine));
@@ -556,6 +576,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.setTargetLengths(targetLengths);
         writer.setReadOriginInfo(readOriginInfoBuilderList);
         progress.stop();
+        writer.close();
         return numAligns;
     }
 
@@ -624,7 +645,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
                     // ignore MD and RG since we store them natively..
                     //    System.out.printf("Preserving token=%s%n", token);
-                    currentEntry.addBamAttributes(token.replaceAll("\n",""));
+                    currentEntry.addBamAttributes(token.replaceAll("\n", ""));
                 }
             }
         }
@@ -766,10 +787,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     public void setPreserveReadQualityScores(boolean flag) {
-        this.preserveAllMappedQuals=flag;
+        this.preserveAllMappedQuals = flag;
     }
 
     public void setPreserveAllTags(boolean flag) {
-        this.preserveAllTags=flag;
+        this.preserveAllTags = flag;
     }
+
+    public void setInputFile(String s) {
+        inputFile = s;
+    }
+
+    public void setOutputFile(String outputFilename) {
+        this.outputFile = outputFilename;
+    }
+
+
 }
