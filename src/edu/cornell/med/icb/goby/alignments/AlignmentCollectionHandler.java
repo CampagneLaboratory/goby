@@ -116,7 +116,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         debug = doc().getInteger("debug-level");
         storeReadOrigins = !doc().getBoolean("ignore-read-origin");
-        enableDomainOptimizations = !doc().getBoolean("enable-domain-optimizations");
+        enableDomainOptimizations = doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
 
