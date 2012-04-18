@@ -224,7 +224,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         int numAligns = 0;
         final IndexedIdentifier targetIds = new IndexedIdentifier();
         final AlignmentWriter destinationWriter = new AlignmentWriterImpl(outputFile);
-        final AlignmentWriter writer = new BufferedSortingAlignmentWriter(destinationWriter, 10000);
+        final AlignmentWriter writer = sortedInput? new BufferedSortingAlignmentWriter(destinationWriter, 10000): destinationWriter;
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
