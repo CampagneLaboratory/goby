@@ -276,11 +276,14 @@ public class SAMToCompactMode extends AbstractGobyMode {
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
                 final SAMSequenceRecord seq = samHeader.getSequence(i);
-                final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
-                if (targetIndex < targetLengths.length) {
-                    targetLengths[targetIndex] = seq.getSequenceLength();
+                if (seq != null) {
+                    final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+                    if (targetIndex < targetLengths.length) {
+                        targetLengths[targetIndex] = seq.getSequenceLength();
+                    }
                 }
             }
+
             writer.setTargetLengths(targetLengths);
             writer.setSorted(true);
         }
