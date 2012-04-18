@@ -266,7 +266,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
-            final int numTargets = samHeader.getSequenceDictionary().size();
+            final int numTargets = Math.max(samHeader.getSequenceDictionary().size(),targetIds.size());
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
                 final SAMSequenceRecord seq = samHeader.getSequence(i);
