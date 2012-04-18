@@ -256,6 +256,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 System.exit(0);
             }
         } else {
+            // register all targets ids:
             if (genome != null) {
                 // register target indices in the order they appear in the genome. This makes alignment target indices compatible
                 // with the genome indices.
@@ -263,15 +264,22 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     getTargetIndex(targetIds, genome.getReferenceName(genomeTargetIndex), thirdPartyInput);
                 }
             }
+            final int numTargets = samHeader.getSequenceDictionary().size();
+            for (int i = 0; i < numTargets; i++) {
+                final SAMSequenceRecord seq = samHeader.getSequence(i);
+                getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+            }
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
-            final int numTargets = Math.max(samHeader.getSequenceDictionary().size(),targetIds.size());
+            final int numTargets = Math.max(samHeader.getSequenceDictionary().size(), targetIds.size());
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
                 final SAMSequenceRecord seq = samHeader.getSequence(i);
                 final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
-                targetLengths[targetIndex] = seq.getSequenceLength();
+                if (targetIndex < targetLengths.length) {
+                    targetLengths[targetIndex] = seq.getSequenceLength();
+                }
             }
             writer.setTargetLengths(targetLengths);
             writer.setSorted(true);
