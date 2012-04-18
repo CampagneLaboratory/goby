@@ -95,7 +95,7 @@ public class DifferentialExpressionAnalysis {
             groupSet.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
-                final String sampleBasename = FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(groupString));
+                final String sampleBasename = FilenameUtils.getName(AlignmentReaderImpl.getBasename(groupString));
                 if (!isInputBasename(sampleBasename, inputFilenames)) {
                     System.err.printf("The group basename %s is not a valid input basename.%n", sampleBasename);
                     System.exit(1);
@@ -122,7 +122,7 @@ public class DifferentialExpressionAnalysis {
      */
     private boolean isInputBasename(final String basename, final String[] inputFilenames) {
         for (final String inputFilename : inputFilenames) {
-            if (FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(inputFilename)).equals(basename)) {
+            if (FilenameUtils.getName(AlignmentReaderImpl.getBasename(inputFilename)).equals(basename)) {
                 return true;
             }
         }

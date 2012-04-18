@@ -62,6 +62,10 @@ Towards Goby 2.0
    slice of input. The problem only affected the IterateAlignments class because it was calling reposition(0,0) and the
    method did not enforce slice limits.
  - The code base was simplified by removing the now obsolete align mode.
+ - Fix a problem where sample names with several dots were stripped of too many extensions. For instance, a.b.c.entries
+   would be reduced to a, which could be non-unique across the remaining samples. Problem reported by Fang Fang in her
+   data on GobyWeb.
+
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3
