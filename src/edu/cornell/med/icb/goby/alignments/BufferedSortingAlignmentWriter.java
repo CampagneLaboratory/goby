@@ -54,6 +54,7 @@ public class BufferedSortingAlignmentWriter implements AlignmentWriter {
      * The maximum position seen so far on the targetIndex.
      */
     private int frontPosition;
+    private boolean check = true;
 
     public BufferedSortingAlignmentWriter(final AlignmentWriter destination, final int capacity) {
         this.capacity = capacity;
@@ -77,19 +78,23 @@ public class BufferedSortingAlignmentWriter implements AlignmentWriter {
     }
 
     private void checkFront(Alignments.AlignmentEntry entry) {
-        final int targetIndex = entry.getTargetIndex();
-        final int position = entry.getPosition();
-        if (targetIndex < frontTargetIndex || targetIndex == frontTargetIndex && position < frontPosition) {
-            // we detected an entry that occurs before the front of dequeued entries. We failed to restore sort order
-            // we mark the destination writer as non-sorted and inform the end user with a warning.
-            delegate.setSorted(false);
-            LOG.warn("Local sorting strategy failed to restore sort order. The destination has been marked as unsorted. You must sort the output manually to improve compression.");
+        if (check) {
+            final int targetIndex = entry.getTargetIndex();
+            final int position = entry.getPosition();
+            if (targetIndex < frontTargetIndex || targetIndex == frontTargetIndex && position < frontPosition) {
+                // we detected an entry that occurs before the front of dequeued entries. We failed to restore sort order
+                // we mark the destination writer as non-sorted and inform the end user with a warning.
+                delegate.setSorted(false);
+                LOG.warn("Local sorting strategy failed to restore sort order. The destination has been marked as unsorted. You must sort the output manually to improve compression.");
+                // no need to check anymore:
+                check = false;
+            }
+            if (frontTargetIndex != targetIndex) {
+                frontPosition = 0;
+            }
+            frontTargetIndex = Math.max(frontTargetIndex, targetIndex);
+            frontPosition = Math.max(frontPosition, position);
         }
-        if (frontTargetIndex != targetIndex) {
-            frontPosition = 0;
-        }
-        frontTargetIndex = Math.max(frontTargetIndex, targetIndex);
-        frontPosition = Math.max(frontPosition, position);
     }
 
     @Override
