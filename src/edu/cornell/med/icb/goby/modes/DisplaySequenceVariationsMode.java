@@ -236,7 +236,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
             String basename = alignmentReader.basename();
             // remove the path:
-            basename = FilenameUtils.getBaseName(basename);
+            basename = FilenameUtils.getName(AlignmentReaderImpl.getBasename(basename));
             switch (outputFormat) {
 
                 case CONCISE: {

@@ -415,7 +415,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     }
 
     /**
-     * Determine if an sampleId is provided on the command line.
+     * Determine if a sampleId is provided on the command line.
      *
      * @param inputFilenames
      * @param sampleId
@@ -423,8 +423,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     private boolean isInputFilename(String[] inputFilenames, String sampleId) {
         for (final String input : inputFilenames) {
-            String commandLineBasename = FilenameUtils.getBaseName(input);
-            if (commandLineBasename.equals(FilenameUtils.getBaseName(sampleId))) {
+            String commandLineBasename = FilenameUtils.getName(AlignmentReaderImpl.getBasename(input));
+            if (commandLineBasename.equals(FilenameUtils.getName(AlignmentReaderImpl.getBasename(sampleId)))) {
                 return true;
             }
         }
@@ -586,7 +586,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             samples = AlignmentReaderImpl.getBasenames(inputFilenames);
             // also remove the path to the file to keep only filenames:
             for (int i = 0; i < samples.length; i++) {
-                samples[i] = FilenameUtils.getBaseName(samples[i]);
+                samples[i] = FilenameUtils.getName(samples[i]);
             }
             return samples;
         }
@@ -683,7 +683,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             for (String basename : basenames) {
                 boolean found = false;
                 for (ReadIndexStats stat : readIndexStats) {
-                    if (FilenameUtils.getBaseName(basename).equals(stat.basename)) {
+                    if (FilenameUtils.getName(basename).equals(stat.basename)) {
                         stat.readerIndex = readerIndex;
                         found = true;
                     }

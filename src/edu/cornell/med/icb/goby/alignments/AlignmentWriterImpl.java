@@ -496,7 +496,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
 
     private synchronized void writeStats() throws IOException {
         if (!statsWritten) {
-            stats.put("basename", FilenameUtils.getBaseName(basename));
+            stats.put("basename", FilenameUtils.getName(basename));
             stats.put("min.query.index", Integer.toString(permutator.getBiggestSmallIndex()));
             stats.put("max.query.index", Integer.toString(permutator.getSmallestIndex()));
             stats.put("number.of.queries", Integer.toString(getNumQueries()));

@@ -127,7 +127,7 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                         // variation we have seen in this window. This will always include the variation of
                         // interest in the printed window, and will make sure we show all the bases of the
                         // variations that overlap this window.
-                        final String shortBasename = FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(seq.basename));
+                        final String shortBasename = FilenameUtils.getName(AlignmentReaderImpl.getBasename(seq.basename));
                         final MutableString clippedBases = bases.substring(Math.max(0,startFlapStart - maxVariationLength));
                         writeSequence(outputFormat, seq, shortBasename, clippedBases);
                     }

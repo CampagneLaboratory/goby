@@ -102,7 +102,7 @@ public class SortIterateAlignments extends IterateAlignments {
 
             // Propagate the statistics from the input, but update the basename
             writer.setStatistics(alignmentReader.getStatistics());
-            writer.putStatistic("basename", FilenameUtils.getBaseName(basename));
+            writer.putStatistic("basename", FilenameUtils.getName(basename));
             writer.putStatistic("basename.full", basename);
 
             for (final Alignments.AlignmentEntry entry : entries) {
