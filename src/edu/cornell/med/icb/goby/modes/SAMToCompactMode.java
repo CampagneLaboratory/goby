@@ -86,7 +86,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
      * Flag to indicate if log4j was configured.
      */
     private boolean debug;
-    private boolean runningFromCommandLine;
+    private boolean runningFromCommandLine = false;
     private RandomAccessSequenceInterface genome;
     private boolean preserveAllTags;
     private boolean preserveAllMappedQuals;
@@ -195,6 +195,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
         DynamicOptionRegistry.register(AlignmentWriterImpl.doc());
         DynamicOptionRegistry.register(QueryIndexPermutation.doc());
+        runningFromCommandLine = false;
         return this;
     }
 
@@ -224,7 +225,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         int numAligns = 0;
         final IndexedIdentifier targetIds = new IndexedIdentifier();
         final AlignmentWriter destinationWriter = new AlignmentWriterImpl(outputFile);
-        final AlignmentWriter writer = sortedInput? new BufferedSortingAlignmentWriter(destinationWriter, 10000): destinationWriter;
+        final AlignmentWriter writer = sortedInput ? new BufferedSortingAlignmentWriter(destinationWriter, 10000) : destinationWriter;
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
@@ -254,14 +255,14 @@ public class SAMToCompactMode extends AbstractGobyMode {
             if (runningFromCommandLine) {
                 System.exit(0);
             }
-        }  else {
-            // register target indices in the order they appear in the genome. This makes alignment target indices compatible
-            // with the genome indices.
-            for (int genomeTargetIndex=0; genomeTargetIndex<genome.size();genomeTargetIndex++)
-            {
-                getTargetIndex(targetIds, genome.getReferenceName(genomeTargetIndex), thirdPartyInput);
+        } else {
+            if (genome != null) {
+                // register target indices in the order they appear in the genome. This makes alignment target indices compatible
+                // with the genome indices.
+                for (int genomeTargetIndex = 0; genomeTargetIndex < genome.size(); genomeTargetIndex++) {
+                    getTargetIndex(targetIds, genome.getReferenceName(genomeTargetIndex), thirdPartyInput);
+                }
             }
-
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
