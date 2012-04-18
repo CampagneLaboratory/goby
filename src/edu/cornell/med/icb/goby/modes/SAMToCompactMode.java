@@ -22,14 +22,12 @@ import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
@@ -42,7 +40,6 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
-import sun.tools.jstat.Alignment;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -105,7 +102,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     private int largestQueryIndex;
     private int smallestQueryIndex;
     private String inputFile;
-    private boolean thirdPartyInput=true;
+    private boolean thirdPartyInput = true;
     private int mParameter = 1;
     private String outputFile;
 
@@ -220,13 +217,13 @@ public class SAMToCompactMode extends AbstractGobyMode {
         }
     }
 
-    boolean sortedInput;
+    private boolean sortedInput;
 
-    protected int scan(AlignmentTooManyHitsWriter tmhWriter)
+    private int scan(final AlignmentTooManyHitsWriter tmhWriter)
             throws IOException {
         int numAligns = 0;
-        IndexedIdentifier targetIds = new IndexedIdentifier();
-        AlignmentWriter destinationWriter = new AlignmentWriterImpl(outputFile);
+        final IndexedIdentifier targetIds = new IndexedIdentifier();
+        final AlignmentWriter destinationWriter = new AlignmentWriterImpl(outputFile);
         final AlignmentWriter writer = new BufferedSortingAlignmentWriter(destinationWriter, 10000);
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
@@ -237,19 +234,15 @@ public class SAMToCompactMode extends AbstractGobyMode {
         final SAMFileReader parser = new SAMFileReader(stream);
         // transfer read groups to Goby header:
         final SAMFileHeader samHeader = parser.getFileHeader();
-        IndexedIdentifier readGroups = new IndexedIdentifier();
+        final IndexedIdentifier readGroups = new IndexedIdentifier();
 
         importReadGroups(samHeader, readGroups);
-
         boolean hasPaired = false;
-
         progress.start();
 
         final SAMRecordIterator samIterator = parser.iterator();
-
         final SplicedSamHelper samHelper = new SplicedSamHelper();
         samHelper.setQualityEncoding(qualityEncoding);
-
         numberOfReads = 0;
 
         // int stopEarly = 0;
@@ -542,7 +535,10 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
         samIterator.close();
 
-
+        if (!targetIds.isEmpty()) {
+            // we collected target ids, let's write them to the header:
+            writer.setTargetIdentifiers(targetIds);
+        }
         writer.putStatistic("number-of-entries-written", numAligns);
         writer.setNumQueries(Math.max(numberOfReads, numberOfReadsFromCommandLine));
         writer.printStats(System.out);
@@ -561,9 +557,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
         targetCount = Math.max(samSequenceRecords.size(), targetCount);
         final int[] targetLengths = new int[targetCount];
-        for (
-                final SAMSequenceRecord samSequenceRecord
-                : samSequenceRecords)
+        for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords)
 
         {
             final int index = samSequenceRecord.getSequenceIndex();
