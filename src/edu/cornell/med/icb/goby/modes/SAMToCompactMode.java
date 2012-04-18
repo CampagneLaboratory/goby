@@ -254,6 +254,14 @@ public class SAMToCompactMode extends AbstractGobyMode {
             if (runningFromCommandLine) {
                 System.exit(0);
             }
+        }  else {
+            // register target indices in the order they appear in the genome. This makes alignment target indices compatible
+            // with the genome indices.
+            for (int genomeTargetIndex=0; genomeTargetIndex<genome.size();genomeTargetIndex++)
+            {
+                getTargetIndex(targetIds, genome.getReferenceName(genomeTargetIndex), thirdPartyInput);
+            }
+
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
@@ -261,7 +269,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             final int[] targetLengths = new int[numTargets];
             for (int i = 0; i < numTargets; i++) {
                 final SAMSequenceRecord seq = samHeader.getSequence(i);
-                final int targetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+                final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
                 targetLengths[targetIndex] = seq.getSequenceLength();
             }
             writer.setTargetLengths(targetLengths);
@@ -285,7 +293,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 }
                 continue;
             }
-            final int targetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
+            final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             if (sortedInput) {
                 // check that input entries are indeed in sort order. Abort otherwise.
@@ -503,7 +511,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                                 final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                                         Alignments.RelatedAlignmentEntry.newBuilder();
 
-                                final int mateTargetIndex = AbstractAlignmentToCompactMode.getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
+                                final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
                                 final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // samhelper returns zero-based positions compatible with Goby.
                                 relatedBuilder.setFragmentIndex(mateFragmentIndex);
                                 relatedBuilder.setPosition(mateAlignmentStart);
@@ -545,7 +553,6 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
         // write information from SAM file header
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
-
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
         int targetCount = targetIds.size();
         if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size()))
@@ -572,6 +579,13 @@ public class SAMToCompactMode extends AbstractGobyMode {
         progress.stop();
         writer.close();
         return numAligns;
+    }
+
+    private int getTargetIndex(IndexedIdentifier targetIds, String sequenceName, boolean thirdPartyInput) {
+        int targetIndex = -1;
+
+        targetIndex = targetIds.registerIdentifier(new MutableString(sequenceName));
+        return targetIndex;
     }
 
     MutableString convertBasesBuffer = new MutableString();
