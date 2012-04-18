@@ -104,12 +104,12 @@
             <help>The percentage of available memory available to worker threads
                 (to increase overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
                 the program with a total of 8g of memory). Also see split-size-scaling-factor
-                documentation. sort-large-mode will not allow you to set a value larger than "0.99" or
+                documentation. This parameter cannot be value larger than "0.99" or
                 less than "0.5".
             </help>
         </flaggedOption>
         <flaggedOption>
-            <id>split-size-scaling-factor</id>
+            <id>thread-memory-scaling-factor</id>
             <shortFlag>f</shortFlag>
             <longFlag>thread-memory-scaling-factor</longFlag>
             <required>false</required>
@@ -117,7 +117,7 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>50</string>
+                <string>100</string>
             </defaults>
             <help>The larger the value of split-size-scaling-factor the more splits will be made because this
                 value controls the COMPRESSED size of a single split, based on the equation

@@ -295,7 +295,7 @@ public class SortMode extends AbstractGobyMode {
         tempDir = jsapResult.getString("temp-dir");
 
         setMemoryPercentageForWork(jsapResult.getDouble("memory-percentage-for-work"));
-        splitSizeScalingFactor = jsapResult.getInt("split-size-scaling-factor");
+        splitSizeScalingFactor = jsapResult.getInt("thread-memory-scaling-factor");
 
         return this;
     }
