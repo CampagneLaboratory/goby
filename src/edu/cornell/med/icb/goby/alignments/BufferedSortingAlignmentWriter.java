@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -35,15 +36,28 @@ import java.util.Comparator;
  *         Time: 5:31 PM
  */
 public class BufferedSortingAlignmentWriter implements AlignmentWriter {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(BufferedSortingAlignmentWriter.class);
+
     private final AlignmentWriter delegate;
     private final ObjectHeapPriorityQueue<Alignments.AlignmentEntry> heap;
     private static final int DEFAULT_CAPACITY = 1000;
     private static final Comparator<? super Alignments.AlignmentEntry> GENOMIC_POSITION_COMPARATOR = new AlignmentPositionComparator();
     private int capacity;
+    /**
+     * The maximum target index seen so far.
+     */
+    private int frontTargetIndex;
+    /**
+     * The maximum position seen so far on the targetIndex.
+     */
+    private int frontPosition;
 
     public BufferedSortingAlignmentWriter(final AlignmentWriter destination, final int capacity) {
         this.capacity = capacity;
-        this.delegate=destination;
+        this.delegate = destination;
         this.heap = new ObjectHeapPriorityQueue<Alignments.AlignmentEntry>(capacity, GENOMIC_POSITION_COMPARATOR);
     }
 
@@ -53,17 +67,37 @@ public class BufferedSortingAlignmentWriter implements AlignmentWriter {
 
     @Override
     public void appendEntry(final Alignments.AlignmentEntry entry) throws IOException {
+
         while (heap.size() > capacity) {
-            delegate.appendEntry(heap.dequeue());
+            final Alignments.AlignmentEntry queueEntry = heap.dequeue();
+            checkFront(queueEntry);
+            delegate.appendEntry(queueEntry);
         }
         heap.enqueue(entry);
     }
 
+    private void checkFront(Alignments.AlignmentEntry entry) {
+        final int targetIndex = entry.getTargetIndex();
+        final int position = entry.getPosition();
+        if (targetIndex < frontTargetIndex || targetIndex == frontTargetIndex && position < frontPosition) {
+            // we detected an entry that occurs before the front of dequeued entries. We failed to restore sort order
+            // we mark the destination writer as non-sorted and inform the end user with a warning.
+            delegate.setSorted(false);
+            LOG.warn("Local sorting strategy failed to restore sort order. The destination has been marked as unsorted. You must sort the output manually to improve compression.");
+        }
+        if (frontTargetIndex != targetIndex) {
+            frontPosition = 0;
+        }
+        frontTargetIndex = Math.max(frontTargetIndex, targetIndex);
+        frontPosition = Math.max(frontPosition, position);
+    }
 
     @Override
     public void close() throws IOException {
         while (!heap.isEmpty()) {
-            delegate.appendEntry(heap.dequeue());
+            final Alignments.AlignmentEntry queueEntry = heap.dequeue();
+            checkFront(queueEntry);
+            delegate.appendEntry(queueEntry);
         }
         delegate.close();
     }

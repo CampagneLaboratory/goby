@@ -111,6 +111,43 @@ public class TestBufferedSortingAlignmentWriter {
             "}\n" +
             "Closed\n";
 
+     @Test
+    // ordered entries
+    public void testCase4() throws IOException {
+        AlignmentToTextWriter destination = new AlignmentToTextWriter();
+         // we set a buffer capacity of 2 to make it easy to fail the local sorting strategy:
+        BufferedSortingAlignmentWriter writer = new BufferedSortingAlignmentWriter(destination,2);
+        final Alignments.AlignmentEntry entry1 = buildEntryWithTargetPosition(0, 12);
+        final Alignments.AlignmentEntry entry2 = buildEntryWithTargetPosition(0, 13);
+        final Alignments.AlignmentEntry entry3 = buildEntryWithTargetPosition(0, 14);
+        final Alignments.AlignmentEntry entry4 = buildEntryWithTargetPosition(0, 15);
+        final Alignments.AlignmentEntry entry5 = buildEntryWithTargetPosition(0, 11);   // this entry must be resorted, but is found after 12 has left the buffer.
+         // local sorting will fail and the output must be marked as unsorted.
+        writer.appendEntry(entry1);
+        writer.appendEntry(entry2);
+        writer.appendEntry(entry3);
+        writer.appendEntry(entry4);
+        writer.appendEntry(entry5);
+        writer.close();
+        assertEquals(expectedCase4, destination.getTextOutput().toString());
+    }
+    private String expectedCase4 = "{target_index: 0\n" +
+            "position: 12\n" +
+            "}\n" +
+            "{target_index: 0\n" +
+            "position: 13\n" +
+            "}\n" +
+            "Set sortedState=false\n" +
+            "{target_index: 0\n" +
+            "position: 11\n" +
+            "}\n" +
+            "{target_index: 0\n" +
+            "position: 14\n" +
+            "}\n" +
+            "{target_index: 0\n" +
+            "position: 15\n" +
+            "}\n" +
+            "Closed\n";
 
     private Alignments.AlignmentEntry buildEntryWithTargetPosition(int targetIndex, int position) {
         Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder();
