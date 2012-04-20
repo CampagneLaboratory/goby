@@ -249,10 +249,10 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             }
 
             int entriesInOutputFile = 0;
-            DistinctIntValueCounterBitSet allEntries = new DistinctIntValueCounterBitSet();
+            //DistinctIntValueCounterBitSet allEntries = new DistinctIntValueCounterBitSet();
             int numReadsKept = 0;
             for (final Reads.ReadEntry entry : readsReader) {
-                allEntries.observe(entry.getReadIndex());
+            //    allEntries.observe(entry.getReadIndex());
                 if (readIndexFilter == null || readIndexFilter.contains(entry.getReadIndex())) {
 
                     final int readLength = entry.getReadLength();
@@ -293,10 +293,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     }
                 }
             }
-            float rate = allEntries.count();
+          /*  float rate = allEntries.count();
             rate -= numReadsKept;
             rate /= allEntries.count();
             if (readIndexFilter != null) System.out.printf("Percent reads redundant= %f3.2%% %n", rate);
+            */
             writer.close();
             writer.printStats(System.out);
         }

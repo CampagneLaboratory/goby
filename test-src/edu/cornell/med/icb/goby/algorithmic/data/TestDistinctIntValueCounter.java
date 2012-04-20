@@ -18,9 +18,12 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
+import it.unimi.dsi.bits.LongArrayBitVector;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
+import java.util.BitSet;
 import java.util.Random;
 
 /**
@@ -67,6 +70,19 @@ public class TestDistinctIntValueCounter {
         assertEquals(6, counter.count());
     }
 
+    @Test
+    public void testSetLargeIndex() {
+        DistinctIntValueCounterBitSet counter = new DistinctIntValueCounterBitSet();
+
+        counter.observe(10);
+        counter.observe(2129225);
+        counter.observe(3129225);
+        // we need to be able to store up to Integer.MAX_VALUE query indices:
+        counter.observe(Integer.MAX_VALUE);
+
+        assertEquals(4, counter.count());
+
+    }
 }
 
 

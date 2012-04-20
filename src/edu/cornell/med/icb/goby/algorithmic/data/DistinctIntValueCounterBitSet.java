@@ -18,9 +18,11 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
+import it.unimi.dsi.bits.LongArrayBitVector;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntCollection;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.BitSet;
 
@@ -35,26 +37,29 @@ import java.util.BitSet;
  */
 public class DistinctIntValueCounterBitSet implements DistinctIntValueCounterInterface {
 
-    BitSet values = new BitSet();
-
+  //  BitSet values = new BitSet();
+    private LongArrayBitVector bitVector=LongArrayBitVector.ofLength(1L<<(32-6));
+    private LongSortedSet set=bitVector.asLongSet();
     public void observe(IntCollection values) {
         for (int i : values) observe(i);
     }
 
-    public void observe(int[] values) {
+    public final void observe(final int[] values) {
+
         for (int i : values) observe(i);
     }
 
-    public void observe(int value) {
-        values.set(value);
-    }
+    public final void observe(final int value) {
+        set.add(value);
+     }
 
-    /**
+        /**
      * Return the number of distinct integer values in the observed sequence.
      *
      * @return
      */
     public int count() {
-        return values.cardinality();
+
+        return set.size();
     }
 }

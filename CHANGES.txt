@@ -65,6 +65,10 @@ Towards Goby 2.0
  - Fix a problem where sample names with several dots were stripped of too many extensions. For instance, a.b.c.entries
    would be reduced to a, which could be non-unique across the remaining samples. Problem reported by Fang Fang in her
    data on GobyWeb.
+ - DistinctIntValueCounterBitSet now uses LongArrayBitVector as its bit set implementation. The java BitSet implementation
+   was found to throw java.lang.ArrayIndexOutOfBoundsException for indices that should fit easily in a bit array (e.g.,
+   2,080,948 which can stored with about 230 MB).
+
 
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
