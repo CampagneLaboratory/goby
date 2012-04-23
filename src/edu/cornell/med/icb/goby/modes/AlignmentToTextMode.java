@@ -67,6 +67,14 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Converts a compact alignment to text formats.";
 
     /**
+     * If the table should be scrolling (or paging). As the entire dataset is loaded into a Javascript array,
+     * one COULD ask DataTables to scroll the data. This works with about 500 entries but for greater number
+     * of entries, paging seems to work MUCH better, so we are defaulting to scrolling off (paging on) which
+     * seems to work just fine with even 10,000 or possibly more entries.
+     */
+    private static final boolean SCROLLING = false;
+
+    /**
      * The output file.
      */
     private String outputFilename;
@@ -338,24 +346,34 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css' />").append("\n");
                 htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-context-min.css' />").append("\n");
                 htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.17/themes/ui-lightness/jquery-ui.css' />").append("\n");
-                htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.0/css/jquery.dataTables.css'>").append("\n");
-                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.1.min.js'></script>").append("\n");
-                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.17/jquery-ui.min.js'></script>").append("\n");
-                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.0/jquery.dataTables.js'></script>").append("\n");
+                htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://campagnelab.org/files/cdn/datatables/media/css/jquery.dataTables.css'>").append("\n");
+                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables/media/js/jquery.js'></script>").append("\n");
+                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables/media/js/jquery.dataTables.min.js'></script>").append("\n");
+                htmlBuilder.append("<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables-plugins/js/fourButtonNavigation.js'></script>").append("\n");
                 htmlBuilder.append("<script type='text/javascript'>").append("\n");
                 htmlBuilder.append("    var dt;").append("\n");
                 htmlBuilder.append("    jQuery(document).ready(function() {").append("\n");
-                htmlBuilder.append("        dt = $('#alignment').dataTable({").append("\n");
+                htmlBuilder.append("        dt = jQuery('#alignment').dataTable({").append("\n");
                 htmlBuilder.append("            'aaData': data,").append("\n");
                 htmlBuilder.append("            'aoColumns': columns,").append("\n");
-                htmlBuilder.append("            'bSort' : false,").append("\n");
                 htmlBuilder.append("            'bJQueryUI': true,").append("\n");
-                htmlBuilder.append("            'aLengthMenu': [[10, 15, 20, 25, 30, 35, 40, 45, 50, -1], [10, 15, 20, 25, 30, 35, 40, 45, 50, 'All']],").append("\n");
-                htmlBuilder.append("            'sPaginationType': 'full_numbers',").append("\n");
-                htmlBuilder.append("            'sScrollX': '200px',").append("\n");
                 htmlBuilder.append("            'oLanguage': {").append("\n");
                 htmlBuilder.append("                'sSearch': 'Search all columns:'").append("\n");
                 htmlBuilder.append("            },").append("\n");
+                if (SCROLLING) {
+                    htmlBuilder.append("            'iDisplayLength': -1,").append("\n");
+                    htmlBuilder.append("            'aLengthMenu': [[-1], ['All']],").append("\n");
+                    htmlBuilder.append("            'sScrollY': 400,").append("\n");
+                    htmlBuilder.append("            'sScrollX': 600,").append("\n");
+                    htmlBuilder.append("            'bPaginate': false,").append("\n");
+                    htmlBuilder.append("            'bProcessing': true,").append("\n");
+                    htmlBuilder.append("            'bSort' : false").append("\n");
+                } else {
+                    htmlBuilder.append("            'aLengthMenu': [[10, 15, 20, 25, 30, 35, 40, 45, 50, -1], [10, 15, 20, 25, 30, 35, 40, 45, 50, 'All']],").append("\n");
+                    htmlBuilder.append("            'sPaginationType': 'four_button',").append("\n");
+                    htmlBuilder.append("            'sScrollX': '200px',").append("\n");
+                }
+                htmlBuilder.append("            'bSort' : false").append("\n");
                 htmlBuilder.append("        });").append("\n");
                 htmlBuilder.append("        var asInitVals = new Array();").append("\n");
                 htmlBuilder.append("        jQuery('tfoot input').keyup( function () {").append("\n");
