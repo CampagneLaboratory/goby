@@ -428,6 +428,7 @@ public class SamHelper {
                             // sequence variations
                             qual.append((char) minQualValue);
                         }
+                        // ? parks a place in REF that will be updated by MD:Z
                         ref.append('?');
                     }
                     numDeletions += length;

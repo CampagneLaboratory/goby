@@ -21,7 +21,11 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.BufferedSortingAlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
@@ -38,7 +42,13 @@ import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import net.sf.samtools.*;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMReadGroupRecord;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordIterator;
+import net.sf.samtools.SAMSequenceDictionary;
+import net.sf.samtools.SAMSequenceRecord;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -313,8 +323,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     final int compare = prevRecord.getAlignmentStart() - samRecord.getAlignmentStart();//  samComparator.compare(prevRecord, samRecord);
                     if (compare > 0) {
                         final String message = String.format("record %s has position before previous record: %s",
-                                samRecord.toString(), prevRecord.toString()
-                        );
+                                samRecord.toString(), prevRecord.toString());
                         System.err.println("You cannot specify --sorted when the input file is not sorted. For instance: " + message);
 
                         LOG.warn(message);
@@ -328,7 +337,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             // try to determine readMaxOccurence, the maximum number of times a read name occurs in a complete alignment.
             int readMaxOccurence = 1;
             final boolean readIsPaired = samRecord.getReadPairedFlag();
-            final boolean anotherPair = readIsPaired && !samRecord.getReadUnmappedFlag();
+            final boolean anotherPair = readIsPaired && !samRecord.getMateUnmappedFlag();
             if (anotherPair) {
                 hasPaired = true;
                 // if the reads are paired, we expect to see the read name  at least twice.
@@ -353,6 +362,10 @@ public class SAMToCompactMode extends AbstractGobyMode {
             // Single reads typically have the field X0 set to the number of times the read appears in the
             // genome, there is no problem there, so we use X0 to initialize TMH.
             final int numTotalHits = xoString == null ? 1 : hasPaired ? 1 : (Integer) xoString;
+
+            // Q: samHelper hasn't been set to anything since .reset(). This will always be 1. ??
+            // Q: Also, readMaxOccurence is *2 for paired and *2 for splice, but splices can be N pieces, not just 2.
+            //    so readMaxOccurence isn't always correct it seems.
             final int numEntries = samHelper.getNumEntries();
             final boolean readIsSpliced = numEntries > 1;
             if (hasPaired) {
@@ -378,7 +391,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 } else {
                     // we obtain the reference sequence from the genome:
                     final String referenceName = samRecord.getReferenceName();
-                    final int referenceIndex = genome.getReferenceIndex(map(genome, referenceName));
+                    final int referenceIndex = genome.getReferenceIndex(chromosomeNameMapping(genome, referenceName));
                     if (referenceIndex == -1) {
                         System.err.println("Error, could not find reference index for id=" + referenceName + " Skipping record.");
                         continue;
@@ -404,7 +417,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
-            final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(map(genome, samRecord.getReferenceName()));
+            final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(chromosomeNameMapping(genome, samRecord.getReferenceName()));
             for (int i = 0; i < samHelper.getNumEntries(); i++) {
                 samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
@@ -680,7 +693,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
      * @return
      */
 
-    private final String map(RandomAccessSequenceInterface genome, final String referenceName) {
+    public static String chromosomeNameMapping(final RandomAccessSequenceInterface genome, final String referenceName) {
         if (genome.getReferenceIndex(referenceName) == -1) {
             if (referenceName.contentEquals("chrM")) {
                 return "MT";

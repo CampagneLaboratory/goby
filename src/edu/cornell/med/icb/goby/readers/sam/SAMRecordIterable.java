@@ -26,13 +26,18 @@ import java.util.Iterator;
 
 /**
  * Make a SAMRecordIterator iterable and thus easier to use.
+ * If you use this in a foreach loop until the end of the loop (so that hasNext will be called until it
+ * returns false) this will automatically close the iterator. If you need to exit early, you should call close().
  */
 public class SAMRecordIterable implements CloseableIterator<SAMRecord>, Iterable<SAMRecord> {
 
     private final SAMRecordIterator base;
 
+    private boolean closed;
+
     public SAMRecordIterable(final SAMRecordIterator base) {
         this.base = base;
+        closed = false;
     }
 
     @Override
@@ -40,19 +45,41 @@ public class SAMRecordIterable implements CloseableIterator<SAMRecord>, Iterable
         return base;
     }
 
+    /**
+     * Manually (or automatically) close the base iterator.
+     */
     @Override
     public void close() {
-        base.close();
+        if (!closed) {
+            base.close();
+        }
+        closed = true;
     }
 
+    /**
+     * Determine if there is a next SAMRecord. If false, this will close the base iterator.
+     * @return
+     */
     @Override
     public boolean hasNext() {
-        return base.hasNext();
+        final boolean hasNext = base.hasNext();
+        if (!hasNext) {
+            close();
+        }
+        return hasNext;
     }
 
+    /**
+     * If you call next and this is already closed, it will return null.
+     * @return the SAMRecord.
+     */
     @Override
     public SAMRecord next() {
-        return base.next();
+        if (closed) {
+            return null;
+        } else {
+            return base.next();
+        }
     }
 
     @Override

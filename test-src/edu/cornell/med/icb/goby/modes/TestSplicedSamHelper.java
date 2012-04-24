@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -446,10 +447,7 @@ public class TestSplicedSamHelper {
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
         assertEquals(3 - 1, first.getPosition());
-
-
     }
-
 
     @Test
     // variation after splice
@@ -468,8 +466,6 @@ public class TestSplicedSamHelper {
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
         assertEquals(3 - 1, first.getPosition());
-
-
     }
 
     @Test
@@ -488,8 +484,6 @@ public class TestSplicedSamHelper {
         assertEquals(0, first.getQueryIndex());
         assertEquals(0, first.getFragmentIndex());
         assertEquals(26800015 - 1, first.getPosition());
-
-
     }
 
     @Test
@@ -548,7 +542,6 @@ public class TestSplicedSamHelper {
         assertEquals(5, second.getQueryAlignedLength());
         assertEquals("", second.getSoftClippedBasesLeft());
         assertEquals("TC", second.getSoftClippedBasesRight());
-
     }
 
     @Test
@@ -665,18 +658,37 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals("TGCT", first.getSoftClippedBasesRight());
         assertEquals(51, first.getQueryAlignedLength());
         assertEquals(50, first.getTargetAlignedLength());
+
         assertEquals(4, first.getSequenceVariationsCount());
-        assertEquals("T", first.getSequenceVariations(0).getFrom());
-        assertEquals("C", first.getSequenceVariations(0).getTo());
 
-        assertEquals("T", first.getSequenceVariations(1).getFrom());
-        assertEquals("A", first.getSequenceVariations(1).getTo());
+        Alignments.SequenceVariation seqvar = first.getSequenceVariations(0);
+        assertEquals("T", seqvar.getFrom());
+        assertEquals("C", seqvar.getTo());
+        assertEquals(22, seqvar.getReadIndex());
+        assertEquals(9, seqvar.getPosition());
+        assertArrayEquals(byteArray(8), seqvar.getToQuality().toByteArray());
 
-        assertEquals("C", first.getSequenceVariations(2).getFrom());
-        assertEquals("A", first.getSequenceVariations(2).getTo());
+        seqvar = first.getSequenceVariations(1);
+        assertEquals("T", seqvar.getFrom());
+        assertEquals("A", seqvar.getTo());
+        assertEquals(26, seqvar.getReadIndex());
+        assertEquals(13, seqvar.getPosition());
+        assertArrayEquals(byteArray(24), seqvar.getToQuality().toByteArray());
 
-        assertEquals("-T", first.getSequenceVariations(3).getFrom());
-        assertEquals("CG", first.getSequenceVariations(3).getTo());
+
+        seqvar = first.getSequenceVariations(2);
+        assertEquals("C", seqvar.getFrom());
+        assertEquals("A", seqvar.getTo());
+        assertEquals(33, seqvar.getReadIndex());
+        assertEquals(20, seqvar.getPosition());
+        assertArrayEquals(byteArray(14), seqvar.getToQuality().toByteArray());
+
+        seqvar = first.getSequenceVariations(3);
+        assertEquals("-T", seqvar.getFrom());
+        assertEquals("CG", seqvar.getTo());
+        assertEquals(35, seqvar.getReadIndex());
+        assertEquals(21, seqvar.getPosition());
+        assertArrayEquals(byteArray(3, 15), seqvar.getToQuality().toByteArray());
 
         //second's CIGAR is 20S48M
         assertEquals(190246 - 1, second.getPosition());
@@ -684,9 +696,17 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals("CAGTGTCGTGGCTGCACGCC", second.getSoftClippedBasesLeft());
         assertEquals("", second.getSoftClippedBasesRight());
         assertEquals(48, second.getQueryAlignedLength());
-        assertEquals(48, second.getQueryAlignedLength());
+        assertEquals(48, second.getTargetAlignedLength());
 
 
+    }
+
+    private byte[] byteArray(final int... bytes) {
+        final byte[] result = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            result[i] = (byte) bytes[i];
+        }
+        return result;
     }
 
     //@Test

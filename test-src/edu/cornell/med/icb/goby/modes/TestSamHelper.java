@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test construction of ref via sam data.

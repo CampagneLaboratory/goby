@@ -59,7 +59,6 @@ public class TestQueueObjectPool {
         assertEquals("Should be empty", 1, pool.getNumIdle());
         assertEquals("Should be empty", 1, pool.getNumActive());
         pool.returnObject(first);
-        pool.returnObject(second);
         assertEquals("Should be empty", 2, pool.getNumIdle());
         assertEquals("Should be empty", 0, pool.getNumActive());
 
