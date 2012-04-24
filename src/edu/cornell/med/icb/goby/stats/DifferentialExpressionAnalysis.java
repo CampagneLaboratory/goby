@@ -245,6 +245,7 @@ public class DifferentialExpressionAnalysis {
         if (eval("raw-counts")) {
             results = deCalculator.compare(results, null, new CountRawSampleIdsCalculator());
         }
+        // TODO support multiple group comparisons in a similar way to discover sequence variants.
         for (final NormalizationMethod method : normalizationMethods) {
             method.normalize(deCalculator, getGroupComparison());
 
