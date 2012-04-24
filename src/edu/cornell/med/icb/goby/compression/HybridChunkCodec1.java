@@ -23,9 +23,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
+import java.util.zip.CRC32;
 
 /**
  * A codec that writes highly compressed data in one pool, and keeps left-over uncompressed protobuf messages in a separate pool.
+ *
  * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 2:35 PM
@@ -53,6 +55,8 @@ public class HybridChunkCodec1 implements ChunkCodec {
     private static final Log LOG = LogFactory.getLog(HybridChunkCodec1.class);
     private int chunkIndex = 0;
 
+    private CRC32 crc32 = new CRC32();
+
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         if (readCollection == null) {
@@ -60,13 +64,18 @@ public class HybridChunkCodec1 implements ChunkCodec {
         }
         final ByteArrayOutputStream result = new ByteArrayOutputStream();
         final DataOutputStream completeChunkData = new DataOutputStream(result);
-
         final ByteArrayOutputStream compressedBits = new ByteArrayOutputStream();
         final Message reducedProtoBuff = handler.compressCollection(readCollection, compressedBits);
 
         final int compressedBitSize = compressedBits.size();
+        final byte[] bytes = compressedBits.toByteArray();
         completeChunkData.writeInt(compressedBitSize);
-        completeChunkData.write(compressedBits.toByteArray());
+
+        crc32.reset();
+        crc32.update(bytes);
+        final int crcChecksum = (int) crc32.getValue();
+        completeChunkData.writeInt(crcChecksum);
+        completeChunkData.write(bytes);
 
         final ByteArrayOutputStream out = gzipCodec.encode(reducedProtoBuff);
 
@@ -94,13 +103,23 @@ public class HybridChunkCodec1 implements ChunkCodec {
     public Message decode(final byte[] bytes) throws IOException {
         final DataInputStream completeChunkData = new DataInputStream(new ByteArrayInputStream(bytes));
         final int compressedSize = completeChunkData.readInt();
+        final int storedChecksum = completeChunkData.readInt();
+
         final byte[] compressedBytes = new byte[compressedSize];
         final int read = completeChunkData.read(compressedBytes, 0, compressedSize);
         assert read == compressedSize : "read size must match recorded size.";
-        final int bytesLeft = bytes.length - 4 - compressedSize;
+        crc32.reset();
+
+        crc32.update(compressedBytes);
+        final int computedChecksum = (int) crc32.getValue();
+        if (computedChecksum != storedChecksum) {
+            throw new InvalidChecksumException();
+        }
+        final int bytesLeft = bytes.length - 4 - compressedSize - 4;
         final byte[] leftOver = new byte[bytesLeft];
-        // 4 is the number of bytes to encode the length of the compressed chunk.
-        System.arraycopy(bytes, 4 + compressedSize, leftOver, 0, bytesLeft);
+        // 8 is the number of bytes to encode the length of the compressed chunk, plus
+        // the number of bytes to encode the checksum.
+        System.arraycopy(bytes, 8 + compressedSize, leftOver, 0, bytesLeft);
         final Message reducedProtoBuff = gzipCodec.decode(leftOver);
         return handler.decompressCollection(reducedProtoBuff, compressedBytes);
     }
