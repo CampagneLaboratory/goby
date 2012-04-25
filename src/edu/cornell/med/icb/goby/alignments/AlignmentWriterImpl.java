@@ -406,7 +406,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
 
         writeHeader();
         writeStats();
-
+        permutator.close();
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
         if (sortedState && targetPositionOffsets != null) {
