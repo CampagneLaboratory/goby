@@ -106,10 +106,19 @@ public class MessageChunksReader implements Closeable {
 
                 // read the compressed stream:
                 final byte[] bytes = new byte[numBytes];
-                final int numRead = in.read(bytes, 0, numBytes);
-                bytesRead += numBytes;
-                if (numRead != numBytes) {
-                    LOG.warn("Expected " + numBytes + " but got " + numRead);
+                int totalRead = 0;
+                int offset=0;
+                while (totalRead < numBytes) {
+                    final int numRead = in.read(bytes, offset, numBytes-totalRead);
+                    if (numRead==-1) {
+                        break;
+                    }
+                    bytesRead += numBytes;
+                    totalRead += numRead;
+                    offset+=numRead;
+                }
+                if (totalRead != numBytes) {
+                    LOG.warn("Expected " + numBytes + " but got " + totalRead);
                 }
                 compressedBytes = bytes;
 
