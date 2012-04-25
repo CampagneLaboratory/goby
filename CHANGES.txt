@@ -1,4 +1,5 @@
 Towards Goby 2.0
+ - Fix issues with the barcode-decode mode. Add support for processing fasta/fastq files.
  - Refactor AlignmentWriter to introduce an interface and make it easier to create facades that modify the behaviour
    of the default writer. For instance, such a facade is BufferedSortingAlignmentWriter, which keeps a number of entries
    in memory to re-sort these entries by genomic position. This feature is used when importing already sorted SAM/BAM

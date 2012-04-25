@@ -20,6 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.readers.FastXEntry;
+import edu.cornell.med.icb.goby.readers.FastXReader;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
@@ -28,12 +31,14 @@ import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcherResult;
 import edu.cornell.med.icb.goby.util.barcode.PostBarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.PreBarcodeMatcher;
 import edu.cornell.med.icb.io.TSVReader;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.log4j.Logger;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -45,10 +50,16 @@ import java.io.IOException;
  *         Time: 3:10:59 PM
  */
 public class BarcodeDecoderMode extends AbstractGobyMode {
+
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(BarcodeDecoderMode.class);
+    private static final Logger LOG = Logger.getLogger(BarcodeDecoderMode.class);
+
+    /**
+     * For logging progress.
+     */
+    ProgressLogger progress;
 
     /**
      * The mode name.
@@ -58,15 +69,21 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Process a compact reads file and decode barcodes. " +
+    private static final String MODE_DESCRIPTION = "Process .compact-reads or fasta/fastq file and decode barcodes. " +
             "Will either produce a large compact-reads file where matching reads are copied (in this " +
             "case the barcodeIndex attribute is set appropriately on each read), or will produce a " +
             "set of compact reads files, one for each sample indicates in barcode-info. The second " +
-            "option is used if no output file is provided on the command line.";
+            "option is used if no output file is provided on the command line. " +
+            "This mode does not currently support paired end input when processing either .compact-reads or " +
+            "fasta/fastq." +
+            "In the barcode-info file, the barcodeIndex column values should " +
+            "be integers from 0 to the number of entries-1 in the barcode-info file. NOTE: If processing " +
+            ".compact-reads file(s) the .compact-reads read-index values will only be retained if processing " +
+            "a SINGLE .compact-reads file, otherwise new read-index values will be assigned. ";
     /**
      * The compact reads file to process.
      */
-    private String inputFilename;
+    private String[] inputFilenames;
     /**
      * The filename to the tab delimited file with barcodes and sample ids.
      */
@@ -90,6 +107,23 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
 
     boolean is3Prime;
 
+    private boolean apiMode = true;
+
+    /**
+     * Quality encoding to use, only for fastq processing.
+     */
+    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+
+    /**
+     * Include descriptions in the compact output.
+     */
+    private boolean includeDescriptions = false;
+
+    /**
+     * Include identifiers in the compact output.
+     */
+    private boolean includeIdentifiers = false;
+
     /**
      * Configure.
      *
@@ -101,11 +135,15 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
+        apiMode = false;
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFilename = jsapResult.getString("input");
+        inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         barcodeInfoFilename = jsapResult.getString("barcode-info");
+        includeDescriptions = jsapResult.getBoolean("include-descriptions");
+        includeIdentifiers = jsapResult.getBoolean("include-identifiers");
+        qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
 
         final String extremity = jsapResult.getString("extremity");
         if ("3_PRIME".equalsIgnoreCase(extremity)) {
@@ -124,10 +162,10 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
+        progress = new ProgressLogger(LOG);
         loadBarcodeInfo(barcodeInfoFilename);
 
 
-        //   assert inputFilenames.length == 1 : "only one read file supported for now.";
         ReadsWriter singleWriter = null;
         final ReadsWriter[] writers = new ReadsWriter[barcodeIndexToSampleId.size()];
         if (outputFilename == null) {
@@ -138,53 +176,97 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
             singleWriter = new ReadsWriter(new FileOutputStream(outputFilename));
         }
 
-        final String inputReadsFilename = inputFilename;
         final BarcodeMatcher matcher = is3Prime ? new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches) :
                 new PreBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches);
 
         final MutableString sequence = new MutableString();
-        final MutableString sequenceNoBarcode = new MutableString();
+        final ByteList qualitiesNoBarcode = new ByteArrayList();
         try {
             int countMatched = 0;
             int countNoMatch = 0;
             int countAmbiguous = 0;
-            for (final Reads.ReadEntry readEntry : new ReadsReader(inputReadsFilename)) {
-                ReadsReader.decodeSequence(readEntry, sequence);
-                final BarcodeMatcherResult match = matcher.matchSequence(sequence);
-                if (match != null) {
-                    // remove the barcode from the sequence:
-                    final int readIndex = readEntry.getReadIndex();
-                    sequenceNoBarcode.setLength(0);
-                    sequenceNoBarcode.append(sequence.subSequence(0, match.getBarcodeStartPosition() - 1));
-                    final int barcodeIndex = match.getBarcodeIndex();
-                    if (match.isAmbiguous()) {
-                        ++countAmbiguous;
-                    }
-                    /* System.out.printf("read %d barcode match: %n%s%n%s%n",
-                           readIndex,
-                           sequence.subSequence(match.getBarcodeStartPosition(),
-                                   sequence.length()),
-                           barcodes[barcodeIndex]);
-                    */
-                    final ReadsWriter writer = outputFilename == null ? writers[barcodeIndex] : singleWriter;
-                    writer.setSequence(sequenceNoBarcode);
-                    writer.setBarcodeIndex(barcodeIndex);
+            final boolean retainReadIndex = inputFilenames.length == 1;
+            progress.displayFreeMemory = true;
+            for (final String inputReadsFilename : inputFilenames) {
+                if (inputReadsFilename.toLowerCase().endsWith(".compact-reads")) {
+                    progress.start("Progressing .compact-reads file " + inputReadsFilename);
+                    for (final Reads.ReadEntry readEntry : new ReadsReader(inputReadsFilename)) {
+                        ReadsReader.decodeSequence(readEntry, sequence);
+                        final BarcodeMatcherResult match = matcher.matchSequence(sequence);
+                        if (match != null) {
+                            // remove the barcode from the sequence:
+                            final int barcodeIndex = match.getBarcodeIndex();
+                            if (match.isAmbiguous()) {
+                                ++countAmbiguous;
+                            }
+                            final ReadsWriter writer = outputFilename == null ? writers[barcodeIndex] : singleWriter;
+                            writer.setSequence(match.sequenceOf(sequence));
+                            writer.setBarcodeIndex(barcodeIndex);
 
-                    if (readEntry.hasDescription()) {
-                        writer.setDescription(readEntry.getDescription());
+                            if (readEntry.hasDescription()) {
+                                writer.setDescription(readEntry.getDescription());
+                            }
+                            if (readEntry.hasReadIdentifier()) {
+                                writer.setIdentifier(readEntry.getReadIdentifier());
+                            }
+                            if (readEntry.hasQualityScores()) {
+                                qualitiesNoBarcode.clear();
+                                qualitiesNoBarcode.addElements(0, readEntry.getQualityScores().toByteArray(),
+                                        match.getSequenceStartPosition(),
+                                        match.getSequenceStartPosition() + match.getSequenceLength());
+                                writer.setQualityScores(qualitiesNoBarcode.toByteArray());
+                            }
+                            if (retainReadIndex) {
+                                writer.appendEntry(readEntry.getReadIndex());
+                            } else {
+                                writer.appendEntry();
+                            }
+                            ++countMatched;
+                        } else {
+                            ++countNoMatch;
+                        }
+                        progress.lightUpdate();
                     }
-                    if (readEntry.hasReadIdentifier()) {
-                        writer.setIdentifier(readEntry.getReadIdentifier());
-                    }
-                    if (readEntry.hasQualityScores()) {
-
-                        writer.setQualityScores(readEntry.getQualityScores().toByteArray());
-                    }
-                    writer.appendEntry(readEntry.getReadIndex());
-                    ++countMatched;
+                    progress.stop();
                 } else {
-                    ++countNoMatch;
+                    final FastXReader fastxReader = new FastXReader(inputReadsFilename);
+                    fastxReader.setUseCasavaQualityFilter(true);
+                    progress.start("Progressing fasta/fastq file " + inputReadsFilename);
+                    for (final FastXEntry readEntry : new FastXReader(inputReadsFilename)) {
+                        final BarcodeMatcherResult match = matcher.matchSequence(readEntry.getSequence());
+                        if (match != null) {
+                            // remove the barcode from the sequence:
+                            final int barcodeIndex = match.getBarcodeIndex();
+                            if (match.isAmbiguous()) {
+                                ++countAmbiguous;
+                            }
+                            final ReadsWriter writer = outputFilename == null ? writers[barcodeIndex] : singleWriter;
+                            writer.setSequence(match.sequenceOf(readEntry.getSequence()));
+                            writer.setBarcodeIndex(barcodeIndex);
 
+                            if (includeDescriptions) {
+                                writer.setDescription(readEntry.getEntryHeader());
+                            }
+                            if (includeIdentifiers) {
+                                final MutableString description = readEntry.getEntryHeader();
+                                final String identifier = description.toString().split("[\\s]")[0];
+                                writer.setIdentifier(identifier);
+                            }
+                            if (readEntry.getQuality().length() > 0) {
+                                writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
+                                        readEntry.getQuality().subSequence(
+                                                match.getSequenceStartPosition(),
+                                                match.getSequenceStartPosition() + match.getSequenceLength()),
+                                        false, apiMode));
+                            }
+                            writer.appendEntry();
+                            ++countMatched;
+                        } else {
+                            ++countNoMatch;
+                        }
+                        progress.lightUpdate();
+                    }
+                    progress.stop();
                 }
             }
             System.out.format("barcode found in %g %% of the reads %n", percent(countMatched, countMatched + countNoMatch));
@@ -230,6 +312,34 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         }
     }
 
+    /**
+     * Get the quality encoding scale used for the input fastq file.
+     *
+     * @return the quality encoding scale used for the input fastq file
+     */
+    public QualityEncoding getQualityEncoding() {
+        return qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
+        this.qualityEncoding = qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final String qualityEncoding) {
+        this.qualityEncoding = QualityEncoding.valueOf(qualityEncoding.toUpperCase());
+    }
 
     /**
      * Main method.
