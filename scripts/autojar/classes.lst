@@ -21,4 +21,3 @@ it.unimi.dsi.fastutil.io.RepositionableStream.class
 it.unimi.dsi.fastutil.bytes.ByteList.class
 it.unimi.dsi.fastutil.bytes.ByteArrayList.class
 it/unimi/dsi/io/*.in.*
-META-INF/services/*
