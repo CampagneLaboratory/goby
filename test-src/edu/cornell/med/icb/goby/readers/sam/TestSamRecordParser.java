@@ -39,32 +39,6 @@ public class TestSamRecordParser {
     //  testSamToCompactTrickCase1-3 fails because this the sam reference builder requires an MD:Z tag.
     //
 
-    /*
-    @Test
-    public void testSamToCompactTrickCase3() throws IOException {
-        final String inputFile = "test-data/splicedsamhelper/tricky-spliced-3.sam";
-        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
-        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        final SamRecordParser recordParser = new SamRecordParser();
-        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
-            if (segments.get(0).readNum == 0) {
-                assertEquals("Incorrect number of segments", 1, segments.size());
-                GobySamRecord first = segments.get(0);
-                assertEquals(170769 - 1, first.getPosition());
-                assertTrue(first.hasMate);
-                assertEquals(216048 - 1, first.mateStartPosition);
-            } else {
-                assertEquals("Incorrect number of segments", 2, segments.size());
-                GobySamRecord second = segments.get(0);
-                assertEquals(216048 - 1, second.getPosition());
-                assertTrue(second.hasMate);
-                assertEquals(170769 - 1, second.mateStartPosition);
-            }
-        }
-    }
-    */
 
     @Test
     // like 9 no genome
@@ -75,10 +49,10 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
+            GobySamRecordEntry first = segments.get(0);
 
             assertEquals(0, first.getFragmentIndex());
             assertEquals(3 - 1, first.getPosition());
@@ -95,10 +69,10 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
+            GobySamRecordEntry first = segments.get(0);
 
             if (first.readNum == 0) {
                 assertEquals(0, first.getFragmentIndex());
@@ -118,10 +92,10 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
+            GobySamRecordEntry first = segments.get(0);
             assertEquals(0, first.getFragmentIndex());
             assertEquals(26800015 - 1, first.getPosition());
         }
@@ -137,11 +111,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
-            GobySamRecord second = segments.get(1);
+            GobySamRecordEntry first = segments.get(0);
+            GobySamRecordEntry second = segments.get(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -164,11 +138,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
-            GobySamRecord second = segments.get(1);
+            GobySamRecordEntry first = segments.get(0);
+            GobySamRecordEntry second = segments.get(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -200,11 +174,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
 
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecord first = segments.get(0);
-            GobySamRecord second = segments.get(1);
+            GobySamRecordEntry first = segments.get(0);
+            GobySamRecordEntry second = segments.get(1);
 
             assertEquals(4, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -228,13 +202,13 @@ public class TestSamRecordParser {
         final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 3, segments.size());
 
-            final GobySamRecord first = segments.get(0);
-            final GobySamRecord second = segments.get(1);
-            final GobySamRecord third = segments.get(2);
+            final GobySamRecordEntry first = segments.get(0);
+            final GobySamRecordEntry second = segments.get(1);
+            final GobySamRecordEntry third = segments.get(2);
 
             assertEquals(32485524 - 1, first.position);
             assertEquals(2, first.queryPosition);
@@ -267,12 +241,12 @@ public class TestSamRecordParser {
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecord> segments = recordParser.processRead(samRecord);
+            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 1, segments.size());
-            final GobySamRecord segment = segments.get(0);
+            final GobySamRecordEntry segment = segments.get(0);
             if (segment.readNum == 0) {
-                final GobySamRecord first = segment;
+                final GobySamRecordEntry first = segment;
                 assertEquals(190077 - 1, first.getPosition());
                 assertEquals(13, first.getQueryPosition());
                 assertEquals("AGTGGCAGCACGA", first.getSoftClippedBasesLeft());
@@ -311,7 +285,7 @@ public class TestSamRecordParser {
                 assertArrayEquals(byteArray(27, 35), seqvar.getToQuality().toByteArray());  // 3, 15 in the old test
 
             } else if (segment.readNum == 1) {
-                final GobySamRecord second = segment;
+                final GobySamRecordEntry second = segment;
                 //second's CIGAR is 20S48M
                 assertEquals(190246 - 1, second.getPosition());
                 assertEquals(20, second.getQueryPosition());

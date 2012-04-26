@@ -34,12 +34,12 @@ import java.util.List;
  * If the read has three splices, it will create three of these.
  * AlignmentEntry objects will be created from these objects.
  */
-public class GobySamRecord implements Resettable {
+public class GobySamRecordEntry implements Resettable {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(GobySamRecord.class);
+    private static final Logger LOG = Logger.getLogger(GobySamRecordEntry.class);
 
     private QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool;
 
@@ -78,10 +78,10 @@ public class GobySamRecord implements Resettable {
     /**
      * Not for use.
      */
-    private GobySamRecord() {
+    private GobySamRecordEntry() {
     }
 
-    public GobySamRecord(final QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool) {
+    public GobySamRecordEntry(final QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool) {
         this();
         this.gobyQuickSeqvarPool = gobyQuickSeqvarPool;
         softClippedBasesLeft = new MutableString();

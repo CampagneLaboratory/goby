@@ -43,14 +43,14 @@ public class SamRecordParser {
      */
     private static final Logger LOG = Logger.getLogger(SamRecordParser.class);
 
-    private static final List<GobySamRecord> EMPTY_LIST;
+    private static final List<GobySamRecordEntry> EMPTY_LIST;
     static {
-        EMPTY_LIST = new ArrayList<GobySamRecord>(0);
+        EMPTY_LIST = new ArrayList<GobySamRecordEntry>(0);
     }
 
-    private final List<GobySamRecord> segments;
+    private final List<GobySamRecordEntry> segments;
     private final MutableString diffBases;
-    private final QueueObjectPool<GobySamRecord> gobySamRecordPool;
+    private final QueueObjectPool<GobySamRecordEntry> gobySamRecordPool;
     private final QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool;
     private final ByteList allReadQuals;
     private boolean hasReadQuals;
@@ -70,14 +70,14 @@ public class SamRecordParser {
                 return new GobyQuickSeqvar();
             }
         };
-        gobySamRecordPool = new QueueObjectPool<GobySamRecord>() {
+        gobySamRecordPool = new QueueObjectPool<GobySamRecordEntry>() {
             @Override
-            public GobySamRecord makeObject() {
-                return new  GobySamRecord(gobyQuickSeqvarPool);
+            public GobySamRecordEntry makeObject() {
+                return new GobySamRecordEntry(gobyQuickSeqvarPool);
             }
         };
         qualityEncoding = QualityEncoding.SANGER;
-        segments = new ArrayList<GobySamRecord>(3);
+        segments = new ArrayList<GobySamRecordEntry>(3);
         diffBases =  new MutableString();
         numRecordsProcessed = 0;
         numRecordsSkipped = 0;
@@ -86,7 +86,7 @@ public class SamRecordParser {
     }
 
     private void reset() {
-        for (final GobySamRecord segment : segments) {
+        for (final GobySamRecordEntry segment : segments) {
             gobySamRecordPool.returnObject(segment);
         }
         segments.clear();
@@ -120,12 +120,12 @@ public class SamRecordParser {
 
     /**
      * Parse a SAMRecord. If not spliced, this will return ONE segment.
-     * If the alignment entry in the samRecord was spliced, this will return one GobySamRecord for
-     * each splice segment, if not spliced this will return a list containing a single GobySamRecord.
+     * If the alignment entry in the samRecord was spliced, this will return one GobySamRecordEntry for
+     * each splice segment, if not spliced this will return a list containing a single GobySamRecordEntry.
      * @param samRecord the samRecord to parse.
-     * @return list of GobySamRecord ready to be converted to AlignmentEntries (and SequenceVariantions)
+     * @return list of GobySamRecordEntry ready to be converted to AlignmentEntries (and SequenceVariantions)
      */
-    public List<GobySamRecord> processRead(final SAMRecord samRecord) {
+    public List<GobySamRecordEntry> processRead(final SAMRecord samRecord) {
         if (samRecord.getReadUnmappedFlag()) {
             numRecordsSkipped++;
             return EMPTY_LIST;
@@ -174,7 +174,7 @@ public class SamRecordParser {
             LOG.debug("Cigar Ops:");
         }
 
-        GobySamRecord segment = null;
+        GobySamRecordEntry segment = null;
         for (int cigarElementNum = 0; cigarElementNum < numCigarElements; cigarElementNum++) {
             final CigarElement cigarElement = cigarElementList.get(cigarElementNum);
             final CigarOperator cigarOperator = cigarElement.getOperator();
@@ -278,7 +278,7 @@ public class SamRecordParser {
             refPosition += refPositionDelta;
         }
 
-        for (final GobySamRecord aSegment : segments) {
+        for (final GobySamRecordEntry aSegment : segments) {
             aSegment.observeVariations();
             if (debug && LOG.isDebugEnabled()) {
                 aSegment.debugOutput();
