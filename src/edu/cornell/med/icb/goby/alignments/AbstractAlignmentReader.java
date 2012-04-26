@@ -201,7 +201,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
      *
      * @return true if the reader has loaded the header
      */
-    protected boolean isHeaderLoaded() {
+    protected final boolean  isHeaderLoaded() {
         return this.headerLoaded;
     }
 

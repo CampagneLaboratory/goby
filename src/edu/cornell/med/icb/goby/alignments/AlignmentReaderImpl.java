@@ -24,7 +24,6 @@ import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.compression.ChunkCodec;
 import edu.cornell.med.icb.goby.compression.FastBufferedMessageChunksReader;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
-import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -49,8 +48,7 @@ import java.util.zip.GZIPInputStream;
  *         Date: Apr 30, 2009
  *         Time: 6:36:04 PM
  */
-public class
-        AlignmentReaderImpl extends AbstractAlignmentReader implements AlignmentReader {
+public class AlignmentReaderImpl extends AbstractAlignmentReader implements AlignmentReader {
     /**
      * Used to log debug and informational messages.
      */
@@ -412,20 +410,12 @@ public class
             throw new NoSuchElementException();
         }
         try {
-            if (LOG.isTraceEnabled()) {
-                if (back == null) {
-                    identifiers = getTargetIdentifiers();
-                    back = new DoubleIndexedIdentifier(identifiers);
-                }
 
-                LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()),
-                        nextEntry.getPosition()));
-            }
             if (!nextEntry.hasMultiplicity()) {
                 // set the default multiplicity when the field was not defined.
-                Alignments.AlignmentEntry.Builder builder=Alignments.AlignmentEntry.newBuilder(nextEntry);
+                Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder(nextEntry);
                 builder.setMultiplicity(1);
-                nextEntry=builder.build();
+                nextEntry = builder.build();
             }
             return nextEntry;
 
@@ -460,6 +450,22 @@ public class
                     collection = (Alignments.AlignmentCollection) codec.decode(compressedBytes);
                     if (collection.getAlignmentEntriesCount() == 0) {
                         return false;
+                    }
+                    if (LOG.isTraceEnabled()) {
+                        if (back == null) {
+                            readHeader();
+                            identifiers = getTargetIdentifiers();
+                            back = new DoubleIndexedIdentifier(identifiers);
+                        }
+
+                        final Alignments.AlignmentEntry firstEntry = collection.getAlignmentEntries(0);
+                        if (targetPositionOffsets != null) {
+                            LOG.trace(String.format("New collection with first entry at position id=%s/pos=%d absolutePosition=%d %n", back.getId(firstEntry.getTargetIndex()),
+                                    firstEntry.getPosition(),
+                                    recodePosition(firstEntry.getTargetIndex(), firstEntry.getPosition())
+                                    ));
+                        }
+
                     }
                 }
             } catch (IOException e) {
@@ -512,8 +518,20 @@ public class
             positionChanged = Math.max(this.startPosition, position);
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("skipTo %d/%d%n", targetIndex, positionChanged));
+            readHeader();
+            if (back == null) {
+
+                identifiers = getTargetIdentifiers();
+                back = new DoubleIndexedIdentifier(identifiers);
+            }
+            if (targetPositionOffsets != null) {
+                LOG.trace(String.format("skipTo id=%s/pos=%d absolutePosition=%d %n", back.getId(targetIndex), positionChanged,
+                        recodePosition(targetIndex, position)
+                        ));
+            }
+
         }
+
         repositionInternal(targetIndex, positionChanged, false);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
@@ -542,10 +560,10 @@ public class
         if (!sorted) {
             throw new UnsupportedOperationException("reposition cannot be used with unsorted alignments.");
         }
-
         readIndex();
+        this.alignmentEntryReader.flush();
         repositionInternal(targetIndex, position, true);
-    }
+            }
 
     /**
      * Reposition to a genomic position. The goBack flag, when true, allows to reposition to positions that
@@ -577,16 +595,16 @@ public class
 
         // max below ensures we never go back to before the start of the slice the reader was restricted to at
         // construction time:
-        final long newPosition = Math.max(startOffset, indexOffsets.getLong(offsetIndex));
+        final long newBytePosition = Math.max(startOffset, indexOffsets.getLong(offsetIndex));
         final long currentPosition = alignmentEntryReader.position();
-        if (newPosition >= currentPosition) {
+        if (newBytePosition >= currentPosition) {
 
-            seek(newPosition);
+            seek(newBytePosition);
         } else {
             if (goBack) {
                 // only reposition to past locations if we are called directly through reposition. Otherwise, we honor
                 // the skipTo contract and do not reposition to previously visited locations.
-                seek(newPosition);
+                seek(newBytePosition);
             }
         }
     }
@@ -686,12 +704,12 @@ public class
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
             queryIndicesWerePermuted = header.getQueryIndicesWerePermuted();
 
-             if (header.getTargetLengthCount() > 0) {
+            if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
             }
             numberOfQueries = header.getNumberOfQueries();
             numberOfTargets = header.getNumberOfTargets();
-            setHeaderLoaded(true);
+
             numberOfAlignedReads = header.getNumberOfAlignedReads();
             // we determine sortedness and index state from the header and by checking that the index file exists.
             // This allows to recover alignments when the index file was deleted. We can then read and sort them
@@ -701,14 +719,17 @@ public class
             gobyVersion = header.getVersion();
             allReadQualityScores = header.getAllReadQualityScores();
             hasQueryIndexOccurrences = header.getQueryIndexOccurrences();
-            readOriginInfoList=header.getReadOriginList();
-            hasAmbiguity=header.getAmbiguityStoredInEntries();
-       }
+            readOriginInfoList = header.getReadOriginList();
+            hasAmbiguity = header.getAmbiguityStoredInEntries();
+
+            setHeaderLoaded(true);
+        }
     }
 
     /**
      * Indicates if all the entries of this alignment have the read_quality_score field.
-     * @return  True or False.
+     *
+     * @return True or False.
      */
     public boolean getHasAllReadQualityScores() {
         return allReadQualityScores;
@@ -910,4 +931,5 @@ public class
         assert isHeaderLoaded() : "header must be loaded to query Goby version.";
         return gobyVersion == null || "".equals(gobyVersion) ? "1.9.5-" : gobyVersion;
     }
-}
+        }
+

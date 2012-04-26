@@ -67,10 +67,7 @@ public class RepositionableInputStream extends InputStream implements Reposition
     }
 
     @Override
-    public int read(
-            byte[] bytes,
-            int i,
-            int i1) throws IOException {
+    public int read(byte[] bytes, int i, int i1) throws IOException {
 
         int read = delegate.read(bytes, i, i1);
         currentPosition += read;
@@ -78,9 +75,7 @@ public class RepositionableInputStream extends InputStream implements Reposition
     }
 
     @Override
-    public long skip
-            (
-                    long l) throws IOException {
+    public long skip(long l) throws IOException {
         long skip = delegate.skip(l);
         currentPosition += l;
 
@@ -88,14 +83,12 @@ public class RepositionableInputStream extends InputStream implements Reposition
     }
 
     @Override
-    public int available
-            () throws IOException {
+    public int available() throws IOException {
         return delegate.available();
     }
 
     @Override
-    public void close
-            () throws IOException {
+    public void close() throws IOException {
         if (delegate != null) {
             delegate.close();
             delegate = null;
@@ -133,19 +126,25 @@ public class RepositionableInputStream extends InputStream implements Reposition
             channel.position(p);
         } else {
             if (p != currentPosition) {
+
+                if (LOG.isTraceEnabled()) {
+
+                    LOG.trace(String.format("repositioning URL stream to byte position= %d%n", p));
+                }
                 currentPosition = p;
                 delegate.close();
                 delegate = null;
-
                 delegate = getStream(resource, p);
+                markedPosition = p;
+
             }
         }
     }
 
     @Override
-    public long position
-            () throws IOException {
+    public long position() throws IOException {
         return currentPosition;
+
     }
 
     public static InputStream getStream(String resource) throws IOException {
@@ -163,7 +162,8 @@ public class RepositionableInputStream extends InputStream implements Reposition
             } else {
 
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestProperty("first-byte-pos", Long.toString(startOffset));
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("Range", "bytes="+Long.toString(startOffset)+"-");
                 LOG.debug(String.format("Opening URL=%s at startOffset=%d", resource, startOffset));
                 return urlConnection.getInputStream();
             }
@@ -188,10 +188,10 @@ public class RepositionableInputStream extends InputStream implements Reposition
 
     /**
      * Determine if a File.URL exists.
+     *
+     * @param resource
      */
-    public static boolean resourceExist
-    (String
-             resource) {
+    public static boolean resourceExist(String resource) {
         try {
             URL url = new URL(resource);
             if ("file".equals(url.getProtocol())) {
@@ -215,9 +215,7 @@ public class RepositionableInputStream extends InputStream implements Reposition
         return new File(resource).exists();
     }
 
-    public static RepositionableStream get
-            (String
-                     resource) throws IOException {
+    public static RepositionableStream get(String resource) throws IOException {
         return new RepositionableInputStream(resource);
     }
 }

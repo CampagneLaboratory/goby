@@ -26,6 +26,8 @@ import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.io.IOException;
  *         Time: 5:06:55 PM
  */
 public class FastBufferedMessageChunksReader extends MessageChunksReader {
+    private static final Log LOG = LogFactory.getLog(FastBufferedMessageChunksReader.class);
     private final long end;
     private final FastBufferedInputStream input;
     /**
@@ -138,7 +141,11 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
      * @throws IOException If an error occurs reading this file.
      */
     public void seek(final long position) throws IOException {
+        input.flush();
         reposition(position, Long.MAX_VALUE);
+        // invalidate any bytes already read:
+        compressedBytes = null;
+
     }
 
     /**
@@ -183,4 +190,11 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     }
 
 
+    /**
+     * Flush buffer so that content will be read from the input again.
+     */
+    public void flush() {
+
+        input.flush();
+    }
 }

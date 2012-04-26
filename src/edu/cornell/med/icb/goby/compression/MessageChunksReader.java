@@ -45,6 +45,7 @@ public class MessageChunksReader implements Closeable {
 
     long bytesRead = 0;
     protected ChunkCodec chunkCodec;
+    private int chunkIndex = 0;
 
     public byte[] getCompressedBytes() {
         return compressedBytes;
@@ -95,7 +96,7 @@ public class MessageChunksReader implements Closeable {
                 if (chunkCodec == null || codecRegistrationCode != chunkCodec.registrationCode()) {
                     installCodec(codecRegistrationCode);
                 }
-
+                chunkIndex++;
                 // read the number of compressed bytes to follow:
                 final int numBytes = in.readInt();
                 bytesRead += 4;
@@ -107,15 +108,15 @@ public class MessageChunksReader implements Closeable {
                 // read the compressed stream:
                 final byte[] bytes = new byte[numBytes];
                 int totalRead = 0;
-                int offset=0;
+                int offset = 0;
                 while (totalRead < numBytes) {
                     final int numRead = in.read(bytes, offset, numBytes-totalRead);
-                    if (numRead==-1) {
+                    if (numRead == -1) {
                         break;
                     }
                     bytesRead += numBytes;
                     totalRead += numRead;
-                    offset+=numRead;
+                    offset += numRead;
                 }
                 if (totalRead != numBytes) {
                     LOG.warn("Expected " + numBytes + " but got " + totalRead);

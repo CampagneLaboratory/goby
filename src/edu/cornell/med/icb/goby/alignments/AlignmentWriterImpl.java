@@ -352,7 +352,10 @@ public class AlignmentWriterImpl implements AlignmentWriter {
 
             indexOffsets.add(newOffset);
             indexAbsolutePositions.add(codedPosition);
-            //    LOG.warn(String.format("INDEX Pushing offset=%d position=%d", newOffset, codedPosition));
+            LOG.warn(String.format("INDEX Pushing targetIndex= %d position= %d offset-in-file= %d absolutePosition= %d",
+                    firstTargetIndexInChunk,
+                    firstPositionInChunk,
+                    newOffset, codedPosition));
         }
     }
 

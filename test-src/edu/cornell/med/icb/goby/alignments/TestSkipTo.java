@@ -23,15 +23,21 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -44,8 +50,8 @@ public class TestSkipTo {
      */
     private static final Log LOG = LogFactory.getLog(TestSkipTo.class);
     private static final String BASE_TEST_DIR = "test-results/alignments-skip-to";
-    private int numEntriesPerChunk=2;
-    private int constantQueryLength=40;
+    private int numEntriesPerChunk = 2;
+    private int constantQueryLength = 40;
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -292,7 +298,6 @@ public class TestSkipTo {
         final AlignmentReader reader =
                 new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
-
         final Alignments.AlignmentEntry c = reader.skipTo(2, 0);
         assertNull(c);
 
@@ -352,11 +357,65 @@ public class TestSkipTo {
         assertEquals(13, d.getPosition());
 
         final Alignments.AlignmentEntry e = reader.next();
-               assertEquals(2, e.getTargetIndex());
-               assertEquals(123, e.getPosition());
+        assertEquals(2, e.getTargetIndex());
+        assertEquals(123, e.getPosition());
 
 
+    }
 
+    @Test
+    public void testSkipWithUrl() throws IOException {
+
+        // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
+        //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain-reindexed.entries");
+        reader.readHeader();
+        reader.reposition(10, 100000000);
+        Alignments.AlignmentEntry entry = reader.skipTo(10, 100000000);
+        assertNotNull(entry);
+        assertEquals(10, entry.getTargetIndex());
+        assertTrue(100000000 <= entry.getPosition());
+
+    }
+
+    @Test
+    public void testUrlRange() throws IOException {
+
+        long startOffset = 0;
+        RepositionableInputStream is = new RepositionableInputStream("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain-reindexed.entries");
+        readFromOffset(is, startOffset);
+        readFromOffset(is, 2);
+        readFromOffset(is, 9);
+
+    }
+
+    private void readFromOffset(RepositionableInputStream is, long startOffset) throws IOException {
+        System.out.println("Reading from " + startOffset);
+        is.position(startOffset);
+        read10(is, startOffset);
+    }
+
+
+    private void read10(InputStream is, long startOffset) throws IOException {
+        DataInputStream dis = new DataInputStream(is);
+        for (int i = 0; i < 10; i++) {
+            final byte b = dis.readByte();
+            System.out.println(Byte.toString(b));
+            if (i == 9) {
+                switch ((int) startOffset) {
+                    case 0:
+                        assertEquals(2, b);
+                        break;
+                    case 2:
+                        assertEquals(-59, b);
+                        break;
+                    case 9:
+                        assertEquals(0, b);
+                        break;
+
+                }
+            }
+        }
     }
 
 }
