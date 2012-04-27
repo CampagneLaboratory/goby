@@ -45,9 +45,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
+ * Test creation of CompactAlignment from SAM.
+ * This used to be done using SamHelper/SplicedSamHelper so this class was named TestSplicedSamHelper but
+ * this is now done with SamRecordParser. Some of the tests in TestSamRecordParser are duplicates of these
+ * tests. Only a few (two?) of these tests actually test SplicedSamHelper, the rest use directly use
+ * SamToCompact() which no longer uses SplicedSamHelper (the mode that uses that was renamed, pre-elimiation,
+ * to SamToCompactSamHelperMode).
+ * TODO: Merge this with TestSamRecordParser.
  * @author Fabien Campagne
- *         Date: 3/29/12
- *         Time: 12:11 PM
  */
 public class TestSplicedSamHelper {
     /**
