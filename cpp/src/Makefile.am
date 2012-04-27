@@ -85,7 +85,7 @@ GsnapParseTest1_SOURCES = \
 # file should not trigger other things to build.
 #
 goby.timestamp:
-	echo '#define BUILD_TIMESTAMP "'`date "+%G%m%d%k%M%S"`'"' > goby/timestamp.h
+	echo '#define BUILD_TIMESTAMP "'`date "+%G%m%d%k%M%S"  | sed 's/ //g'`'"' > goby/timestamp.h
 
 MAINTAINERCLEANFILES = \
 	Makefile.in \

@@ -502,7 +502,7 @@ extern "C" {
             if (refChar != '-') {
                 refPosition++;
             }
-            refPositions[i] = refPosition;
+            refPositions[i] = refPosition - queryStart;
             int readIndexI = reverseStrand ? mergedSize - i - 1 : i;
             char queryChar = query[readIndexI];
             if (queryChar != '-') {
