@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.readers.sam.TestSamRecordParser;
 import it.unimi.dsi.fastutil.ints.*;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -279,29 +280,9 @@ public class TestIteratedSortedAlignment2 {
     @Test
     public void testSequenceVariationsMatch() throws IOException {
         setupData();
-        for (int queryIndex : seqvarQueryIndexes) {
-            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
-            PerQueryAlignmentData var = seqvarDataMap.get(queryIndex);
-
-            Map<String, String> alignSeqVarsMap = align.refPositionReadIndexToBaseMap;
-            Map<String, String> varSeqVarsMap = var.refPositionReadIndexToBaseMap;
-
-            assertEquals(String.format("queryIndex=%d alignSeqVarsMap.size()(%d) should equal varSeqVarsMap.size()(%d)",
-                    queryIndex,
-                    alignSeqVarsMap.size(), varSeqVarsMap.size()),
-                    alignSeqVarsMap.size(), varSeqVarsMap.size());
-            for (Map.Entry<String, String> varEntry : varSeqVarsMap.entrySet()) {
-                // Make sure the sequence variations match
-                final String varEntryBases = varEntry.getValue();
-                final String alignEntryBases = alignSeqVarsMap.get(varEntry.getKey());
-                assertNotNull(String.format("queryIndex=%d Could not find alignSeqVarsMap entry for %s",
-                        queryIndex, varEntry.getKey()),
-                        alignEntryBases);
-                assertEquals(String.format("queryIndex=%d alignEntryBases(%s) should equal varEntryBases(%s)",
-                        queryIndex, alignEntryBases, varEntryBases),
-                        alignEntryBases, varEntryBases);
-            }
-        }
+        TestSamRecordParser.verifySequenceVariationsMatch(
+                seqvarQueryIndexes, alignmentQueryIndexes,
+                seqvarDataMap, alignmentDataMap);
     }
 
     /*------------------ Support methods below here ------------------*/
@@ -340,7 +321,7 @@ public class TestIteratedSortedAlignment2 {
 
         // Read the per-base sequence variations from here
         seqvarDataMap = readSeqVarFile(
-                "test-data/seq-var-test/seq-var-reads-gsnap.display-seq-var-tsv-base.tsv");
+                "test-data/seq-var-test/seq-var-reads-gsnap.seqvar");
         // ... Update the data from the sequence variations file to add the queries from the compact-reads file
         seqvarQueryIndexes = seqvarDataMap.keySet().toIntArray();
         Arrays.sort(seqvarQueryIndexes);
@@ -353,8 +334,8 @@ public class TestIteratedSortedAlignment2 {
             }
         }
 
-        assertEquals(12, alignmentQueryIndexes.length);
-        assertEquals(12, seqvarQueryIndexes.length);
+        assertEquals(11, alignmentQueryIndexes.length);
+        assertEquals(11, seqvarQueryIndexes.length);
 
         dataSetup = true;
     }
@@ -369,6 +350,7 @@ public class TestIteratedSortedAlignment2 {
             int readIndex = dataline.getInt("read-index");
             char fromBase = dataline.getString("var-from").charAt(0);
             char toBase = dataline.getString("var-to").charAt(0);
+            Integer score = dataline.getInt("score");
 
             PerQueryAlignmentData var = seqvarDataMap.get(queryIndex);
             if (var == null) {

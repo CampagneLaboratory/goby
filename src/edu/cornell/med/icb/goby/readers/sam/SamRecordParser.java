@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.readers.sam;
 
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.cornell.med.icb.goby.util.pool.QueueObjectPool;
+import edu.cornell.med.icb.goby.util.pool.Resettable;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
@@ -30,28 +30,20 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.SequenceUtil;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Class to parse a SAMRecord. This replaces SamHelper and SplicedSamHelper.
  */
-public class SamRecordParser {
+public class SamRecordParser implements Resettable {
 
     /**
      * Used to log debug and informational messages.
      */
     private static final Logger LOG = Logger.getLogger(SamRecordParser.class);
 
-    private static final List<GobySamRecordEntry> EMPTY_LIST;
-    static {
-        EMPTY_LIST = new ArrayList<GobySamRecordEntry>(0);
-    }
-
-    private final List<GobySamRecordEntry> segments;
+    private final GobySamRecord gobySamRecord;
     private final MutableString diffBases;
-    private final QueueObjectPool<GobySamRecordEntry> gobySamRecordPool;
-    private final QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool;
     private final ByteList allReadQuals;
     private boolean hasReadQuals;
     private QualityEncoding qualityEncoding;
@@ -64,20 +56,9 @@ public class SamRecordParser {
 
     public SamRecordParser() {
         debug = Util.log4JIsConfigured();
-        gobyQuickSeqvarPool = new QueueObjectPool<GobyQuickSeqvar>() {
-            @Override
-            public GobyQuickSeqvar makeObject() {
-                return new GobyQuickSeqvar();
-            }
-        };
-        gobySamRecordPool = new QueueObjectPool<GobySamRecordEntry>() {
-            @Override
-            public GobySamRecordEntry makeObject() {
-                return new GobySamRecordEntry(gobyQuickSeqvarPool);
-            }
-        };
+
         qualityEncoding = QualityEncoding.SANGER;
-        segments = new ArrayList<GobySamRecordEntry>(3);
+        gobySamRecord = new GobySamRecord();
         diffBases =  new MutableString();
         numRecordsProcessed = 0;
         numRecordsSkipped = 0;
@@ -85,19 +66,15 @@ public class SamRecordParser {
         debugMessage = new MutableString(); // No need to reset. this will be reset for each use.
     }
 
-    private void reset() {
-        for (final GobySamRecordEntry segment : segments) {
-            gobySamRecordPool.returnObject(segment);
-        }
-        segments.clear();
+    @Override
+    public void reset() {
+        gobySamRecord.reset();
         diffBases.length(0);
         allReadQuals.clear();
         hasReadQuals = false;
     }
 
     public void clear() {
-        gobyQuickSeqvarPool.clear();
-        gobyQuickSeqvarPool.clear();
         numRecordsProcessed = 0;
         numRecordsSkipped = 0;
     }
@@ -119,19 +96,21 @@ public class SamRecordParser {
     }
 
     /**
-     * Parse a SAMRecord. If not spliced, this will return ONE segment.
-     * If the alignment entry in the samRecord was spliced, this will return one GobySamRecordEntry for
-     * each splice segment, if not spliced this will return a list containing a single GobySamRecordEntry.
+     * Parse a SAMRecord. If the read is unmapped this will return null.
+     * If not spliced, this will return a GobySamRecord that contains one segment.
+     * If the alignment entry in the samRecord was spliced, this will return a GobySamRecord which
+     * contains one GobySamSegment for each splice segment
      * @param samRecord the samRecord to parse.
-     * @return list of GobySamRecordEntry ready to be converted to AlignmentEntries (and SequenceVariantions)
+     * @return null if the read was unmapped OR a GobySamRecord which is ready to be converted to AlignmentEntries
+     * (and SequenceVariations)
      */
-    public List<GobySamRecordEntry> processRead(final SAMRecord samRecord) {
+    public GobySamRecord processRead(final SAMRecord samRecord) {
         if (samRecord.getReadUnmappedFlag()) {
             numRecordsSkipped++;
-            return EMPTY_LIST;
+            return null;
         }
-        reset();
 
+        reset();
         int numInserts = 0;
         int numDeletes = 0;
         final String allRefBases = new String(SequenceUtil.makeReferenceFromAlignment(samRecord, true));
@@ -146,7 +125,6 @@ public class SamRecordParser {
         int refPosition = 1;
         int readIndexDelta;
         int refPositionDelta;
-        int fragmentIndex = 0;
         final int alignmentStartPosition = samRecord.getAlignmentStart();
         final List<CigarElement> cigarElementList = samRecord.getCigar().getCigarElements();
         final int numCigarElements = cigarElementList.size();
@@ -174,30 +152,29 @@ public class SamRecordParser {
             LOG.debug("Cigar Ops:");
         }
 
-        GobySamRecordEntry segment = null;
+        gobySamRecord.query = allReadBases;
+        gobySamRecord.targetIndex = samRecord.getReferenceIndex();
+        if (samRecord.getReadPairedFlag() && !samRecord.getMateUnmappedFlag()) {
+            gobySamRecord.hasMate = true;
+            gobySamRecord.mateTargetIndex = samRecord.getMateReferenceIndex();
+            gobySamRecord.mateStartPosition = samRecord.getMateAlignmentStart() - 1;
+        } else {
+            gobySamRecord.hasMate = false;
+        }
+        gobySamRecord.pairFlags = samRecord.getFlags();
+        gobySamRecord.readNum = numRecordsProcessed + numRecordsSkipped;
+        gobySamRecord.reverseStrand = reverseStrand;
+        GobySamSegment segment = null;
         for (int cigarElementNum = 0; cigarElementNum < numCigarElements; cigarElementNum++) {
             final CigarElement cigarElement = cigarElementList.get(cigarElementNum);
             final CigarOperator cigarOperator = cigarElement.getOperator();
             final int cigarLength = cigarElement.getLength();
             if (segment == null) {
-                segment = gobySamRecordPool.borrowObject();
-                segments.add(segment);
-
-                segment.fragmentIndex = fragmentIndex++;
-
-                segment.targetIndex = samRecord.getReferenceIndex();
-                if (samRecord.getReadPairedFlag() && !samRecord.getMateUnmappedFlag()) {
-                    segment.hasMate = true;
-                    segment.mateTargetIndex = samRecord.getMateReferenceIndex();
-                    segment.mateStartPosition = samRecord.getMateAlignmentStart() - 1;
-                } else {
-                    segment.hasMate = false;
-                }
-                segment.pairFlags = samRecord.getFlags();
-
+                segment = gobySamRecord.addSegment();
+                // we subtract numSoftClippedBasesLeft because it will be zero for the first segment, but in further
+                // segments we need to account for it.
                 segment.position = alignmentStartPosition - 1 + refStringPosition - numDeletes - numSoftClippedBasesLeft;
                 segment.reverseStrand = reverseStrand;
-                segment.readNum = numRecordsProcessed;
             }
 
             readIndexDelta = 0;
@@ -278,15 +255,12 @@ public class SamRecordParser {
             refPosition += refPositionDelta;
         }
 
-        for (final GobySamRecordEntry aSegment : segments) {
-            aSegment.observeVariations();
-            if (debug && LOG.isDebugEnabled()) {
-                aSegment.debugOutput();
-            }
-        }
+        gobySamRecord.observeVariations();
+        gobySamRecord.numDeletes = numDeletes;
+        gobySamRecord.numInserts = numInserts;
 
         numRecordsProcessed++;
-        return segments;
+        return gobySamRecord;
     }
 
     /**
@@ -335,7 +309,6 @@ public class SamRecordParser {
      * For debugging. Append to the debug string to output the read qualities both in the original ASCII
      * and as transformed by the qualityEncoder.
      * @param readQualsString the read qualities string, exactly as it appears in the SAM file
-     * @params reverseStrand if the read was aligned in the reverse strand
      */
     private void debugOutputReadQuals(final String readQualsString) {
         debugMessage.append("readQualsStr=").append(readQualsString).append('\n');

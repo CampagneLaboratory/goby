@@ -1,8 +1,8 @@
 #Statistics for merged alignment. 
-#Wed Jul 06 13:02:02 EDT 2011
-number.of.queries=27
-min.query.index=0
-max.query.index=26
+#Fri Apr 27 09:54:20 EDT 2012
+number.of.queries=28
+min.query.index=27
+max.query.index=0
 basename=sorted-seq-var-reads-gsnap
 basename.full=sorted-seq-var-reads-gsnap
-number.alignment.entries=27
+number.alignment.entries=26

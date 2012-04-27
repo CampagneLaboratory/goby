@@ -18,20 +18,17 @@
 
 package edu.cornell.med.icb.goby.util.pool;
 
-import org.apache.commons.pool.BaseObjectPool;
-
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Pool of Resettable objects. The queue/pool size is unbounded so this shouldn't be used
  * when lots and lots of items will simultaneously be borrowed. The idle queue size will never
- * be decreased unless clear() is called. t.reset() will be called when the item is borrowed.
+ * be decreased unless clear() is called. t.reset() at the point the object is returned/invalidated.
  *
  * **  THIS CLASS IS NOT THREAD SAFE. **
  */
-public abstract class QueueObjectPool<T extends Resettable> extends BaseObjectPool<T> {
+public abstract class QueueResettableObjectPool<T extends Resettable> implements ResettableObjectPoolInterface<T> {
 
     /**
      * The pool of objects waiting to be borrowed.
@@ -39,7 +36,7 @@ public abstract class QueueObjectPool<T extends Resettable> extends BaseObjectPo
     private final Queue<T> queue = new LinkedList<T>();
 
     /**
-     * The number of borrowed, active objects.
+     * Abstract class for making objects for the pool / to be borrowed.
      */
     private int numActive;
 
@@ -47,10 +44,11 @@ public abstract class QueueObjectPool<T extends Resettable> extends BaseObjectPo
      * Abstract class for making objects for the pool.
      * @return the new object
      */
+    @Override
     public abstract T makeObject();
 
     /**
-     * Borrow an object
+     * Borrow an object from the pool.
      * @return borrowed object
      */
     @Override
@@ -62,34 +60,36 @@ public abstract class QueueObjectPool<T extends Resettable> extends BaseObjectPo
             t = queue.poll();
         }
         numActive++;
-        t.reset();
         return t;
     }
 
     /**
-     * This does NOT check if the object has already been returned.
-     * Do not return the same object twice!
+     * Return an object to the pool that was borrowed.
+     * reset() will immediately be called on the object.
+     * This does NOT check if the object has already been returned, so  do not return the same object twice.
      * @param t object to return
      */
     @Override
     public void returnObject(final T t) {
-        numActive--;
+        t.reset();
         queue.add(t);
+        numActive--;
     }
 
     /**
-     * Return an object but do not place it back into the pool. For some reason
-     * the object has become bad.
+     * Return an object but do not place it back into the pool as for some reason the object has become bad.
+     * reset() will immediately be called on the object.
      * @param t object being returned but not placed into the queue
      */
     @Override
     public void invalidateObject(final T t) {
         // Don't return the object to the queue. Just let it drop.
+        t.reset();
         numActive--;
     }
 
     /**
-     * Number of idle objects (in the pool)
+     * Number of idle objects (in the pool).
      * @return Number of idle objects
      */
     @Override
@@ -107,7 +107,7 @@ public abstract class QueueObjectPool<T extends Resettable> extends BaseObjectPo
     }
 
     /**
-     * Clear the queue.
+     * Clear objects stored in the pool waited to be borrowed.
      */
     @Override
     public void clear() {

@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
-import edu.cornell.med.icb.goby.util.pool.QueueObjectPool;
 import edu.cornell.med.icb.goby.util.pool.Resettable;
+import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.lang.MutableString;
@@ -30,18 +30,15 @@ import java.util.List;
 
 /**
  * Class to assist with parsing SAM to Goby, making SAM segments, one per splice piece.
- * SamRecordParser, when parsing a non-spliced read, will create one of these.
- * If the read has three splices, it will create three of these.
- * AlignmentEntry objects will be created from these objects.
  */
-public class GobySamRecordEntry implements Resettable {
+public class GobySamSegment implements Resettable {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(GobySamRecordEntry.class);
+    private static final Logger LOG = Logger.getLogger(GobySamSegment.class);
 
-    private QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool;
+    private ResettableObjectPoolInterface<GobyQuickSeqvar> gobyQuickSeqvarPool;
 
     boolean firstPositionsSet;
     int firstReadIndex;
@@ -57,31 +54,19 @@ public class GobySamRecordEntry implements Resettable {
     ByteList readQuals;
     MutableString refBases;
     MutableString diffBases;
-    /** Number of non-N parts from the cigar this string is made from. */
-    int parts;
-    int numInserts;
-    int numDeletes;
     int queryAlignedLength;
     int targetAlignedLength;
     boolean reverseStrand;
-    int fragmentIndex;
-    int readNum;
-
-    int targetIndex;
-    boolean hasMate;
-    int pairFlags;
-    int mateTargetIndex;
-    int mateStartPosition;
 
     private MutableString debugMessage;
 
     /**
      * Not for use.
      */
-    private GobySamRecordEntry() {
+    private GobySamSegment() {
     }
 
-    public GobySamRecordEntry(final QueueObjectPool<GobyQuickSeqvar> gobyQuickSeqvarPool) {
+    public GobySamSegment(final ResettableObjectPoolInterface<GobyQuickSeqvar> gobyQuickSeqvarPool) {
         this();
         this.gobyQuickSeqvarPool = gobyQuickSeqvarPool;
         softClippedBasesLeft = new MutableString();
@@ -107,31 +92,16 @@ public class GobySamRecordEntry implements Resettable {
         softClippedBasesLeft.length(0);
         softClippedBasesRight.length(0);
         for (final GobyQuickSeqvar seqvar : sequenceVariations) {
-            try {
-                gobyQuickSeqvarPool.returnObject(seqvar);
-            } catch (Exception e) {
-                // ?? What to do with this?
-            }
+            gobyQuickSeqvarPool.returnObject(seqvar);
         }
         sequenceVariations.clear();
         readBases.length(0);
         readQuals.clear();
         refBases.length(0);
         diffBases.length(0);
-        parts = 0;
-        numInserts = 0;
-        numDeletes = 0;
         queryAlignedLength = 0;
         targetAlignedLength = 0;
         reverseStrand = false;
-        fragmentIndex = 0;
-        readNum = 0;
-
-        targetIndex = 0;
-        hasMate = false;
-        pairFlags = 0;
-        mateTargetIndex = 0;
-        mateStartPosition = 0;
     }
 
     public void setPositions(final int queryPosition, final int readIndex, final int refPosition) {
@@ -153,7 +123,6 @@ public class GobySamRecordEntry implements Resettable {
         } else {
             debugMessage.append('\n');
             debugMessage.append("alignStart  =").append(position).append('\n');
-            debugMessage.append("fragIndex   =").append(fragmentIndex).append('\n');
             debugMessage.append("queryPos    =").append(queryPosition).append('\n');
             debugMessage.append("qAlignLen   =").append(queryAlignedLength).append('\n');
             debugMessage.append("tAlignLen   =").append(targetAlignedLength).append('\n');
@@ -174,68 +143,6 @@ public class GobySamRecordEntry implements Resettable {
             debugMessage.append("diff        =").append(diffBases.toString());
         }
         LOG.debug(debugMessage);
-    }
-
-    public void observeVariations() {
-        final boolean hasReadQuals = !readQuals.isEmpty();
-        GobyQuickSeqvar seqvar = null;
-        int currentReadIndex = firstReadIndex - (reverseStrand ? -1 : 1);
-        int currentRefPosition = firstRefPosition - 1;
-        int readIndexDelta;
-        int refPositionDelta;
-        for (int i = 0; i < readBases.length(); i++) {
-            readIndexDelta = 1;
-            refPositionDelta = 1;
-            final char refChar = refBases.charAt(i);
-            final char readChar = readBases.charAt(i);
-            if (readChar == '-') {
-                // Deletion
-                readIndexDelta = 0;
-            } else if (refChar == '-') {
-                // Insertion
-                refPositionDelta = 0;
-            }
-            currentReadIndex += (reverseStrand ? -1 : 1) * readIndexDelta;
-            currentRefPosition += refPositionDelta;
-            if (readChar == refChar) {
-                continue;
-            }
-
-            if (seqvar == null) {
-                seqvar = gobyQuickSeqvarPool.borrowObject();
-                seqvar.lastIndexPosition = i;
-                seqvar.readIndex = currentReadIndex;
-                seqvar.position = currentRefPosition;
-                sequenceVariations.add(seqvar);
-            } else {
-                boolean makeNewSeqvar = false;
-                if (seqvar.lastIndexPosition != i - 1) {
-                    makeNewSeqvar = true;
-                } else if (hasReadQuals && readChar == '-') {
-                    // If readChar is '-' and we have quals, we only want to append to the previous
-                    // seqvar if the previous to was a '-'.
-                    final int toLength = seqvar.to.length();
-                    if (toLength > 0 && seqvar.to.charAt(toLength - 1) != '-') {
-                        makeNewSeqvar = true;
-                    }
-                }
-
-                if (makeNewSeqvar) {
-                    seqvar = gobyQuickSeqvarPool.borrowObject();
-                    seqvar.lastIndexPosition = i;
-                    seqvar.readIndex = currentReadIndex;
-                    seqvar.position = currentRefPosition;
-                    sequenceVariations.add(seqvar);
-                } else {
-                    seqvar.lastIndexPosition = i;
-                }
-            }
-            seqvar.from.append(refChar);
-            seqvar.to.append(readChar);
-            if (hasReadQuals && readChar != '-') {
-                seqvar.toQuals.add(readQuals.get(i));
-            }
-        }
     }
 
     public int getPosition() {
@@ -262,8 +169,20 @@ public class GobySamRecordEntry implements Resettable {
         return targetAlignedLength;
     }
 
-    public int getFragmentIndex() {
-        return fragmentIndex;
+    public MutableString getReadBases() {
+        return readBases;
+    }
+
+    public ByteList getReadQuals() {
+        return readQuals;
+    }
+
+    public MutableString getRefBases() {
+        return refBases;
+    }
+
+    public boolean isReverseStrand() {
+        return reverseStrand;
     }
 
     public int getSequenceVariationsCount() {
@@ -272,6 +191,55 @@ public class GobySamRecordEntry implements Resettable {
 
     public GobyQuickSeqvar getSequenceVariations(final int i) {
         return sequenceVariations.get(i);
+    }
+
+    public void observeVariations() {
+        final boolean hasReadQuals = !readQuals.isEmpty();
+        GobyQuickSeqvar seqvar = null;
+        int currentReadIndex = firstReadIndex - (reverseStrand ? -1 : 1);
+        int currentRefPosition = firstRefPosition - 1;
+        for (int i = 0; i < readBases.length(); i++) {
+            final char refChar = refBases.charAt(i);
+            final char readChar = readBases.charAt(i);
+            if (readChar != '-') {
+                // Deletion
+                currentReadIndex += (reverseStrand ? -1 : 1) * 1;
+            }
+            if (refChar != '-') {
+                // Insertion
+                currentRefPosition += 1;
+            }
+            if (readChar == refChar) {
+                continue;
+            }
+
+            boolean makeNewSeqvar = false;
+            if (seqvar == null || seqvar.lastIndexPosition != i - 1) {
+                makeNewSeqvar = true;
+            } else if (hasReadQuals && readChar == '-') {
+                // If readChar is '-' and we have quals, we only want to append to the previous
+                // seqvar if the previous to was a '-'.
+                final int toLength = seqvar.to.length();
+                if (toLength > 0 && seqvar.to.charAt(toLength - 1) != '-') {
+                    makeNewSeqvar = true;
+                }
+            }
+
+            if (makeNewSeqvar) {
+                seqvar = gobyQuickSeqvarPool.borrowObject();
+                seqvar.lastIndexPosition = i;
+                seqvar.readIndex = readChar == '-' && reverseStrand ? currentReadIndex - 1 : currentReadIndex;
+                seqvar.position = currentRefPosition;
+                sequenceVariations.add(seqvar);
+            } else {
+                seqvar.lastIndexPosition = i;
+            }
+            seqvar.from.append(refChar);
+            seqvar.to.append(readChar);
+            if (hasReadQuals && readChar != '-') {
+                seqvar.toQuals.add(readQuals.get(i));
+            }
+        }
     }
 
 }

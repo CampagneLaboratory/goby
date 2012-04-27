@@ -55,8 +55,13 @@ public class GobyQuickSeqvar implements Resettable {
     public String getFrom() {
         return from.toString();
     }
+
     public String getTo() {
         return to.toString();
+    }
+
+    public ByteList getToQuals() {
+        return toQuals;
     }
 
     public int getReadIndex() {

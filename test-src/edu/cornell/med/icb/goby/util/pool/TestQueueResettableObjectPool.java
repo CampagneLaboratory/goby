@@ -18,17 +18,31 @@
 
 package edu.cornell.med.icb.goby.util.pool;
 
+import it.unimi.dsi.fastutil.longs.LongArraySet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.junit.Test;
+
+import java.util.Date;
+import java.util.Random;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * Test the queue object pool.
  */
-public class TestQueueObjectPool {
+public class TestQueueResettableObjectPool {
+    /**
+     * We use a seeded random number generator so we know in the first 100 there aren't repeats
+     * which might cause the test to sometimes pass and sometimes fail.
+     */
+    private static final Random RANDOM = new Random(997);
+
+    /**
+     * Test the pool behaves as expected with regards to creation, pooling, and resetting().
+     */
     @Test
     public void testPool() {
-        final QueueObjectPool<LocalResettable> pool = new QueueObjectPool<LocalResettable>() {
+        final ResettableObjectPoolInterface<LocalResettable> pool = new QueueResettableObjectPool<LocalResettable>() {
             @Override
             public LocalResettable makeObject() {
                 return new LocalResettable();
@@ -53,7 +67,9 @@ public class TestQueueObjectPool {
         assertEquals("Should be empty", 0, pool.getNumIdle());
         assertEquals("Should be empty", 2, pool.getNumActive());
         assertEquals("should be reset", 0, first.x);
-        assertEquals("should be reset", 0, second.x);
+        // Reset() is called upon return. It assumed if the object needs to be reset() upon creation,
+        // the object will do it
+        assertEquals("should be reset", 10, second.x);
 
         pool.returnObject(second);
         assertEquals("Should be empty", 1, pool.getNumIdle());
@@ -62,11 +78,13 @@ public class TestQueueObjectPool {
         assertEquals("Should be empty", 2, pool.getNumIdle());
         assertEquals("Should be empty", 0, pool.getNumActive());
 
-
         first = pool.borrowObject();
         second = pool.borrowObject();
         assertEquals("Should be empty", 0, pool.getNumIdle());
         assertEquals("Should be empty", 2, pool.getNumActive());
+        assertEquals("should be reset", 0, first.x);
+        assertEquals("should be reset", 0, second.x);
+
         pool.invalidateObject(second);
         assertEquals("Should be empty", 0, pool.getNumIdle());
         assertEquals("Should be empty", 1, pool.getNumActive());
@@ -90,8 +108,48 @@ public class TestQueueObjectPool {
 
     }
 
+    /**
+     * Verify that the pool only creates new objects when expected.
+     */
+    @Test
+    public void testAlwaysNewObjects() {
+        final ResettableObjectPoolInterface<LocalResettable> pool = new QueueResettableObjectPool<LocalResettable>() {
+            @Override
+            public LocalResettable makeObject() {
+                return new LocalResettable();
+            }
+        };
+
+        final LongSet checkedOutRandoms = new LongArraySet();
+
+        int sizeToExpect = 2;
+        for (int i = 0; i < 50; i++) {
+            final LocalResettable first = pool.borrowObject();  checkedOutRandoms.add(first.rand);
+            final LocalResettable second = pool.borrowObject();  checkedOutRandoms.add(second.rand);
+            if (RANDOM.nextBoolean()) {
+                pool.returnObject(first);
+                pool.returnObject(second);
+            } else {
+                if (RANDOM.nextBoolean()) {
+                    pool.returnObject(second);
+                    pool.returnObject(first);
+                } else {
+                    pool.returnObject(first);
+                    pool.invalidateObject(second);
+                    if (i != 49) {
+                        sizeToExpect++;
+                    }
+                }
+            }
+        }
+        assertEquals("Should be 100 objects created", sizeToExpect, checkedOutRandoms.size());
+    }
+
+
     static class LocalResettable implements Resettable {
         int x = 10;
+        long rand = RANDOM.nextLong();
+
         @Override
         public void reset() {
             x = 0;

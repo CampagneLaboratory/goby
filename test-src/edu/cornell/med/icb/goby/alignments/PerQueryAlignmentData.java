@@ -21,15 +21,17 @@ package edu.cornell.med.icb.goby.alignments;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 /**
- * Created by IntelliJ IDEA.
- * User: kdorff
- * Date: Apr 13, 2011
- * Time: 12:52:35 PM
- * To change this template use File | Settings | File Templates.
+ * Class used to assist with observing sequence variations for an
+ * individual query index. These can then be compared to make sure
+ * two alignments have the same sequence variations.
  */
 public class PerQueryAlignmentData {
 
@@ -122,10 +124,15 @@ public class PerQueryAlignmentData {
                 targetAlignedLength, queryAlignedLength,
                 reverseStrand ? "true" : "false", leftPadding, rightPadding));
         result.append("  seqvars=[");
-        for (Map.Entry<String,String> entry : refPositionReadIndexToBaseMap.entrySet()) {
-            result.append(String.format("%s %s, ", entry.getKey(), entry.getValue()));
+        final Set<String> keys = refPositionReadIndexToBaseMap.keySet();
+        final List<String> keysList = new ArrayList<String>(keys.size());
+        keysList.addAll(keys);
+        Collections.sort(keysList);
+        for (final String key : keysList) {
+            final String value = refPositionReadIndexToBaseMap.get(key);
+            result.append(String.format("%s %s, ", key, value));
         }
-        result.append(String.format("]}"));
+        result.append("]}");
         return result.toString();
     }
 }

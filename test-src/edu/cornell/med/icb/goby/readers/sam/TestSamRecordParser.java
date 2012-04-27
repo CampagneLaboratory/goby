@@ -18,16 +18,22 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
+import edu.cornell.med.icb.goby.alignments.PerQueryAlignmentData;
+import edu.cornell.med.icb.goby.alignments.TestIteratedSortedAlignment2;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test SamRecordParser.
@@ -49,12 +55,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
 
-            assertEquals(0, first.getFragmentIndex());
             assertEquals(3 - 1, first.getPosition());
         }
     }
@@ -69,16 +74,14 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
 
-            if (first.readNum == 0) {
-                assertEquals(0, first.getFragmentIndex());
+            if (gobySamRecord.readNum == 0) {
                 assertEquals(3 - 1, first.getPosition());
-            } else if (first.readNum == 1) {
-                assertEquals(0, first.getFragmentIndex());
+            } else if (gobySamRecord.readNum == 1) {
                 assertEquals(3 - 1, first.getPosition());
             }
         }
@@ -92,11 +95,10 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
-            assertEquals(0, first.getFragmentIndex());
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
             assertEquals(26800015 - 1, first.getPosition());
         }
     }
@@ -111,20 +113,18 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
-            GobySamRecordEntry second = segments.get(1);
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
+            GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
-            assertEquals(0, first.getFragmentIndex());
             assertEquals(25, first.getQueryAlignedLength());
 
             assertEquals(15795, second.getPosition());
             assertEquals(28, second.getQueryPosition());
-            assertEquals(1, second.getFragmentIndex());
             assertEquals(7, second.getQueryAlignedLength());
         }
     }
@@ -138,11 +138,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
 
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
-            GobySamRecordEntry second = segments.get(1);
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
+            GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -152,7 +152,6 @@ public class TestSamRecordParser {
 
             assertEquals(15795, second.getPosition());
             assertEquals(28, second.getQueryPosition());
-            assertEquals(1, second.getFragmentIndex());
             assertEquals(5, second.getQueryAlignedLength());
             assertEquals("", second.getSoftClippedBasesLeft());
             assertEquals("TC", second.getSoftClippedBasesRight());
@@ -174,11 +173,11 @@ public class TestSamRecordParser {
         final SamRecordParser recordParser = new SamRecordParser();
 
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 2, segments.size());
-            GobySamRecordEntry first = segments.get(0);
-            GobySamRecordEntry second = segments.get(1);
+            assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
+            GobySamSegment first = gobySamRecord.getSegment(0);
+            GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(4, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -188,7 +187,6 @@ public class TestSamRecordParser {
 
             assertEquals(40 - 1, second.getPosition());
             assertEquals(28, second.getQueryPosition());
-            assertEquals(1, second.getFragmentIndex());
             assertEquals(5, second.getQueryAlignedLength());
             assertEquals("TC", second.getSoftClippedBasesRight());
             assertEquals("", second.getSoftClippedBasesLeft());
@@ -202,13 +200,13 @@ public class TestSamRecordParser {
         final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 3, segments.size());
+            assertEquals("Incorrect number of segments", 3, gobySamRecord.getNumSegments());
 
-            final GobySamRecordEntry first = segments.get(0);
-            final GobySamRecordEntry second = segments.get(1);
-            final GobySamRecordEntry third = segments.get(2);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment second = gobySamRecord.getSegment(1);
+            final GobySamSegment third = gobySamRecord.getSegment(2);
 
             assertEquals(32485524 - 1, first.position);
             assertEquals(2, first.queryPosition);
@@ -241,12 +239,12 @@ public class TestSamRecordParser {
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         final SamRecordParser recordParser = new SamRecordParser();
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
-            final List<GobySamRecordEntry> segments = recordParser.processRead(samRecord);
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
-            assertEquals("Incorrect number of segments", 1, segments.size());
-            final GobySamRecordEntry segment = segments.get(0);
-            if (segment.readNum == 0) {
-                final GobySamRecordEntry first = segment;
+            assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
+            final GobySamSegment segment = gobySamRecord.getSegment(0);
+            if (gobySamRecord.readNum == 0) {
+                final GobySamSegment first = segment;
                 assertEquals(190077 - 1, first.getPosition());
                 assertEquals(13, first.getQueryPosition());
                 assertEquals("AGTGGCAGCACGA", first.getSoftClippedBasesLeft());
@@ -284,8 +282,8 @@ public class TestSamRecordParser {
                 assertEquals(21, seqvar.getPosition());
                 assertArrayEquals(byteArray(27, 35), seqvar.getToQuality().toByteArray());  // 3, 15 in the old test
 
-            } else if (segment.readNum == 1) {
-                final GobySamRecordEntry second = segment;
+            } else if (gobySamRecord.readNum == 1) {
+                final GobySamSegment second = segment;
                 //second's CIGAR is 20S48M
                 assertEquals(190246 - 1, second.getPosition());
                 assertEquals(20, second.getQueryPosition());
@@ -302,6 +300,194 @@ public class TestSamRecordParser {
                 assertEquals(18, seqvar.getReadIndex());
                 assertEquals(31, seqvar.getPosition());
                 assertArrayEquals(byteArray(35), seqvar.getToQuality().toByteArray());
+            }
+        }
+    }
+
+    @Test
+    public void testDelNonSplice1() throws IOException {
+        final String inputFile = "test-data/splicedsamhelper/del-nonsplice-1.sam";
+        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
+        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SamRecordParser recordParser = new SamRecordParser();
+        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
+
+            assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
+            final GobySamSegment segment = gobySamRecord.getSegment(0);
+            if (gobySamRecord.readNum == 0) {
+                final GobySamSegment first = segment;
+                assertEquals(31 - 1, first.getPosition());
+                assertEquals(0, first.getQueryPosition());
+                assertEquals("", first.getSoftClippedBasesLeft());
+                assertEquals("", first.getSoftClippedBasesRight());
+                assertEquals(47, first.getQueryAlignedLength());
+                assertEquals(50, first.getTargetAlignedLength());
+
+                assertEquals(1, first.getSequenceVariationsCount());
+
+                GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
+                assertEquals("TCC", seqvar.getFrom());
+                assertEquals("---", seqvar.getTo());
+                assertEquals(26, seqvar.getReadIndex());
+                assertEquals(22, seqvar.getPosition());
+                assertEquals(0, seqvar.getToQuality().size());
+            }
+        }
+    }
+
+    @Test
+    public void testLeftPadding1() throws IOException {
+        final String inputFile = "test-data/splicedsamhelper/leftpad-nosplice-1.sam";
+        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
+        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SamRecordParser recordParser = new SamRecordParser();
+        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
+
+            assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
+            final GobySamSegment segment = gobySamRecord.getSegment(0);
+            if (gobySamRecord.readNum == 0) {
+                final GobySamSegment first = segment;
+                assertEquals(6 - 1, first.getPosition());
+                assertEquals(5, first.getQueryPosition());
+                assertEquals("AAAAA", first.getSoftClippedBasesLeft());
+                assertEquals("", first.getSoftClippedBasesRight());
+                assertEquals(45, first.getQueryAlignedLength());
+                assertEquals(45, first.getTargetAlignedLength());
+
+                assertEquals(1, first.getSequenceVariationsCount());
+
+                GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
+                assertEquals("A", seqvar.getFrom());
+                assertEquals("G", seqvar.getTo());
+                assertEquals(20, seqvar.getReadIndex());
+                assertEquals(15, seqvar.getPosition());
+                assertEquals(1, seqvar.getToQuality().size());
+                assertArrayEquals(byteArray(20), seqvar.getToQuality().toByteArray());
+            }
+        }
+    }
+
+    /**
+     * Compare the gsnap->sam created sequence variations we find when we parse the sam file with
+     * SamRecordParser exactly match those generated with gsnap->compactAlignment->displaySequenceVariations(per-base).
+     * @throws IOException
+     */
+    @Test
+    public void testSeqVarReads() throws IOException {
+        final String inputFile = "test-data/seq-var-test/seq-var-reads-gsnap.sam";
+        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
+        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SamRecordParser recordParser = new SamRecordParser();
+        final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap =  TestIteratedSortedAlignment2.readSeqVarFile(
+                "test-data/seq-var-test/seq-var-reads-gsnap.seqvar");
+        final int[] seqvarQueryIndexes = seqvarDataMap.keySet().toIntArray();
+        Arrays.sort(seqvarQueryIndexes);
+
+        final Int2ObjectMap<PerQueryAlignmentData> samSeqvarDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
+
+        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
+            if (gobySamRecord == null) {
+                continue;
+            }
+            if (gobySamRecord.getSequenceVariationsCount() == 0) {
+                continue;
+            }
+            final GobySamSegment segment = gobySamRecord.getSegment(0);
+
+            final int queryIndex = gobySamRecord.getReadNum();
+            for (final GobyQuickSeqvar seqvar : gobySamRecord.getSequenceVariations()) {
+
+                // convert variation position to position on the reference:
+                final int positionOnReference = segment.getPosition() + seqvar.getPosition();
+                final int readIndex = seqvar.getReadIndex();
+                final String from = seqvar.getFrom();
+                final String to = seqvar.getTo();
+                final int fromLength = from.length();
+
+                int fromOffset = 0;
+                int toOffset = 0;
+                final int readIndexIncrementValue = (gobySamRecord.isReverseStrand() ? -1 : 1);
+                for (int i = 0; i < fromLength; i++) {
+                    final char fromChar = from.charAt(i);
+                    final char toChar = to.charAt(i);
+
+                    PerQueryAlignmentData variationsForIndex = samSeqvarDataMap.get(queryIndex);
+                    if (variationsForIndex == null) {
+                        variationsForIndex = new PerQueryAlignmentData();
+                        variationsForIndex.queryPosition = segment.getSoftClippedBasesLeft().length();
+                        variationsForIndex.reverseStrand = gobySamRecord.isReverseStrand();
+                        samSeqvarDataMap.put(queryIndex, variationsForIndex);
+                    }
+                    variationsForIndex.observe(positionOnReference + fromOffset, readIndex + toOffset, fromChar, toChar);
+                    if (fromChar != '-') {
+                        fromOffset += 1;
+                    }
+                    if (toChar != '-') {
+                        toOffset += readIndexIncrementValue;
+                    }
+                }
+            }
+        }
+
+        final int[] samSeqvarQueryIndexes = samSeqvarDataMap.keySet().toIntArray();
+        Arrays.sort(samSeqvarQueryIndexes);
+
+        /*
+        System.out.println("Sequence variations from .tsv file");
+        dumpSeqVars(seqvarQueryIndexes, seqvarDataMap);
+        System.out.println();
+        System.out.println("Sequence variations from .sam file");
+        dumpSeqVars(seqvarQueryIndexes, samSeqvarDataMap);
+        */
+        verifySequenceVariationsMatch(seqvarQueryIndexes, samSeqvarQueryIndexes, seqvarDataMap, samSeqvarDataMap);
+    }
+
+    public static void dumpSeqVars(int[] seqvarQueryIndexes, final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap) {
+        for (int queryIndex : seqvarQueryIndexes) {
+            final PerQueryAlignmentData align = seqvarDataMap.get(queryIndex);
+            System.out.println("queryIndex=" + queryIndex);
+            System.out.println(align.toString());
+        }
+    }
+
+    /**
+     * Compare sequence varations.
+     * @param seqvarQueryIndexes the sorted query indexes for the seqvarDataMap
+     * @param alignmentQueryIndexes the sorted query indexes for the alignmentDataMap
+     * @param seqvarDataMap the query index to PerQueryAlignmentData for the "expected" values
+     * @param alignmentDataMap the query index to PerQueryAlignmentData for the "actual" values
+     * @throws IOException error reading input files
+     */
+    public static void verifySequenceVariationsMatch(
+            final int[] seqvarQueryIndexes,
+            final int[] alignmentQueryIndexes,
+            final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap,
+            final Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap) throws IOException {
+        assertArrayEquals("queryIndexes are not the same", seqvarQueryIndexes, alignmentQueryIndexes);
+        for (final int queryIndex : seqvarQueryIndexes) {
+            final PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            final PerQueryAlignmentData seqvar = seqvarDataMap.get(queryIndex);
+
+            final Map<String, String> alignSeqVarsMap = align.refPositionReadIndexToBaseMap;
+            final Map<String, String> varSeqVarsMap = seqvar.refPositionReadIndexToBaseMap;
+
+            assertEquals(String.format("queryIndex=%d alignSeqVarsMap.size()(%d) should equal varSeqVarsMap.size()(%d)",
+                    queryIndex,
+                    alignSeqVarsMap.size(), varSeqVarsMap.size()),
+                    alignSeqVarsMap.size(), varSeqVarsMap.size());
+            for (final Map.Entry<String, String> varEntry : varSeqVarsMap.entrySet()) {
+                // Make sure the sequence variations match
+                final String varEntryBases = varEntry.getValue();
+                final String alignEntryBases = alignSeqVarsMap.get(varEntry.getKey());
+                assertNotNull(String.format("queryIndex=%d Could not find alignSeqVarsMap entry for %s",
+                        queryIndex, varEntry.getKey()),
+                        alignEntryBases);
+                assertEquals(String.format("queryIndex=%d alignEntryBases(%s) should equal varEntryBases(%s)",
+                        queryIndex, alignEntryBases, varEntryBases),
+                        alignEntryBases, varEntryBases);
             }
         }
     }

@@ -1,0 +1,32 @@
+basename	query-index	target-id	position-on-reference	read-index	var-from	var-to	type	score
+seq-var-reads-gsnap	2	synth1	57	27	T	C	MUTATION	1
+seq-var-reads-gsnap	2	synth1	58	28	T	G	MUTATION	2
+seq-var-reads-gsnap	2	synth1	59	29	C	T	MUTATION	3
+seq-var-reads-gsnap	3	synth1	52	29	T	C	MUTATION	3
+seq-var-reads-gsnap	3	synth1	53	28	C	T	MUTATION	2
+seq-var-reads-gsnap	3	synth1	54	27	C	A	MUTATION	1
+seq-var-reads-gsnap	4	synth1	56	27	-	A	READ_INSERTION	1
+seq-var-reads-gsnap	4	synth1	56	28	-	T	READ_INSERTION	2
+seq-var-reads-gsnap	4	synth1	56	29	-	C	READ_INSERTION	3
+seq-var-reads-gsnap	5	synth1	54	29	-	G	READ_INSERTION	3
+seq-var-reads-gsnap	5	synth1	54	28	-	A	READ_INSERTION	2
+seq-var-reads-gsnap	5	synth1	54	27	-	T	READ_INSERTION	1
+seq-var-reads-gsnap	6	synth1	57	26	T	-	READ_DELETION	
+seq-var-reads-gsnap	6	synth1	58	26	T	-	READ_DELETION	
+seq-var-reads-gsnap	6	synth1	59	26	C	-	READ_DELETION	
+seq-var-reads-gsnap	7	synth1	52	26	T	-	READ_DELETION	
+seq-var-reads-gsnap	7	synth1	53	26	C	-	READ_DELETION	
+seq-var-reads-gsnap	7	synth1	54	26	C	-	READ_DELETION	
+seq-var-reads-gsnap	12	synth1	20	20	A	G	MUTATION	20
+seq-var-reads-gsnap	13	synth1	20	20	A	G	MUTATION	20
+seq-var-reads-gsnap	14	synth1	20	20	A	G	MUTATION	20
+seq-var-reads-gsnap	24	synth1	41	11	C	A	MUTATION	11
+seq-var-reads-gsnap	24	synth1	42	12	C	A	MUTATION	12
+seq-var-reads-gsnap	24	synth1	62	31	A	-	READ_DELETION	
+seq-var-reads-gsnap	24	synth1	63	31	G	-	READ_DELETION	
+seq-var-reads-gsnap	24	synth1	64	31	T	-	READ_DELETION	
+seq-var-reads-gsnap	27	synth1	42	11	C	-	READ_DELETION	
+seq-var-reads-gsnap	27	synth1	43	11	T	-	READ_DELETION	
+seq-var-reads-gsnap	27	synth1	44	11	T	-	READ_DELETION	
+seq-var-reads-gsnap	27	synth1	66	33	C	A	MUTATION	7
+seq-var-reads-gsnap	27	synth1	67	34	T	A	MUTATION	8

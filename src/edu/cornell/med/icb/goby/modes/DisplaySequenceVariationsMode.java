@@ -148,7 +148,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 case TAB_DELIMITED:
                 case TAB_SINGLE_BASE:
                 case TSV:
-                    stream.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
+                    stream.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype\tscore");
                     break;
             }
 
