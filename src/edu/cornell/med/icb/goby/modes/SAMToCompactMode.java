@@ -93,8 +93,6 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
     private int dummyQueryIndex;
 
-    private boolean bsmap;
-
     private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
     /**
      * Flag to indicate if log4j was configured.
@@ -182,7 +180,6 @@ public class SAMToCompactMode extends AbstractGobyMode {
         preserveSoftClips = jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
-        bsmap = jsapResult.getBoolean("bsmap");
         ignoreReadOrigin = doc().getBoolean("ignore-read-origin");
         final String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
