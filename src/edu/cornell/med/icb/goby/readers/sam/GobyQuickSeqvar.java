@@ -60,8 +60,12 @@ public class GobyQuickSeqvar implements Resettable {
         return to.toString();
     }
 
-    public ByteList getToQuals() {
+    public ByteList getToQualities() {
         return toQuals;
+    }
+
+    public byte[] getToQualitiesAsBytes() {
+        return toQuals.toByteArray();
     }
 
     public int getReadIndex() {
@@ -72,7 +76,4 @@ public class GobyQuickSeqvar implements Resettable {
         return position;
     }
 
-    public ByteList getToQuality() {
-        return toQuals;
-    }
 }

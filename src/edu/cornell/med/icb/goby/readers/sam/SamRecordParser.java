@@ -153,6 +153,7 @@ public class SamRecordParser implements Resettable {
         }
 
         gobySamRecord.query = allReadBases;
+        gobySamRecord.readQuals = allReadQuals;
         gobySamRecord.targetIndex = samRecord.getReferenceIndex();
         if (samRecord.getReadPairedFlag() && !samRecord.getMateUnmappedFlag()) {
             gobySamRecord.hasMate = true;

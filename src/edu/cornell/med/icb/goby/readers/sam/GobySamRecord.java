@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.util.pool.QueueResettableObjectPool;
 import edu.cornell.med.icb.goby.util.pool.Resettable;
 import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
 import it.unimi.dsi.Util;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -46,6 +47,9 @@ public class GobySamRecord implements Resettable {
 
     // Data owned by SamRecordParser, do not reset.
     String query;
+
+    // Data owned by SamRecordParser, do not reset
+    ByteList readQuals;
 
     int readNum;
     int targetIndex;
@@ -105,8 +109,16 @@ public class GobySamRecord implements Resettable {
         targetAlignedLength = 0;
     }
 
+    public int getQueryLength() {
+        return query.length();
+    }
+
     public int getNumSegments() {
         return segments.size();
+    }
+
+    public List<GobySamSegment> getSegments() {
+        return segments;
     }
 
     public GobySamSegment getSegment(final int index) {
@@ -177,6 +189,10 @@ public class GobySamRecord implements Resettable {
 
     public String getQuery() {
         return query;
+    }
+
+    public byte[] getReadQualitiesAsBytes() {
+        return readQuals.toByteArray();
     }
 
     public void observeVariations() {

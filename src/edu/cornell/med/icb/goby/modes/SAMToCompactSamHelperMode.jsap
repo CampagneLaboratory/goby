@@ -169,6 +169,20 @@
             <help>Use to import files not produced by Goby.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>bsmap</id>
+            <longFlag>bsmap</longFlag>
+            <defaults>
+                <string>false</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>If the input sam file came from the bsmap aligner which is special in that it provides the reference
+                string and how it handles reverse strand.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
             <id>quality-encoding</id>
             <longFlag>quality-encoding</longFlag>
             <required>false</required>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+ * Copyright (C) 2009-2012 Institute for Computational Biomedicine,
  *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -29,11 +29,6 @@ import edu.cornell.med.icb.goby.alignments.BufferedSortingAlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
-import edu.cornell.med.icb.goby.readers.sam.GobyQuickSeqvar;
-import edu.cornell.med.icb.goby.readers.sam.GobySamRecord;
-import edu.cornell.med.icb.goby.readers.sam.GobySamSegment;
-import edu.cornell.med.icb.goby.readers.sam.SAMRecordIterable;
-import edu.cornell.med.icb.goby.readers.sam.SamRecordParser;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -51,6 +46,7 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordIterator;
 import net.sf.samtools.SAMSequenceDictionary;
 import net.sf.samtools.SAMSequenceRecord;
 import org.apache.log4j.Logger;
@@ -64,27 +60,27 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Converts alignments in the SAM or BAM format to the compact alignment format.
+ * Converts binary BWA alignments in the SAM format to the compact alignment format.
  *
  * @author Fabien Campagne
  */
-public class SAMToCompactMode extends AbstractGobyMode {
+public class SAMToCompactSamHelperMode extends AbstractGobyMode {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(SAMToCompactMode.class);
+    private static final Logger LOG = Logger.getLogger(SAMToCompactSamHelperMode.class);
 
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "sam-to-compact";
+    private static final String MODE_NAME = "sam-to-compact-samhelper";
 
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts alignments in the BAM or SAM "
-            + "format to the compact alignment format (new version that uses SamRecordParser).";
+    private static final String MODE_DESCRIPTION = "Converts binary BWA alignments in the SAM "
+            + "format to the compact alignment format (new version that uses SplicedSamHelper).";
 
     /**
      * Native reads output from aligner.
@@ -107,7 +103,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     private boolean ignoreReadOrigin;
 
     @RegisterThis
-    public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
+    public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactSamHelperMode.class,
             "ignore-read-origin:boolean, When this flag is true do not import read groups.:false"
     );
     private boolean preserveSoftClips;
@@ -184,7 +180,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         bsmap = jsapResult.getBoolean("bsmap");
         ignoreReadOrigin = doc().getBoolean("ignore-read-origin");
-        final String genomeFilename = jsapResult.getString("input-genome");
+        String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
             final DualRandomAccessSequenceCache aGenome = new DualRandomAccessSequenceCache();
@@ -255,6 +251,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
         boolean hasPaired = false;
         progress.start();
 
+        final SAMRecordIterator samIterator = parser.iterator();
+        final SplicedSamHelper samHelper = new SplicedSamHelper();
+        samHelper.setQualityEncoding(qualityEncoding);
         numberOfReads = 0;
 
         // int stopEarly = 0;
@@ -298,18 +297,19 @@ public class SAMToCompactMode extends AbstractGobyMode {
             writer.setTargetLengths(targetLengths);
             writer.setSorted(true);
         }
-        final Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
+        Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
+        MutableString referenceString = new MutableString();
 
-
-        final ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
-
-        final SamRecordParser samRecordParser = new SamRecordParser();
-        samRecordParser.setQualityEncoding(qualityEncoding);
-        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+        ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
+        int count = 0;
+        while (samIterator.hasNext()) {
+            samHelper.reset();
             builders.clear();
+            //  count++;
+            // if (count > 10000) break;
             numberOfReads++;
-            final GobySamRecord gobySamRecord = samRecordParser.processRead(samRecord);
-            if (gobySamRecord == null) {
+            final SAMRecord samRecord = samIterator.next();
+            if (samRecord.getReadUnmappedFlag()) {
                 if (debug && LOG.isDebugEnabled()) {
                     LOG.debug(String.format("NOT keeping unmapped read %s", samRecord.getReadName()));
                 }
@@ -366,7 +366,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             // Q: samHelper hasn't been set to anything since .reset(). This will always be 1. ??
             // Q: Also, readMaxOccurence is *2 for paired and *2 for splice, but splices can be N pieces, not just 2.
             //    so readMaxOccurence isn't always correct it seems.
-            final int numEntries = gobySamRecord.getNumSegments();
+            final int numEntries = samHelper.getNumEntries();
             final boolean readIsSpliced = numEntries > 1;
             if (hasPaired) {
                 // file has paired end reads, check if this read is paired to use 1 occurrence:
@@ -382,53 +382,84 @@ public class SAMToCompactMode extends AbstractGobyMode {
             final int queryIndex = nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
             assert queryIndex >= 0 : " Query index must never be negative.";
 
+            if (bsmap) {
+                // TODO reenable this path if we get a genome. For now, just use the genome to get soft clips.
+                referenceString.setLength(0);
+                if (bsmap) {    // reference sequence is provided in the XR attribute:
+                    referenceString.append((String) samRecord.getAttribute("XR"));
+                    samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
+                } else {
+                    // we obtain the reference sequence from the genome:
+                    final String referenceName = samRecord.getReferenceName();
+                    final int referenceIndex = genome.getReferenceIndex(chromosomeNameMapping(genome, referenceName));
+                    if (referenceIndex == -1) {
+                        System.err.println("Error, could not find reference index for id=" + referenceName + " Skipping record.");
+                        continue;
+                    }
+                    final int zeroBasedStart = samRecord.getAlignmentStart() - 1;
+                    final int length = samRecord.getAlignmentEnd() - samRecord.getAlignmentStart() + 1;
+
+                    genome.getRange(referenceIndex, zeroBasedStart,
+                            length, referenceString);
+                    samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
+                }
+
+            } else {
+                final String md = (String) samRecord.getAttribute("MD");
+                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(),
+                        samRecord.getCigarString(), md == null ? null : md.toUpperCase(),
+                        samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag(),
+                        samRecord.getReadLength());
+            }
+
             // positions reported by BWA appear to start at 1. We convert to start at zero.
             int multiplicity = 1;
 
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
             final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(chromosomeNameMapping(genome, samRecord.getReferenceName()));
-            for (final GobySamSegment gobySamSegment : gobySamRecord.getSegments()) {
+            for (int i = 0; i < samHelper.getNumEntries(); i++) {
+                samHelper.setEntryCursor(i);
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
                 if (multiplicity > 1) {
                     currentEntry.setMultiplicity(multiplicity);
                 }
-                currentEntry.setQueryIndex(gobySamRecord.getReadNum());
+                currentEntry.setQueryIndex(samHelper.getQueryIndex());
                 currentEntry.setTargetIndex(targetIndex);
-                currentEntry.setPosition(gobySamSegment.getPosition());     // samhelper returns zero-based positions compatible with Goby.
-                currentEntry.setQueryPosition(gobySamSegment.getQueryPosition());
+                currentEntry.setPosition(samHelper.getPosition());     // samhelper returns zero-based positions compatible with Goby.
+                currentEntry.setQueryPosition(samHelper.getQueryPosition());
 
-                currentEntry.setQueryLength(gobySamRecord.getQueryLength());
+                currentEntry.setQueryLength(samHelper.getQueryLength());
                 //currentEntry.setScore(samHelper.getScore());  BAM does not have the concept of a score.
-                currentEntry.setMatchingReverseStrand(gobySamRecord.isReverseStrand());
-                currentEntry.setQueryAlignedLength(gobySamSegment.getQueryAlignedLength());
-                currentEntry.setTargetAlignedLength(gobySamSegment.getTargetAlignedLength());
+                currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
+                currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
+                currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (preserveSoftClips) {
-                    final int leftTrim = gobySamSegment.getSoftClippedBasesLeft().length();
+                    final int leftTrim = samHelper.getNumLeftClipped();
                     if (leftTrim > 0) {
-                        currentEntry.setSoftClippedBasesLeft(convertBases(
-                                genomeTargetIndex, gobySamSegment.getPosition() - leftTrim, samRecord.getReadBases(), 0, leftTrim));
+                        currentEntry.setSoftClippedBasesLeft(convertBases(genomeTargetIndex, samRecord.getAlignmentStart() - 1, samRecord.getReadBases(), 0, leftTrim));
 
                     }
-                    final int queryAlignedLength = gobySamSegment.getQueryAlignedLength();
-                    final int rightTrim = gobySamSegment.getSoftClippedBasesRight().length();
-                    final int queryPosition = gobySamSegment.getQueryPosition();
+                    final int queryAlignedLength = samHelper.getQueryAlignedLength();
+                    final int rightTrim = samHelper.getNumRightClipped();
+                    final int queryPosition = currentEntry.getQueryPosition();
                     if (rightTrim > 0) {
-                        currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex,
-                                gobySamSegment.getPosition() + gobySamSegment.getTargetAlignedLength(),
+                        currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex, samRecord.getAlignmentStart() - 1,
                                 samRecord.getReadBases(), queryPosition + queryAlignedLength, queryPosition + queryAlignedLength + rightTrim));
                     }
                 }
 
                 if (preserveAllMappedQuals) {
 
-                    final byte[] sourceQualAsBytes = gobySamRecord.getReadQualitiesAsBytes();
+                    final byte[] sourceQualAsBytes = samHelper.getSourceQualAsBytes();
                     if (sourceQualAsBytes != null) {
                         currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
-                    }
+                    } /*else {
+                        currentEntry.clearReadQualityScores();
+                    }   */
                 }
                 addSamAttributes(samRecord, currentEntry);
 
@@ -440,8 +471,8 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     }
                 }
 
-                for (final GobyQuickSeqvar variation : gobySamSegment.getSequenceVariations()) {
-                    appendNewSequenceVariation(currentEntry, variation, gobySamRecord.getQueryLength());
+                for (final SamSequenceVariation variation : samHelper.getSequenceVariations()) {
+                    appendNewSequenceVariation(currentEntry, variation, samHelper.getQueryLength());
                     if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", variation.toString(), queryIndex));
                     }
@@ -521,7 +552,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     }
                 } else {
                     // TMH writer adds the alignment entry only if hits > thresh
-                    tmhWriter.append(queryIndex, numTotalHits, gobySamRecord.getQueryLength());
+                    tmhWriter.append(queryIndex, numTotalHits, samHelper.getQueryLength());
                     if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
                     }
@@ -532,7 +563,10 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 }
             }
             progress.lightUpdate();
+
         }
+
+        samIterator.close();
 
         if (!targetIds.isEmpty()) {
             // we collected target ids, let's write them to the header:
@@ -582,31 +616,10 @@ public class SAMToCompactMode extends AbstractGobyMode {
     MutableString convertBasesBuffer = new MutableString();
     private MutableString bases = new MutableString();
 
-    public String convertBases(
-            final int referenceIndex, final int positionStartOfRead,
-            final byte[] readBases, final int startIndex, final int endIndex) {
+    private String convertBases(int referenceIndex, int positionStartOfRead, byte[] readBases, int startIndex, int endIndex) {
         if (genome != null) {
-            int actualPositionStartOfRead = positionStartOfRead;
-            int numPrepend = 0;
-            int numAppend = 0;
-            int actualLength = endIndex - startIndex;
-            if (actualPositionStartOfRead < 0) {
-                numPrepend = -actualPositionStartOfRead;
-                actualPositionStartOfRead = 0;
-                actualLength -= numPrepend;
-            }
-            final int referenceLength = genome.getLength(referenceIndex);
-            if (actualPositionStartOfRead + actualLength > referenceLength) {
-                numAppend = (actualPositionStartOfRead + actualLength) - referenceLength;
-                actualLength -= numAppend;
-            }
-            genome.getRange(referenceIndex, actualPositionStartOfRead, actualLength, bases);
-            for (int i = 0; i < numPrepend; i++) {
-                bases.insert(0, "N");
-            }
-            for (int i = 0; i < numAppend; i++) {
-                bases.append("N");
-            }
+            genome.getRange(referenceIndex, positionStartOfRead, endIndex - startIndex, bases);
+
         }
         convertBasesBuffer.setLength(endIndex - startIndex);
         int j = 0;
@@ -614,7 +627,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             final char readBase = (char) readBases[i];
             final char refBase = genome != null ? bases.charAt(i - startIndex) : '!';
             convertBasesBuffer.setCharAt(j, refBase == readBase ? '=' : readBase);
-            j++;
+            j += 1;
         }
 
         return convertBasesBuffer.toString();
@@ -752,7 +765,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
     static void appendNewSequenceVariation(
             final Alignments.AlignmentEntry.Builder currentEntry,
-            final GobyQuickSeqvar variation, final int queryLength) {
+            final SamSequenceVariation variation, final int queryLength) {
 
         final int readIndex = variation.getReadIndex();
         if (readIndex > queryLength) {
@@ -770,13 +783,12 @@ public class SAMToCompactMode extends AbstractGobyMode {
         final Alignments.SequenceVariation.Builder sequenceVariation =
                 Alignments.SequenceVariation.newBuilder();
 
-        sequenceVariation.setFrom(variation.getFrom());
-        sequenceVariation.setTo(variation.getTo());
-        sequenceVariation.setPosition(variation.getPosition());
+        sequenceVariation.setFrom(variation.getFromString().toString());
+        sequenceVariation.setTo(variation.getToString().toString());
+        sequenceVariation.setPosition(variation.getRefPosition()); // positions start at 1
         sequenceVariation.setReadIndex(readIndex);  // readIndex starts at 1
-        final byte[] toQuality = variation.getToQualitiesAsBytes();
-        if (toQuality != null && toQuality.length > 0) {
-            sequenceVariation.setToQuality(ByteString.copyFrom(toQuality));
+        if (variation.getQual() != null) {
+            sequenceVariation.setToQuality(ByteString.copyFrom(variation.getQualByteArray()));
         }
         currentEntry.addSequenceVariations(sequenceVariation);
     }
@@ -793,7 +805,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
      */
     public static void main(final String[] args) throws JSAPException, IOException {
 
-        final SAMToCompactMode processor = new SAMToCompactMode();
+        final SAMToCompactSamHelperMode processor = new SAMToCompactSamHelperMode();
         processor.configure(args);
         processor.runningFromCommandLine = true;
         processor.execute();

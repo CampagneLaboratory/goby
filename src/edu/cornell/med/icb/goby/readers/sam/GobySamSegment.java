@@ -189,6 +189,10 @@ public class GobySamSegment implements Resettable {
         return sequenceVariations.size();
     }
 
+    public List<GobyQuickSeqvar> getSequenceVariations() {
+        return sequenceVariations;
+    }
+
     public GobyQuickSeqvar getSequenceVariations(final int i) {
         return sequenceVariations.get(i);
     }

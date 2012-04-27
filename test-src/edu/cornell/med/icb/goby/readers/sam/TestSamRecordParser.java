@@ -20,8 +20,11 @@ package edu.cornell.med.icb.goby.readers.sam;
 
 import edu.cornell.med.icb.goby.alignments.PerQueryAlignmentData;
 import edu.cornell.med.icb.goby.alignments.TestIteratedSortedAlignment2;
+import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import org.junit.Test;
@@ -259,28 +262,28 @@ public class TestSamRecordParser {
                 assertEquals("C", seqvar.getTo());
                 assertEquals(22, seqvar.getReadIndex());
                 assertEquals(9, seqvar.getPosition());
-                assertArrayEquals(byteArray(3), seqvar.getToQuality().toByteArray());  // 8 returned in the old test, 3 is right
+                assertArrayEquals(byteArray(3), seqvar.getToQualitiesAsBytes());  // 8 returned in the old test, 3 is right
 
                 seqvar = first.getSequenceVariations(1);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("G", seqvar.getTo());    // Original test said A
                 assertEquals(26, seqvar.getReadIndex());
                 assertEquals(13, seqvar.getPosition());
-                assertArrayEquals(byteArray(34), seqvar.getToQuality().toByteArray());  // 24 in the old test, this is right
+                assertArrayEquals(byteArray(34), seqvar.getToQualitiesAsBytes());  // 24 in the old test, this is right
 
                 seqvar = first.getSequenceVariations(2);
                 assertEquals("C", seqvar.getFrom());
                 assertEquals("A", seqvar.getTo());
                 assertEquals(33, seqvar.getReadIndex());
                 assertEquals(20, seqvar.getPosition());
-                assertArrayEquals(byteArray(28), seqvar.getToQuality().toByteArray());  // 14 in the old test
+                assertArrayEquals(byteArray(28), seqvar.getToQualitiesAsBytes());  // 14 in the old test
 
                 seqvar = first.getSequenceVariations(3);
                 assertEquals("-T", seqvar.getFrom());
                 assertEquals("CA", seqvar.getTo());   // Original test said CG
                 assertEquals(35, seqvar.getReadIndex());
                 assertEquals(21, seqvar.getPosition());
-                assertArrayEquals(byteArray(27, 35), seqvar.getToQuality().toByteArray());  // 3, 15 in the old test
+                assertArrayEquals(byteArray(27, 35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
             } else if (gobySamRecord.readNum == 1) {
                 final GobySamSegment second = segment;
@@ -299,7 +302,7 @@ public class TestSamRecordParser {
                 assertEquals("C", seqvar.getTo());
                 assertEquals(18, seqvar.getReadIndex());
                 assertEquals(31, seqvar.getPosition());
-                assertArrayEquals(byteArray(35), seqvar.getToQuality().toByteArray());
+                assertArrayEquals(byteArray(35), seqvar.getToQualitiesAsBytes());
             }
         }
     }
@@ -331,7 +334,7 @@ public class TestSamRecordParser {
                 assertEquals("---", seqvar.getTo());
                 assertEquals(26, seqvar.getReadIndex());
                 assertEquals(22, seqvar.getPosition());
-                assertEquals(0, seqvar.getToQuality().size());
+                assertEquals(0, seqvar.getToQualitiesAsBytes().length);
             }
         }
     }
@@ -363,8 +366,8 @@ public class TestSamRecordParser {
                 assertEquals("G", seqvar.getTo());
                 assertEquals(20, seqvar.getReadIndex());
                 assertEquals(15, seqvar.getPosition());
-                assertEquals(1, seqvar.getToQuality().size());
-                assertArrayEquals(byteArray(20), seqvar.getToQuality().toByteArray());
+                assertEquals(1, seqvar.getToQualitiesAsBytes().length);
+                assertArrayEquals(byteArray(20), seqvar.getToQualitiesAsBytes());
             }
         }
     }
@@ -498,5 +501,55 @@ public class TestSamRecordParser {
             result[i] = (byte) bytes[i];
         }
         return result;
+    }
+
+
+    /**
+     * Test SamToCompact convertBases() can handle requesting
+     * to convert bases before and after what is provided by
+     * the reference genome. And thet = is returned at the appropriate
+     * times, otherwise the READ base is returned.
+     */
+    @Test
+    public void samToCompactConvertBases() {
+        final MutableString seq = new MutableString();
+        //          01234567
+        seq.append("CAGTGTAC");
+        String[] refs = {seq.toString()};
+
+        RandomAccessSequenceTestSupport genome = new RandomAccessSequenceTestSupport(refs);
+
+
+        SAMToCompactMode samToCompact = new SAMToCompactMode();
+        samToCompact.setGenome(genome);
+
+        // AT the left side of the reference
+        //           01234567890
+        String readBases = "CTGTGTAC";
+        String convertBases = samToCompact.convertBases(0, 0, readBases.getBytes(), 0, 3);
+        assertEquals("=T=", convertBases);
+
+        // AT the right side of the reference
+        //           01234567890
+        readBases = "GTGC";
+        convertBases = samToCompact.convertBases(0, 5, readBases.getBytes(), 1, 1 + 3);
+        assertEquals("=G=", convertBases);
+        
+        // Before the left side of the reference
+        readBases = "AAACAG";
+        convertBases = samToCompact.convertBases(0, -3, readBases.getBytes(), 0, 0 + 6);
+        assertEquals("AAA===", convertBases);
+
+        // Beyond the right side of the reference
+        //           01234567890
+        readBases = "ACGGTACGCAD";
+        convertBases = samToCompact.convertBases(0, 4, readBases.getBytes(), 3, 3 + 7);
+        assertEquals("====GCA", convertBases);
+
+
+        // Beyond left AND right
+        readBases = "GGCAGTGTACTT";
+        convertBases = samToCompact.convertBases(0, -2, readBases.getBytes(), 0, 12);
+        assertEquals("GG========TT", convertBases);
     }
 }
