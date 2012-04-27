@@ -202,6 +202,8 @@ public class GobySamRecord implements Resettable {
                 segment.debugOutput();
             }
             allSequenceVariations.addAll(segment.sequenceVariations);
+            targetAlignedLength += segment.targetAlignedLength;
+            queryAlignedLength += segment.queryAlignedLength;
         }
     }
 }

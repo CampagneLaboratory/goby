@@ -312,6 +312,12 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 }
                 continue;
             }
+            if (gobySamRecord.getTargetAlignedLength() + gobySamRecord.getNumInserts() !=
+                    gobySamRecord.getQueryAlignedLength() + gobySamRecord.getNumDeletes()) {
+                LOG.error(String.format("targetAlignedLength+inserts != queryAlignedLength+deletes for read %s",
+                        samRecord.getReadName()));
+                continue;
+            }
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             if (sortedInput) {
