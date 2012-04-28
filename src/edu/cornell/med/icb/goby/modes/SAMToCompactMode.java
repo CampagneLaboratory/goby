@@ -409,7 +409,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 currentEntry.setQueryAlignedLength(gobySamSegment.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(gobySamSegment.getTargetAlignedLength());
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
-                if (preserveSoftClips) {
+                if (preserveSoftClips && genomeTargetIndex != -1) {
                     final int leftTrim = gobySamSegment.getSoftClippedBasesLeft().length();
                     if (leftTrim > 0) {
                         currentEntry.setSoftClippedBasesLeft(convertBases(
