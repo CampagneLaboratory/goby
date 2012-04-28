@@ -73,9 +73,9 @@ public class TestExportableAlignmentEntryData {
     public void testMakeExportable() throws IOException, ClassNotFoundException {
         final RandomAccessSequenceCache genome = new RandomAccessSequenceCache();
         genome.load("test-data/seq-var-test/small-synth.random-access-genome");
-        Int2ObjectMap<Map<String, String>> samDetailsMap = readSamFileToMap(genome, "test-data/seq-var-test/new/seq-var-reads-gsnap.sam");
+        Int2ObjectMap<Map<String, String>> samDetailsMap = readSamFileToMap(genome, "test-data/seq-var-test/seq-var-reads-gsnap.sam");
 
-        final FastXReader fastqReader = new FastXReader("test-data/seq-var-test/new/seq-var-reads.fq");
+        final FastXReader fastqReader = new FastXReader("test-data/seq-var-test/seq-var-reads.fq");
         final Map<Integer, ReadsDataEntry> reads = new LinkedHashMap<Integer, ReadsDataEntry>();
         int readIndex = 0;
         for (final FastXEntry fastqEntry : fastqReader) {
@@ -86,7 +86,7 @@ public class TestExportableAlignmentEntryData {
             reads.put(entry.readIndex, entry);
         }
 
-        final AlignmentReader reader = new AlignmentReaderImpl("test-data/seq-var-test/new/sorted-seq-var-reads-gsnap.entries");
+        final AlignmentReader reader = new AlignmentReaderImpl("test-data/seq-var-test/sorted-seq-var-reads-gsnap.entries");
         final ExportableAlignmentEntryData exportData = new ExportableAlignmentEntryData(genome, QualityEncoding.PHRED);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();

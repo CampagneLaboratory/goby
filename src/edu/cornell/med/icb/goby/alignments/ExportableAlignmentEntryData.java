@@ -575,14 +575,20 @@ public class ExportableAlignmentEntryData {
                 LOG.debug("\n" + toString());
             }
         }
+
+        //
+        // TODO: This many not behave well if mutations and indels are in a single SEQVAR. Make
+        // TODO: a test for this.
+        int seqVarInsertsInRead = 0;
         for (final Alignments.SequenceVariation seqvar : alignmentEntry.getSequenceVariationsList()) {
             if (debug) {
                 LOG.debug(seqVarToString(seqvar));
             }
             final String froms = seqvar.getFrom();  // references bases. '-' means INSERTION in the read
             final String tos = seqvar.getTo();      // read bases. '-' means INSERTION in the reference
-            final int startRefPosition = seqvar.getPosition();   // refPosition, 1-based, always numbered from left
+            final int startRefPosition = seqvar.getPosition() + startClip;   // refPosition, 1-based, always numbered from left
             final byte[] toQuals = seqvar.hasToQuality() ? seqvar.getToQuality().toByteArray() : null;
+            int seqVarInsertsInReadDelta = 0;
             for (int i = 0; i < froms.length(); i++) {
                 final char from = froms.charAt(i);
                 final char to = tos.charAt(i);
@@ -592,51 +598,70 @@ public class ExportableAlignmentEntryData {
                 final int refPosition = startRefPosition + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
                     // Insertion, missing base in the reference.
-                    refBases.add(refPosition + 1, from);
-                    readBases.add(refPosition + 1, to);
+                    try {
+                        refBases.add(refPosition + seqVarInsertsInRead +1, from);
+                        readBases.add(refPosition + seqVarInsertsInRead + 1, to);
+                    } catch (IndexOutOfBoundsException e) {
+                        invalidMessage.append("Error: Index out of bounds exception for queryIndex=")
+                                .append(alignmentEntry.getQueryIndex())
+                                .append(" refPosition=").append(refPosition)
+                                .append(" seqVarInsertsInRead=").append(seqVarInsertsInRead)
+                                .append(" refBases.size=").append(refBases.size())
+                                .append(" readBases.size=").append(readBases.size())
+                                .append('\n');
+                        if (debug) {
+                            LOG.warn(invalidMessage.toString());
+                        }
+                        if (invalid) {
+                            return;
+                        }
+                    }
                     if (toQual != null) {
-                        qualities.add(refPosition + 1, toQual);
+                        qualities.add(refPosition + seqVarInsertsInRead + 1, toQual);
                         hasQualities = true;
                     }
+                    seqVarInsertsInReadDelta++;
                 } else if (to == '-') {
                     // Deletion. Missing base in the read, but we
-                    if (refBases.get(refPosition) != from) {
+                    if (refBases.get(refPosition + seqVarInsertsInRead) != from) {
                         invalid = false;
                         invalidMessage.append("Error: (Deletion) Sequence variation for queryIndex=").
                                 append(alignmentEntry.getQueryIndex()).
                                 append(" invalid. 'from' base doesn't match actual reference base. From=").
-                                append(from).append(" actual=").append(refBases.get(refPosition)).append('\n');
+                                append(from).append(" actual=").append(refBases.get(refPosition + seqVarInsertsInRead)).append('\n');
                         if (debug) {
-                            LOG.debug(invalidMessage.toString());
+                            LOG.warn(invalidMessage.toString());
                         }
                         if (invalid) {
                             return;
                         }
                     }
-                    readBases.set(refPosition, to);
-                    deleteQualityIndexes.addFirst(refPosition);
+                    readBases.set(refPosition + seqVarInsertsInRead, '-');
+                    deleteQualityIndexes.addFirst(refPosition + seqVarInsertsInRead);
                 } else {
                     // Mutation
-                    if (refBases.get(refPosition) != from) {
+                    if (refBases.get(refPosition + seqVarInsertsInRead) != from) {
                         invalid = false;
-                        invalidMessage.append("Error: (Mutation) Sequence variation for queryIndex=").
+                        invalidMessage.append("Error: (Mutation) Index out of bounds exception for queryIndex=").
                                 append(alignmentEntry.getQueryIndex()).
                                 append(" invalid. 'from' base doesn't match actual reference base. From=").
-                                append(from).append(" actual=").append(refBases.get(refPosition)).append('\n');
+                                append(from).append(" actual=").append(refBases.get(refPosition + seqVarInsertsInRead)).append('\n');
                         if (debug) {
-                            LOG.debug(invalidMessage.toString());
+                            LOG.warn(invalidMessage.toString());
                         }
                         if (invalid) {
                             return;
                         }
                     }
-                    readBases.set(refPosition, to);
+                    readBases.set(refPosition + seqVarInsertsInRead, to);
+                    // refBases.set(refPosition, from);  // Possible fix for no seqvar
                     if (toQual != null && !predefinedQuals) {
-                        qualities.set(refPosition, toQual);
+                        qualities.set(refPosition + seqVarInsertsInRead, toQual);
                         hasQualities = true;
                     }
                 }
             }
+            seqVarInsertsInRead += seqVarInsertsInReadDelta;
         }
         for (final int deleteQualityIndex : deleteQualityIndexes) {
             qualities.remove(deleteQualityIndex);
@@ -654,10 +679,11 @@ public class ExportableAlignmentEntryData {
             final int readSize = readBases.size();
             for (int i = 0; i < endClip; i++) {
                 char clipBase;
+                final int pos = readSize - endClip + i;
                 if (predefEndClips == null) {
-                    readBases.set(readSize - i - 1, 'N');
+                    readBases.set(pos, 'N');
                 } else {
-                    readBases.set(readSize - i - 1, predefEndClips[i]);
+                    readBases.set(pos, predefEndClips[i]);
                 }
             }
         }

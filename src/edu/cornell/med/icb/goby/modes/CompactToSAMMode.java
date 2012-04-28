@@ -262,14 +262,16 @@ public class CompactToSAMMode extends AbstractGobyMode {
         if (alignmentIterator == null) {
             alignmentIterator = new CompactToSAMIterateAlignments();
         }
+
         final int seekTargetIndex = -1;
         final String seekTargetName = "";
         final int seekStartPosition = -1;
 
+        // For debugging set to a targetName, targetIndex, and startPosition
         /*
-        final int seekTargetIndex = 5;
-        final String seekTargetName = "6";
-        final int seekStartPosition = 32485524;
+        final int seekTargetIndex = 10;
+        final String seekTargetName = "11";
+        final int seekStartPosition = 67675226;
         */
 
         if (hasStartOrEndPosition) {

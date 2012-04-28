@@ -220,13 +220,14 @@ public class GobySamSegment implements Resettable {
             boolean makeNewSeqvar = false;
             if (seqvar == null || seqvar.lastIndexPosition != i - 1) {
                 makeNewSeqvar = true;
-            } else if (hasReadQuals) {
+            } else {
                 final int toLength = seqvar.to.length();
-                if (toLength > 0) {
-                    final char prevReadChar = seqvar.to.charAt(toLength - 1);
-                    if (prevReadChar == '-' && readChar != '-' || readChar == '-' && prevReadChar != '-') {
-                        makeNewSeqvar = true;
-                    }
+                final char prevReadChar = seqvar.to.charAt(toLength - 1);
+                final char prevRefChar = seqvar.from.charAt(toLength - 1);
+                // Don't group mutations and indels
+                if ((prevReadChar == '-' && readChar != '-') || (readChar == '-' && prevReadChar != '-') ||
+                     (prevRefChar == '-' && refChar != '-') || (refChar == '-' && prevRefChar != '-')) {
+                    makeNewSeqvar = true;
                 }
             }
 

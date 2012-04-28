@@ -255,7 +255,7 @@ public class TestSamRecordParser {
                 assertEquals(51, first.getQueryAlignedLength());
                 assertEquals(50, first.getTargetAlignedLength());
 
-                assertEquals(4, first.getSequenceVariationsCount());
+                assertEquals(5, first.getSequenceVariationsCount());
 
                 GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
                 assertEquals("T", seqvar.getFrom());
@@ -279,11 +279,18 @@ public class TestSamRecordParser {
                 assertArrayEquals(byteArray(28), seqvar.getToQualitiesAsBytes());  // 14 in the old test
 
                 seqvar = first.getSequenceVariations(3);
-                assertEquals("-T", seqvar.getFrom());
-                assertEquals("CA", seqvar.getTo());   // Original test said CG
+                assertEquals("-", seqvar.getFrom());
+                assertEquals("C", seqvar.getTo());   // Original test said CG
                 assertEquals(35, seqvar.getReadIndex());
                 assertEquals(21, seqvar.getPosition());
-                assertArrayEquals(byteArray(27, 35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
+                assertArrayEquals(byteArray(27), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
+
+                seqvar = first.getSequenceVariations(4);
+                assertEquals("T", seqvar.getFrom());
+                assertEquals("A", seqvar.getTo());   // Original test said CG
+                assertEquals(36, seqvar.getReadIndex());
+                assertEquals(22, seqvar.getPosition());
+                assertArrayEquals(byteArray(35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
             } else if (gobySamRecord.readNum == 1) {
                 final GobySamSegment second = segment;

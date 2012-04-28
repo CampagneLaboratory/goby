@@ -661,7 +661,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertEquals(51, first.getQueryAlignedLength());
         assertEquals(50, first.getTargetAlignedLength());
 
-        assertEquals(4, first.getSequenceVariationsCount());
+        assertEquals(5, first.getSequenceVariationsCount());
 
         Alignments.SequenceVariation seqvar = first.getSequenceVariations(0);
         assertEquals("T", seqvar.getFrom());
@@ -686,11 +686,18 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         assertArrayEquals(byteArray(28), seqvar.getToQuality().toByteArray());
 
         seqvar = first.getSequenceVariations(3);
-        assertEquals("-T", seqvar.getFrom());
-        assertEquals("CA", seqvar.getTo());
+        assertEquals("-", seqvar.getFrom());
+        assertEquals("C", seqvar.getTo());
         assertEquals(35, seqvar.getReadIndex());
         assertEquals(21, seqvar.getPosition());
-        assertArrayEquals(byteArray(27, 35), seqvar.getToQuality().toByteArray());
+        assertArrayEquals(byteArray(27), seqvar.getToQuality().toByteArray());
+
+        seqvar = first.getSequenceVariations(4);
+        assertEquals("T", seqvar.getFrom());
+        assertEquals("A", seqvar.getTo());
+        assertEquals(36, seqvar.getReadIndex());
+        assertEquals(22, seqvar.getPosition());
+        assertArrayEquals(byteArray(35), seqvar.getToQuality().toByteArray());
 
         //second's CIGAR is 20S48M
         assertEquals(190246 - 1, second.getPosition());
