@@ -66,6 +66,7 @@ import java.util.List;
 /**
  * Converts alignments in the SAM or BAM format to the compact alignment format.
  *
+ * @author Kevin Dorff
  * @author Fabien Campagne
  */
 public class SAMToCompactMode extends AbstractGobyMode {
@@ -398,7 +399,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 if (multiplicity > 1) {
                     currentEntry.setMultiplicity(multiplicity);
                 }
-                currentEntry.setQueryIndex(gobySamRecord.getReadNum());
+                currentEntry.setQueryIndex(queryIndex);
                 currentEntry.setTargetIndex(targetIndex);
                 currentEntry.setPosition(gobySamSegment.getPosition());     // samhelper returns zero-based positions compatible with Goby.
                 currentEntry.setQueryPosition(gobySamSegment.getQueryPosition());
