@@ -4,8 +4,8 @@
 ##INFO=<ID=INDEL,Number=1,Type=Flag,Description="Indicates that the variation is an indel.">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=BC,Number=5,Type=String,Description="Base counts in format A=?;T=?;C=?;G=?;N=?.">
-##FORMAT=<ID=GB,Number=1,Type=String,Description="Number of bases that pass base filters in this sample.">
-##FORMAT=<ID=FB,Number=1,Type=String,Description="Number of bases that failed base filters in this sample.">
+##FORMAT=<ID=GB,Number=1,Type=Integer,Description="Number of bases that pass base filters in this sample.">
+##FORMAT=<ID=FB,Number=1,Type=Integer,Description="Number of bases that failed base filters in this sample.">
 ##FORMAT=<ID=Zygosity,Number=1,Type=String,Description="Zygosity">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	basen0	basen1	basen2	basen3	basen4	basen5	basen6	basen7	basen8	basen9
 target1	126	.	A	G	.	.	BIOMART_COORDS=target1:126:126	GT:BC:GB:FB:Zygosity	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous	0/1:A=9,G=1:10:0:heterozygous
