@@ -148,7 +148,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 case TAB_DELIMITED:
                 case TAB_SINGLE_BASE:
                 case TSV:
-                    stream.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype\tscore");
+                    stream.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype\tto-quals");
                     break;
             }
 
@@ -283,10 +283,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final int referenceIndex = alignmentEntry.getTargetIndex();
                         final byte[] qualityScores;
                         if (var.hasToQuality()) {
-                            System.out.println("Score");
+
                             qualityScores = var.getToQuality().toByteArray();
                         } else {
-                            System.out.println("No score");
+
                             qualityScores = null;
                         }
 
