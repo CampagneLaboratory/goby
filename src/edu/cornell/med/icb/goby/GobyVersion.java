@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby;
 
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -78,6 +79,7 @@ public class GobyVersion {
         return time1 < time2;
 
     }
+    private static WarningCounter versionWarning = new WarningCounter(1);
 
     /**
      * Reduce a version string to a date in the format yyyymmddHHmmss.
@@ -96,7 +98,7 @@ public class GobyVersion {
                 if (version.equals(versionPairs[i])) return versionPairs[i + 1];
             }
         } // the version number was not recognized, assume we are dealing with a more recent version.
-        LOG.warn(String.format("Version number %s not recognized. Assuming this version is the most recent.", version));
+        versionWarning.warn(LOG,String.format("Version number %s not recognized. Assuming this version is the most recent.", version));
         return now();
     }
 

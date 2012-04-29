@@ -21,6 +21,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
@@ -104,9 +105,9 @@ public class MessageChunksWriter {
             // if the option was not set, use the chunk codec suggested chunk size:
           numEntriesPerChunk=chunkCodec.getSuggestedChunkSize();
         }
-        LOG.info("Using chunk-size="+numEntriesPerChunk);
+        chunkSizeWarning.warn(LOG,"Using chunk-size="+numEntriesPerChunk);
     }
-
+   private static WarningCounter chunkSizeWarning=new WarningCounter(1);
     /**
      * Write the entry collection as needed to the output stream. When the number of entries
      * per chunk is reached, the chunk is written to disk and the collection cleared. Clients

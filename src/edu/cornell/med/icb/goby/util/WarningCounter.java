@@ -18,12 +18,8 @@
 
 package edu.cornell.med.icb.goby.util;
 
-import org.apache.commons.logging.Log;
-
-import java.util.logging.Logger;
-
 /**
- * Counter to print a specific message up to maxWarnings.
+ * Counter to print a specific message up to maxWarnings times.
  *
  * @author Fabien Campagne
  *         Date: Apr 16, 2011
@@ -47,7 +43,7 @@ public class WarningCounter {
     }
 
     public boolean warnAgain() {
-        return ++counter < maxWarnings;
+        return counter++ < maxWarnings;
     }
 
     public void warn(org.apache.commons.logging.Log log, String format, Object... option) {
@@ -59,6 +55,40 @@ public class WarningCounter {
     public void warn(org.apache.log4j.Logger log, String format, Object... option) {
         if (warnAgain()) {
             log.warn(String.format(format, option));
+        }
+    }
+
+    public void info(org.apache.commons.logging.Log log, String format, Object... option) {
+        if (warnAgain()) {
+            log.info(String.format(format, option));
+        }
+    }
+
+    public void info(org.apache.log4j.Logger log, String format, Object... option) {
+        if (warnAgain()) {
+            log.info(String.format(format, option));
+        }
+    }
+    public void debug(org.apache.commons.logging.Log log, String format, Object... option) {
+        if (log.isDebugEnabled() && warnAgain()) {
+            log.debug(String.format(format, option));
+        }
+    }
+
+    public void debug(org.apache.log4j.Logger log, String format, Object... option) {
+        if (log.isDebugEnabled() && warnAgain()) {
+            log.debug(String.format(format, option));
+        }
+    }
+     public void trace(org.apache.commons.logging.Log log, String format, Object... option) {
+        if (log.isTraceEnabled() && warnAgain()) {
+            log.debug(String.format(format, option));
+        }
+    }
+
+    public void trace(org.apache.log4j.Logger log, String format, Object... option) {
+        if (log.isTraceEnabled() && warnAgain()) {
+            log.trace(String.format(format, option));
         }
     }
 }
