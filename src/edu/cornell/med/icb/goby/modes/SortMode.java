@@ -28,23 +28,15 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Sort an alignment by reference and reference position for very large alignments.
  * Splits the alignment into chunks, sorting each chunk, then successively merging
- * the chunks until.
+ * the chunks until the complete output is sorted.
  *
  * @author Kevin Dorff.
  * @author Fabien Campagne.
@@ -377,8 +369,9 @@ public class SortMode extends AbstractGobyMode {
         LOG.debug(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
 
         // Subsequent sorts
-        boolean lastMergeSubmitted = false;
-        while (true) {
+        boolean lastMerge = false;
+        boolean done = false;
+        while (!done) {
 
             if (!exceptions.isEmpty()) {
                 break;
@@ -396,13 +389,16 @@ public class SortMode extends AbstractGobyMode {
                 }
             }
             final int splitsToMergeSizeLocal = splitsToMergeSize.get();
-            if (lastMergeSubmitted && splitsToMergeSizeLocal == 1) {
+            if (lastMerge && splitsToMergeSizeLocal == 1) {
                 // We're done
                 break;
             }
 
             final int numSplitsForMerge;
-            if (splitsToMergeSizeLocal == 0) {
+            if (splitsToMergeSizeLocal == numberOfSplits) {
+                numSplitsForMerge = 1;
+                lastMerge=true;
+            } else if (splitsToMergeSizeLocal == 0) {
                 // Nothing to sort this iteration
                 numSplitsForMerge = 0;
             } else if (splitsToMergeSizeLocal == 1) {
@@ -415,7 +411,7 @@ public class SortMode extends AbstractGobyMode {
                 final List<SortMergeSplitFileRange> ranges = mergeMultiSplitRangeLists(splitsToMerge);
                 if (ranges.size() == 1 && ranges.get(0).isRange(0, fileSize - 1)) {
                     // Last merge.
-                    lastMergeSubmitted = true;
+                    lastMerge = true;
                     numSplitsForMerge = splitsToMergeSizeLocal;
                 } else if (splitsToMergeSize.get() == filesPerMerge) {
                     // We have enough to merge, but it's not the last merge
@@ -426,6 +422,7 @@ public class SortMode extends AbstractGobyMode {
                 }
             }
 
+
             if (numSplitsForMerge > 0) {
                 final List<SortMergeSplit> toMerge = new ArrayList<SortMergeSplit>(numSplitsForMerge);
                 for (int i = 0; i < numSplitsForMerge; i++) {
@@ -434,7 +431,8 @@ public class SortMode extends AbstractGobyMode {
                 }
                 LOG.debug(String.format("[%s] %d items in queue to sort after removing %d for sorting",
                         threadId, splitsToMergeSizeLocal, numSplitsForMerge));
-                mergeSplits(toMerge, lastMergeSubmitted);
+                mergeSplits(toMerge, lastMerge);
+
             } else {
                 // Wait a bit for tasks to finish before finding more to submit
                 try {
@@ -446,8 +444,8 @@ public class SortMode extends AbstractGobyMode {
         }
 
         if (executorService != null) {
-            // wait for all of the executor threads to finish
             LOG.debug(String.format("[%s] Waiting for threads to finish.", threadId));
+            // accept no new tasks, but wait for all of the executor threads to finish :
             executorService.shutdown();
             try {
                 while (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -458,7 +456,7 @@ public class SortMode extends AbstractGobyMode {
         }
 
         if (!filesToDelete.isEmpty()) {
-            // These files weren't delete after merge up for some reason. We'll try again one more time.
+            // These files weren't deleted after merge for some reason. We'll try again one more time.
             while (true) {
                 final File cleanupFile = filesToDelete.poll();
                 if (cleanupFile == null) {
@@ -522,15 +520,21 @@ public class SortMode extends AbstractGobyMode {
                     LOG.debug(String.format("[%s] Writing sorted alignment...", threadId));
                     alignmentIterator.write(writer);
 
-                    if (firstSort) {
-                        LOG.debug(String.format("[%s] Writing TMH", threadId));
-                        final AlignmentReader alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
-                        alignmentReader.readHeader();
-                        Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
+                    try {
+                        if (firstSort) {
+
+                            LOG.debug(String.format("[%s] Writing TMH", threadId));
+                            final AlignmentReader alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
+                            alignmentReader.readHeader();
+                            Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
+                        }
+                    } finally {
+
+
+                        // Sort finished
+                        sortedSplits.add(toSort);
                     }
 
-                    // Sort finished
-                    sortedSplits.add(toSort);
                 } catch (IOException e) {
                     LOG.error(String.format("[%s] Exception sorting!! message=%s", threadId, e.getMessage()));
                     exceptions.add(e);
