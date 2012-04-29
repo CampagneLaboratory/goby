@@ -24,10 +24,10 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 /**
+ * Interface for Goby alignment readers.
  * @author Fabien Campagne
  *         Date: Apr 10, 2011
  *         Time: 12:43:51 PM
@@ -125,8 +125,15 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     Iterator<Alignments.AlignmentEntry> iterator();
 
+    /**
+     * Obtain statistics asssociated with the alignment. The file basename.stats must exist.
+     *
+     * @return stats or null.
+     */
     Properties getStatistics();
-
+    /**
+       Obtain the number of aligned reads from the header.
+     */
     int getNumberOfAlignedReads();
 
 
@@ -139,6 +146,10 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
      */
     ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException;
 
+    /**
+     * Indicates if query lengths are stored in alignment entries (True) or in the alignment header (alignments produced with goby 1.7-, False).
+     * @return True or False.
+     */
     boolean isQueryLengthStoredInEntries();
 
     /**
@@ -167,7 +178,9 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     int getNumberOfQueries();
 
-
+     /**
+     * @return True if the alignment stores a constant query length.
+     */
     boolean isConstantQueryLengths();
 
     int getConstantQueryLength();
