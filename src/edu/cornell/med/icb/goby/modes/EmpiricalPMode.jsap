@@ -22,7 +22,7 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>Tab delimited files to append and perform FDR adjustment on.</help>
+            <help>Tab delimited files with pair information.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>output</id>

@@ -54,7 +54,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION =
             "Estimate null distribution or empirical p-values based on a recorded null distribution. The input file must be tab delimited with the following fields: " +
                     " - WITHIN_GROUP_PAIR|BETWEEN_GROUP_PAIR keyword" +
-                    " - comparison_description "+
+                    " - comparison_description " +
                     " - [element identifier]*" +
                     " - VALUES_A " +
                     " - [integer value to evaluate the statistic for element in sample A]+" +
@@ -73,13 +73,23 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private String outputFilename;
     private String[] dymamicOptions;
     private String statisticName;
+    private int index = 0;
+    // number of false negatives (assuming a simulation where the first 1000 elements tested are positives.
+    private int numFN;
+    private int numFP;
+    private int numTN;
+    private int numTP;
+    private int numOther;
+
 
     public static DynamicOptionClient doc() {
         return doc;
     }
 
 
-   public static final @RegisterThis DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
+    public static final
+    @RegisterThis
+    DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS
 
     );
@@ -187,6 +197,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
             System.err.println("Writing estimated statistic to: " + densityFilename);
             DensityEstimator.store(estimator.getEstimator(), densityFilename);
         }
+        System.out.printf("Rate of true negatives: %3.2f%%%n", 100d * ((numTN + 0d) / (numOther + 0d)));
+        System.out.printf("Rate of true positives: %3.2f%%%n", 100d * ((numTP + 0d) / (1000d)));
+
+        System.out.printf("Rate of false negatives: %3.2f%%%n", 100d * ((numFN + 0d) / 1000d));
+        System.out.printf("Rate of false positives: %3.2f%%%n", 100d * ((numFP + 0d) / 1000d));
 
     }
 
@@ -376,26 +391,45 @@ public class EmpiricalPMode extends AbstractGobyMode {
         boolean stop = false;
         for (final String elementId : elementIds) {
 
-          /*  if ("ENSMUST00000034529_NM_027807".equals(elementId)) {
-                System.out.println("STOP");
-                stop = true;
-            } else {
-                stop = false;
-            } */
+            /*  if ("ENSMUST00000034529_NM_027807".equals(elementId)) {
+               System.out.println("STOP");
+               stop = true;
+           } else {
+               stop = false;
+           } */
             outputWriter.print('\t');
             outputWriter.print(elementId);
         }      /*
         if (stop) {
             System.out.println("STOP");
         }        */
+        if (elementIds.get(5).equals("A104")) {
+            System.out.println(elementIds);
+        }
         final double p = estimator.estimateEmpiricalPValue(
                 valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
                 valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),
                 covariatesACollector.toArray(new IntArrayList[covariatesACollector.size()]),
                 covariatesBCollector.toArray(new IntArrayList[covariatesBCollector.size()]));
-        if (p < 0.01) {
-            System.out.println(elementIds);
+
+        if (index < 1000) {
+            if (p > 0.05) {
+                numFN++;
+            } else {
+                numTP++;
+            }
         }
+        if (index >= 1000) {
+            if (p <= 0.05) {
+                numFP++;
+            } else {
+                numTN++;
+            }
+            numOther++;
+
+        }
+
+        index++;
         outputWriter.printf("\t%g%n", p);
     }
 
