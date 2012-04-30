@@ -392,6 +392,11 @@ public class SAMToCompactMode extends AbstractGobyMode {
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
             final int genomeTargetIndex = genome == null ? -1 : genome.getReferenceIndex(chromosomeNameMapping(genome, samRecord.getReferenceName()));
+            if (genome != null && genomeTargetIndex == -1) {
+                System.out.println("genomeTargetIndex==-1, name=" + samRecord.getReferenceName());
+                System.out.println("mapping=" + chromosomeNameMapping(genome, samRecord.getReferenceName()));
+                System.exit(10);
+            }
             for (final GobySamSegment gobySamSegment : gobySamRecord.getSegments()) {
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();

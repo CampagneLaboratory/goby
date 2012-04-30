@@ -117,7 +117,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             LOG.debug("size of last sequence " + description + ", in bytes: " + bytes.length);
 
             compressedData.add(bytes);
-            sizes.add(position + 1);
+            sizes.add(position);
         }
 
     }
@@ -172,7 +172,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             LOG.debug("size of last sequence " + description + ", in bytes: " + bytes.length);
 
             compressedData.add(bytes);
-            sizes.add(seq.size() + 1);
+            sizes.add(seq.size());
         }
     }
 
