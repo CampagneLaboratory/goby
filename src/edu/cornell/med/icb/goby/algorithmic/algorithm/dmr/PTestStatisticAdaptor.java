@@ -49,7 +49,7 @@ public class PTestStatisticAdaptor extends AbstractMethylationAdapter {
         double pa = cma / (ca + cma);
         double pb = cmb / (cb + cmb);
         // p_hat is the pooled proportion estimate:
-        double p_hat = (cma + cmb + 0.01) / (cma + cmb + ca + cb + 0.01);
+        double p_hat = (cma + cmb ) / (cma + cmb + ca + cb );
 
         double Z = (pa - pb) /
                 Math.sqrt(p_hat * (1 - p_hat) * ((1f / (cma + ca)) + (1f / (cmb + cb))));
