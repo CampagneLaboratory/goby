@@ -9,8 +9,8 @@
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total depth of sequencing across groups at this site">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=BC,Number=5,Type=String,Description="Base counts in format A=?;T=?;C=?;G=?;N=?.">
-##FORMAT=<ID=GB,Number=1,Type=String,Description="Number of bases that pass base filters in this sample.">
-##FORMAT=<ID=FB,Number=1,Type=String,Description="Number of bases that failed base filters in this sample.">
+##FORMAT=<ID=GB,Number=1,Type=Integer,Description="Number of bases that pass base filters in this sample.">
+##FORMAT=<ID=FB,Number=1,Type=Integer,Description="Number of bases that failed base filters in this sample.">
 ##FORMAT=<ID=RP,Number=1,Type=Float,Description="Proportion of reference allele in the sample (count(ref)/(sum count other alleles)">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	basen0	basen1	basen2	basen3	basen4	basen5	basen6	basen7	basen8	basen9
 target1	126	.	A	G	.	.	BIOMART_COORDS=target1:126:126;P[A/B]=NaN;RP_A=0.9;RP_B=0.9;ES_A_B=0.0;DP=100	GT:BC:GB:FB:RP	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9	0/1:A=9,G=1:10:0:0.9
