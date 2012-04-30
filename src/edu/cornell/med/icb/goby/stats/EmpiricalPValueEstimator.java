@@ -60,7 +60,7 @@ public class EmpiricalPValueEstimator {
     }
 
     enum binningStrategyNames {
-        fastslog10, fasts100log10, log2, s100linear
+        fastslog10, fasts100log10, log2, s100linear ,log10
     }
 
     static public final String[] LOCAL_DYNAMIC_OPTIONS = {
@@ -168,6 +168,9 @@ public class EmpiricalPValueEstimator {
                     switch (binningStrategyNames.valueOf(binningStrategyName)) {
                         case log2:
                             binningStrategy = new Log2BinningStrategy();
+                            break;
+                        case log10:
+                            binningStrategy = new Log10BinningStrategy();
                             break;
                         case s100linear:
                             binningStrategy = new LinearBinningStrategy();
