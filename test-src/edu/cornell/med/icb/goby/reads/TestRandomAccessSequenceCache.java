@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.reads;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import it.unimi.dsi.lang.MutableString;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -107,4 +109,47 @@ public class TestRandomAccessSequenceCache {
         assertEquals('N', cache.get(1, i++));
         assertEquals('N', cache.get(1, i++));
     }
+
+    /**
+     * Test creation of a sequence
+     * @throws IOException
+     */
+    @Test
+    public void testMakeGenome() throws IOException {
+        final int firstPos = 2;
+        final String genomeStr = "TGAATGAGACCTA";
+        final RandomAccessSequenceCache genome = makeGenome(firstPos, genomeStr);
+
+        assertEquals(firstPos + genomeStr.length(), genome.getLength(0));
+        assertEquals('N', genome.get(0, 0));
+        assertEquals('N', genome.get(0, 1));
+        assertEquals('T', genome.get(0, 2));
+        assertEquals('G', genome.get(0, 3));
+        assertEquals('A', genome.get(0, 4));
+    }
+
+    /**
+     * The goal of this is to create a reference where sequence
+     * first appears at 0-based position firstPos. Positions prior to
+     * this will be padded with N's.
+     * This seems to work but the length of targetIndex 0 seems to be
+     * off by 1. ??
+     * @param firstPos the 0-based position where sequence should start
+     * @param sequence the reference sequence to create
+     * @return the sequence cache
+     * @throws IOException io exception thrown
+     */
+    private RandomAccessSequenceCache makeGenome(final int firstPos, final CharSequence sequence) throws IOException {
+        final MutableString genomeSeq = new MutableString();
+        genomeSeq.append(">1\n");
+        for (int i = 0; i < firstPos; i++) {
+            genomeSeq.append('N');
+        }
+        genomeSeq.append(sequence).append('\n');
+        System.out.println(genomeSeq);
+        final RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
+        cache.loadFasta(new StringReader(genomeSeq.toString()));
+        return cache;
+    }
+
 }
