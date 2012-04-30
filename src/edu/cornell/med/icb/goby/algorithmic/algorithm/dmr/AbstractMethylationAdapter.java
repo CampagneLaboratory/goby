@@ -59,7 +59,8 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
         }
         // remove context index from the list of covariates. Context is irrelevant to calculate the statistic.
 
-        final int sumTotal = cma + cmb + ca + cb;
+        final int sumTotal = Math.min(cma + ca, cmb + cb);
+
         COVARIATES[0] = sumTotal;
         return calculateWithCovariate(sumTotal, cma, ca, cmb, cb);
     }
