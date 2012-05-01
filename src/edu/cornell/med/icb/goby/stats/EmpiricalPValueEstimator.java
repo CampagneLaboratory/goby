@@ -85,7 +85,7 @@ public class EmpiricalPValueEstimator {
         Boolean estimateIntraGroupDifferences = clientDoc.getBoolean("estimate-intra-group-differences");
         Boolean estimateIntraGroupP = clientDoc.getBoolean("estimate-empirical-P");
         serializedFilename = clientDoc.getString("serialized-estimator-filename");
-        if (estimateIntraGroupP && serializedFilename != null) {
+        if (estimateIntraGroupDifferences && serializedFilename != null) {
             try {
                 LOG.debug("Loading density from disk at " + serializedFilename);
                 estimator = DensityEstimator.load(serializedFilename);
@@ -103,7 +103,7 @@ public class EmpiricalPValueEstimator {
                 case max:
                     combinator = new MaxCombinator();
                     break;
-                case sum:
+                case sum:                                                    `
                     combinator = new SummedCombinator();
                     break;
                 case qfast:

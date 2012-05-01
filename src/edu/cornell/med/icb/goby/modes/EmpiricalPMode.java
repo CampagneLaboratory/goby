@@ -412,15 +412,16 @@ public class EmpiricalPMode extends AbstractGobyMode {
                 covariatesACollector.toArray(new IntArrayList[covariatesACollector.size()]),
                 covariatesBCollector.toArray(new IntArrayList[covariatesBCollector.size()]));
 
+        final double alpha = 0.05;
         if (index < 1000) {
-            if (p > 0.05) {
+            if (p > alpha) {
                 numFN++;
             } else {
                 numTP++;
             }
         }
         if (index >= 1000) {
-            if (p <= 0.05) {
+            if (p <= alpha) {
                 numFP++;
             } else {
                 numTN++;
