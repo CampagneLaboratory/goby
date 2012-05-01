@@ -83,9 +83,9 @@ public class EmpiricalPValueEstimator {
     public void configure(final int numberOfContexts, final DynamicOptionClient clientDoc) {
 
         Boolean estimateIntraGroupDifferences = clientDoc.getBoolean("estimate-intra-group-differences");
-        Boolean estimateIntraGroupP = clientDoc.getBoolean("estimate-empirical-P");
+        Boolean estimateBetweenGroupP = clientDoc.getBoolean("estimate-empirical-P");
         serializedFilename = clientDoc.getString("serialized-estimator-filename");
-        if (estimateIntraGroupDifferences && serializedFilename != null) {
+        if (estimateBetweenGroupP && serializedFilename != null) {
             try {
                 LOG.debug("Loading density from disk at " + serializedFilename);
                 estimator = DensityEstimator.load(serializedFilename);
