@@ -103,7 +103,7 @@ public class EmpiricalPValueEstimator {
                 case max:
                     combinator = new MaxCombinator();
                     break;
-                case sum:                                                    `
+                case sum:
                     combinator = new SummedCombinator();
                     break;
                 case qfast:
@@ -178,6 +178,7 @@ public class EmpiricalPValueEstimator {
                         default:
                         case fasts100log10:
                         case fastslog10:
+
                             binningStrategy = new FastSmallAndLog10BinningStrategy();
                             break;
                     }
