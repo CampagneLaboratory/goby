@@ -314,6 +314,45 @@ public class TestSamRecordParser {
         }
     }
 
+    /**
+     * This comes from
+     * Quality score difference.
+     * See XAAOBVT  [Open Session]
+     *   chr1:45,881,903-45,881,942
+     *   T variation with qual score 2 should be 36
+     * Sample = XAAOBVT
+     * Read group = 1
+     * ----------------------
+     * Read name = 509.6.68.19057.157284
+     * @throws IOException
+     */
+    @Test
+    public void testSamToCompactTrickCase17() throws IOException {
+
+        final String inputFile = "test-data/splicedsamhelper/tricky-spliced-17.sam";
+        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
+        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SamRecordParser recordParser = new SamRecordParser();
+        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+            final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
+
+            assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
+
+            final GobySamSegment first = gobySamRecord.getSegment(0);
+            
+            assertEquals(45881869 - 1, first.getPosition());
+
+            //509.6.68.19057.157284	83	chr1	45881869	29	6S23M1I6M1D16M1I47M	=	45881519	-443	TTACCCGCTTTCCTTGCCCAAATTTTAAGTTTCNGGAAAAGGGGAGGGAAATGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC	#######################################################ECGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHH	MD:Z:3G4A7C4C1A2T2^T2C4T3A0G5C44	RG:Z:1	XG:i:3	AM:i:29	NM:i:14	SM:i:29	XM:i:10	XO:i:3	XT:A:M
+
+            assertEquals(6, first.getQueryPosition());
+            assertEquals("TTACCC", first.getSoftClippedBasesLeft());
+            assertEquals("", first.getSoftClippedBasesRight());
+
+            // Test more here, although this record appears to parse correctly
+            // when I checked by hand.
+        }
+    }
+
     @Test
     public void testDelNonSplice1() throws IOException {
         final String inputFile = "test-data/splicedsamhelper/del-nonsplice-1.sam";
@@ -559,4 +598,7 @@ public class TestSamRecordParser {
         convertBases = samToCompact.convertBases(0, -2, readBases.getBytes(), 0, 12);
         assertEquals("GG========TT", convertBases);
     }
+
+
+
 }

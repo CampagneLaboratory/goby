@@ -130,6 +130,7 @@ public class GobySamSegment implements Resettable {
             debugMessage.append("readIndex   =").append(firstReadIndex).append('\n');
             debugMessage.append("refBases    =").append(refBases.toString()).append('\n');
             debugMessage.append("readBases   =").append(readBases.toString()).append('\n');
+            debugMessage.append("readQuals   ="); debugOutputQuals().append('\n');
 
             for (int i = 0; i < sizeRefBases; i++) {
                 final char refChar = refBases.charAt(i);
@@ -140,9 +141,23 @@ public class GobySamSegment implements Resettable {
                     diffBases.append('X');
                 }
             }
-            debugMessage.append("diff        =").append(diffBases.toString());
+            debugMessage.append("diff        =").append(diffBases.toString()).append('\n');
+            for (final GobyQuickSeqvar seqvar : sequenceVariations) {
+                debugMessage.append(seqvar);
+            }
         }
         LOG.debug(debugMessage);
+    }
+
+    public MutableString debugOutputQuals() {
+        int i = 0;
+        for (final Byte readQual : readQuals) {
+            if (i > 0) {
+                debugMessage.append(',');
+            }
+            debugMessage.append('[').append(i++).append(':').append(readQual).append(']');
+        }
+        return debugMessage;
     }
 
     public int getPosition() {

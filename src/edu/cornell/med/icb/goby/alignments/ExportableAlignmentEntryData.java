@@ -458,7 +458,12 @@ public class ExportableAlignmentEntryData {
 
         this.alignmentEntry = alignmentEntry;
         if (predefinedQuals) {
-             qualities.size(readLength);
+            // discard everything we have done before since we know exactly what the quality scores
+            // were:
+            for (final byte qualByte : alignmentEntry.getReadQualityScores().toByteArray()) {
+                qualities.add(qualByte);
+            }
+            hasQualities = true;
         }
         if (hasReadGroups) {
             final int readOriginIndex = alignmentEntry.getReadOriginIndex();
@@ -616,7 +621,7 @@ public class ExportableAlignmentEntryData {
                             return;
                         }
                     }
-                    if (toQual != null) {
+                    if (toQual != null && !predefinedQuals) {
                         qualities.add(refPosition + seqVarInsertsInRead + 1, toQual);
                         hasQualities = true;
                     }
@@ -637,7 +642,9 @@ public class ExportableAlignmentEntryData {
                         }
                     }
                     readBases.set(refPosition + seqVarInsertsInRead, '-');
-                    deleteQualityIndexes.addFirst(refPosition + seqVarInsertsInRead);
+                    if (!predefinedQuals) {
+                        deleteQualityIndexes.addFirst(refPosition + seqVarInsertsInRead);
+                    }
                 } else {
                     // Mutation
                     if (refBases.get(refPosition + seqVarInsertsInRead) != from) {
@@ -663,15 +670,19 @@ public class ExportableAlignmentEntryData {
             }
             seqVarInsertsInRead += seqVarInsertsInReadDelta;
         }
-        for (final int deleteQualityIndex : deleteQualityIndexes) {
-            qualities.remove(deleteQualityIndex);
+        if (!predefinedQuals) {
+            for (final int deleteQualityIndex : deleteQualityIndexes) {
+                qualities.remove(deleteQualityIndex);
+            }
         }
 
         if (numInserts > 0) {
             // Inserts, clip bases to the right so we don't go beyond read length
             refBases.size(refBases.size() - numInserts);
             readBases.size(readBases.size() - numInserts);
-            qualities.size(qualities.size() - numInserts);
+            if (!predefinedQuals) {
+                qualities.size(qualities.size() - numInserts);
+            }
         }
 
         if (endClip > 0) {
@@ -693,12 +704,6 @@ public class ExportableAlignmentEntryData {
             }
         }
         observeReadRefDifferences();
-        if (predefinedQuals) {
-            // discard everything we have done before since we know exactly what the quality scores
-            // were:
-            qualities = ByteArrayList.wrap(alignmentEntry.getReadQualityScores().toByteArray());
-            hasQualities = true;
-        }
         endTargetPositionZeroBased = alignmentEntry.getPosition() + targetAlignedLength;
         if (debug) {
             LOG.debug("\n" + toString());

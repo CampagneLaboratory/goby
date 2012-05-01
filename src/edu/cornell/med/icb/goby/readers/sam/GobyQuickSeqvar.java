@@ -76,4 +76,14 @@ public class GobyQuickSeqvar implements Resettable {
         return position;
     }
 
+    public String toString() {
+        String s = "sequence_variations {\n";
+        s += "  to: \"" + to.toString() + "\"\n";
+        s += "  from: \"" + from.toString() + "\"\n";
+        s += "  position: " + position + "\n";
+        s += "  to_quality: \"" + toQuals.toString() + "\"\n";
+        s += "  read_index: " + readIndex + "\n";
+        s += "}\n";
+        return s;
+    }
 }

@@ -35,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -61,11 +60,6 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
 
     /**
-     * Maximimum length of a line when writing a FASTA/FASTQ file.
-     */
-    private static final int FASTA_LINE_LENGTH = 60;
-
-    /**
      * Constant quality score to use when writing a FASTQ file from a source file that
      * contains no quality score values.
      */
@@ -77,6 +71,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private boolean hasStartOrEndPosition;
     private long startPosition;
     private long endPosition;
+    private int fastaLineLength;
 
     public int getSmallestQueryIndex() {
         return smallestQueryIndex;
@@ -233,6 +228,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
         outputFakeQualityMode = jsapResult.getBoolean("output-fake-quality");
         referenceConversion = jsapResult.getBoolean("reference");
         readIndexFilterFile = jsapResult.getFile("read-index-filter");
+        fastaLineLength = jsapResult.getInt("fasta-line-length");
         qualityEncoding =
                 QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase(Locale.getDefault()));
 
@@ -429,9 +425,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
                             }
                         }
                     }
-                    writeSequence(writer, transformedSequence);
+                    writeSequence(writer, transformedSequence, fastaLineLength);
                     if (processPairs) {
-                        writeSequence(pairWriter, transformedSequencePair);
+                        writeSequence(pairWriter, transformedSequencePair, fastaLineLength);
                     }
                     if (outputFormat == OutputFormat.FASTQ) {
                         final int readLength = transformedSequence.length();
@@ -513,11 +509,15 @@ public class CompactToFastaMode extends AbstractGobyMode {
      * @param sequence the sequence
      * @throws IOException error reading
      */
-    public static void writeSequence(final Writer writer, final MutableString sequence)
+    public static void writeSequence(final Writer writer, final MutableString sequence) throws IOException {
+        writeSequence(writer, sequence, 60);
+    }
+
+    public static void writeSequence(final Writer writer, final MutableString sequence, final int fastaLineLength)
             throws IOException {
         final int length = sequence.length();
         for (int i = 0; i < length; i++) {
-            if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
+            if (i != 0 && (i % fastaLineLength == 0)) {
                 writer.write('\n');
             }
             writer.write(sequence.charAt(i));
@@ -547,7 +547,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
         writer.write('+');
         writer.write('\n');
         for (int i = 0; i < readLength; i++) {
-            if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
+            if (i != 0 && (i % fastaLineLength == 0)) {
                 writer.write('\n');
             }
 

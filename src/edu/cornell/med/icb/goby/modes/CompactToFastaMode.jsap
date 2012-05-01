@@ -63,6 +63,19 @@
             <help>When positive, removes this many bases from the beginning of sequence.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>fasta-line-length</id>
+            <longFlag>fasta-line-length</longFlag>
+            <shortFlag>n</shortFlag>
+            <defaults>
+                <string>60</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The number of bases to write per line.</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>input</id>
             <shortFlag>i</shortFlag>
             <longFlag>input</longFlag>
