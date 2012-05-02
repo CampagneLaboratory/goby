@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.EstimatedDistribution;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
@@ -222,7 +222,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
             if (estimateIntraGroupDifferences) {
                 empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
-                empiricalPValueEstimator.setEstimator(new DensityEstimator(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
+                empiricalPValueEstimator.setNullDistribution(new EstimatedDistribution(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
 
 
             }
@@ -307,9 +307,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
             }
             if (estimateIntraGroupDifferences) {
-                for (final GroupComparison comparison : groupComparisons) {
-                    empiricalPValueEstimator.recordWithinGroupSamplePairs(comparison);
-                }
+
+                empiricalPValueEstimator.recordWithinGroupSamplePairs(groups);
+
             }
             if (estimateIntraGroupP) {
                 for (final String context : contexts) {
@@ -674,7 +674,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {
                 LOG.debug("Storing density to filename: " + outputInfo.getFilename());
-                DensityEstimator.store(empiricalPValueEstimator.getEstimator(), outputInfo.getFilename());
+                EstimatedDistribution.store(empiricalPValueEstimator.getNullDistribution(), outputInfo.getFilename());
             } catch (IOException e) {
                 LOG.error("Unable to write estimator to file", e);
             }

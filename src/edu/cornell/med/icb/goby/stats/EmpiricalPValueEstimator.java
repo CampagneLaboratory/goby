@@ -48,11 +48,28 @@ public class EmpiricalPValueEstimator {
 
     private SamplePairEnumerator groupEnumerator;
     private EvidenceCombinator combinator = new MaxCombinator();
-    private DensityEstimator estimator;
+    private EstimatedDistribution nullDistribution;
+    private EstimatedTestDistributions testDistributions;
     private boolean densityLoadedFromDisk;
 
+    public void setEstimateFdr(boolean state) {
+        this.fdr = state;
+
+    }
+
+    private boolean fdr;
+
+    public EstimatedTestDistributions getTestDistributions() {
+        return testDistributions;
+    }
+
+    public static String suggestFilename(String densityFilename) {
+        return densityFilename.replace("null", "test");
+    }
+
+
     enum combinatorNames {
-        max, sum, qfast, median
+        max, sum, qfast, median, min
     }
 
     enum statisticNames {
@@ -60,14 +77,14 @@ public class EmpiricalPValueEstimator {
     }
 
     enum binningStrategyNames {
-        fastslog10, fasts100log10, log2, s100linear ,log10
+        fastslog10, fasts100log10, log2, s100linear, log10
     }
 
     static public final String[] LOCAL_DYNAMIC_OPTIONS = {
 
             "estimate-intra-group-differences: boolean, true indicates that pair-wise differences for sample in the same group should be tallied and written to the output. False indicates regular output.:false",
             "estimate-empirical-P: boolean, true activates estimation of the empirical p-value.:false",
-            "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:max",
+            "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:median",
             "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
             "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:ptest",
             "binning-strategy: string, name of the binning strategy:fastslog10"
@@ -88,14 +105,15 @@ public class EmpiricalPValueEstimator {
         if (estimateBetweenGroupP && serializedFilename != null) {
             try {
                 LOG.debug("Loading density from disk at " + serializedFilename);
-                estimator = DensityEstimator.load(serializedFilename);
-                statAdaptor = estimator.getStatAdaptor();
+                nullDistribution = EstimatedDistribution.load(serializedFilename);
+                //testDistributions = EstimatedTestDistributions.load(EmpiricalPValueEstimator.suggestFilename(serializedFilename));
+                statAdaptor = nullDistribution.getStatAdaptor();
                 densityLoadedFromDisk = true;
             } catch (Exception e) {
-                throw new RuntimeException("Unable to load serialized density with filename=" + serializedFilename);
+                throw new RuntimeException("Unable to load serialized density with filename=" + serializedFilename, e);
             }
         }
-        String combinatorName = clientDoc.getString("combinator");
+        final String combinatorName = clientDoc.getString("combinator");
 
         try {
             LOG.debug("Setting combinator from dynamic option: " + combinatorName);
@@ -111,6 +129,9 @@ public class EmpiricalPValueEstimator {
                     break;
                 case median:
                     combinator = new MedianCombinator();
+                    break;
+                case min:
+                    combinator = new MinCombinator();
                     break;
                 default:
                     new InternalError("This combinator name is not properly handled: " + combinatorName);
@@ -189,13 +210,15 @@ public class EmpiricalPValueEstimator {
                 }
             }
         } else {
-            binningStrategy = estimator.getBinningStrategy();
+            binningStrategy = nullDistribution.getBinningStrategy();
         }
-        if (estimator == null) {
+        if (nullDistribution == null) {
 
-            estimator = new DensityEstimator(numberOfContexts, statAdaptor);
+            nullDistribution = new EstimatedDistribution(numberOfContexts, statAdaptor);
+         //   testDistributions = new EstimatedTestDistributions(numberOfContexts, statAdaptor);
             if (!densityLoadedFromDisk) {
-                estimator.setBinningStrategy(binningStrategy);
+                nullDistribution.setBinningStrategy(binningStrategy);
+           //     testDistributions.setBinningStrategy(binningStrategy);
             }
         }
     }
@@ -205,12 +228,23 @@ public class EmpiricalPValueEstimator {
         groupEnumerator.recordPairForGroupComparison(comparison);
     }
 
-    public void recordWithinGroupSamplePairs(final GroupComparison comparison) {
-        //   groupEnumerator = new SamplePairEnumerator(this.sampleIndexToGroupIndex, numSamples, numGroups, 0);
+    /**
+     * Inspect each group to enumerate and record within group pairs for that group.
+     * @param groups
+     */
+    public void recordWithinGroupSamplePairs(final String[] groups) {
 
-        groupEnumerator.recordPairForGroup(comparison.indexGroup1);
+        int groupIndex = 0;
+        for (final String group : groups) {
+            groupEnumerator.recordPairForGroup(groupIndex);
+            groupIndex++;
+        }
+     /*
+          groupEnumerator.recordPairForGroup(comparison.indexGroup1);
         groupEnumerator.recordPairForGroup(comparison.indexGroup2);
 
+      }
+       */
     }
 
     /**
@@ -235,7 +269,7 @@ public class EmpiricalPValueEstimator {
 
             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
-                final double p = estimator.getP(unscaledStatistic, covariates);
+                final double p = nullDistribution.getP(unscaledStatistic, covariates);
                 //  System.out.println("Observing " + p);
                 combinator.observe(p);
 
@@ -245,7 +279,6 @@ public class EmpiricalPValueEstimator {
         }
         return combinator.adjust();
     }
-
 
     /**
      * Return the p-value that the difference observed between any of the pair could have been generated
@@ -259,7 +292,29 @@ public class EmpiricalPValueEstimator {
      * @param covariatesB covariates for sample B
      * @return p-value.
      */
-    public double estimateEmpiricalPValue(final IntArrayList[] valuesA, final IntArrayList[] valuesB, final IntArrayList[] covariatesA, final IntArrayList[] covariatesB) {
+    public double estimateEmpiricalP(String groupComparison, final IntArrayList[] valuesA, final IntArrayList[] valuesB, final IntArrayList[] covariatesA, final IntArrayList[] covariatesB) {
+        if (fdr) {
+            return estimateFalseDiscoveryRate(groupComparison, valuesA, valuesB, covariatesA, covariatesB);
+        } else {
+            return estimateFamilyWiseErrorRate(groupComparison, valuesA, valuesB, covariatesA, covariatesB);
+        }
+    }
+
+    /**
+     * Return the p-value that the difference observed between any of the pair could have been generated
+     * by the distribution represented in the estimated null distribution. In this method, we compare samples across groups,
+     * and use a distribution derived from pairs of samples in the same group. We therefore estimate a p-value
+     * where the null-hypothesis is that the difference observed was generated by intra-group variations.
+     *
+     * @param valuesA     values for sample A
+     * @param valuesB     values for sample B
+     * @param covariatesA covariates for sample A
+     * @param covariatesB covariates for sample B
+     * @return p-value.
+     */
+    public double estimateFamilyWiseErrorRate(final String groupComparison,
+                                              final IntArrayList[] valuesA, final IntArrayList[] valuesB,
+                                              final IntArrayList[] covariatesA, final IntArrayList[] covariatesB) {
         int num = valuesA.length;
         combinator.reset();
         for (int pairIndex = 0; pairIndex < num; pairIndex++) {
@@ -268,7 +323,42 @@ public class EmpiricalPValueEstimator {
 
             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
-                final double p = estimator.getP(unscaledStatistic, covariates);
+                final double p = nullDistribution.getP(unscaledStatistic, covariates);
+                //  System.out.println("Observing " + p);
+                combinator.observe(p);
+
+            } else {
+                combinator.observe(1.0);
+            }
+
+        }
+        return combinator.adjust();
+    }
+
+    /**
+     * Return the p-value that the difference observed between any of the pair could have been generated
+     * by the distribution represented in the estimated null distribution. In this method, we compare samples across groups,
+     * and use a distribution derived from pairs of samples in the same group. We therefore estimate a p-value
+     * where the null-hypothesis is that the difference observed was generated by intra-group variations.
+     *
+     * @param valuesA     values for sample A
+     * @param valuesB     values for sample B
+     * @param covariatesA covariates for sample A
+     * @param covariatesB covariates for sample B
+     * @return p-value.
+     */
+    public double estimateFalseDiscoveryRate(final String groupComparison,
+                                             final IntArrayList[] valuesA, final IntArrayList[] valuesB,
+                                             final IntArrayList[] covariatesA, final IntArrayList[] covariatesB) {
+        int num = valuesA.length;
+        combinator.reset();
+        for (int pairIndex = 0; pairIndex < num; pairIndex++) {
+            statAdaptor.reset();
+            final double unscaledStatistic = statAdaptor.calculate(valuesA[pairIndex], valuesB[pairIndex], covariatesA[pairIndex], covariatesB[pairIndex]);
+
+            if (!statAdaptor.ignorePair()) {
+                final int[] covariates = statAdaptor.pairCovariates();
+                final double p = nullDistribution.getEmpiricalFdr(testDistributions.getTestDistribution(groupComparison), unscaledStatistic, covariates);
                 //  System.out.println("Observing " + p);
                 combinator.observe(p);
 
@@ -301,6 +391,27 @@ public class EmpiricalPValueEstimator {
     }
 
     /**
+     * Observe between group differences and estimate discrete test distributions.
+     *
+     * @param groupComparison the comparison for which the observation is recorded.
+     * @param valuesA         values for sample A
+     * @param valuesB         values for sample B
+     * @param covariatesA     covariates for sample A
+     * @param covariatesB     covariates for sample B
+     */
+    public void estimateTestDensity(final String groupComparison, IntArrayList valuesA, IntArrayList valuesB,
+                                    IntArrayList covariatesA, IntArrayList covariatesB) {
+        statAdaptor.reset();
+        final double unscaledStatistic = statAdaptor.calculate(valuesA, valuesB, covariatesA, covariatesB);
+        if (!statAdaptor.ignorePair()) {
+            final int scaledStatistic = (int) Math.round(unscaledStatistic * nullDistribution.getScalingFactor());
+
+            //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
+            testDistributions.getDensity(groupComparison, statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
+        }
+    }
+
+    /**
      * Observe within group differences and estimate discrete null distributions.
      *
      * @param valuesA     values for sample A
@@ -308,14 +419,15 @@ public class EmpiricalPValueEstimator {
      * @param covariatesA covariates for sample A
      * @param covariatesB covariates for sample B
      */
-    public void estimateNullDensity(final IntArrayList valuesA, final IntArrayList valuesB, final IntArrayList covariatesA, final IntArrayList covariatesB) {
+    public void estimateNullDensity(final IntArrayList valuesA, final IntArrayList valuesB,
+                                    final IntArrayList covariatesA, final IntArrayList covariatesB) {
         statAdaptor.reset();
         final double unscaledStatistic = statAdaptor.calculate(valuesA, valuesB, covariatesA, covariatesB);
         if (!statAdaptor.ignorePair()) {
-            final int scaledStatistic = (int) Math.round(unscaledStatistic * estimator.getScalingFactor());
+            final int scaledStatistic = (int) Math.round(unscaledStatistic * nullDistribution.getScalingFactor());
 
             //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
-            estimator.getDensity(statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
+            nullDistribution.getDensity(statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
         }
 
     }
@@ -324,10 +436,10 @@ public class EmpiricalPValueEstimator {
         statAdaptor.reset();
         final double unscaledStatistic = statAdaptor.calculate(sampleDataPool, sampleIndexA, sampleIndexB, contextIndex);
         if (!statAdaptor.ignorePair()) {
-            final int scaledStatistic = (int) Math.round(unscaledStatistic * estimator.getScalingFactor());
+            final int scaledStatistic = (int) Math.round(unscaledStatistic * nullDistribution.getScalingFactor());
 
             //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
-            estimator.getDensity(statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
+            nullDistribution.getDensity(statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
         }
     }
 
@@ -337,7 +449,7 @@ public class EmpiricalPValueEstimator {
         if (statAdaptor.ignorePair()) {
             return Integer.MAX_VALUE;
         } else {
-            return (int) Math.round(unscaledStatistic * estimator.getScalingFactor());
+            return (int) Math.round(unscaledStatistic * nullDistribution.getScalingFactor());
         }
     }
 
@@ -348,7 +460,7 @@ public class EmpiricalPValueEstimator {
         if (statAdaptor.ignorePair()) {
             return Integer.MAX_VALUE;
         } else {
-            return (int) Math.round(unscaledStatistic * estimator.getScalingFactor());
+            return (int) Math.round(unscaledStatistic * nullDistribution.getScalingFactor());
         }
     }
 
@@ -370,12 +482,12 @@ public class EmpiricalPValueEstimator {
     }
 
 
-    public DensityEstimator getEstimator() {
-        return estimator;
+    public EstimatedDistribution getNullDistribution() {
+        return nullDistribution;
     }
 
-    public void setEstimator(DensityEstimator estimator) {
-        this.estimator = estimator;
+    public void setNullDistribution(EstimatedDistribution nullDistribution) {
+        this.nullDistribution = nullDistribution;
     }
 
     public StatisticAdaptor getStatAdaptor() {

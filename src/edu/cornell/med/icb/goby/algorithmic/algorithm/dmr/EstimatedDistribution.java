@@ -31,21 +31,23 @@ import java.io.Serializable;
 
 
 /**
+ * Used to estimate and store null and test distributions to support empirical p-value estimation.
+ *
  * @author Fabien Campagne
  *         Date: 2/19/12
  *         Time: 3:01 PM
  */
-public class DensityEstimator implements Serializable {
+public class EstimatedDistribution implements Serializable {
 
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
-    private ObjectArrayList<FenwickTree> densities;
+    private ObjectArrayList<FenwickTree> densitities;
     private BinningStrategy binningStrategy = new FastSmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
     private static boolean DEBUG = false;
 
-    public DensityEstimator(int numberOfContexts) {
-        densities = new ObjectArrayList<FenwickTree>();
+    public EstimatedDistribution(int numberOfContexts) {
+        densitities = new ObjectArrayList<FenwickTree>();
         statAdaptor = new DeltaStatisticAdaptor();
         SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
 
@@ -55,8 +57,8 @@ public class DensityEstimator implements Serializable {
         return SCALING_FACTOR;
     }
 
-    public DensityEstimator(int numberOfContexts, StatisticAdaptor statAdaptor) {
-        densities = new ObjectArrayList<FenwickTree>();
+    public EstimatedDistribution(int numberOfContexts, StatisticAdaptor statAdaptor) {
+        densitities = new ObjectArrayList<FenwickTree>();
         this.statAdaptor = statAdaptor;
         SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
 
@@ -65,7 +67,7 @@ public class DensityEstimator implements Serializable {
     /**
      * Factor by which the statistic will be scaled to use MAX_ITEMS buckets.
      */
-  final  int SCALING_FACTOR;
+    final int SCALING_FACTOR;
 
     public BinningStrategy getBinningStrategy() {
         return binningStrategy;
@@ -121,17 +123,17 @@ public class DensityEstimator implements Serializable {
     public FenwickTree getDensity(int... covariates) {
         final int index = covariateStrategy.getIndex(covariates);
 
-        while (densities.size() <= index) {
-            densities.add(null);
+        while (densitities.size() <= index) {
+            densitities.add(null);
         }
-        final FenwickTree tree = densities.get(index);
+        final FenwickTree tree = densitities.get(index);
         if (tree != null) {
             return tree;
         } else {
             // grow the array as needed:
 
             final FenwickTree newTree = new FenwickTree(MAX_ITEMS);
-            densities.set(index, newTree);
+            densitities.set(index, newTree);
             return newTree;
         }
     }
@@ -139,12 +141,12 @@ public class DensityEstimator implements Serializable {
     private ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
 
 
-    public static void store(final DensityEstimator estimator, final String filename) throws IOException {
+    public static void store(final Serializable estimator, final String filename) throws IOException {
         BinIO.storeObject(estimator, filename);
     }
 
-    public static DensityEstimator load(final String filename) throws IOException, ClassNotFoundException {
-        return (DensityEstimator) BinIO.loadObject(filename);
+    public static EstimatedDistribution load(final String filename) throws IOException, ClassNotFoundException {
+        return (EstimatedDistribution) BinIO.loadObject(filename);
     }
 
     /**
@@ -191,12 +193,40 @@ public class DensityEstimator implements Serializable {
     }
 
     /**
+     * Get an empirical estimate of the false discovery rate at the statistic reached by an observation
+     *
+     * @param testDistribution The distribution of the between group comparisons for the test being performed.
+     * @param statistic        value of statistic under test.
+     * @param covariates       covariates of the statistic.
+     * @return an estimate of the false discovery rate at the statistic reached by an observation
+     */
+    public double getEmpiricalFdr(final EstimatedDistribution testDistribution,
+                                  final double statistic, final int... covariates) {
+        final int scaledStatistic = (int) Math.round(statistic * SCALING_FACTOR);
+        final FenwickTree nullTree = getDensity(covariates);
+        final FenwickTree testTree = testDistribution.getDensity(covariates);
+        final long nullTotalCount = nullTree.getTotalCount();
+        // the number of observations in the null distribution that reach or exceed the statistic value:
+        final long b = nullTree.getCumulativeCount(scaledStatistic);
+        final double r = nullTotalCount - b;
+        // the number of observations in the TEST distribution that reach or exceed the statistic value:
+        final long a = testTree.getCumulativeCount(scaledStatistic);
+        final long testTotalCount = testTree.getTotalCount();
+        final double y = testTotalCount - a;
+        final double p = (r + 1.0d) / (nullTotalCount + 1.0d);
+
+        //final double fdr = (r + 1.0d) / (nullTotalCount+testTotalCount + 1.0d);
+        final double fdr = 1d-(y+1.0) / (r+y + 1.0);
+//      System.out.printf("a-b=%d total=%d r=%f y=%f fdr=%f%n",a-b,nullTotalCount + testTotalCount, r,y,fdr);
+        return fdr;
+    }
+
+    /**
      * Get the empirical estimate of the probability that the statistic could have been generated by the distribution
      * represented in the estimator.
      *
-
      * @param scaledStatistic
-     * @param covariates covariates of the statistic.
+     * @param covariates      covariates of the statistic.
      * @return
      */
     public double getP(final int scaledStatistic, final int... covariates) {
@@ -216,7 +246,7 @@ public class DensityEstimator implements Serializable {
         String outputFilename = CLI.getOption(args, "-o", "out.tsv");
         PrintWriter outWriter = new PrintWriter(new FileWriter(outputFilename));
         if (printDensity) {
-            DensityEstimator estimated = null;
+            EstimatedDistribution estimated = null;
 
             try {
                 estimated = load(filename);
@@ -226,7 +256,7 @@ public class DensityEstimator implements Serializable {
                 int index = 0;
                 outWriter.println("midPointSumTotal\tsumTotal range\t" + statName + "\tcount-at-" + statName);
                 final BinningStrategy binningStrategy = estimated.getBinningStrategy();
-                for (final FenwickTree tree : estimated.densities) {
+                for (final FenwickTree tree : estimated.densitities) {
                     if (tree != null) {
                         int low = binningStrategy.getLowerBound(index);
                         int high = binningStrategy.getUpperBound(index);
@@ -257,7 +287,7 @@ public class DensityEstimator implements Serializable {
         }
         if (printObservations) {
 
-            DensityEstimator estimated = null;
+            EstimatedDistribution estimated = null;
 
             try {
                 estimated = load(filename);

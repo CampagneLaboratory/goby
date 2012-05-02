@@ -47,7 +47,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testObserve() throws Exception {
-        final DensityEstimator estimator = new DensityEstimator(2, new BuggyDeltaStatisticAdaptor());
+        final EstimatedDistribution estimator = new EstimatedDistribution(2, new BuggyDeltaStatisticAdaptor());
         estimator.setBinningStrategy(new LinearBinningStrategy());
         final value[] observations = {
                 new value(0, 5, 13, 4, 12),
@@ -63,7 +63,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testObserveLargeSumTotals() throws Exception {
-        final DensityEstimator estimator = new DensityEstimator(2, new BuggyDeltaStatisticAdaptor());
+        final EstimatedDistribution estimator = new EstimatedDistribution(2, new BuggyDeltaStatisticAdaptor());
         final value[] observations = {
                 new value(0, 500, 130, 4, 12), // sumTotal= 646
                 new value(0, 0, 1000, 1, 2),   // sumTotal= 1003
@@ -124,7 +124,7 @@ public class TestDensityEstimator {
                 return 10;
             }
         };
-        DensityEstimator estimator = new DensityEstimator(1, adapter);
+        EstimatedDistribution estimator = new EstimatedDistribution(1, adapter);
         int[] statistics = {1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3};
 
         for (int stat : statistics) {

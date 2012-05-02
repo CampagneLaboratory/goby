@@ -29,9 +29,11 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>The file where the combined output will be written. If no output is provided, the output filename is constructed from a relevant subset of the arguments.</help>
+            <help>The file where the combined output will be written. If no output is provided, the output filename is
+                constructed from a relevant subset of the arguments.
+            </help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>label</id>
             <shortFlag>l</shortFlag>
             <required>false</required>
@@ -51,11 +53,18 @@
             <required>false</required>
             <help>The filename to read or write a density.</help>
         </flaggedOption>
-         <switch>
+        <switch>
             <id>force-estimation</id>
             <shortFlag>f</shortFlag>
             <longFlag>force-estimation</longFlag>
-            <help>Force p-value estimation on null-distribution observations. Requires an existing density (see -f option).</help>
+            <help>Force p-value estimation on null-distribution observations. Requires an existing density (see -f
+                option).
+            </help>
+        </switch>
+        <switch>
+            <id>fdr</id>
+            <longFlag>fdr</longFlag>
+            <help>Report an estimated false discovery rate.</help>
         </switch>
     </parameters>
 </jsap>

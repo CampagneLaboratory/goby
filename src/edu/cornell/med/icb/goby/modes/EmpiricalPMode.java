@@ -20,12 +20,14 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.EstimatedDistribution;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.stats.EmpiricalPValueEstimator;
+import edu.cornell.med.icb.goby.stats.EstimatedTestDistributions;
 import edu.cornell.med.icb.goby.stats.FormatFieldCounter;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
@@ -80,6 +82,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private int numTN;
     private int numTP;
     private int numOther;
+    private EstimatedTestDistributions testDensities;
+    /**
+     * When True, write an estimate of false discovery rate, rather than the empirical P (FWER).
+     */
+    private boolean fdr;
 
 
     public static DynamicOptionClient doc() {
@@ -93,7 +100,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS
 
     );
-    private DensityEstimator density;
+    private EstimatedDistribution density;
     private String densityFilename;
     private boolean useExistingDensity;
     private boolean forceEstimation;
@@ -122,6 +129,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         statisticName = jsapResult.getString("statistic");
         forceEstimation = jsapResult.getBoolean("force-estimation");
+        fdr = jsapResult.getBoolean("fdr");
 
         {
             densityFilename = jsapResult.getString("density-filename");
@@ -131,8 +139,12 @@ public class EmpiricalPMode extends AbstractGobyMode {
                     try {
                         // if we are given a serialized statistic, we override the stat name with that of the actual
                         // statistic used to estimate the density:
-                        density = DensityEstimator.load(densityFilename);
+                        density = EstimatedDistribution.load(densityFilename);
+                        //testDensities = EstimatedTestDistributions.load(EmpiricalPValueEstimator.suggestFilename(densityFilename));
                         statisticName = density.getStatAdaptor().statName();
+                      /*  assert density.getStatAdaptor().statName().equals(testDensities.getStatAdaptor().statName()) :
+                                "null and test distributions must be estimated with the same statistic";
+                                */
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         System.exit(1);
@@ -163,7 +175,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
     private void setupOutput() throws FileNotFoundException {
         if (outputFilename == null) {
-            String binningName = estimator.getEstimator().getBinningStrategy().getName();
+            String binningName = estimator.getNullDistribution().getBinningStrategy().getName();
             outputFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + binningName + "-" + doc.getString("combinator") + ".tsv";
             System.out.println("Output will be written to " + outputFilename);
         }
@@ -173,7 +185,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private void constructDensityFilename(String densityFilename) {
         if (this.densityFilename == null) {
             // construct a density filename that reflects the arguments that control the density:
-            String binningName = estimator.getEstimator().getBinningStrategy().getName();
+            String binningName = estimator.getNullDistribution().getBinningStrategy().getName();
             this.densityFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + binningName + "-density.bin";
         } else {
             this.densityFilename = densityFilename;
@@ -186,7 +198,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
+        estimator = new EmpiricalPValueEstimator();
+        estimator.configure(1, doc);
+        estimator.setEstimateFdr(fdr);
         scan();
+
         if (forceEstimation) {
             write(previousElementIdList);
         }
@@ -194,14 +210,21 @@ public class EmpiricalPMode extends AbstractGobyMode {
         if (!useExistingDensity) {
 
             constructDensityFilename(densityFilename);
-            System.err.println("Writing estimated statistic to: " + densityFilename);
-            DensityEstimator.store(estimator.getEstimator(), densityFilename);
+            System.err.println("Writing estimated null distribution to: " + densityFilename);
+            EstimatedDistribution.store(estimator.getNullDistribution(), densityFilename);
+
+            final String testFilename = EmpiricalPValueEstimator.suggestFilename(densityFilename);
+        /*    System.err.println("Writing estimated test distributions to: " + testFilename);
+            EstimatedTestDistributions.store(estimator.getTestDistributions(), testFilename);
+            */
+
         }
         System.out.printf("Rate of true negatives: %3.2f%%%n", 100d * ((numTN + 0d) / (numOther + 0d)));
         System.out.printf("Rate of true positives: %3.2f%%%n", 100d * ((numTP + 0d) / (1000d)));
 
         System.out.printf("Rate of false negatives: %3.2f%%%n", 100d * ((numFN + 0d) / 1000d));
-        System.out.printf("Rate of false positives: %3.2f%%%n", 100d * ((numFP + 0d) / 1000d));
+        System.out.printf("Rate of false positives: %3.2f%%%n", 100d * ((numFP + 0d) / (numOther+0d)));
+        System.out.printf("Overall false discovery rate: %3.2f%%%n", (1d - (0d+numTP)/(0d+numTP+numFP))*100d);
 
     }
 
@@ -215,8 +238,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         IntArrayList valuesB = new IntArrayList();
         IntArrayList covariatesA = new IntArrayList();
         IntArrayList covariatesB = new IntArrayList();
-        estimator = new EmpiricalPValueEstimator();
-        estimator.configure(1, doc);
+
         counter = new FormatFieldCounter(0, 2, 2, new String[]{"ALL"});
         setupOutput();
         // ignore the header line:
@@ -299,7 +321,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
             }
             lineNumber++;
-            process(typeOfPair, elementIds, valuesA, valuesB, covariatesA, covariatesB);
+            final String groupComparison = elementIds.get(0);
+            process(typeOfPair, groupComparison, elementIds, valuesA, valuesB, covariatesA, covariatesB);
             pg.lightUpdate();
         }
         pg.done(lineNumber);
@@ -317,11 +340,16 @@ public class EmpiricalPMode extends AbstractGobyMode {
     }
 
 
-    private void process(ObservationWriter.TypeOfPair typeOfPair, ObjectArrayList<String> elementIds, IntArrayList valuesA, IntArrayList valuesB,
+    private void process(ObservationWriter.TypeOfPair typeOfPair, String groupComparison,
+                         ObjectArrayList<String> elementIds, IntArrayList valuesA, IntArrayList valuesB,
                          IntArrayList covariatesA, IntArrayList covariatesB) {
         switch (typeOfPair) {
             case BETWEEN_GROUP_PAIR:
+                if (!useExistingDensity) {
+                    observeTestDistributions(groupComparison, valuesA, valuesB, covariatesA, covariatesB);
+                }
                 estimateP(elementIds, valuesA, valuesB, covariatesA, covariatesB);
+
                 break;
             case WITHIN_GROUP_PAIR:
                 if (useExistingDensity && forceEstimation) {
@@ -339,6 +367,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private void observeNullDistribution(IntArrayList valuesA, IntArrayList valuesB, IntArrayList covariatesA, IntArrayList covariatesB) {
 
         estimator.estimateNullDensity(valuesA, valuesB, covariatesA, covariatesB);
+    }
+
+    private void observeTestDistributions(String groupComparison, IntArrayList valuesA, IntArrayList valuesB, IntArrayList covariatesA, IntArrayList covariatesB) {
+
+        estimator.estimateTestDensity(groupComparison, valuesA, valuesB, covariatesA, covariatesB);
     }
 
     String previousElementId = "";
@@ -406,7 +439,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
         if (elementIds.get(5).equals("A104")) {
             System.out.println(elementIds);
         }
-        final double p = estimator.estimateEmpiricalPValue(
+        final String groupComparison = elementIds.get(0);
+        final double p = estimator.estimateEmpiricalP(groupComparison,
                 valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
                 valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),
                 covariatesACollector.toArray(new IntArrayList[covariatesACollector.size()]),

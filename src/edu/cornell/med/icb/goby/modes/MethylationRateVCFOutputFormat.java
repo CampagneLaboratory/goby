@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.EstimatedDistribution;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.SitesInFixedWindow;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
@@ -247,8 +247,9 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         empiricalPValueEstimator.setGroupEnumerator(new SamplePairEnumerator(readerIndexToGroupIndex, samples.length, groups.length, groupComparisons.size()));
 
         if (estimateIntraGroupDifferences || estimateEmpiricalP) {
+            empiricalPValueEstimator.recordWithinGroupSamplePairs(groups);
             for (final GroupComparison comparison : groupComparisons) {
-                empiricalPValueEstimator.recordWithinGroupSamplePairs(comparison);
+
                 empiricalPValueEstimator.recordBetweenGroupsSamplePairs(comparison);
             }
         }
@@ -424,11 +425,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
     private void doEmpiricalP(final MethylCountInfo mci, int referenceIndex, int position) {
         if (estimateIntraGroupDifferences) {
-
-            for (final GroupComparison comparison : groupComparisons) {
-                empiricalPValueEstimator.estimateNullDensity(0, comparison.indexGroup1, mci);
-                empiricalPValueEstimator.estimateNullDensity(0, comparison.indexGroup2, mci);
-
+            int groupIndex = 0;
+            // use all groups available groups to estimate empirical p:
+            for (String group : groups) {
+                empiricalPValueEstimator.estimateNullDensity(0, groupIndex, mci);
+                empiricalPValueEstimator.estimateNullDensity(0, groupIndex, mci);
+                groupIndex++;
             }
         }
         if (estimateEmpiricalP) {
@@ -524,7 +526,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {
                 LOG.debug("Storing density to filename: " + outputInfo.getFilename());
-                DensityEstimator.store(empiricalPValueEstimator.getEstimator(), outputInfo.getFilename());
+                EstimatedDistribution.store(empiricalPValueEstimator.getNullDistribution(), outputInfo.getFilename());
             } catch (IOException e) {
                 LOG.error("Unable to write estimator to file", e);
             }

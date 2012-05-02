@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.EstimatedDistribution;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.PassThroughStatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
@@ -444,7 +444,7 @@ public class TestAnnotationAveragingWriter {
 
     private String makeDensityEstimator() throws IOException {
         int fixedValue = 40;
-        DensityEstimator estimator = new DensityEstimator(1, new PassThroughStatisticAdaptor(100, fixedValue));
+        EstimatedDistribution estimator = new EstimatedDistribution(1, new PassThroughStatisticAdaptor(100, fixedValue));
         estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
         int[] delta = {0000, 001, 002, 003, 004, 5};
         int[] frequencies = {1000, 900, 800, 700, 600, 1};
@@ -455,7 +455,7 @@ public class TestAnnotationAveragingWriter {
             }
         }
         String filename = FilenameUtils.concat(BASE_TEST_DIR, "density.bin");
-        DensityEstimator.store(estimator, filename);
+        EstimatedDistribution.store(estimator, filename);
         return filename;
     }
 
