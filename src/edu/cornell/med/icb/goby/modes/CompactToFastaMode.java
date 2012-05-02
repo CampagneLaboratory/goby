@@ -71,7 +71,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private boolean hasStartOrEndPosition;
     private long startPosition;
     private long endPosition;
-    private int fastaLineLength;
+    private int fastaLineLength=50;
 
     public int getSmallestQueryIndex() {
         return smallestQueryIndex;
