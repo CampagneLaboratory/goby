@@ -37,22 +37,22 @@ public class TestCumulativeArrayKeeper {
 
         CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(5);
         cumCtest.addToRight(5);
-        assertEquals("[\t5\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t5\t]", cumCtest.toString());
         cumCtest.addToRight(10);
         cumCtest.addToRight(2);
         cumCtest.addToRight(8);
         cumCtest.addToRight(10);
-        assertEquals("[\t5\t15\t17\t25\t35\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t5\t15\t17\t25\t35\t]", cumCtest.toString());
         cumCtest.addToRight(6);
-        assertEquals("[\t10\t12\t20\t30\t36\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t10\t12\t20\t30\t36\t]", cumCtest.toString());
         cumCtest.addToRight(3);
-        assertEquals("[\t2\t10\t20\t26\t29\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t2\t10\t20\t26\t29\t]", cumCtest.toString());
         cumCtest.addToRight(8);
-        assertEquals("[\t8\t18\t24\t27\t35\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t8\t18\t24\t27\t35\t]", cumCtest.toString());
         cumCtest.addToRight(5);
-        assertEquals("[\t10\t16\t19\t27\t32\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t10\t16\t19\t27\t32\t]", cumCtest.toString());
         cumCtest.addToRight(9);
-        assertEquals("[\t6\t9\t17\t22\t31\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t6\t9\t17\t22\t31\t]", cumCtest.toString());
 
     }
 
@@ -60,35 +60,35 @@ public class TestCumulativeArrayKeeper {
     public void testCase2(){
         CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(3);
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t]", cumCtest.toString());
         cumCtest.addToRight(5);
-        assertEquals("[\t0\t5\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t5\t]", cumCtest.toString());
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t5\t5\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t5\t5\t]", cumCtest.toString());
     }
 
     @Test
     public void testCase3(){
         CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(3);
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t]", cumCtest.toString());
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t0\t]", cumCtest.toString());
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t0\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t0\t0\t]", cumCtest.toString());
     }
 
     @Test
     public void testCase4(){
         CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(1);
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t]", cumCtest.toString());
         cumCtest.addToRight(5);
-        assertEquals("[\t5\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t5\t]", cumCtest.toString());
         cumCtest.addToRight(456);
-        assertEquals("[\t456\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t456\t]", cumCtest.toString());
         cumCtest.addToRight(0);
-        assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
+        assertEquals("[\t0\t]", cumCtest.toString());
     }
 
 
