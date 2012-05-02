@@ -86,7 +86,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     private int log2OddsRatioZColumnIndex[];
     private int deltaMRColumnIndex[];
     int[] readerIndexToGroupIndex;
-    private SitesInFixedWindow fixedWindow;
+    private SitesInFixedWindow[] fixedWindow;
     private IntSet[] distinctReadIndicesCountPerGroup;
 
     private MethylCountInfo mci;
@@ -138,13 +138,22 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         estimateEmpiricalP = doc.getBoolean("estimate-empirical-P");
         fixedWindowEmpiricalPSignificanceThreshold = doc.getDouble("significance-threshold");
         final int windowLength = doc.getInteger("window-length");
-        fixedWindow = new SitesInFixedWindow(windowLength);
+
 
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         final VCFWriter vcfWriter = new VCFWriter(estimateIntraGroupDifferences ? new NullWriter() : outputInfo.getPrintWriter());
         this.statWriter = vcfWriter;
         groupComparisons = mode.getGroupComparisons();
+        int maxComparisonIndex = -1;
+        for (final GroupComparison comparison : groupComparisons) {
+            maxComparisonIndex = Math.max(comparison.index, maxComparisonIndex);
+        }
+        fixedWindow = new SitesInFixedWindow[maxComparisonIndex + 1];
+        for (final GroupComparison comparison : groupComparisons) {
+            fixedWindow[comparison.index] = new SitesInFixedWindow(windowLength);
+        }
+
         try {
             //activate R only if we need it:
             final Rengine rEngine = GobyRengine.getInstance().getRengine();
@@ -439,12 +448,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
                 final double p = empiricalPValueEstimator.estimateEmpiricalPValue(0, comparison, mci);
                 statWriter.setInfo(empiricalPValueColumnIndex[comparison.index], p);
                 if (p <= fixedWindowEmpiricalPSignificanceThreshold) {
-                    fixedWindow.add(referenceIndex, position);
+                    fixedWindow[comparison.index].add(referenceIndex, position);
                 } else {
-                    fixedWindow.prune(referenceIndex, position);
+                    fixedWindow[comparison.index].prune(referenceIndex, position);
                 }
                 // record how many significant sites in the window before this site
-                statWriter.setInfo(lastOfDMRIndex[comparison.index], fixedWindow.n());
+                statWriter.setInfo(lastOfDMRIndex[comparison.index], fixedWindow[comparison.index].n());
             }
         }
     }
