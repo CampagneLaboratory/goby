@@ -331,8 +331,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
                         System.err.println("You cannot specify --sorted when the input file is not sorted. For instance: " + message);
 
                         LOG.warn(message);
-                        System.exit(0);
-                    }
+                        // we continue because it is possible BufferedSortingAlignmentWriter will succeed in sorting the file
+                        // nevertheless. It will set sorted to false if the file cannot be locally sorted.
+                   }
                 }
             }
 
