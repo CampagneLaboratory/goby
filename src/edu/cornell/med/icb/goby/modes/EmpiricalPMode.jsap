@@ -61,10 +61,10 @@
                 option).
             </help>
         </switch>
-        <switch>
+        <!--switch>
             <id>fdr</id>
             <longFlag>fdr</longFlag>
             <help>Report an estimated false discovery rate.</help>
-        </switch>
+        </switch-->
     </parameters>
 </jsap>

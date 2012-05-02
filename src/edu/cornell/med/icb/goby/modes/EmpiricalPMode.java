@@ -129,7 +129,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         statisticName = jsapResult.getString("statistic");
         forceEstimation = jsapResult.getBoolean("force-estimation");
-        fdr = jsapResult.getBoolean("fdr");
+        //fdr = jsapResult.getBoolean("fdr");
 
         {
             densityFilename = jsapResult.getString("density-filename");
