@@ -27,6 +27,31 @@ public class SamplePair {
     public int sampleIndexA;
     public int sampleIndexB;
 
+    @Override
+    public boolean equals(final Object o) {
+
+        if (o instanceof SamplePair) {
+            final SamplePair another = (SamplePair) o;
+            return sampleIndexA == another.sampleIndexA && sampleIndexB == another.sampleIndexB ||
+                    sampleIndexA == another.sampleIndexB && sampleIndexB == another.sampleIndexA;
+
+        } else {
+            return false;
+        }
+
+    }
+
+    @Override
+    public int hashCode() {
+        if (sampleIndexA < sampleIndexB) {
+            return sampleIndexA ^ sampleIndexB;
+
+        } else {
+            return sampleIndexB ^ sampleIndexA;
+        }
+
+    }
+
     public SamplePair(int sampleIndexA, int sampleIndexB) {
         this.sampleIndexA = sampleIndexA;
         this.sampleIndexB = sampleIndexB;

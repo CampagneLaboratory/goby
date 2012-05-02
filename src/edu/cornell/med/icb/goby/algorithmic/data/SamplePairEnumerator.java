@@ -22,11 +22,13 @@ import edu.cornell.med.icb.goby.stats.SamplePair;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 /**
- *  A helper to enumerate pairs of samples. Pairs within the same group or between two groups
- *  can be enumerated.
- *  @author Fabien Campagne
+ * A helper to enumerate pairs of samples. Pairs within the same group or between two groups
+ * can be enumerated.
+ *
+ * @author Fabien Campagne
  *         Date: 2/19/12
  *         Time: 1:24 PM
  */
@@ -39,21 +41,24 @@ public class SamplePairEnumerator {
 
     /**
      * Construct a sample pair enumerator.
+     *
      * @param sampleIndexToGroupIndex the mapping between sample indices and group indices.
-     * @param numSamples The number of samples under study.
-     * @param numGroups  The number of groups under study.
-     * @param numPairComparisons The maximum number of between group comparisons to consider.
+     * @param numSamples              The number of samples under study.
+     * @param numGroups               The number of groups under study.
+     * @param numPairComparisons      The maximum number of between group comparisons to consider.
      */
     public SamplePairEnumerator(final int[] sampleIndexToGroupIndex, int numSamples, int numGroups, int numPairComparisons) {
         samplePairsForGroup = new ObjectArrayList[numGroups];
         this.sampleIndexToGroupIndex = sampleIndexToGroupIndex;
         this.numSamples = numSamples;
         this.numGroups = numGroups;
-        this.samplePairsForGroupComparisons=new ObjectArrayList[numPairComparisons];
+        this.samplePairsForGroupComparisons = new ObjectArrayList[numPairComparisons];
 
     }
+
     /**
      * Get pairs of samples within a given group.
+     *
      * @param groupIndex identifies the group.
      * @return The pairs of samples within the specified group.
      */
@@ -65,17 +70,22 @@ public class SamplePairEnumerator {
 
     /**
      * Get pairs of samples for a given group comparison (between two groups)
+     *
      * @param comparison Description of the groups under comparison.
      * @return The pairs of samples between these two groups.
      */
     public ObjectArrayList<SamplePair> getPairs(GroupComparison comparison) {
-            final ObjectArrayList<SamplePair> samplePairs = samplePairsForGroupComparisons[comparison.index];
-            assert samplePairs != null : "sample pairs must have been defined for group comparison "+comparison.toString();
-            return samplePairs;
+        if (comparison.index == 2) {
+            System.out.println("STOP");
         }
+        final ObjectArrayList<SamplePair> samplePairs = samplePairsForGroupComparisons[comparison.index];
+        assert samplePairs != null : "sample pairs must have been defined for group comparison " + comparison.toString();
+        return samplePairs;
+    }
 
     /**
      * Record all intra-group sample pairs for latter use.
+     *
      * @param groupIndex
      */
     public void recordPairForGroup(int groupIndex) {
@@ -97,6 +107,7 @@ public class SamplePairEnumerator {
 
     /**
      * Record all the between-group sample pairs that exist for the given group comparison.
+     *
      * @param comparison group comparison of interest.
      */
     public void recordPairForGroupComparison(final GroupComparison comparison) {
@@ -113,13 +124,18 @@ public class SamplePairEnumerator {
                 sampleIndicesInGroup2.add(sampleIndex);
             }
         }
+        if (comparison.index==2) {
+            System.out.println("STOP");
+        }
+        final ObjectArraySet<SamplePair> set = new ObjectArraySet<SamplePair>();
         for (final int sampleIndexA : sampleIndicesInGroup1) {
             for (final int sampleIndexB : sampleIndicesInGroup2) {
-                if (sampleIndexA < sampleIndexB) {
-                    samplePairsForGroupComparisons[comparison.index].add(new SamplePair(sampleIndexA, sampleIndexB));
-                }
+
+                set.add(new SamplePair(sampleIndexA, sampleIndexB));
             }
         }
+        samplePairsForGroupComparisons[comparison.index].addAll(set);
+
     }
 
 
