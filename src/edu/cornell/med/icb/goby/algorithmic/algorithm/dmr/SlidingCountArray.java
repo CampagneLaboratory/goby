@@ -20,14 +20,18 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 /**
  * Class that populates a cumulative count array of a predetermined size
- * Facilitates adding new counts to the rightmost element in the array without changing
+ * Facilitates adding new counts to the rightmost element in the array
  *
  * @Author: Nyasha Chambwe
  * Date: 3/1/12
  * Time: 4:14 PM
  */
-public class CumulativeArrayKeeperFast {
+public class SlidingCountArray {
 
+
+    public void setCumC(int[] cumC) {
+        this.cumC = cumC;
+    }
 
     /**
      * Cumulative count array
@@ -49,7 +53,7 @@ public class CumulativeArrayKeeperFast {
      */
     private final int capacity;
 
-    public CumulativeArrayKeeperFast(final int n) {
+    public SlidingCountArray(final int n) {
         if (!(n > 0)) {
             throw new IllegalArgumentException("The declared size of the cumulative count array must be at least 1");
         }
