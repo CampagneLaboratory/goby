@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.CumulativeArrayKeeperFast;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.SlidingCountArray;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -29,11 +29,11 @@ import static junit.framework.Assert.assertEquals;
  * Time: 3:59 PM
  */
 
-public class TestCumulativeArrayKeeperFast {
+public class TestSlidingCountArray {
 
     @Test
     public void testCase1() {
-        final CumulativeArrayKeeperFast cumCtest = new CumulativeArrayKeeperFast(5);
+        final SlidingCountArray cumCtest = new SlidingCountArray(5);
         cumCtest.addToRight(5);
         assertEquals("[\t5\t]", cumCtest.getCumulativeArrayAsString());
         cumCtest.addToRight(10);
@@ -56,7 +56,7 @@ public class TestCumulativeArrayKeeperFast {
 
     @Test
     public void testCase2() {
-        final CumulativeArrayKeeperFast cumCtest = new CumulativeArrayKeeperFast(3);
+        final SlidingCountArray cumCtest = new SlidingCountArray(3);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArrayAsString());
         cumCtest.addToRight(5);
@@ -67,7 +67,7 @@ public class TestCumulativeArrayKeeperFast {
 
     @Test
     public void testCase3() {
-        final CumulativeArrayKeeperFast cumCtest = new CumulativeArrayKeeperFast(3);
+        final SlidingCountArray cumCtest = new SlidingCountArray(3);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArrayAsString());
         cumCtest.addToRight(0);
@@ -78,7 +78,7 @@ public class TestCumulativeArrayKeeperFast {
 
     @Test
     public void testCase4() {
-        final CumulativeArrayKeeperFast cumCtest = new CumulativeArrayKeeperFast(1);
+        final SlidingCountArray cumCtest = new SlidingCountArray(1);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArrayAsString());
         cumCtest.addToRight(5);
@@ -91,7 +91,7 @@ public class TestCumulativeArrayKeeperFast {
 
     @Test
     public void testCase5() {
-        final CumulativeArrayKeeperFast cumCtest = new CumulativeArrayKeeperFast(3);
+        final SlidingCountArray cumCtest = new SlidingCountArray(3);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArrayAsString());
         cumCtest.addToRight(5);

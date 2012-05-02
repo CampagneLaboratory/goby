@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.CumulativeArrayKeeper;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.CumulativeArrayKeeperFast;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -35,7 +35,7 @@ public class TestCumulativeArrayKeeper {
     @Test
     public void testCase1() {
 
-        CumulativeArrayKeeper cumCtest= new CumulativeArrayKeeper(5);
+        CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(5);
         cumCtest.addToRight(5);
         assertEquals("[\t5\t]", cumCtest.getCumulativeArray());
         cumCtest.addToRight(10);
@@ -58,7 +58,7 @@ public class TestCumulativeArrayKeeper {
 
     @Test
     public void testCase2(){
-        CumulativeArrayKeeper cumCtest= new CumulativeArrayKeeper(3);
+        CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(3);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
         cumCtest.addToRight(5);
@@ -69,7 +69,7 @@ public class TestCumulativeArrayKeeper {
 
     @Test
     public void testCase3(){
-        CumulativeArrayKeeper cumCtest= new CumulativeArrayKeeper(3);
+        CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(3);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
         cumCtest.addToRight(0);
@@ -80,7 +80,7 @@ public class TestCumulativeArrayKeeper {
 
     @Test
     public void testCase4(){
-        CumulativeArrayKeeper cumCtest= new CumulativeArrayKeeper(1);
+        CumulativeArrayKeeperFast cumCtest= new CumulativeArrayKeeperFast(1);
         cumCtest.addToRight(0);
         assertEquals("[\t0\t]", cumCtest.getCumulativeArray());
         cumCtest.addToRight(5);
