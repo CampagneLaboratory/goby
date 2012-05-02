@@ -26,7 +26,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  * Date: 3/1/12
  * Time: 4:14 PM
  */
-public class CumulativeArrayKeeper {
+public class CumulativeArrayKeeperFast {
 
 
     /**
@@ -43,7 +43,7 @@ public class CumulativeArrayKeeper {
      */
     private int capacity;
 
-    public CumulativeArrayKeeper(final int n) {
+    public CumulativeArrayKeeperFast(final int n) {
         if (!(n > 0))
             throw new IllegalArgumentException("The declared size of the cumulative count array must be at least 1");
         cumC = new int[n];
