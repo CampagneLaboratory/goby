@@ -75,9 +75,7 @@ public class SamplePairEnumerator {
      * @return The pairs of samples between these two groups.
      */
     public ObjectArrayList<SamplePair> getPairs(GroupComparison comparison) {
-        if (comparison.index == 2) {
-            System.out.println("STOP");
-        }
+
         final ObjectArrayList<SamplePair> samplePairs = samplePairsForGroupComparisons[comparison.index];
         assert samplePairs != null : "sample pairs must have been defined for group comparison " + comparison.toString();
         return samplePairs;
@@ -124,9 +122,7 @@ public class SamplePairEnumerator {
                 sampleIndicesInGroup2.add(sampleIndex);
             }
         }
-        if (comparison.index==2) {
-            System.out.println("STOP");
-        }
+
         final ObjectArraySet<SamplePair> set = new ObjectArraySet<SamplePair>();
         for (final int sampleIndexA : sampleIndicesInGroup1) {
             for (final int sampleIndexB : sampleIndicesInGroup2) {
