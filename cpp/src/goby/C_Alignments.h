@@ -64,6 +64,7 @@ extern "C" {
     unsigned int gobyAlignments_targetIndexForIdentifier(CAlignmentsWriterHelper *writerHelper, const char *targetName);
     unsigned gobyAlignments_addQueryIdentifier(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier);
     void gobyAlignments_addQueryIdentifierWithIndex(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier, unsigned int newQueryIndex);
+    void gobyAlignments_setQueryIndexOccurrencesStoredInEntries(CAlignmentsWriterHelper *writerHelper, int value /* bool */);
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
@@ -84,6 +85,9 @@ extern "C" {
     void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setInsertSize(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+
+    void gobyAlEntry_setAmbiguity(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setQueryIndexOccurrences(CAlignmentsWriterHelper *writerHelper, unsigned int value);
 
     // These are only used when dealing with a Query Pair
     void gobyAlEntry_setPairFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value);

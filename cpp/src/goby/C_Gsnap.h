@@ -10,6 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+    void gobyGsnap_startAlignment(CAlignmentsWriterHelper *writerHelper);
     void gobyGsnap_parse(CAlignmentsWriterHelper *writerHelper, char *alignment);
     void gobyGsnap_test_registerTargets(CAlignmentsWriterHelper *writerHelper, char *targets);
     void gobyGsnap_destoryAlignment(CAlignmentsWriterHelper *writerHelper);

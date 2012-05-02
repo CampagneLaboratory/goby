@@ -296,6 +296,10 @@ namespace goby {
     header.add_target_length(targetLength);
   }
 
+  void AlignmentWriter::setQueryIndexOccurrencesStoredInEntries(bool value) {
+    header.set_query_index_occurrences(value);
+  }
+
   void AlignmentWriter::setQueryLengthsStoredInEntries(bool value) {
     header.set_query_lengths_stored_in_entries(value);
   }

@@ -14,9 +14,6 @@
 /*
  * TODO: Make sure the fields I moved from segment to alignment really
  *       DO belong in alignment.
- * TODO: Support paired writing. This might involve supporting more than
- *       one pair target in the proto.
- * TODO: Support spliced writing. Probably need to grab more gsnap fields.
  * TODO: Make a pool of GsnapAlignmentSegments. Check out from pool for
  *       each alignment, clean then, and then use. The return them to the
  *       pool. This should be a difference in parse speed. If none are in
@@ -176,7 +173,6 @@ extern "C" {
         alignmentSegment->spliceType = SPLICETYPE_UNKNOWN;
         alignmentSegment->merged = false;
         alignmentSegment->fragmentIndex = 0;
-
     }
 
     /**
@@ -818,7 +814,7 @@ extern "C" {
         } else {
             resetAlignment(alignment);
         }
-
+        
         if (!parseEntryHeader(writerHelper, lines, false)) {
             // Cannot process this, no header line
             return false;
@@ -1051,7 +1047,7 @@ extern "C" {
     }
 
     void writeAlignmentSegment(CAlignmentsWriterHelper *writerHelper,
-            GsnapAlignmentSegment *mergedSeg, int fragmentIndex) {
+            GsnapAlignmentSegment *mergedSeg, int fragmentIndex, int ambiguity) {
 
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
 
@@ -1085,6 +1081,8 @@ extern "C" {
         gobyAlEntry_setFragmentIndex(writerHelper, fragmentIndex);
         gobyAlEntry_setMappingQuality(writerHelper, alignment->mapq);
         gobyAlEntry_setInsertSize(writerHelper, alignment->insertLength);
+        gobyAlEntry_setAmbiguity(writerHelper, ambiguity);
+        gobyAlEntry_setQueryIndexOccurrences(writerHelper, alignment->nextFragmentIndex);
     }
     
     int calculatePairFlags(GsnapAlignment *alignment,
@@ -1146,7 +1144,9 @@ extern "C" {
         GsnapAlignmentSegment *pairSegment = NULL;
         pairFlags = calculatePairFlags(alignment,
                 alignmentEntries, alignmentEntriesPair, firstInPair);
+        int ambiguity;
         if (alignment->pairedEnd) {
+            ambiguity = alignment->numAlignmentEntriesPair;
             vector<GsnapAlignmentSegment*> *segments = size > 0 ? alignmentEntries->at(0)->alignmentSegments : NULL;
             GsnapAlignmentSegment *segment = segments == NULL ? NULL : segments->at(0);
             bool spliced = segment == NULL ? false : splicedSegment(segment);
@@ -1175,6 +1175,8 @@ extern "C" {
                 }
                 debug(cout << "pairSegment->fi=" << pairSegment->fragmentIndex << endl;);
             }
+        } else {
+            ambiguity = alignment->numAlignmentEntries;
         }
 
         for (int i = 0; i < size; i++) {
@@ -1202,7 +1204,7 @@ extern "C" {
                         if (j != numSegs - 1) {
                             nextSeg = alignmentEntry->alignmentSegments->at(j + 1);
                         }
-                        writeAlignmentSegment(writerHelper, curSeg, curSeg->fragmentIndex);
+                        writeAlignmentSegment(writerHelper, curSeg, curSeg->fragmentIndex, ambiguity);
                         // TODO: How to determine novel from non-novel splices
                         gobyAlEntry_setSplicedFlags(writerHelper, 1 /* normal splice, non-novel*/);
 
@@ -1244,7 +1246,7 @@ extern "C" {
             GsnapAlignmentSegment *mergedSeg = mergeSegments(
                     alignmentEntry->alignmentSegments, splicedAlignment);
 
-            writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex);
+            writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex, ambiguity);
             gobyAlEntry_setPairFlags(writerHelper, pairFlags);
             if (alignment->pairedEnd) {
                 if (pairSegment != NULL) {
@@ -1346,5 +1348,9 @@ extern "C" {
         }
         writeGobyAlignment(writerHelper);
         debug(printf("Write alignment.\n"));
+    }
+
+    void gobyGsnap_startAlignment(CAlignmentsWriterHelper *writerHelper) {
+        gobyAlignments_setQueryIndexOccurrencesStoredInEntries(writerHelper, 1);
     }
 }

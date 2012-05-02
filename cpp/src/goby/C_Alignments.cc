@@ -30,6 +30,7 @@ using namespace std;
 // TODO: the addQueryIdentifier() should only be used when reading
 // TODO: from FA/FQ and what you have is a real string identifier.
 
+
 /**
  * C API to enable writing Goby compact-alignments in C.
  */
@@ -219,6 +220,10 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlignments_addStatisticDouble %s=%f\n", description, value));
         string descriptionStr(description);
         writerHelper->alignmentWriter->addStatistic(descriptionStr, value);
+    }
+
+    void gobyAlignments_setQueryIndexOccurrencesStoredInEntries(CAlignmentsWriterHelper *writerHelper, int value /* bool */) {
+        writerHelper->alignmentWriter->setQueryLengthsStoredInEntries(value == 0 ? false : true);
     }
 
     /**
@@ -595,6 +600,16 @@ extern "C" {
     void gobyAlEntry_setInsertSize(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         debug(fprintf(stderr,"gobyAlEntry_setInsertSize=%u\n", value));
         writerHelper->alignmentEntry->set_insert_size(value);
+    }
+
+    void gobyAlEntry_setAmbiguity(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setAmbiguity=%u\n", value));
+        writerHelper->alignmentEntry->set_ambiguity(value);
+    }
+    
+    void gobyAlEntry_setQueryIndexOccurrences(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setQueryIndexOccurrences=%u\n", value));
+        writerHelper->alignmentEntry->set_query_index_occurrences(value);
     }
 
     // These are only used when dealing with a Query Pair
@@ -987,19 +1002,19 @@ extern "C" {
 	 */
 
     char *goby_copy_string(char *str, int length) {
-            int copy_length = length;
-            char *new_str = (char *) NULL;
+        int copy_length = length;
+        char *new_str = (char *) NULL;
 
-            if (str != NULL) {
-                    if (copy_length == -1) {
-                            copy_length = strlen(str);
-                    }
-                    new_str = (char *) calloc(copy_length + 1, sizeof(char));
-                    strncpy(new_str, str, copy_length);
-                    new_str[copy_length] = '\0';
-            }
+        if (str != NULL) {
+                if (copy_length == -1) {
+                        copy_length = strlen(str);
+                }
+                new_str = (char *) calloc(copy_length + 1, sizeof(char));
+                strncpy(new_str, str, copy_length);
+                new_str[copy_length] = '\0';
+        }
 
-            return new_str;
+        return new_str;
     }
 
 }
