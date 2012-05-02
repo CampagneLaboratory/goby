@@ -41,11 +41,12 @@ public class CumulativeArrayKeeperFast {
     /*
     Maximum size of the cumulative count array
      */
-    private int capacity;
+    private final int capacity;
 
     public CumulativeArrayKeeperFast(final int n) {
-        if (!(n > 0))
+        if (!(n > 0)) {
             throw new IllegalArgumentException("The declared size of the cumulative count array must be at least 1");
+        }
         cumC = new int[n];
         capacityMonitor = 0;
         capacity = n;
@@ -64,7 +65,7 @@ public class CumulativeArrayKeeperFast {
     }
 
     private void shift(final int countAtNewSite) {
-        int removedCount = cumC[0];
+        final int removedCount = cumC[0];
         // update cumulative total
         for (int i = 0; i < capacity; i++) {
             cumC[i] = cumC[i] - removedCount;
@@ -72,7 +73,7 @@ public class CumulativeArrayKeeperFast {
         if (capacity == 1) {
             cumC[0] = countAtNewSite;
         } else {
-            int[] cumCCopy = new int[capacity];
+            final int[] cumCCopy = new int[capacity];
             System.arraycopy(cumC, 1, cumCCopy, 0, indexAtLast);
             cumC = cumCCopy;
             cumCCopy[indexAtLast] = cumCCopy[indexAtLast - 1] + countAtNewSite;
@@ -90,33 +91,25 @@ public class CumulativeArrayKeeperFast {
     /**
      * Returns true if the cumulativeSum array is full
      *
-     * @return
+     * @return true if the cumulativeSum array is full
      */
     private boolean checkCumulativeCapacityReached() {
-        if (capacityMonitor == capacity) return true;
-        else return false;
+        return capacityMonitor == capacity;
     }
 
     public int getCumulativeCountTotal() {
         return cumC[capacity - 1];
     }
 
-    public String cumulativeArrayToString(int[] result) {
-        StringBuilder stringresult = new StringBuilder("[");
-        int max = getCurrentCapacity();
-        for (int x = 0; x < max; x++) {
-            stringresult.append("\t");
-            stringresult.append(cumC[x]);
+    public String toString() {
+        final StringBuilder stringResult = new StringBuilder("[");
+        for (int x = 0; x < capacityMonitor; x++) {
+            stringResult.append('\t');
+            stringResult.append(cumC[x]);
         }
-        stringresult.append("\t]");
-        return stringresult.toString();
+        stringResult.append("\t]");
+        return stringResult.toString();
     }
 
-    private int getCurrentCapacity() {
-        return capacityMonitor;
-    }
 
-    public String getCumulativeArray() {
-        return cumulativeArrayToString(this.cumC);
-    }
 }
