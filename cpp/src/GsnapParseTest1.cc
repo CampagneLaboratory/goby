@@ -227,7 +227,7 @@ void sequenceTests() {
 	registerChromosomes(writerHelper);
     testPairedEndSpliced(writerHelper);
 	testPairedEnd1(writerHelper);
-    testPairedEnd2(writerHelper);  // THIS alignment gives problems to hybrid conversion
+    testPairedEnd2(writerHelper);
 	spliceTests(writerHelper);
 	targetIdentiferTest(writerHelper);
 	testSingleForwardDel(writerHelper);

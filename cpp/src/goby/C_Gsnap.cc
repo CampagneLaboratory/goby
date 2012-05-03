@@ -1065,8 +1065,7 @@ extern "C" {
     }
 
     void writeAlignmentSegment(CAlignmentsWriterHelper *writerHelper,
-            GsnapAlignmentSegment *mergedSeg, int fragmentIndex,
-            int queryIndexOccurrences, int ambiguity) {
+            GsnapAlignmentSegment *mergedSeg, int fragmentIndex, int ambiguity) {
 
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
 
@@ -1101,7 +1100,7 @@ extern "C" {
         gobyAlEntry_setMappingQuality(writerHelper, alignment->mapq);
         gobyAlEntry_setInsertSize(writerHelper, alignment->insertLength);
         gobyAlEntry_setAmbiguity(writerHelper, ambiguity);
-        gobyAlEntry_setQueryIndexOccurrences(writerHelper, queryIndexOccurrences);
+        gobyAlEntry_setQueryIndexOccurrences(writerHelper, alignment->nextFragmentIndex);
     }
     
     int calculatePairFlags(GsnapAlignment *alignment,
@@ -1202,18 +1201,6 @@ extern "C" {
                     alignmentEntry->alignmentSegments->size() == 0) {
                 continue;
             }
-            int queryIndexOccurrences =
-                    alignmentEntry->alignmentSegments->size();
-            if (alignmentEntriesPair != NULL &&
-                    alignmentEntriesPair->at(i) != NULL) {
-                GsnapAlignmentEntry *alignmentEntryPair =
-                        alignmentEntriesPair->at(i);
-                if (alignmentEntryPair->alignmentSegments != NULL) {
-                    queryIndexOccurrences +=
-                            alignmentEntryPair->alignmentSegments->size();
-                }
-            }
-
            
             bool splicedAlignment = false;
             if (splicedSegment(alignmentEntry->alignmentSegments->at(0))) {
@@ -1232,8 +1219,7 @@ extern "C" {
                         if (j != numSegs - 1) {
                             nextSeg = alignmentEntry->alignmentSegments->at(j + 1);
                         }
-                        writeAlignmentSegment(writerHelper, curSeg, curSeg->fragmentIndex,
-                                queryIndexOccurrences, ambiguity);
+                        writeAlignmentSegment(writerHelper, curSeg, curSeg->fragmentIndex, ambiguity);
                         // TODO: How to determine novel from non-novel splices
                         gobyAlEntry_setSplicedFlags(writerHelper, 1 /* normal splice, non-novel*/);
 
@@ -1275,8 +1261,7 @@ extern "C" {
             GsnapAlignmentSegment *mergedSeg = mergeSegments(
                     alignmentEntry->alignmentSegments, splicedAlignment);
 
-            writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex,
-                    queryIndexOccurrences, ambiguity);
+            writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex, ambiguity);
             gobyAlEntry_setPairFlags(writerHelper, pairFlags);
             if (alignment->pairedEnd) {
                 if (pairSegment != NULL) {
