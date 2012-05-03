@@ -1,6 +1,6 @@
 //
-// Copyright (C) 2010 Institute for Computational Biomedicine,
-//                    Weill Medical College of Cornell University
+// Copyright (C) 2009-2012 Institute for Computational Biomedicine,
+//                         Weill Medical College of Cornell University
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+
 
 #include <stdio.h>
 #include <goby/C_Reads.h>
