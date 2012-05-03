@@ -143,12 +143,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        DynamicOptionRegistry.register(QualityScoreFilter.doc());
-        DynamicOptionRegistry.register(AnnotationAveragingWriter.doc());
-        DynamicOptionRegistry.register(MethylationRegionsOutputFormat.doc());
-        DynamicOptionRegistry.register(MethylationRateVCFOutputFormat.doc());
-        DynamicOptionRegistry.parseCommandLineOptions(jsapResult);
-
         inputFilenames = jsapResult.getStringArray("input");
 
         String outputFile = jsapResult.getString("output");

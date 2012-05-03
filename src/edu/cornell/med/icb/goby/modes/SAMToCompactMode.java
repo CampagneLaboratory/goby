@@ -103,7 +103,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     private RandomAccessSequenceInterface genome;
     private boolean preserveAllTags;
     private boolean preserveAllMappedQuals;
-    private boolean ignoreReadOrigin;
+    private boolean storeReadOrigin;
 
     @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
@@ -181,7 +181,8 @@ public class SAMToCompactMode extends AbstractGobyMode {
         preserveSoftClips = jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
-        ignoreReadOrigin = doc().getBoolean("ignore-read-origin");
+        storeReadOrigin = !doc().getBoolean("ignore-read-origin");
+        System.out.printf("Store read origin: %b%n",storeReadOrigin);
         final String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
@@ -457,7 +458,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     }
                 }
                 final String readGroup = samRecord.getStringAttribute("RG");
-                if (readGroup != null && !ignoreReadOrigin) {
+                if (readGroup != null && storeReadOrigin) {
                     final int readOriginIndex = readGroups.getInt(new MutableString(readGroup).compact());
                     if (readOriginIndex == -1) {
                         System.err.printf("Read group identifier %s is used in alignment record (read-name=%s), " +
@@ -634,7 +635,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     DateFormat dateFormatter = new SimpleDateFormat("dd:MMM:yyyy");
 
     private void importReadGroups(final SAMFileHeader samHeader, final IndexedIdentifier readGroups) {
-        if (!samHeader.getReadGroups().isEmpty() && !ignoreReadOrigin) {
+        if (!samHeader.getReadGroups().isEmpty() && storeReadOrigin) {
             for (SAMReadGroupRecord rg : samHeader.getReadGroups()) {
                 String sample = rg.getSample();
                 String library = rg.getLibrary();

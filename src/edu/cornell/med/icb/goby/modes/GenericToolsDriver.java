@@ -212,10 +212,10 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         try {
             if (modeClass != null) {
                 final AbstractCommandLineMode modeObject = (AbstractCommandLineMode) modeClass.newInstance();
-                modeObject.configure(args);
                 // parse dynamic options only after the mode class has been loaded. Each mode class should import
                 // the classes that have a dynamic option client which needs to be configured.
                 DynamicOptionRegistry.parseCommandLineOptions(dynamicOptions);
+                modeObject.configure(args);
                 modeObject.execute();
             }
         } catch (JSAPException e) {
