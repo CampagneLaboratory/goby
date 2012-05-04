@@ -240,6 +240,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.getScore(),
                                 alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255,
                                 alignmentEntry.hasPairFlags() ? EntryFlagHelper.pairToString(alignmentEntry) : "",
+                                alignmentEntry.hasAmbiguity() ? alignmentEntry.getAmbiguity() : 0,
+                                alignmentEntry.hasQueryIndexOccurrences() ? alignmentEntry.getQueryIndexOccurrences() : 0,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
@@ -259,12 +261,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         break;
                     case PLAIN:
                         if (numWritten < maxToOutput) {
-                            outputStream.printf("%s\t%d\t" +
-                                    "%s\t%s\t%s\t%s\t" +   // Pair
+                            outputStream.printf("%s\t" +  // Name,
+                                    "%d\t%d\t%d\t" +  // Ambiguity, QueryIndexOccurrences, fragmentIndex
+                                    "%s\t%s\t%s\t%s\t" +   // PairFlags...
                                     "%s\t%s\t%s\t%s\t" +   // Splice Forward
                                     "%s\t%s\t%s\t" +   // Splice Backward
                                     "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
                                     hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                    alignmentEntry.hasAmbiguity() ? alignmentEntry.getAmbiguity() : 0,
+                                    alignmentEntry.hasQueryIndexOccurrences() ? alignmentEntry.getQueryIndexOccurrences() : 0,
                                     alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
                                     alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : "",
                                     alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
@@ -489,6 +494,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "score", "type:int,align:right,renderFunction:formatNumber",
                             "mappingQuality", "type:int,align:right,renderFunction:formatNumber",
                             "pairFlags", "type:string,align:right",
+                            "ambiguity", "type:int,align:right,renderFunction:formatNumber",
+                            "queryIndexOccurrences", "type:int,align:right,renderFunction:formatNumber",
                             "readFragmentIndex", "type:int,align:center",
                             "pairFragmentIndex", "type:int,align:center",
                             "pairTarget", "type:string",
@@ -507,8 +514,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     );
                     break;
                 case PLAIN:
-                    outputStream.printf(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+                    outputStream.printf(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
                             "queryIndex",
+                            "ambiguity",
+                            "queryIndexOccurrences",
                             "queryFragmentIndex",
                             "pairFlags",
                             "pairFragmentIndex",
