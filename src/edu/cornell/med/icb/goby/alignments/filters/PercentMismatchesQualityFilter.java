@@ -52,7 +52,7 @@ public class PercentMismatchesQualityFilter implements AlignmentQualityFilter {
         qualityThresholdPercent = 0.05;
     }
 
-    public final boolean keepEntry(final int queryLength, final Alignments.AlignmentEntry entry) {
+    public final boolean keepEntry(final int queryLength, final Alignments.AlignmentEntryOrBuilder entry) {
         final int numberOfMismatches = entry.getNumberOfMismatches();
         final int numberOfIndels = entry.getNumberOfIndels();
         final int sumDifferences = numberOfIndels + numberOfMismatches;

@@ -36,6 +36,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -163,6 +165,10 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                        final AlignmentWriter writer,
                        final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
 
+        int currentQueryIndex = -1;
+        final List<Alignments.AlignmentEntry.Builder> sameQueryIndexAlignmentEntries =
+                new ArrayList<Alignments.AlignmentEntry.Builder>();
+
         int numAligns = 0;
 
         // remove extension from inputFile
@@ -216,6 +222,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                         }
                     }
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
+                    if (currentQueryIndex == -1) {
+                        currentQueryIndex = queryIndex;
+                    }
                     largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
                     int targetIndex = -1;
                     targetIndex = getTargetIndex(targetIds, reference.sequenceIdentifier, thirdPartyInput);
@@ -256,9 +265,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     final int readStartPosition = query.alignedStart;
 
                     parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
-                    final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
-                    if (qualityFilter.keepEntry(depth, alignmentEntry)) {
+                    if (qualityFilter.keepEntry(depth, currentEntry)) {
                         final float currentMax = queryIndexToMaxAlignmentScore.get(queryIndex);
                         final int currentNumHits = queryIndexToNumHitsAtMaxScore.get(queryIndex);
                         // on the first pass, writeAlignment=false
@@ -279,8 +287,15 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                             if (score == currentMax) {
                                 // only write non-ambiguous entries i.e. currentNumHits <= mParameter
                                 if (currentNumHits <= mParameter) {
-                                    writer.appendEntry(alignmentEntry);
-                                    numAligns += multiplicity;
+
+                                    if (currentEntry.getQueryIndex() == currentQueryIndex) {
+                                        sameQueryIndexAlignmentEntries.add(currentEntry);
+                                    } else {
+                                        writeEntries(writer, sameQueryIndexAlignmentEntries);
+                                        sameQueryIndexAlignmentEntries.add(currentEntry);
+                                        currentQueryIndex = currentEntry.getQueryIndex();
+                                        numAligns += multiplicity;
+                                    }
                                 }
                                 // TMH writer adds the alignment entry only if hits > thresh
                             } else {
@@ -296,6 +311,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 parser.close();
                 if (writeAlignment) {
+                    // Write the remaining entries (last query index);
+                    writeEntries(writer, sameQueryIndexAlignmentEntries);
                     /*System.out.println("============== LastToCompact dumping targetLengths..");
                     final DoubleIndexedIdentifier reverse = new DoubleIndexedIdentifier(targetIds);
                     int targetIndex = 0;
@@ -341,6 +358,19 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         }
 
         return numAligns;
+    }
+
+    private void writeEntries(final AlignmentWriter writer,
+                              final List<Alignments.AlignmentEntry.Builder> alignmentEntries) throws IOException {
+        final int size = alignmentEntries.size();
+        if (size > 0) {
+            for (final Alignments.AlignmentEntry.Builder alignmentEntry : alignmentEntries) {
+                alignmentEntry.setQueryIndexOccurrences(size);
+                alignmentEntry.setAmbiguity(size);
+                writer.appendEntry(alignmentEntry.build());
+            }
+            alignmentEntries.clear();
+        }
     }
 
     private void flip(final MutableString alignment) {

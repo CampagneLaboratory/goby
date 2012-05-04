@@ -48,7 +48,7 @@ public interface AlignmentQualityFilter {
      * @param entry  The entry to inspect.
      * @return true if the entry should be kept
      */
-    boolean keepEntry(int queryLength, Alignments.AlignmentEntry entry);
+    boolean keepEntry(int queryLength, Alignments.AlignmentEntryOrBuilder entry);
 
     /**
      * Set parameters for this filter.

@@ -26,6 +26,8 @@ import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,6 +62,7 @@ public class TestLastToCompact {
         reader.readHeader();
         assertEquals(2857819, reader.getNumberOfQueries());
         assertEquals(1, reader.getNumberOfTargets());
+        assertTrue(reader.hasQueryIndexOccurrences());
 
 
         // lookup tables
@@ -75,6 +78,8 @@ public class TestLastToCompact {
         final Int2IntOpenHashMap queryIndex2TargetIndex = new Int2IntOpenHashMap();
         final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand = new Int2BooleanOpenHashMap();
         final Int2IntOpenHashMap queryIndex2TargetAlignedLength = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryIndexOcc = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Ambiguity = new Int2IntOpenHashMap();
 
         // enter alignment data
         int qii;
@@ -97,6 +102,8 @@ public class TestLastToCompact {
             queryIndex2TargetIndex.put(qii, aln.getTargetIndex());
             queryIndex2MatchingReverseStrand.put(qii, aln.getMatchingReverseStrand());
             queryIndex2TargetAlignedLength.put(qii, aln.getTargetAlignedLength());
+            queryIndex2QueryIndexOcc.put(qii, aln.getQueryIndexOccurrences());
+            queryIndex2Ambiguity.put(qii, aln.getAmbiguity());
 
         }
 
@@ -119,6 +126,10 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
+        assertEquals(2, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(2, queryIndex2Ambiguity.get(qii));
+
+
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
         // filtered due to ambiguity
@@ -134,6 +145,8 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 0);
+        assertEquals(0, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(0, queryIndex2Ambiguity.get(qii));
 
         //
         reader.close();
@@ -165,6 +178,7 @@ public class TestLastToCompact {
         reader.readHeader();
         assertEquals(3538282, reader.getNumberOfQueries());
         assertEquals(1, reader.getNumberOfTargets());
+        assertTrue(reader.hasQueryIndexOccurrences());
 
 
         // lookup tables
@@ -180,6 +194,8 @@ public class TestLastToCompact {
         final Int2IntOpenHashMap queryIndex2TargetIndex = new Int2IntOpenHashMap();
         final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand = new Int2BooleanOpenHashMap();
         final Int2IntOpenHashMap queryIndex2TargetAlignedLength = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryIndexOcc = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Ambiguity = new Int2IntOpenHashMap();
 
         // enter alignment data
         int qii;
@@ -201,7 +217,8 @@ public class TestLastToCompact {
             queryIndex2TargetIndex.put(qii, aln.getTargetIndex());
             queryIndex2MatchingReverseStrand.put(qii, aln.getMatchingReverseStrand());
             queryIndex2TargetAlignedLength.put(qii, aln.getTargetAlignedLength());
-
+            queryIndex2QueryIndexOcc.put(qii, aln.getQueryIndexOccurrences());
+            queryIndex2Ambiguity.put(qii, aln.getAmbiguity());
         }
 
         //
@@ -223,6 +240,8 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
+        assertEquals(2, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(2, queryIndex2Ambiguity.get(qii));
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
         // filtered due to ambiguity
@@ -238,7 +257,8 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 0);
-
+        assertEquals(0, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(0, queryIndex2Ambiguity.get(qii));
 
         // check more values ...
 
@@ -254,6 +274,8 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
+        assertEquals(1, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(1, queryIndex2Ambiguity.get(qii));
 
         qii = 1135141;
         assertEquals(queryIndex2NumberOfHits.get(qii), 1);
@@ -267,6 +289,8 @@ public class TestLastToCompact {
         assertEquals(queryIndex2TargetIndex.get(qii), 0);
         assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
         assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
+        assertEquals(1, queryIndex2QueryIndexOcc.get(qii));
+        assertEquals(1, queryIndex2Ambiguity.get(qii));
 
         /*
         qii = 2527313;
