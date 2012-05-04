@@ -439,7 +439,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
      *
      * @return A list of read origin info messages, adjusted to remove conflicts.
      */
-    ReadOriginInfo getReadOriginInfo() {
+    public ReadOriginInfo getReadOriginInfo() {
         return new ReadOriginInfo(mergedReadOriginInfoList);
     }
 
