@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.util.List;
 
@@ -35,11 +36,12 @@ public class ReadOriginInfo {
 
     /**
      * Construct a query object from a list of protocol buffer instances.
+     *
      * @param list PB instances (from the alignment header).
      */
     public ReadOriginInfo(final List<Alignments.ReadOriginInfo> list) {
         this.list = list;
-        map=new Object2ObjectAVLTreeMap<Integer, Alignments.ReadOriginInfo>();
+        map = new Object2ObjectAVLTreeMap<Integer, Alignments.ReadOriginInfo>();
         for (final Alignments.ReadOriginInfo roi : list) {
             map.put(roi.getOriginIndex(), roi);
         }
@@ -47,6 +49,7 @@ public class ReadOriginInfo {
 
     /**
      * Return the protocol buffer ReadOriginInfo list.
+     *
      * @return the protocol buffer ReadOriginInfo list.
      */
     public List<Alignments.ReadOriginInfo> getPbList() {
@@ -55,6 +58,7 @@ public class ReadOriginInfo {
 
     /**
      * Get the read origin info corresponding to the index.
+     *
      * @param readOriginIndex index of the object to retrieve.
      * @return the protocol buffer ReadOriginInfo instance corresponding to readOriginIndex.
      */
@@ -63,7 +67,20 @@ public class ReadOriginInfo {
     }
 
     /**
+     * Return a list of protocol buffer ReadOriginInfo builders.
+     * @return list of protocol buffer ReadOriginInfo builders.
+     */
+    public ObjectArrayList<Alignments.ReadOriginInfo.Builder> getPBBuilderList() {
+        ObjectArrayList<Alignments.ReadOriginInfo.Builder> result = new ObjectArrayList<Alignments.ReadOriginInfo.Builder>();
+        for (Alignments.ReadOriginInfo e : list) {
+            result.add(Alignments.ReadOriginInfo.newBuilder(e));
+        }
+        return result;
+    }
+
+    /**
      * The number of read origin info/read groups defined.
+     *
      * @return 0 if no read origin info are defined.
      */
     public int size() {

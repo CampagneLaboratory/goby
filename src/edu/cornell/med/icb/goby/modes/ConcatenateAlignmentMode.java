@@ -195,8 +195,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             writer.setTargetLengths(alignmentReader.getTargetLength());
         }
         writer.setSorted(allSorted);
-        // TODO transfer read group info here:
-      //  writer.setReadOriginInfo(alignmentReader.getReadOriginInfo()));
+        writer.setReadOriginInfo(alignmentReader.getReadOriginInfo().getPBBuilderList());
 
         AlignmentProcessorInterface processor = null;
         if (!allSorted) {
