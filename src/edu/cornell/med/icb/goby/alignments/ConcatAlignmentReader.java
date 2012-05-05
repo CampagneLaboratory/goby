@@ -207,7 +207,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 numQueriesPerReader[readerIndex] = numQueriesForReader;
                 numberOfQueries += numQueriesForReader;
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
-                mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList());
+                mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList(), readers.length);
 
                 readerIndex++;
             }
@@ -271,12 +271,12 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
 
     private int nextAvailableReadOriginIndex = 0;
 
-    private void mergeReadOrigins(int readerIndex, List<Alignments.ReadOriginInfo> readOriginInfo) {
+    private void mergeReadOrigins(int readerIndex, List<Alignments.ReadOriginInfo> readOriginInfo, int numberOfReaders) {
 
         for (Alignments.ReadOriginInfo roi : readOriginInfo) {
             final int[] permutation = new int[readOriginInfo.size()];
             readOriginPermutations[readerIndex] = permutation;
-            for (int i = 0; i < permutation.length; i++) {
+            for (int i = 0; i < numberOfReaders; i++) {
                 final int newReadOriginIndex = nextAvailableReadOriginIndex++;
                 permutation[roi.getOriginIndex()] = newReadOriginIndex;
                 Alignments.ReadOriginInfo.Builder newRoi = Alignments.ReadOriginInfo.newBuilder(roi);

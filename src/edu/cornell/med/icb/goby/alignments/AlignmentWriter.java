@@ -66,6 +66,7 @@ public interface AlignmentWriter extends Closeable {
     void setAlignerName(String alignerName);
 
     void setReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList);
+    void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList);
 
     void printStats(PrintStream out);
 }

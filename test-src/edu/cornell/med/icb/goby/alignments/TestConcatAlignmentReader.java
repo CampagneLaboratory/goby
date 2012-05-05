@@ -24,15 +24,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -85,6 +84,20 @@ public class TestConcatAlignmentReader {
         assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
         assertEquals("SOLID",roiList.getInfo(1).getPlatform());
     }
+    @Test
+       public void testLoadTwoAdjustReadOrigins2() throws IOException {
+           final int[] counts;
+
+           final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1);
+           concatReader.readHeader();
+           counts = countsForReadOrigins(concatReader);
+           assertEquals(count101, counts[0]);
+     //      assertEquals(count102, counts[1]);
+           ReadOriginInfo roiList = concatReader.getReadOriginInfo();
+           assertEquals(3,roiList.size());
+           assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
+         //  assertEquals("SOLID",roiList.getInfo(1).getPlatform());
+       }
 
     @Test
     public void testLoadTwoAlignerName() throws IOException {
@@ -218,6 +231,8 @@ public class TestConcatAlignmentReader {
             writer.setAlignerName("first-aligner");
             writer.setAlignerVersion("version-first-aligner");
             writer.setReadOriginInfo(buildReadGroup(0, "group_0_sample_1", "ILLUMINA", "concat-align-101"));
+            writer.addReadOriginInfo(buildReadGroup(1, "group_1_sample_1", "454", "concat-align-101"));
+            writer.addReadOriginInfo(buildReadGroup(2, "group_2_sample_1", "another", "concat-align-101"));
             final int numQuery = 10;
             int position = 100;
             final int score = 30;

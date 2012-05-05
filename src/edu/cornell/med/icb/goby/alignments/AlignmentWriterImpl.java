@@ -707,4 +707,8 @@ public class AlignmentWriterImpl implements AlignmentWriter {
     public void setReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
         this.readOriginInfoBuilderList = readOriginInfoBuilderList;
     }
+    @Override
+    public void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
+        this.readOriginInfoBuilderList.addAll(readOriginInfoBuilderList);
+    }
 }
