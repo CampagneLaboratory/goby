@@ -33,6 +33,15 @@ public class SlidingCountArray {
         this.cumC = cumC;
     }
 
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public int capacity() {
+        return capacity;
+    }
+
     /**
      * Cumulative count array
      */
@@ -73,12 +82,12 @@ public class SlidingCountArray {
             capacityMonitor++;
             tail = advanceToNextIndex(tail);
         } else {
-        shift(countAtNewSite);
+            shift(countAtNewSite);
             if (head != tail) {
                 head = advanceToNextIndex(head);
                 tail = advanceToNextIndex(tail);
             } else {
-               head = advanceToNextIndex(head);
+                head = advanceToNextIndex(head);
             }
         }
     }
@@ -111,7 +120,7 @@ public class SlidingCountArray {
             if (head == 0 && tail == 0) {
                 cumC[tail] = cumC[capacity - 1] + countAtNewSite;
             } else {
-               cumC[head] = cumC[tail] + countAtNewSite;
+                cumC[head] = cumC[tail] + countAtNewSite;
             }
         }
     }
@@ -135,13 +144,13 @@ public class SlidingCountArray {
 
     public String cumulativeArrayToString(final int[] result) {
         final StringBuilder outputResult = new StringBuilder("[");
-        int pointer= head;
-        for(int i=0; i< capacityMonitor; i++){
+        int pointer = head;
+        for (int i = 0; i < capacityMonitor; i++) {
             outputResult.append("\t");
             outputResult.append(cumC[pointer]);
-            pointer =  advanceToNextIndex(pointer);
-      }
-              outputResult.append("\t]");
+            pointer = advanceToNextIndex(pointer);
+        }
+        outputResult.append("\t]");
         return outputResult.toString();
     }
 
@@ -152,7 +161,7 @@ public class SlidingCountArray {
     /*
     * Returns the cumulative sum over an array of size n
     * */
-    public int getCumulativeSum(){
+    public int getCumulativeSum() {
         return cumC[tail];
     }
 }
