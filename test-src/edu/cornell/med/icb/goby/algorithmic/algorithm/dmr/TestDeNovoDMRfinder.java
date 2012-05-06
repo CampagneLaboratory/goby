@@ -80,7 +80,7 @@ public class TestDeNovoDMRfinder {
 
     }
 
-    @Test
+    //@Test
     public void testOneDMRinMiddleInterval() {
 
         // Meth counts group1 ->    0  0   0    10   10  10  10  0   0   0
