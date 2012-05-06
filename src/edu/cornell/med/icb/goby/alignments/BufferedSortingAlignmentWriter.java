@@ -168,6 +168,11 @@ public class BufferedSortingAlignmentWriter implements AlignmentWriter {
     }
 
     @Override
+    public void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
+        delegate.addReadOriginInfo(readOriginInfoBuilderList);
+    }
+
+    @Override
     public void setSorted(boolean sortedState) {
         delegate.setSorted(sortedState);
     }

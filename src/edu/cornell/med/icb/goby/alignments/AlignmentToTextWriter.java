@@ -143,6 +143,11 @@ public class AlignmentToTextWriter implements AlignmentWriter {
     }
 
     @Override
+    public void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
+          throw new UnsupportedOperationException("This method has not yet been implemented");
+    }
+
+    @Override
     public void printStats(PrintStream out) {
         throw new UnsupportedOperationException("This method has not yet been implemented");
     }
