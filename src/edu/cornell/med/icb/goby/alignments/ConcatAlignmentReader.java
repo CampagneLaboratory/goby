@@ -276,13 +276,13 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         for (Alignments.ReadOriginInfo roi : readOriginInfo) {
             final int[] permutation = new int[readOriginInfo.size()];
             readOriginPermutations[readerIndex] = permutation;
-            for (int i = 0; i < numberOfReaders; i++) {
+           // for (int i = 0; i < numberOfReaders; i++) {
                 final int newReadOriginIndex = nextAvailableReadOriginIndex++;
                 permutation[roi.getOriginIndex()] = newReadOriginIndex;
                 Alignments.ReadOriginInfo.Builder newRoi = Alignments.ReadOriginInfo.newBuilder(roi);
                 newRoi.setOriginIndex(newReadOriginIndex);
                 mergedReadOriginInfoList.add(newRoi.build());
-            }
+            //}
 
         }
 

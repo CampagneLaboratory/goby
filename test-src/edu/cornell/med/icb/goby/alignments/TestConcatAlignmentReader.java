@@ -79,10 +79,10 @@ public class TestConcatAlignmentReader {
         concatReader.readHeader();
         counts = countsForReadOrigins(concatReader);
         assertEquals(count101, counts[0]);
-        assertEquals(count102, counts[1]);
+        assertEquals(count102, counts[3]);
         ReadOriginInfo roiList = concatReader.getReadOriginInfo();
         assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
-        assertEquals("SOLID",roiList.getInfo(1).getPlatform());
+        assertEquals("SOLID",roiList.getInfo(3).getPlatform());
     }
     @Test
        public void testLoadTwoAdjustReadOrigins2() throws IOException {
@@ -92,11 +92,10 @@ public class TestConcatAlignmentReader {
            concatReader.readHeader();
            counts = countsForReadOrigins(concatReader);
            assertEquals(count101, counts[0]);
-     //      assertEquals(count102, counts[1]);
            ReadOriginInfo roiList = concatReader.getReadOriginInfo();
            assertEquals(3,roiList.size());
            assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
-         //  assertEquals("SOLID",roiList.getInfo(1).getPlatform());
+
        }
 
     @Test
@@ -182,13 +181,11 @@ public class TestConcatAlignmentReader {
 
     private int countAlignmentEntries(final AbstractAlignmentReader reader) {
         int count = 0;
-        int[] readOriginCounts = new int[2];
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
             //System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;
-            readOriginCounts[alignmentEntry.getReadOriginIndex()]++;
         }
 
         return count;
@@ -196,7 +193,7 @@ public class TestConcatAlignmentReader {
 
     private int[] countsForReadOrigins(final AbstractAlignmentReader reader) {
 
-        int[] readOriginCounts = new int[2];
+        int[] readOriginCounts = new int[10];
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
