@@ -16,6 +16,9 @@
 
     <property name="label" value="development"/>
 
+    <!-- default memory size for tests -->
+    <property name="test.max.memory" value="2000m"/>
+
     <!--
       * The target named by this task will be called before tests
       * are run (but after dependencies are met). If one doesn't
