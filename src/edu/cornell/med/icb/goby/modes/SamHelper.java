@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class SamHelper {
 
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
-    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN])");
+    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
 
     private static final Pattern FIRST_NUMBER_PATTERN = Pattern.compile("^(\\d+)");
