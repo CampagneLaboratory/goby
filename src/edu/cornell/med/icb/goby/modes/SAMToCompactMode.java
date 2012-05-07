@@ -133,11 +133,12 @@ public class SAMToCompactMode extends AbstractGobyMode {
     }
 
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
-
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -200,15 +201,15 @@ public class SAMToCompactMode extends AbstractGobyMode {
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         sortedInput = jsapResult.getBoolean("sorted");
-        this.largestQueryIndex = numberOfReadsFromCommandLine;
-        this.smallestQueryIndex = 0;
+        largestQueryIndex = numberOfReadsFromCommandLine;
+        smallestQueryIndex = 0;
         // don't even dare go through the debugging code if log4j was not configured. The debug code
         // is way too slow to run unintentionally in production!
         debug = Util.log4JIsConfigured();
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
         DynamicOptionRegistry.register(AlignmentWriterImpl.doc());
         DynamicOptionRegistry.register(QueryIndexPermutation.doc());
-        runningFromCommandLine = false;
+        runningFromCommandLine = true;
         return this;
     }
 
@@ -389,7 +390,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             assert queryIndex >= 0 : " Query index must never be negative.";
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
-            int multiplicity = 1;
+            final int multiplicity = 1;
 
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
@@ -583,7 +584,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         return numAligns;
     }
 
-    private int getTargetIndex(IndexedIdentifier targetIds, String sequenceName, boolean thirdPartyInput) {
+    private int getTargetIndex(final IndexedIdentifier targetIds, final String sequenceName, final boolean thirdPartyInput) {
         int targetIndex = -1;
 
         targetIndex = targetIds.registerIdentifier(new MutableString(sequenceName));
@@ -591,7 +592,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     }
 
     MutableString convertBasesBuffer = new MutableString();
-    private MutableString bases = new MutableString();
+    private final MutableString bases = new MutableString();
 
     public String convertBases(
             final int referenceIndex, final int positionStartOfRead,
@@ -608,7 +609,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
             }
             final int referenceLength = genome.getLength(referenceIndex);
             if (actualPositionStartOfRead + actualLength > referenceLength) {
-                numAppend = (actualPositionStartOfRead + actualLength) - referenceLength;
+                numAppend = actualPositionStartOfRead + actualLength - referenceLength;
                 actualLength -= numAppend;
             }
             genome.getRange(referenceIndex, actualPositionStartOfRead, actualLength, bases);
@@ -636,15 +637,15 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
     private void importReadGroups(final SAMFileHeader samHeader, final IndexedIdentifier readGroups) {
         if (!samHeader.getReadGroups().isEmpty() && storeReadOrigin) {
-            for (SAMReadGroupRecord rg : samHeader.getReadGroups()) {
-                String sample = rg.getSample();
-                String library = rg.getLibrary();
-                String platform = rg.getPlatform();
-                String platformUnit = rg.getPlatformUnit();
-                Date date = rg.getRunDate();
-                String id = rg.getId();
-                int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
-                Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
+            for (final SAMReadGroupRecord rg : samHeader.getReadGroups()) {
+                final String sample = rg.getSample();
+                final String library = rg.getLibrary();
+                final String platform = rg.getPlatform();
+                final String platformUnit = rg.getPlatformUnit();
+                final Date date = rg.getRunDate();
+                final String id = rg.getId();
+                final int readGroupIndex = readGroups.registerIdentifier(new MutableString(id));
+                final Alignments.ReadOriginInfo.Builder roi = Alignments.ReadOriginInfo.newBuilder();
                 roi.setOriginIndex(readGroupIndex);
                 roi.setOriginId(id);
                 if (library != null) {
@@ -667,10 +668,10 @@ public class SAMToCompactMode extends AbstractGobyMode {
         }
     }
 
-    private void addSamAttributes(SAMRecord samRecord, Alignments.AlignmentEntry.Builder currentEntry) {
+    private void addSamAttributes(final SAMRecord samRecord, final Alignments.AlignmentEntry.Builder currentEntry) {
         if (preserveAllTags) {
-            String tokens[] = samRecord.getSAMString().split("\t");
-            int size = tokens.length;
+            final String[] tokens = samRecord.getSAMString().split("\t");
+            final int size = tokens.length;
             for (int i = 12; i < size; i++) {
                 final String token = tokens[i];
                 if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
@@ -686,9 +687,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Adjust reference names to match genome.
      *
-     * @param genome
-     * @param referenceName
-     * @return
+     * @param genome reference genome
+     * @param referenceName reference name
+     * @return the possibly re-mapped reference name
      */
 
     public static String chromosomeNameMapping(final RandomAccessSequenceInterface genome, final String referenceName) {
@@ -722,18 +723,18 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Unconsume one fragment index.
      *
-     * @param queryIndex
-     * @param queryIndex2NextFragmentIndex
+     * @param queryIndex the query index
+     * @param queryIndex2NextFragmentIndex the map query index to next fragment indexes
      */
     private void uncomsumeFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
-        int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
+        final int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex - 1));
         //    System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
 
     }
 
     private int nextFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
-        int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
+        final int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex + 1));
         //       System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
         return fragmentIndex;
@@ -810,28 +811,28 @@ public class SAMToCompactMode extends AbstractGobyMode {
         processor.execute();
     }
 
-    public void setGenome(RandomAccessSequenceInterface genome) {
+    public void setGenome(final RandomAccessSequenceInterface genome) {
         this.genome = genome;
     }
 
-    public void setPreserveSoftClips(boolean flag) {
-        this.preserveSoftClips = flag;
+    public void setPreserveSoftClips(final boolean flag) {
+        preserveSoftClips = flag;
     }
 
-    public void setPreserveReadQualityScores(boolean flag) {
-        this.preserveAllMappedQuals = flag;
+    public void setPreserveReadQualityScores(final boolean flag) {
+        preserveAllMappedQuals = flag;
     }
 
-    public void setPreserveAllTags(boolean flag) {
-        this.preserveAllTags = flag;
+    public void setPreserveAllTags(final boolean flag) {
+        preserveAllTags = flag;
     }
 
-    public void setInputFile(String s) {
+    public void setInputFile(final String s) {
         inputFile = s;
     }
 
-    public void setOutputFile(String outputFilename) {
-        this.outputFile = outputFilename;
+    public void setOutputFile(final String outputFilename) {
+        outputFile = outputFilename;
     }
 
 

@@ -18,31 +18,50 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.PerQueryAlignmentData;
 import edu.cornell.med.icb.goby.alignments.TestIteratedSortedAlignment2;
+import edu.cornell.med.icb.goby.modes.CompactToSAMMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
+import edu.cornell.med.icb.goby.modes.SamHelper;
+import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordIterator;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test SamRecordParser.
  */
 public class TestSamRecordParser {
 
+    private static final Logger LOG = Logger.getLogger(TestSamRecordParser.class);
+
+    private SamHelper globalGamHelper = new SamHelper();
+
+    private static final String BASE_TEST_DIR = "test-results/splicedsamhelper";
 
     //
     //  testSamToCompactTrickCase1-3 fails because this the sam reference builder requires an MD:Z tag.
@@ -328,7 +347,6 @@ public class TestSamRecordParser {
      */
     @Test
     public void testSamToCompactTrickCase17() throws IOException {
-
         final String inputFile = "test-data/splicedsamhelper/tricky-spliced-17.sam";
         final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
@@ -348,8 +366,223 @@ public class TestSamRecordParser {
             assertEquals("TTACCC", first.getSoftClippedBasesLeft());
             assertEquals("", first.getSoftClippedBasesRight());
 
-            // Test more here, although this record appears to parse correctly
-            // when I checked by hand.
+            assertEquals(13, first.getSequenceVariationsCount());
+
+            GobyQuickSeqvar last = first.getSequenceVariations(12);
+            assertEquals("T", last.getTo());
+            assertEquals("C", last.getFrom());
+            assertArrayEquals(byteArray(36), last.getToQualitiesAsBytes());
+        }
+    }
+
+    /**
+     * Same test as above, but write the sam to compact and then read the sequence variation form the compact.
+     * @throws IOException
+     */
+    @Test
+    public void testSamToCompactTrickCase17ViaWriter() throws IOException {
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-17.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-17");
+        importer.setPreserveSoftClips(true);
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        final AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        final Alignments.AlignmentEntry first = reader.next();
+
+
+        assertEquals(45881869 - 1, first.getPosition());
+
+        //509.6.68.19057.157284	83	chr1	45881869	29	6S23M1I6M1D16M1I47M	=	45881519	-443	TTACCCGCTTTCCTTGCCCAAATTTTAAGTTTCNGGAAAAGGGGAGGGAAATGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC	#######################################################ECGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHH	MD:Z:3G4A7C4C1A2T2^T2C4T3A0G5C44	RG:Z:1	XG:i:3	AM:i:29	NM:i:14	SM:i:29	XM:i:10	XO:i:3	XT:A:M
+
+        assertEquals(6, first.getQueryPosition());
+        assertEquals("TTACCC", first.getSoftClippedBasesLeft());
+        assertEquals("", first.getSoftClippedBasesRight());
+
+        assertEquals(13, first.getSequenceVariationsCount());
+
+        Alignments.SequenceVariation last = first.getSequenceVariations(12);
+        assertEquals("T", last.getTo());
+        assertEquals("C", last.getFrom());
+        assertArrayEquals(byteArray(36), last.getToQuality().toByteArray());
+    }
+
+    private String findThousandGenome() {
+        final String[] dirs = {
+                "/tmp/1000g",
+                "/scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference",
+                "/home/ccontrol/goby-data/1000g-random-access" };
+        for (final String dir : dirs) {
+            final String testRootFilename = dir + "/" + "random-access-genome";
+            final String testFilename = testRootFilename + ".names";
+            System.out.println("Looking for :" + testFilename);
+            final File testFile = new File(testFilename);
+            if (testFile.exists()) {
+                return testRootFilename;
+            }
+        }
+        return null;
+    }
+
+    // Test that DOES fail, for local testing, not for server testing
+    // @Test
+    public void testRoundTripFail() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/HZFWPTI-first-500.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
+        rtc.convertBamToGoby = false;
+        rtc.convertGobyToBam = false;
+        rtc.stopAtOneFailure = false;
+        testRoundTripAny(rtc);
+    }
+
+    @Test
+    public void testRoundTripTrickySpliced18() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/tricky-spliced-18.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-18");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-18.sam");
+        testRoundTripAny(rtc);
+        rtc.keepQualityScores = false;
+        testRoundTripAny(rtc);
+        rtc.keepSoftClips = false;
+        testRoundTripAny(rtc);
+    }
+
+    @Test
+    public void testRoundTripHZFirst500() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/HZFWPTI-first-500.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "HZFWPTI-first-500");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "HZFWPTI-first-500.sam");
+        testRoundTripAny(rtc);
+        rtc.keepQualityScores = false;
+        testRoundTripAny(rtc);
+        rtc.keepSoftClips = false;
+        testRoundTripAny(rtc);
+    }
+
+    // This large dataset is not currently on the server
+    // @Test
+    public void testRoundTrip1M() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/1M.bam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
+        testRoundTripAny(rtc);
+        rtc.keepQualityScores = false;
+        testRoundTripAny(rtc);
+        rtc.keepSoftClips = false;
+        testRoundTripAny(rtc);
+    }
+
+    class RoundTripConfig {
+        String inputGenomeFilename;
+        String sourceBamFilename;
+        String destGobyBasename;
+        String destBamFilename;
+        boolean convertBamToGoby = true;
+        boolean convertGobyToBam = true;
+        boolean keepQualityScores = true;
+        boolean keepSoftClips = true;
+        boolean stopAtOneFailure = true;
+    }
+
+    public void testRoundTripAny(final RoundTripConfig rtc) throws IOException {
+
+        // IMPORTANT!!
+        // ** These two should always be set to true unless you are doing MANUAL testing and want to not do
+        // ** one or both of the conversions.
+
+        if (!new File(rtc.destGobyBasename + ".entries").exists()) {
+            rtc.convertBamToGoby = true;
+        }
+        if (!new File(rtc.destBamFilename).exists()) {
+            rtc.convertGobyToBam = true;
+        }
+
+        assertNotNull("Could not locate random-access-genome in specified locations", rtc.inputGenomeFilename);
+        RandomAccessSequenceInterface genome = null;
+        if (rtc.convertBamToGoby || rtc.convertGobyToBam) {
+            genome = new DualRandomAccessSequenceCache();
+            try {
+                ((DualRandomAccessSequenceCache)genome).load(rtc.inputGenomeFilename);
+            } catch (ClassNotFoundException e) {
+                throw new IOException("Could not load genome", e);
+            }
+        }
+
+        if (rtc.convertBamToGoby) {
+            LOG.info("Converting bam to compact alignment");
+            final SAMToCompactMode importer = new SAMToCompactMode();
+            importer.setInputFile(rtc.sourceBamFilename);
+            importer.setPreserveSoftClips(rtc.keepSoftClips);
+            importer.setPreserveAllTags(true);
+            importer.setOutputFile(rtc.destGobyBasename);
+            importer.setGenome(genome);
+            importer.setPreserveReadQualityScores(rtc.keepQualityScores);
+            importer.execute();
+        }
+
+        if (rtc.convertGobyToBam) {
+            LOG.info("Converting compact alignment to bam");
+            final CompactToSAMMode exporter = new CompactToSAMMode();
+            exporter.setGenome(genome);
+            exporter.setInputBasename(rtc.destGobyBasename);
+            exporter.setOutput(rtc.destBamFilename);
+            exporter.execute();
+        }
+
+        LOG.info("Comparing source bam and destination bam");
+        final SAMFileReader sourceParser = new SAMFileReader(new FileInputStream(rtc.sourceBamFilename));
+        final SAMFileReader destParser = new SAMFileReader(new FileInputStream(rtc.destBamFilename));
+        // We need to set the validation to silent because an incomplete file (if the source isn't the entire file)
+        // we can see errors that wouldn't exist in a real conversion.
+        sourceParser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        destParser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SAMRecordIterator sourceIterator = sourceParser.iterator();
+        final SAMRecordIterator destIterator = destParser.iterator();
+        AlignmentReaderImpl gobyReader = null;
+        if (rtc.destGobyBasename != null) {
+            gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
+        }
+        final ProgressLogger progress = new ProgressLogger(LOG);
+        progress.displayFreeMemory = true;
+        final SamComparison samComparison = new SamComparison();
+        progress.start();
+        samComparison.mappedQualitiesPreserved = rtc.keepQualityScores;
+        samComparison.softClipsPreserved = rtc.keepSoftClips;
+        samComparison.checkMate = false;
+        samComparison.reset();
+        while (sourceIterator.hasNext()) {
+            samComparison.expectedSamRecord = sourceIterator.next();
+            if (samComparison.expectedSamRecord.getReadUnmappedFlag()) {
+                // We don't store unmapped reads, so skip this source record
+                continue;
+            }
+            assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
+            samComparison.actualSamRecord = destIterator.next();
+            if (gobyReader != null) {
+                assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
+                samComparison.gobyAlignment = gobyReader.next();
+            }
+            if (rtc.stopAtOneFailure) {
+                assertTrue("sam comparison failed", samComparison.compareSamRecords());
+            } else {
+                samComparison.compareSamRecords();
+            }
+            progress.lightUpdate();
+        }
+        progress.stop();
+        if (!rtc.stopAtOneFailure && samComparison.comparisonFailureCount > 0) {
+            fail("Number of comparison failures: " + samComparison.comparisonFailureCount);
         }
     }
 

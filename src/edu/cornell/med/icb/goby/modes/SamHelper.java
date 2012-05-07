@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class SamHelper {
 
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
-    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
+    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN])");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
 
     private static final Pattern FIRST_NUMBER_PATTERN = Pattern.compile("^(\\d+)");
@@ -805,5 +805,66 @@ public class SamHelper {
             appendTo.append(appendToVal + appendFromVal);
             appendTo.append(appendFrom.substring(appendFromMatch.length()));
         }
+    }
+
+    private static boolean mdzPartIsNumeric(final String mdzPart) {
+        return NUMERIC_REGEX.matcher(mdzPart).matches();
+    }
+
+    /**
+     * Given a mdz, the results a list of mdz parts that are canonical.
+     * @param mdz
+     * @return
+     */
+    public static String canonicalMdz(final String mdz) {
+        if (mdz == null) {
+            return mdz;
+        }
+        final Matcher matcher = MD_REGEX.matcher(mdz);
+        final StringBuilder result = new StringBuilder();
+        boolean lastMdzPartWasNumeric = false;
+        while (matcher.find()) {
+            final String mdzPart = matcher.group();
+            final boolean mdzPartIsNumeric = mdzPartIsNumeric(mdzPart);
+            if (mdzPartIsNumeric) {
+                result.append(mdzPart);
+            } else {
+                if (!lastMdzPartWasNumeric) {
+                    result.append("0");
+                }
+                result.append(mdzPart);
+            }
+            lastMdzPartWasNumeric = mdzPartIsNumeric;
+        }
+        if (!lastMdzPartWasNumeric) {
+            result.append("0");
+        }
+        return result.toString();
+    }
+
+    public static String canonicalCigar(final String mdz) {
+        if (mdz == null) {
+            return mdz;
+        }
+        final Matcher matcher = CIGAR_REGEX.matcher(mdz);
+        final StringBuilder result = new StringBuilder();
+        boolean lastMdzPartWasNumeric = false;
+        while (matcher.find()) {
+            final String mdzPart = matcher.group();
+            final boolean mdzPartIsNumeric = mdzPartIsNumeric(mdzPart);
+            if (mdzPartIsNumeric) {
+                result.append(mdzPart);
+            } else {
+                if (!lastMdzPartWasNumeric) {
+                    result.append("0");
+                }
+                result.append(mdzPart);
+            }
+            lastMdzPartWasNumeric = mdzPartIsNumeric;
+        }
+        if (!lastMdzPartWasNumeric) {
+            result.append("0");
+        }
+        return result.toString();
     }
 }

@@ -92,6 +92,7 @@ public class ExportableAlignmentEntryData {
      * Constructor
      *
      * @param genome the genome accessor.
+     * @param qualityEncoding the quality encoder to use
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
                                         final QualityEncoding qualityEncoding) {
@@ -454,7 +455,6 @@ public class ExportableAlignmentEntryData {
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
         endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition();
-        final int readLength = alignmentEntry.getQueryLength();
 
         this.alignmentEntry = alignmentEntry;
         if (predefinedQuals) {
@@ -688,13 +688,20 @@ public class ExportableAlignmentEntryData {
         if (endClip > 0) {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
             final int readSize = readBases.size();
+            final int genomePosition = alignmentEntry.getPosition() + alignmentEntry.getQueryAlignedLength() + numDeletions - numInserts;
             for (int i = 0; i < endClip; i++) {
-                char clipBase;
                 final int pos = readSize - endClip + i;
                 if (predefEndClips == null) {
                     readBases.set(pos, 'N');
                 } else {
-                    readBases.set(pos, predefEndClips[i]);
+                    final char clipBase = predefEndClips[i];
+                    if (clipBase == '=') {
+                        final char base = genomePosition >= 0 && genomePosition < genomeLength ?
+                                genome.get(targetIndex, genomePosition + i) : 'N';
+                        readBases.set(pos, base);
+                    } else {
+                        readBases.set(pos, clipBase);
+                    }
                 }
             }
         }
@@ -911,7 +918,11 @@ public class ExportableAlignmentEntryData {
                 if (lastMismatchType == MismatchType.MATCH && numLastMismatchType > 0) {
                     mismatchString.append(numLastMismatchType);
                 }
-                numLastMismatchType = 1;
+                if (curCigarType == CigarType.INSERTION) {
+                    numLastMismatchType = 0;
+                } else {
+                    numLastMismatchType = 1;
+                }
                 lastMismatchType = curMismatchType;
             } else {
                 if (curCigarType != CigarType.INSERTION) {
