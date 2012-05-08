@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.modes.SamHelper;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
@@ -115,7 +116,7 @@ public class TestExportableAlignmentEntryData {
         assertEquals("mapq incorrect for qi=" + qi, (int) Integer.valueOf(samData.get("mapq")), exportData.getMappingQuality());
         assertEquals("cigar incorrect for qi=" + qi, samData.get("cigar"), exportData.getCigarString());
         validateSequence(qi, samData.get("read"), exportData.getReadBasesOriginal());
-        assertEquals("mismatches incorrect for qi=" + qi, samData.get("mismatches"), "MD:Z:" + exportData.getMismatchString());
+        assertEquals("mismatches incorrect for qi=" + qi, samData.get("mismatches"), exportData.getMismatchString());
         assertEquals("read length and qual length must match for qi="+qi,exportData.getReadBasesOriginal().length(),exportData.getReadQualities().size());
     }
 
@@ -154,7 +155,7 @@ public class TestExportableAlignmentEntryData {
             entry.put("read", parts[9]);
             for (int i = 10; i < parts.length; i++) {
                 if (parts[i].startsWith("MD:Z")) {
-                    entry.put("mismatches", parts[i]);
+                    entry.put("mismatches", SamHelper.canonicalMdz(parts[i].substring(5)));
                     break;
                 }
             }
