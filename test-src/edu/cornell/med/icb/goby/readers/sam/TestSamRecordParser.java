@@ -541,7 +541,7 @@ public class TestSamRecordParser {
     /**
      * Configuration for round trip comparison.
      */
-    class RoundTripConfig {
+    private static class RoundTripConfig {
         String inputGenomeFilename;
         String sourceBamFilename;
         String destGobyBasename;

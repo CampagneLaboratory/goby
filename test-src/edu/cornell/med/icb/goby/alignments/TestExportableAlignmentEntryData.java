@@ -74,7 +74,7 @@ public class TestExportableAlignmentEntryData {
     public void testMakeExportable() throws IOException, ClassNotFoundException {
         final RandomAccessSequenceCache genome = new RandomAccessSequenceCache();
         genome.load("test-data/seq-var-test/small-synth.random-access-genome");
-        Int2ObjectMap<Map<String, String>> samDetailsMap = readSamFileToMap(genome, "test-data/seq-var-test/seq-var-reads-gsnap.sam");
+        final Int2ObjectMap<Map<String, String>> samDetailsMap = readSamFileToMap(genome, "test-data/seq-var-test/seq-var-reads-gsnap.sam");
 
         final FastXReader fastqReader = new FastXReader("test-data/seq-var-test/seq-var-reads.fq");
         final Map<Integer, ReadsDataEntry> reads = new LinkedHashMap<Integer, ReadsDataEntry>();
@@ -133,19 +133,19 @@ public class TestExportableAlignmentEntryData {
 
 
     private Int2ObjectMap<Map<String, String>> readSamFileToMap(final RandomAccessSequenceCache genome, final String filename) throws IOException {
-        List<String> lines = FileUtils.readLines(new File(filename));
-        Int2ObjectMap<Map<String, String>> result = new Int2ObjectArrayMap<Map<String, String>>();
+        final List<String> lines = FileUtils.readLines(new File(filename));
+        final Int2ObjectMap<Map<String, String>> result = new Int2ObjectArrayMap<Map<String, String>>();
         for (final String line : lines) {
             if (line.startsWith("@")) {
                 continue;
             }
             final String[] parts = line.split("\t");
             final String target = parts[2];
-            if (target.equals("*")) {
+            if ("*".equals(target)) {
                 continue;
             }
             final int queryIndex = Integer.valueOf(parts[0]);
-            Map<String, String> entry = new HashMap<String, String>();
+            final Map<String, String> entry = new HashMap<String, String>();
             result.put(queryIndex, entry);
             entry.put("pairFlags", parts[1]);
             entry.put("targetIndex", String.valueOf(genome.getReferenceIndex(target)));
@@ -163,7 +163,7 @@ public class TestExportableAlignmentEntryData {
         return result;
     }
 
-    private class ReadsDataEntry {
+    private static class ReadsDataEntry {
         final int readIndex;
         final String readName;
         final CharList readBases;
