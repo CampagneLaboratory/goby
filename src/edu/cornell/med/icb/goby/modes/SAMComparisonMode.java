@@ -74,6 +74,8 @@ public class SAMComparisonMode extends AbstractGobyMode {
     private String destGobyBasename;
     private boolean mappedQualitiesPreserved;
     private boolean softClipsPreserved;
+    private boolean checkMate;
+    private boolean canonicalMdzForComparison = true;
 
     private boolean runningFromCommandLine = false;
     private boolean debug = false;
@@ -101,6 +103,142 @@ public class SAMComparisonMode extends AbstractGobyMode {
     }
 
     /**
+     * Get the expected/source sam alignment file. This contains the values we EXPECT TO FIND, ie, the
+     * source SAM/BAM file.
+     * @return the expected/source sam alignment file.
+     */
+    public File getSourceBamFile() {
+        return sourceBamFile;
+    }
+
+    /**
+     * Set the expected/source sam alignment file. This contains the values we EXPECT TO FIND, ie, the
+     * source SAM/BAM file.
+     * @param sourceBamFile the expected/source sam alignment file.
+     */
+    public void setSourceBamFile(final File sourceBamFile) {
+        this.sourceBamFile = sourceBamFile;
+    }
+
+    /**
+     * Get the ACTUAL sam alignment file. This contains the alignments containing the values we will compare against
+     * the expected (source).
+     * @return the actual/dest sam dest file
+     */
+    public File getDestBamFile() {
+        return destBamFile;
+    }
+
+    /**
+     * Set the ACTUAL sam alignment file. This contains the alignments containing the values we will compare against
+     * the expected (source).
+     * @param destBamFile the actual/dest sam dest file
+     */
+    public void setDestBamFile(final File destBamFile) {
+        this.destBamFile = destBamFile;
+    }
+
+    /**
+     * Get the Goby Compact Alignment basename (optional). This is the source of intermediate alignments that were
+     * created from the expected alignments and was used to create the actual alignments. Providing this will generate
+     * some additional output when there are comparison failures.
+     * @return the goby alignment basename
+     */
+    public String getDestGobyBasename() {
+        return destGobyBasename;
+    }
+
+    /**
+     * Set the Goby Compact Alignment basename (optional). This is the source of intermediate alignments that were
+     * created from the expected alignments and was used to create the actual alignments. Providing this will generate
+     * some additional output when there are comparison failures.
+     * @param destGobyBasename the goby alignment basename
+     */
+    public void setDestGobyBasename(final String destGobyBasename) {
+        this.destGobyBasename = destGobyBasename;
+    }
+
+    /**
+     * Get if it is assumed that the compact file created from the BAM/SAM
+     * file preserved mapped qualities.
+     * @return if it is assumed ...
+     */
+    public boolean isMappedQualitiesPreserved() {
+        return mappedQualitiesPreserved;
+    }
+
+    /**
+     * Set if it is assumed that the compact file created from the BAM/SAM
+     * file preserved mapped qualities.
+     * @param mappedQualitiesPreserved if it is assumed...
+     */
+    public void setMappedQualitiesPreserved(final boolean mappedQualitiesPreserved) {
+        this.mappedQualitiesPreserved = mappedQualitiesPreserved;
+    }
+
+    /**
+     * Get if it is assumed that the compact file created from the BAM/SAM
+     * file preserved soft clips.
+     * @return if it is assumed ...
+     */
+    public boolean isSoftClipsPreserved() {
+        return softClipsPreserved;
+    }
+
+    /**
+     * Set if it is assumed that the compact file created from the BAM/SAM
+     * file preserved soft clips.
+     * @param softClipsPreserved if it is assumed ...
+     */
+    public void setSoftClipsPreserved(final boolean softClipsPreserved) {
+        this.softClipsPreserved = softClipsPreserved;
+    }
+
+    /**
+     * Get if the details about mate reads will be checked.
+     * If the source SAM/BAM file is a complete file you can set this to true,
+     * if you are using an incomplete source SAM/BAM file, this should be
+     * set to false. Default is false.
+     * @return if mates will be checked
+     */
+    public boolean isCheckMate() {
+        return checkMate;
+    }
+
+    /**
+     * Set if the details about mate reads will be checked.
+     * If the source SAM/BAM file is a complete file you can set this to true,
+     * if you are using an incomplete source SAM/BAM file, this should be
+     * set to false. Default is false.
+     * @return if mates will be checked
+     */
+    public void setCheckMate(final boolean checkMate) {
+        this.checkMate = checkMate;
+    }
+
+    /**
+     * Get if canonical MD:Z comparisons will be made.
+     * When true, the source and destination MD:Z values will be passed through an algorithm
+     * to make them canonical (place 0's in places where 0's should exist but might not).
+     * By default this is enabled.
+     * @return if ...
+     */
+    public boolean isCanonicalMdzForComparison() {
+        return canonicalMdzForComparison;
+    }
+
+    /**
+     * Set if canonical MD:Z comparisons will be made.
+     * When true, the source and destination MD:Z values will be passed through an algorithm
+     * to make them canonical (place 0's in places where 0's should exist but might not).
+     * By default this is enabled.
+     * @param canonicalMdzForComparison if ...
+     */
+    public void setCanonicalMdzForComparison(final boolean canonicalMdzForComparison) {
+        this.canonicalMdzForComparison = canonicalMdzForComparison;
+    }
+
+    /**
      * Configure.
      *
      * @param args command line arguments
@@ -119,7 +257,8 @@ public class SAMComparisonMode extends AbstractGobyMode {
         destGobyBasename = jsapResult.getString("destination-goby");
         mappedQualitiesPreserved = jsapResult.getBoolean("mapped-qualities-preserved");
         softClipsPreserved = jsapResult.getBoolean("soft-clips-preserved");
-
+        checkMate = jsapResult.getBoolean("check-mate");
+        canonicalMdzForComparison = jsapResult.getBoolean("canonical-mdz");
 
         // is way too slow to run unintentionally in production!
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
@@ -170,35 +309,38 @@ public class SAMComparisonMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         progress.start();
-        samComparison.mappedQualitiesPreserved = mappedQualitiesPreserved;
-        samComparison.softClipsPreserved = softClipsPreserved;
-        samComparison.checkMate = true;
+        samComparison.setMappedQualitiesPreserved(mappedQualitiesPreserved);
+        samComparison.setSoftClipsPreserved(softClipsPreserved);
+        samComparison.setCheckMate(checkMate);
+        samComparison.setCanonicalMdzForComparison(canonicalMdzForComparison);
         samComparison.reset();
-        samComparison.readNum = 0;
+        int numRecordsSkipped = 0;
         while (sourceIterator.hasNext()) {
-            samComparison.expectedSamRecord = sourceIterator.next();
-            if (samComparison.expectedSamRecord.getReadUnmappedFlag()) {
+            samComparison.setExpectedSamRecord(sourceIterator.next());
+            if (samComparison.getExpectedSamRecord().getReadUnmappedFlag()) {
                 // We don't store unmapped reads, so skip this source record
+                numRecordsSkipped++;
                 continue;
             }
             if (!destIterator.hasNext()) {
                 LOG.error("Not enough records in --destination-bam SAM/BAM file");
                 return;
             }
-            samComparison.actualSamRecord = destIterator.next();
+            samComparison.setActualSamRecord(destIterator.next());
             if (gobyReader != null) {
                 if (!gobyReader.hasNext()) {
                     LOG.error("Not enough records in goby compact-alignment file");
                     return;
                 }
-                samComparison.gobyAlignment = gobyReader.next();
+                samComparison.setGobyAlignment(gobyReader.next());
             }
 
             samComparison.compareSamRecords();
             progress.lightUpdate();
         }
         progress.stop();
-        System.out.println("Number of records compared   : " + samComparison.readNum);
-        System.out.println("Number of comparison failures: " + samComparison.comparisonFailureCount);
+        System.out.println("Number of records compared   : " + samComparison.getReadNum());
+        System.out.println("Number of records unmapped   : " + numRecordsSkipped);
+        System.out.println("Number of comparison failures: " + samComparison.getComparisonFailureCount());
     }
 }

@@ -728,11 +728,11 @@ public class TestSamHelper {
 
     @Test
     public void testCanonicalMdz() throws IOException {
-        assertNull(SamHelper.canonicalMdz(null));
+        assertNull(SamHelper.canonicalMdz((String) null));
+        assertNull(SamHelper.canonicalMdz((List) null));
         assertEquals("0", SamHelper.canonicalMdz(""));
         assertEquals("0A0T0", SamHelper.canonicalMdz("AT"));
         assertEquals("0A35T0", SamHelper.canonicalMdz("A35T"));
         assertEquals("7T4C1^CA7", SamHelper.canonicalMdz("7T4C1^CA7"));
     }
-
 }

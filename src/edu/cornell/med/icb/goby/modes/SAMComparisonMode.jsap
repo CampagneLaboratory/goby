@@ -46,21 +46,64 @@
             <help>The Goby Compact Alignment file that was converted to (inclusion of this flag will increase the
             amount of provided mismatch output).</help>
         </flaggedOption>
-        <switch>
+
+        <flaggedOption>
             <id>mapped-qualities-preserved</id>
             <longFlag>mapped-qualities-preserved</longFlag>
             <help>When this switch is provided, the destination Goby Compact Alignment was created
                   with --preserve-all-mapped-qualities so all quality scores will be verified. By
                   default, only the bases that have sequence variations will be verified.
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
             </help>
-        </switch>
-        <switch>
+        </flaggedOption>
+        <flaggedOption>
+            <id>check-mate</id>
+            <longFlag>check-mate</longFlag>
+            <help>When this switch is provided, source SAM/BAM file is known to be complete
+                  (not a subset of a larger SAM/BAM file) and mate/pair details will be validated.
+                  By default, mate/pair details are NOT checked because with incomplete SAM/BAM
+                  files, the converted Goby Compact Alignment file may not contain details
+                  about pairs that were not found in the incomplete source SAM/BAM file.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
             <id>soft-clips-preserved</id>
             <longFlag>soft-clips-preserved</longFlag>
             <help>When this switch is provided, the destination Goby Compact Alignment was created
                   with --preserve-soft-clips so the clipped bases will be verified. By default,
                   only the aligned bases will be verified.
             </help>
-        </switch>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>canonical-mdz</id>
+            <longFlag>canonical-mdz</longFlag>
+            <help>When true, the source and destination MD:Z values will be passed through an algorithm
+                  to make them canonical (place 0's in places where 0's should exist but might not).
+                  By default this is enabled.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
     </parameters>
 </jsap>

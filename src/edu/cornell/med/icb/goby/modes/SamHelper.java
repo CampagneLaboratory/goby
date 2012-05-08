@@ -28,6 +28,7 @@ import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -807,64 +808,56 @@ public class SamHelper {
         }
     }
 
-    private static boolean mdzPartIsNumeric(final String mdzPart) {
+    private static boolean mdzPartIsNumeric(final CharSequence mdzPart) {
         return NUMERIC_REGEX.matcher(mdzPart).matches();
     }
 
     /**
-     * Given a mdz, the results a list of mdz parts that are canonical.
-     * @param mdz
-     * @return
+     * Given a mdz split into parts, return a canonical version of the mdz.
+     * Each part should be one of : [int, one or more digits], [single base mutation], [single multi base insert,
+     * starting with ^ and followed by multiple bases].
+     * @param mdzParts the parts of the mdz to obtain the canonical version of
+     * @return the canonical mdz
+     */
+    public static String canonicalMdz(final List<CharSequence> mdzParts) {
+        if (mdzParts == null) {
+            return null;
+        }
+        final StringBuilder result = new StringBuilder();
+        boolean lastMdzPartWasNumeric = false;
+        for (final CharSequence mdzPart : mdzParts) {
+            final boolean mdzPartIsNumeric = mdzPartIsNumeric(mdzPart);
+            if (mdzPartIsNumeric) {
+                result.append(mdzPart);
+            } else {
+                if (!lastMdzPartWasNumeric) {
+                    result.append("0");
+                }
+                result.append(mdzPart);
+            }
+            lastMdzPartWasNumeric = mdzPartIsNumeric;
+        }
+        if (!lastMdzPartWasNumeric) {
+            result.append("0");
+        }
+        return result.toString();
+    }
+
+    /**
+     * Given a mdz, return a canonical version of the mdz.
+     * @param mdz the mdz to obtain the canonical version of
+     * @return the canonical mdz
      */
     public static String canonicalMdz(final String mdz) {
         if (mdz == null) {
             return mdz;
         }
+        final ArrayList<CharSequence> mdzParts = new ArrayList<CharSequence>();
         final Matcher matcher = MD_REGEX.matcher(mdz);
-        final StringBuilder result = new StringBuilder();
-        boolean lastMdzPartWasNumeric = false;
         while (matcher.find()) {
-            final String mdzPart = matcher.group();
-            final boolean mdzPartIsNumeric = mdzPartIsNumeric(mdzPart);
-            if (mdzPartIsNumeric) {
-                result.append(mdzPart);
-            } else {
-                if (!lastMdzPartWasNumeric) {
-                    result.append("0");
-                }
-                result.append(mdzPart);
-            }
-            lastMdzPartWasNumeric = mdzPartIsNumeric;
+            mdzParts.add(matcher.group());
         }
-        if (!lastMdzPartWasNumeric) {
-            result.append("0");
-        }
-        return result.toString();
-    }
-
-    public static String canonicalCigar(final String mdz) {
-        if (mdz == null) {
-            return mdz;
-        }
-        final Matcher matcher = CIGAR_REGEX.matcher(mdz);
-        final StringBuilder result = new StringBuilder();
-        boolean lastMdzPartWasNumeric = false;
-        while (matcher.find()) {
-            final String mdzPart = matcher.group();
-            final boolean mdzPartIsNumeric = mdzPartIsNumeric(mdzPart);
-            if (mdzPartIsNumeric) {
-                result.append(mdzPart);
-            } else {
-                if (!lastMdzPartWasNumeric) {
-                    result.append("0");
-                }
-                result.append(mdzPart);
-            }
-            lastMdzPartWasNumeric = mdzPartIsNumeric;
-        }
-        if (!lastMdzPartWasNumeric) {
-            result.append("0");
-        }
-        return result.toString();
+        return canonicalMdz(mdzParts);
     }
 }
+

@@ -30,6 +30,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -58,6 +59,7 @@ public class ExportableAlignmentEntryData {
     private ByteList qualities;
     private MutableString cigarString;
     private MutableString mismatchString;
+    private ArrayList<CharSequence> mismatchArray;  // Used to construct mismatchString
     private MutableString invalidMessage;
     private boolean hasQualities;
 
@@ -106,6 +108,7 @@ public class ExportableAlignmentEntryData {
         qualities = new ByteArrayList();
         cigarString = new MutableString();
         mismatchString = new MutableString();
+        mismatchArray = new ArrayList<CharSequence>();
         invalidMessage = new MutableString();
 
         actualReads = new CharArrayList();
@@ -127,6 +130,7 @@ public class ExportableAlignmentEntryData {
         qualities.clear();
         cigarString.setLength(0);
         mismatchString.setLength(0);
+        mismatchArray.clear();
         invalidMessage.setLength(0);
 
         actualReads.clear();
@@ -916,7 +920,7 @@ public class ExportableAlignmentEntryData {
 
             if (curMismatchType != lastMismatchType) {
                 if (lastMismatchType == MismatchType.MATCH && numLastMismatchType > 0) {
-                    mismatchString.append(numLastMismatchType);
+                    mismatchArray.add(new MutableString().append(numLastMismatchType));
                 }
                 if (curCigarType == CigarType.INSERTION) {
                     numLastMismatchType = 0;
@@ -931,22 +935,30 @@ public class ExportableAlignmentEntryData {
                 }
             }
 
-            if (curMismatchType == MismatchType.DELETION && numLastMismatchType == 1) {
-                mismatchString.append("^");
+            if (curMismatchType == MismatchType.DELETION) {
+                final MutableString deletion;
+                if (numLastMismatchType == 1) {
+                    deletion = new MutableString().append('^');
+                    mismatchArray.add(deletion);
+                } else {
+                    deletion = (MutableString) mismatchArray.get(mismatchArray.size() - 1);
+                }
+                deletion.append(refBase);
             }
-            if (curMismatchType == MismatchType.MISMATCH || curMismatchType == MismatchType.DELETION) {
-                mismatchString.append(refBase);
+            if (curMismatchType == MismatchType.MISMATCH) {
+                mismatchArray.add(new MutableString().append(refBase));
             }
         }
         if (numLastCigarType > 0) {
             cigarString.append(numLastCigarType).append(lastCigarType.code);
         }
         if (lastMismatchType == MismatchType.MATCH && numLastMismatchType > 0) {
-            mismatchString.append(numLastMismatchType);
+            mismatchArray.add(new MutableString().append(numLastMismatchType));
         }
         if (endClip > 0) {
             cigarString.append(endClip).append(CigarType.CLIP.code);
         }
+        mismatchString.append(SamHelper.canonicalMdz(mismatchArray));
     }
 
     /**

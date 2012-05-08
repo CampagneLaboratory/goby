@@ -24,7 +24,9 @@ import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMRecord;
+import org.apache.commons.lang.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,30 +35,217 @@ import java.util.List;
  */
 public class SamComparison {
 
-    public boolean mappedQualitiesPreserved;
-    public boolean softClipsPreserved;
-    public boolean checkMate = true;
+    /**
+     * Configuration values.
+     */
+    private boolean mappedQualitiesPreserved;
+    private boolean softClipsPreserved;
+    private boolean checkMate;
+    private boolean canonicalMdzForComparison;
 
-    public int readNum;
-    public SAMRecord expectedSamRecord;
-    public SAMRecord actualSamRecord;
-    public Alignments.AlignmentEntry gobyAlignment;
-    public int comparisonFailureCount;
+    /**
+     * Running totals, etc.
+     */
+    private int readNum;
+    private int comparisonFailureCount;
 
-    private final MutableString comparisonErrorDump = new MutableString();
-    private boolean comparisonFailure;
+    /**
+     * Data to compare.
+     */
+    private SAMRecord expectedSamRecord;
+    private SAMRecord actualSamRecord;
+    private Alignments.AlignmentEntry gobyAlignment;
 
+    /**
+     * State.
+     */
+    private final MutableString comparisonErrorDump;
+    private List<String> comparisonFailures;
+    private boolean initialized;
+
+    /**
+     * Create a SamComparison.
+     */
+    public SamComparison() {
+        comparisonErrorDump = new MutableString();
+        comparisonFailures = new ArrayList<String>();
+        initialized = false;
+        mappedQualitiesPreserved = false;
+        softClipsPreserved = false;
+        checkMate = false;
+        canonicalMdzForComparison = true;
+    }
+
+    /**
+     * Call this one time before at the start of a large number of comparisons (such as before comparing
+     * one entire file with another). Calling the first time is optional as it will be called if a comparison
+     * is done and it has never been called.
+     */
     public void reset() {
         readNum = 0;
         comparisonFailureCount = 0;
     }
 
     /**
-     * Compare expectedSamRecord vs actualSamRecord.
+     * Get if it is assumed that the compact file created from the BAM/SAM
+     * file preserved mapped qualities.
+     * @return if it is assumed ...
+     */
+    public boolean isMappedQualitiesPreserved() {
+        return mappedQualitiesPreserved;
+    }
+
+    /**
+     * Set if it is assumed that the compact file created from the BAM/SAM
+     * file preserved mapped qualities.
+     * @param mappedQualitiesPreserved if it is assumed...
+     */
+    public void setMappedQualitiesPreserved(final boolean mappedQualitiesPreserved) {
+        this.mappedQualitiesPreserved = mappedQualitiesPreserved;
+    }
+
+    /**
+     * Get if it is assumed that the compact file created from the BAM/SAM
+     * file preserved soft clips.
+     * @return if it is assumed ...
+     */
+    public boolean isSoftClipsPreserved() {
+        return softClipsPreserved;
+    }
+
+    /**
+     * Set if it is assumed that the compact file created from the BAM/SAM
+     * file preserved soft clips.
+     * @param softClipsPreserved if it is assumed ...
+     */
+    public void setSoftClipsPreserved(final boolean softClipsPreserved) {
+        this.softClipsPreserved = softClipsPreserved;
+    }
+
+    /**
+     * Get if the details about mate reads will be checked.
+     * If the source SAM/BAM file is a complete file you can set this to true,
+     * if you are using an incomplete source SAM/BAM file, this should be
+     * set to false. Default is false.
+     * @return if mates will be checked
+     */
+    public boolean isCheckMate() {
+        return checkMate;
+    }
+
+    /**
+     * Set if the details about mate reads will be checked.
+     * If the source SAM/BAM file is a complete file you can set this to true,
+     * if you are using an incomplete source SAM/BAM file, this should be
+     * set to false. Default is false.
+     * @return if mates will be checked
+     */
+    public void setCheckMate(final boolean checkMate) {
+        this.checkMate = checkMate;
+    }
+
+    /**
+     * Get if canonical MD:Z comparisons will be made.
+     * When true, the source and destination MD:Z values will be passed through an algorithm
+     * to make them canonical (place 0's in places where 0's should exist but might not).
+     * By default this is enabled.
+     * @return if ...
+     */
+    public boolean isCanonicalMdzForComparison() {
+        return canonicalMdzForComparison;
+    }
+
+    /**
+     * Set if canonical MD:Z comparisons will be made.
+     * When true, the source and destination MD:Z values will be passed through an algorithm
+     * to make them canonical (place 0's in places where 0's should exist but might not).
+     * By default this is enabled.
+     * @param canonicalMdzForComparison if ...
+     */
+    public void setCanonicalMdzForComparison(final boolean canonicalMdzForComparison) {
+        this.canonicalMdzForComparison = canonicalMdzForComparison;
+    }
+
+    /**
+     * Return how many reads have been compared since reset() was last called.
+     * @return how many...
+     */
+    public int getReadNum() {
+        return readNum;
+    }
+
+    /**
+     * Return how many comparison failures have been found since reset() was last called.
+     * @return how many...
+     */
+    public int getComparisonFailureCount() {
+        return comparisonFailureCount;
+    }
+
+    /**
+     * Get the expected sam record. This contains the values we EXPECT TO FIND, ie, the source SAM/BAM file.
+     * @return the expected sam record.
+     */
+    public SAMRecord getExpectedSamRecord() {
+        return expectedSamRecord;
+    }
+
+    /**
+     * Set the expected sam record. This contains the values we EXPECT TO FIND, ie, the source SAM/BAM file.
+     * @param expectedSamRecord the expected sam record.
+     */
+    public void setExpectedSamRecord(final SAMRecord expectedSamRecord) {
+        this.expectedSamRecord = expectedSamRecord;
+    }
+
+    /**
+     * Get the ACTUAL sam record. This contains the values we will compare against the expected, ie, the destination
+     * SAM/BAM file.
+     * @return the actual sam record.
+     */
+    public SAMRecord getActualSamRecord() {
+        return actualSamRecord;
+    }
+
+    /**
+     * Set the ACTUAL sam record. This contains the values we will compare against the expected, ie, the destination
+     * SAM/BAM file.
+     * @param actualSamRecord the actual sam record.
+     */
+    public void setActualSamRecord(final SAMRecord actualSamRecord) {
+        this.actualSamRecord = actualSamRecord;
+    }
+
+    /**
+     * Get the Goby Compact Alignment (optional). This should be the intermediate record that was created
+     * from the expected record and was used to create the actual record. Providing this will generate some additional
+     * output when there are comparison failures.
+     * @return the goby alignment
+     */
+    public Alignments.AlignmentEntry getGobyAlignment() {
+        return gobyAlignment;
+    }
+
+    /**
+     * Set the Goby Compact Alignment (optional). This should be the intermediate record that was created
+     * from the expected record and was used to create the actual record. Providing this will generate some additional
+     * output when there are comparison failures.
+     * @param gobyAlignment the goby alignment
+     */
+    public void setGobyAlignment(final Alignments.AlignmentEntry gobyAlignment) {
+        this.gobyAlignment = gobyAlignment;
+    }
+
+    /**
+     * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
      * @return true if the two records are found to be the same
      */
     public boolean compareSamRecords() {
-        comparisonFailure = false;
+        if (!initialized) {
+            initialized = true;
+            reset();
+        }
+        comparisonFailures.clear();
         compareField("Positions don't match", expectedSamRecord.getAlignmentStart(), actualSamRecord.getAlignmentStart());
         compareField("Ref Index don't match", expectedSamRecord.getReferenceIndex(), actualSamRecord.getReferenceIndex());
         compareField("Flags don't match", expectedSamRecord.getFlags(), actualSamRecord.getFlags());
@@ -75,9 +264,17 @@ public class SamComparison {
         }
         compareField("Positive/negative strand doesn't match", expectedSamRecord.getReadNegativeStrandFlag(), actualSamRecord.getReadNegativeStrandFlag());
         compareField("Cigars don't match", expectedSamRecord.getCigarString(), actualSamRecord.getCigarString());
-        compareField("MD:Z doesn't match",
-                SamHelper.canonicalMdz(expectedSamRecord.getStringAttribute("MD")),
-                SamHelper.canonicalMdz(actualSamRecord.getStringAttribute("MD")));
+
+        final String eMdz;
+        final String aMdz;
+        if (canonicalMdzForComparison) {
+            eMdz = SamHelper.canonicalMdz(expectedSamRecord.getStringAttribute("MD"));
+            aMdz = SamHelper.canonicalMdz(actualSamRecord.getStringAttribute("MD"));
+        } else {
+            eMdz = expectedSamRecord.getStringAttribute("MD");
+            aMdz = actualSamRecord.getStringAttribute("MD");
+        }
+        compareField("MD:Z doesn't match", eMdz, aMdz);
 
         final String eRead;
         final String aRead;
@@ -133,29 +330,36 @@ public class SamComparison {
             }
         }
         readNum++;
-        if (comparisonFailure) {
+        if (!comparisonFailures.isEmpty()) {
+            dumpComparison();
             comparisonFailureCount++;
         }
-        return !comparisonFailure;
+        return comparisonFailures.isEmpty();
     }
 
-    public void dumpComparison(final String error) {
+    /**
+     * Dump the details of expectedSamRecord and actualSamRecord (and gobyAlignment if available). This is
+     * called when there are differences between expected and actual to help debug the conversion process.
+     * The differences are written to stdout.
+     */
+    public void dumpComparison() {
         comparisonErrorDump.setLength(0);
         comparisonErrorDump.append("Read Num         : ").append(readNum).append('\n');
-        comparisonErrorDump.append("     ERROR       : ").append(error).append('\n');
+        comparisonErrorDump.append("     ERROR(s)    : ").append(ArrayUtils.toString(comparisonFailures)).append('\n');
         if (gobyAlignment != null) {
+            comparisonErrorDump.append("     g.index     : ").append(gobyAlignment.getQueryIndex()).append('\n');
             comparisonErrorDump.append("     g.position  : ").append(gobyAlignment.getPosition()).append('\n');
             comparisonErrorDump.append("     g.leftClip  : ").append(gobyAlignment.getSoftClippedBasesLeft()).append('\n');
             comparisonErrorDump.append("     g.rightClip : ").append(gobyAlignment.getSoftClippedBasesRight()).append('\n');
             comparisonErrorDump.append("     g.qAlignLen : ").append(gobyAlignment.getQueryAlignedLength()).append('\n');
             comparisonErrorDump.append("     g.tAlignLen : ").append(gobyAlignment.getTargetAlignedLength()).append('\n');
         }
-        comparisonErrorDump.append("     position (S): ").append(expectedSamRecord.getAlignmentStart()).append('\n');
-        comparisonErrorDump.append("     position (S): ").append(expectedSamRecord.getAlignmentStart()).append('\n');
-        comparisonErrorDump.append("     refName  (S): ").append(expectedSamRecord.getReferenceName()).append('\n');
-        comparisonErrorDump.append("     refName  (D): ").append(actualSamRecord.getReferenceName()).append('\n');
         comparisonErrorDump.append("     readName (S): ").append(expectedSamRecord.getReadName()).append('\n');
         comparisonErrorDump.append("     readName (D): ").append(actualSamRecord.getReadName()).append('\n');
+        comparisonErrorDump.append("     position (S): ").append(expectedSamRecord.getAlignmentStart()).append('\n');
+        comparisonErrorDump.append("     position (D): ").append(actualSamRecord.getAlignmentStart()).append('\n');
+        comparisonErrorDump.append("     refName  (S): ").append(expectedSamRecord.getReferenceName()).append('\n');
+        comparisonErrorDump.append("     refName  (D): ").append(actualSamRecord.getReferenceName()).append('\n');
         comparisonErrorDump.append("     flags    (S): ").append(expectedSamRecord.getFlags()).append('\n');
         comparisonErrorDump.append("     flags    (D): ").append(actualSamRecord.getFlags()).append('\n');
         comparisonErrorDump.append("     mapQual  (S): ").append(expectedSamRecord.getMappingQuality()).append('\n');
@@ -175,25 +379,39 @@ public class SamComparison {
         System.out.println(comparisonErrorDump.toString());
     }
 
-
+    /**
+     * Compare an int field.
+     * @param error the error message if the comparison failes
+     * @param expected the expected value
+     * @param actual the actual value
+     */
     private void compareField(final String error, final int expected, final int actual) {
-        if (!comparisonFailure && expected != actual) {
-            comparisonFailure = true;
-            dumpComparison(error);
+        if (expected != actual) {
+            comparisonFailures.add(error);
         }
     }
 
+    /**
+     * Compare a string field.
+     * @param error the error message if the comparison failes
+     * @param expected the expected value
+     * @param actual the actual value
+     */
     private void compareField(final String error, final String expected, final String actual) {
-        if (!comparisonFailure && !expected.equals(actual)) {
-            comparisonFailure = true;
-            dumpComparison(error);
+        if (!expected.equals(actual)) {
+            comparisonFailures.add(error);
         }
     }
 
+    /**
+     * Compare a boolean field.
+     * @param error the error message if the comparison failes
+     * @param expected the expected value
+     * @param actual the actual value
+     */
     private void compareField(final String error, final boolean expected, final boolean actual) {
-        if (!comparisonFailure && expected != actual) {
-            comparisonFailure = true;
-            dumpComparison(error);
+        if (expected != actual) {
+            comparisonFailures.add(error);
         }
     }
 }

@@ -409,6 +409,32 @@ public class TestSamRecordParser {
         assertArrayEquals(byteArray(36), last.getToQuality().toByteArray());
     }
 
+    /**
+     * Find the local celegans random genome from an array of options.
+     * @return the local celegans random genome.
+     */
+    private String findCelegansGenome() {
+        final String[] dirs = {
+                "/tmp/celegans",
+                "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/cElegans",
+                "/home/ccontrol/goby-data/celegans" };
+        for (final String dir : dirs) {
+            final String testRootFilename = dir + "/" + "random-access-genome";
+            final String testFilename = testRootFilename + ".names";
+            System.out.println("Looking for :" + testFilename);
+            final File testFile = new File(testFilename);
+            if (testFile.exists()) {
+                return testRootFilename;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Find the local 1000g random genome from an array of options.
+     * @return the local celegans random genome.
+     */
     private String findThousandGenome() {
         final String[] dirs = {
                 "/tmp/1000g",
@@ -426,7 +452,11 @@ public class TestSamRecordParser {
         return null;
     }
 
-    // Test that DOES fail, for local testing, not for server testing
+    /**
+     * Test that DOES fail, for local testing, not for server testing.
+     * The 1M doesn't exist on the testing server.
+     * @throws IOException error
+     */
     // @Test
     public void testRoundTripFail() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
@@ -436,10 +466,14 @@ public class TestSamRecordParser {
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
-        rtc.stopAtOneFailure = false;
         testRoundTripAny(rtc);
     }
 
+    /**
+     * Test round trip of tricky-spliced-18.sam that input and output
+     * sam compare.
+     * @throws IOException error
+     */
     @Test
     public void testRoundTripTrickySpliced18() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
@@ -454,6 +488,10 @@ public class TestSamRecordParser {
         testRoundTripAny(rtc);
     }
 
+    /**
+     * The first 500 alignments of HZ. Round trip test.
+     * @throws IOException error
+     */
     @Test
     public void testRoundTripHZFirst500() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
@@ -468,7 +506,10 @@ public class TestSamRecordParser {
         testRoundTripAny(rtc);
     }
 
-    // This large dataset is not currently on the server
+    /**
+     * The first 1M alignments of UAN. This large dataset does not exist on the testing server.
+     * @throws IOException error
+     */
     // @Test
     public void testRoundTrip1M() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
@@ -476,13 +517,30 @@ public class TestSamRecordParser {
         rtc.sourceBamFilename = "test-data/splicedsamhelper/1M.bam";
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
-        testRoundTripAny(rtc);
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-        rtc.keepSoftClips = false;
+        rtc.canonicalMdzForComparison = false;
         testRoundTripAny(rtc);
     }
 
+    /**
+     * The whole of HENGLIT. This large dataset does not exist on the testing server.
+     * @throws IOException error
+     */
+    // @Test
+    public void testRoundTripHenglit() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findCelegansGenome();
+        rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
+        rtc.destGobyBasename = "/tmp/HENGLIT-to-goby";
+        rtc.destBamFilename = "/tmp/HENGLIT-from-goby.bam";
+        // rtc.convertBamToGoby = false;
+        // rtc.convertGobyToBam = false;
+        rtc.canonicalMdzForComparison = false;
+        testRoundTripAny(rtc);
+    }
+
+    /**
+     * Configuration for round trip comparison.
+     */
     class RoundTripConfig {
         String inputGenomeFilename;
         String sourceBamFilename;
@@ -492,7 +550,8 @@ public class TestSamRecordParser {
         boolean convertGobyToBam = true;
         boolean keepQualityScores = true;
         boolean keepSoftClips = true;
-        boolean stopAtOneFailure = true;
+        boolean stopAtOneFailure = false;
+        boolean canonicalMdzForComparison = true;
     }
 
     public void testRoundTripAny(final RoundTripConfig rtc) throws IOException {
@@ -557,21 +616,22 @@ public class TestSamRecordParser {
         progress.displayFreeMemory = true;
         final SamComparison samComparison = new SamComparison();
         progress.start();
-        samComparison.mappedQualitiesPreserved = rtc.keepQualityScores;
-        samComparison.softClipsPreserved = rtc.keepSoftClips;
-        samComparison.checkMate = false;
+        samComparison.setMappedQualitiesPreserved(rtc.keepQualityScores);
+        samComparison.setSoftClipsPreserved(rtc.keepSoftClips);
+        samComparison.setCheckMate(false);
+        samComparison.setCanonicalMdzForComparison(rtc.canonicalMdzForComparison);
         samComparison.reset();
         while (sourceIterator.hasNext()) {
-            samComparison.expectedSamRecord = sourceIterator.next();
-            if (samComparison.expectedSamRecord.getReadUnmappedFlag()) {
+            samComparison.setExpectedSamRecord(sourceIterator.next());
+            if (samComparison.getExpectedSamRecord().getReadUnmappedFlag()) {
                 // We don't store unmapped reads, so skip this source record
                 continue;
             }
             assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
-            samComparison.actualSamRecord = destIterator.next();
+            samComparison.setActualSamRecord(destIterator.next());
             if (gobyReader != null) {
                 assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
-                samComparison.gobyAlignment = gobyReader.next();
+                samComparison.setGobyAlignment(gobyReader.next());
             }
             if (rtc.stopAtOneFailure) {
                 assertTrue("sam comparison failed", samComparison.compareSamRecords());
@@ -581,8 +641,8 @@ public class TestSamRecordParser {
             progress.lightUpdate();
         }
         progress.stop();
-        if (!rtc.stopAtOneFailure && samComparison.comparisonFailureCount > 0) {
-            fail("Number of comparison failures: " + samComparison.comparisonFailureCount);
+        if (!rtc.stopAtOneFailure && samComparison.getComparisonFailureCount() > 0) {
+            fail("Number of comparison failures: " + samComparison.getComparisonFailureCount());
         }
     }
 
