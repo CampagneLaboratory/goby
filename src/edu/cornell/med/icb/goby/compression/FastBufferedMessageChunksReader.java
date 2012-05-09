@@ -124,6 +124,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                     if (size >= 0 && size <= input.available()) {     */
 
                         in = new DataInputStream(input);
+                    // -4 in line below when comments are removed
                         final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
                         input.position(seekPosition);
                         break;
