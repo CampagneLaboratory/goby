@@ -20,7 +20,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
+import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -73,11 +76,11 @@ public class Sort1Mode extends AbstractGobyMode {
 
 
     public void setInput(final String input) {
-        this.basename = AlignmentReaderImpl.getBasename(input);
+        basename = AlignmentReaderImpl.getBasename(input);
     }
 
     public void setOutput(final String output) {
-        this.outputFilename = output;
+        outputFilename = output;
     }
 
     public void setStartPosition(final long startPosition) {

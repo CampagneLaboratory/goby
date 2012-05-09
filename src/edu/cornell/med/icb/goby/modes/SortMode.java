@@ -20,7 +20,14 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
 import edu.cornell.med.icb.util.ICBStringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -28,8 +35,16 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -564,6 +579,8 @@ public class SortMode extends AbstractGobyMode {
             public void run() {
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
                 final List<String> mergeFromBasenames = new LinkedList<String>();
+                ConcatSortedAlignmentReader concatReader = null;
+                AlignmentWriter writer = null;
                 try {
                     System.gc();
                     // Prepare to merge
@@ -586,7 +603,7 @@ public class SortMode extends AbstractGobyMode {
                     }
                     // note that we don't adjust query indices because they are already not overlaping (all come from the
                     // same input file)
-                    final ConcatSortedAlignmentReader concatReader = new ConcatSortedAlignmentReader(
+                    concatReader = new ConcatSortedAlignmentReader(
                             false, mergeFromBasenames.toArray(new String[mergeFromBasenames.size()]));
                     concatReader.readHeader();
                     // We've used merged's tag as input. Let's get a new tag for it's output
@@ -599,7 +616,7 @@ public class SortMode extends AbstractGobyMode {
                         final String subBasename = "sorted-" + merged.tag;
                         subOutputFilename = tempDir + "/" + subBasename;
                     }
-                    final AlignmentWriter writer = new AlignmentWriterImpl(subOutputFilename);
+                    writer = new AlignmentWriterImpl(subOutputFilename);
 
                     if (concatReader.getTargetLength() != null) {
                         writer.setTargetLengths(concatReader.getTargetLength());
@@ -609,7 +626,6 @@ public class SortMode extends AbstractGobyMode {
                     for (final Alignments.AlignmentEntry entry : concatReader) {
                         writer.appendEntry(entry);
                     }
-                    writer.close();
 
                     // Sort/merge finished
                     numMergesExecuted.incrementAndGet();
@@ -621,6 +637,23 @@ public class SortMode extends AbstractGobyMode {
                     LOG.error(String.format("[%s] Throwable sorting!! message=%s", threadId, t.getMessage()));
                     exceptions.add(t);
                 } finally {
+                    try {
+                        if (concatReader != null) {
+                            concatReader.close();
+                        }
+                    } catch (IOException e) {
+                        // Close quietly.
+                        LOG.info("Exception closing concatReader", e);
+                    }
+                    try {
+                        if (writer != null) {
+                            writer.close();
+                        }
+                    } catch (IOException e) {
+                        // Close quietly.
+                        LOG.info("Exception closing writer", e);
+                    }
+
                     // Delete the merged FROM files
                     for (final String mergeFromBasename : mergeFromBasenames) {
                         deleteFile(new File(mergeFromBasename + ".entries"), true);
