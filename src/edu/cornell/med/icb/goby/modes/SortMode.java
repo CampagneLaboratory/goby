@@ -514,15 +514,15 @@ public class SortMode extends AbstractGobyMode {
                 // SORT
                 // Simulate sort time
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
+                AlignmentWriterImpl writer = null;
                 try {
                     System.gc();
                     LOG.debug(String.format("[%s] Sorting %s", threadId, toSort.toString()));
 
                     final SortIterateAlignments alignmentIterator = new SortIterateAlignments();
-
                     final String subBasename = "sorted-" + toSort.tag;
                     final String subOutputFilename = tempDir + "/" + subBasename;
-                    final AlignmentWriterImpl writer = new AlignmentWriterImpl(subOutputFilename);
+                    writer = new AlignmentWriterImpl(subOutputFilename);
                     alignmentIterator.setOutputFilename(subOutputFilename);
                     alignmentIterator.setBasename(subBasename);
 
@@ -535,18 +535,19 @@ public class SortMode extends AbstractGobyMode {
                     LOG.debug(String.format("[%s] Writing sorted alignment...", threadId));
                     alignmentIterator.write(writer);
 
+                    AlignmentReader alignmentReader = null;
                     try {
                         if (firstSort) {
-
                             LOG.debug(String.format("[%s] Writing TMH", threadId));
-                            final AlignmentReader alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
+                            alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
                             alignmentReader.readHeader();
                             Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
                         }
                     } finally {
-
-
                         // Sort finished
+                        if (alignmentReader != null) {
+                            alignmentReader.close();
+                        }
                         sortedSplits.add(toSort);
                     }
 
@@ -556,6 +557,15 @@ public class SortMode extends AbstractGobyMode {
                 } catch (Throwable t) {
                     LOG.error(String.format("[%s] Throwable sorting!! message=%s", threadId, t.getMessage()));
                     exceptions.add(t);
+                } finally {
+                    try {
+                        if (writer != null) {
+                            writer.close();
+                        }
+                    } catch (IOException e) {
+                        // Close quietly.
+                        LOG.info("Exception closing writer", e);
+                    }
                 }
             }
         };
