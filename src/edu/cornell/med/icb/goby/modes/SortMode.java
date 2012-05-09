@@ -557,15 +557,6 @@ public class SortMode extends AbstractGobyMode {
                 } catch (Throwable t) {
                     LOG.error(String.format("[%s] Throwable sorting!! message=%s", threadId, t.getMessage()));
                     exceptions.add(t);
-                } finally {
-                    try {
-                        if (writer != null) {
-                            writer.close();
-                        }
-                    } catch (IOException e) {
-                        // Close quietly.
-                        LOG.info("Exception closing writer", e);
-                    }
                 }
             }
         };
