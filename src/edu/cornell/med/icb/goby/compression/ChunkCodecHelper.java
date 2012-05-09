@@ -74,4 +74,23 @@ public class ChunkCodecHelper {
         throw new InternalError("Codec registration code not recognized: " + registrationCode);
 
     }
+
+    /**
+     * This method returns a codec associates with the registration code, or null when none is found. It does not raise an
+     * error when the code does not match a known codec.
+     * @param registrationCode
+     * @return
+     */
+    public static synchronized ChunkCodec withRegistrationCodeSilent(final byte registrationCode) {
+
+        codecLoader.reload();
+        for (final ChunkCodec chunkCodec : codecLoader) {
+            if (chunkCodec.registrationCode() == registrationCode) {
+                return chunkCodec;
+
+            }
+        }
+        return null;
+
+    }
 }

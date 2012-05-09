@@ -88,7 +88,7 @@ public class MessageChunksReader implements Closeable {
                 }
                 // read the codec registration id:
                 final byte codecRegistrationCode = in.readByte();
-                // confirm the delimiter before trying to install a chunk codec. If the delimited is absent, we may be done already.
+                // confirm the delimiter before trying to install a chunk codec. If the delimiter is absent, we may be done already.
                 if (!confirmDelimiter(in)) {
                     compressedBytes = null;
                     return false;
@@ -110,7 +110,7 @@ public class MessageChunksReader implements Closeable {
                 int totalRead = 0;
                 int offset = 0;
                 while (totalRead < numBytes) {
-                    final int numRead = in.read(bytes, offset, numBytes-totalRead);
+                    final int numRead = in.read(bytes, offset, numBytes - totalRead);
                     if (numRead == -1) {
                         break;
                     }
@@ -152,10 +152,11 @@ public class MessageChunksReader implements Closeable {
         return true;
     }
 
-    private void installCodec(final byte registrationCode) {
-        chunkCodec = ChunkCodecHelper.withRegistrationCode(registrationCode);
-        chunkCodec.setHandler(handler);
-
+    private boolean installCodec(final byte registrationCode) {
+        chunkCodec = ChunkCodecHelper.withRegistrationCodeSilent(registrationCode);
+        if (chunkCodec != null) {
+            chunkCodec.setHandler(handler);   return true;
+        }                                                 return false;
     }
 
 

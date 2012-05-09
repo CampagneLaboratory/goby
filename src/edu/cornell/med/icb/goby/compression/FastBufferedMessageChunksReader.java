@@ -21,8 +21,6 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
-import edu.cornell.med.icb.goby.compression.MessageChunksReader;
-import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
@@ -97,6 +95,9 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         int contiguousDelimiterBytes = 0;
         long skipped = 0;
         long position = 0;
+        //TODO make sure we can recover if a spurious delimiter is encountered that is either
+        // 1. not followed by a valid codec
+        // 2. followed by a negative size.
 
         // search though the input stream until a delimiter chunk or end of stream is reached
         while ((b = input.read()) != -1) {
@@ -124,7 +125,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             position = start + skipped;
         }
     }
-
+    // TODO probably should check for valid codec here, rather than for the GZIP codec (0xFF):
     private boolean hasFF(FastBufferedInputStream input) throws IOException {
         if (input.available() >= 1) {
             int b = input.read();
