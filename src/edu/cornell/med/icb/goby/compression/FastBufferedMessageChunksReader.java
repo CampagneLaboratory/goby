@@ -115,28 +115,35 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH) {
                 if (hasValidCodecCode(input)) {
                     skipped++;
+                    contiguousDelimiterBytes++;
+                } else {
+                    contiguousDelimiterBytes = 0;
                 }
-                if (skipped == MessageChunksWriter.DELIMITER_LENGTH + 1) {
+
+                if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH + 1) {
                     // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
                     // a delimiter was found, start reading data from here
-     /*               final int size = readSize(input);
-                    skipped+=4;
-                    if (size >= 0 && size <= input.available()) {     */
+                    /*               final int size = readSize(input);
+       skipped+=4;
+       if (size >= 0 && size <= input.available()) {     */
 
-                        in = new DataInputStream(input);
+                    in = new DataInputStream(input);
                     // -4 in line below when comments are removed
-                        final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
-                        input.position(seekPosition);
-                        break;
-                  /*  }  else {
-                        System.out.printf("Found spurious boundary at %d %n", input.position());
-                        // we did not find a valid chunk, this was just a spurious boundary.
-                        // Try again further down the stream
-                        skipped+=1;
-                        contiguousDelimiterBytes=0;
-                        // read some to advance:
-                        input.read();
-                    } */
+                    final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
+                    input.position(seekPosition);
+                    break;
+                    /*  }  else {
+                       System.out.printf("Found spurious boundary at %d %n", input.position());
+                       // we did not find a valid chunk, this was just a spurious boundary.
+                       // Try again further down the stream
+                       skipped+=1;
+                       contiguousDelimiterBytes=0;
+                       // read some to advance:
+                       input.read();
+                   } */
+                }
+                if (skipped > MessageChunksWriter.DELIMITER_LENGTH + 1) {
+                   contiguousDelimiterBytes = 0;
                 }
             }
         }
