@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.compression;
 
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
+import it.unimi.dsi.fastutil.bytes.ByteSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -78,6 +80,7 @@ public class ChunkCodecHelper {
     /**
      * This method returns a codec associates with the registration code, or null when none is found. It does not raise an
      * error when the code does not match a known codec.
+     *
      * @param registrationCode
      * @return
      */
@@ -92,5 +95,18 @@ public class ChunkCodecHelper {
         }
         return null;
 
+    }
+
+    /**
+     * Return the set of registration codes supported by this implementation.
+     * @return the set of registration codes supported by this implementation.
+     */
+    public static synchronized ByteSet registrationCodes() {
+        final ByteSet result=new ByteArraySet();
+        codecLoader.reload();
+        for (final ChunkCodec chunkCodec : codecLoader) {
+            result.add(chunkCodec.registrationCode());
+        }
+        return result;
     }
 }

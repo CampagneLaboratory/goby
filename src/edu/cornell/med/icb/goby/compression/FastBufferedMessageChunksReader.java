@@ -22,6 +22,7 @@ package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import it.unimi.dsi.fastutil.bytes.ByteSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -49,6 +50,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
      * End offset of the slice in the file, in bytes.
      */
     private long endOffset;
+    private ByteSet supportedCodecRegistrationCodes;
 
     /**
      * Support for splitting the entries on the file system.
@@ -84,6 +86,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         }
         this.end = end;
         this.input = input;
+        supportedCodecRegistrationCodes = ChunkCodecHelper.registrationCodes();
         reposition(start, end);
     }
 
@@ -110,21 +113,61 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             ++skipped;
             if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH) {
-                if (hasFF(input)) {
+                if (hasValidCodecCode(input)) {
                     skipped++;
                 }
-                if (skipped >= MessageChunksWriter.DELIMITER_LENGTH + 1) {
+                if (skipped == MessageChunksWriter.DELIMITER_LENGTH + 1) {
                     // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
                     // a delimiter was found, start reading data from here
-                    in = new DataInputStream(input);
-                    final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
-                    input.position(seekPosition);
-                    break;
+     /*               final int size = readSize(input);
+                    skipped+=4;
+                    if (size >= 0 && size <= input.available()) {     */
+
+                        in = new DataInputStream(input);
+                        final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
+                        input.position(seekPosition);
+                        break;
+                  /*  }  else {
+                        System.out.printf("Found spurious boundary at %d %n", input.position());
+                        // we did not find a valid chunk, this was just a spurious boundary.
+                        // Try again further down the stream
+                        skipped+=1;
+                        contiguousDelimiterBytes=0;
+                        // read some to advance:
+                        input.read();
+                    } */
                 }
             }
-            position = start + skipped;
         }
+        position = start + skipped;
     }
+
+
+    private int readSize(FastBufferedInputStream input) throws IOException {
+        byte[] bytes = new byte[4];
+        if (input.read(bytes, 0, 4) == 4) {
+            final int value = (((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) |
+                    ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
+            System.out.printf("Returning size=%d input.position=%d %n", value, input.position());
+            return value;
+        } else {
+            return -1;
+        }
+
+    }
+
+    private boolean hasValidCodecCode(FastBufferedInputStream input) throws IOException {
+        if (input.available() >= 1) {
+            int b = input.read();
+            byte code = (byte) b;
+            if (supportedCodecRegistrationCodes.contains(code)) {
+                return true;
+            } else return false;
+        }
+        return false;
+
+    }
+
     // TODO probably should check for valid codec here, rather than for the GZIP codec (0xFF):
     private boolean hasFF(FastBufferedInputStream input) throws IOException {
         if (input.available() >= 1) {
