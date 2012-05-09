@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -133,6 +134,12 @@ public class HybridChunkCodec1 implements ChunkCodec {
     public void setHandler(final ProtobuffCollectionHandler handler) {
         this.handler = handler;
         gzipCodec.setHandler(handler);
+    }
+
+    @Override
+    public boolean validate(FastBufferedInputStream input) {
+        // TODO use CRC to validate
+        return true;
     }
 
 

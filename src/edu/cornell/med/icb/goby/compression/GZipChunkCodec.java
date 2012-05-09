@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,18 +29,35 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- *  The original Goby Gzip Chunk codec. Simply GZips the protocol buffer collection.
- *  @author Fabien Campagne
+ * The original Goby Gzip Chunk codec. Simply GZips the protocol buffer collection.
+ *
+ * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 10:30 AM
  */
-public class    GZipChunkCodec implements ChunkCodec {
+public class GZipChunkCodec implements ChunkCodec {
 
     private ProtobuffCollectionHandler parser;
 
     @Override
     public void setHandler(final ProtobuffCollectionHandler parser) {
         this.parser = parser;
+    }
+
+   private final byte[] bytes=new byte[7];
+
+    @Override
+    public boolean validate(FastBufferedInputStream input) {
+        try {
+            final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
+            if (input.read(bytes, 0, length) != length) {
+                return false;
+            } else {
+                return bytes[4] == (byte)0x1F && bytes[5] == (byte)0x8B  && bytes[6] == (byte)0x8;
+            }
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     @Override
@@ -49,7 +67,7 @@ public class    GZipChunkCodec implements ChunkCodec {
 
     @Override
     public byte registrationCode() {
-        return  REGISTRATION_CODE;
+        return REGISTRATION_CODE;
     }
 
     public static final byte REGISTRATION_CODE = (byte) 0xFF;

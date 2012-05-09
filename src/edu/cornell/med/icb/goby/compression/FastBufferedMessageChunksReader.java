@@ -22,6 +22,7 @@ package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import edu.cornell.med.icb.goby.util.CodecHelper;
 import it.unimi.dsi.fastutil.bytes.ByteSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
@@ -124,9 +125,13 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                     // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
                     // a delimiter was found, start reading data from here
                     /*               final int size = readSize(input);
+
        skipped+=4;
        if (size >= 0 && size <= input.available()) {     */
-
+                    if (!chunkCodec.validate(input)) {
+                        contiguousDelimiterBytes = 0;
+                        continue;
+                    }
                     in = new DataInputStream(input);
                     // -4 in line below when comments are removed
                     final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
@@ -169,6 +174,9 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             int b = input.read();
             byte code = (byte) b;
             if (supportedCodecRegistrationCodes.contains(code)) {
+                if (chunkCodec==null) {
+                    chunkCodec= ChunkCodecHelper.withRegistrationCode(code);
+                }
                 return true;
             } else return false;
         }

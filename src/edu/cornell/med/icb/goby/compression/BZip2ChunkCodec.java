@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.tools.bzip2.CBZip2InputStream;
 import org.apache.tools.bzip2.CBZip2OutputStream;
 
@@ -28,8 +29,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- *  A BZIP2 Chunk coder. Simply bzip2 the protocol buffer collection.
- *  @author Fabien Campagne
+ * A BZIP2 Chunk coder. Simply bzip2 the protocol buffer collection.
+ *
+ * @author Fabien Campagne
  *         Date: 3/8/12
  *         Time: 8:31 AM
  */
@@ -42,6 +44,23 @@ public class BZip2ChunkCodec implements ChunkCodec {
         this.parser = parser;
     }
 
+    private final byte[] bytes=new byte[7];
+
+    @Override
+    public boolean validate(FastBufferedInputStream input) {
+        try {
+            final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
+
+            if (input.read(bytes, 0, length) != length) {
+                return false;
+            } else {
+                return bytes[4] == (byte)0x42 && bytes[5] == (byte)0x5A && bytes[6] == (byte)0x68;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     @Override
     public String name() {
         return "bzip2";
@@ -49,7 +68,7 @@ public class BZip2ChunkCodec implements ChunkCodec {
 
     @Override
     public byte registrationCode() {
-        return  REGISTRATION_CODE;
+        return REGISTRATION_CODE;
     }
 
     public static final byte REGISTRATION_CODE = -3;
