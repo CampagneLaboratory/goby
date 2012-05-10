@@ -45,8 +45,6 @@ public class GZipChunkCodec implements ChunkCodec {
     @Override
     public boolean validate(DataInputStream input) {
         try {
-            // skip 7 delimiters:
-         //   input.skip(MessageChunksWriter.DELIMITER_LENGTH);
             final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
             if (input.read(bytes, 0, length) != length) {
                 return false;

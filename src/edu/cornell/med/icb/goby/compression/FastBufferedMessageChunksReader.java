@@ -130,6 +130,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             } else {
                 if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH + 1) {
                     chunkCodec = ChunkCodecHelper.withRegistrationCode(lastCodecCodeSeen);
+                    // position exactly after the 7th 0xFF byte:
                     input.position(start + skipped);
                     if (!chunkCodec.validate(dis)) {
                         contiguousDelimiterBytes = 0;
