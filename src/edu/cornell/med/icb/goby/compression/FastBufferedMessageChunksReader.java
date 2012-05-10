@@ -22,7 +22,6 @@ package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
-import edu.cornell.med.icb.goby.util.CodecHelper;
 import it.unimi.dsi.fastutil.bytes.ByteSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
@@ -130,6 +129,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
        if (size >= 0 && size <= input.available()) {     */
                     if (!chunkCodec.validate(input)) {
                         contiguousDelimiterBytes = 0;
+                        chunkCodec=null;
                         continue;
                     }
                     in = new DataInputStream(input);
