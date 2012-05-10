@@ -53,13 +53,13 @@
             <help>When this switch is provided, the destination Goby Compact Alignment was created
                   with --preserve-all-mapped-qualities so all quality scores will be verified. By
                   default, only the bases that have sequence variations will be verified.
+            </help>
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
             <defaults>
                 <string>false</string>
             </defaults>
-            </help>
         </flaggedOption>
         <flaggedOption>
             <id>check-mate</id>
