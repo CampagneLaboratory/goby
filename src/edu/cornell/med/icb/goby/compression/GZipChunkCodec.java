@@ -19,12 +19,8 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -47,8 +43,10 @@ public class GZipChunkCodec implements ChunkCodec {
    private final byte[] bytes=new byte[7];
 
     @Override
-    public boolean validate(FastBufferedInputStream input) {
+    public boolean validate(DataInputStream input) {
         try {
+            // skip 7 delimiters:
+         //   input.skip(MessageChunksWriter.DELIMITER_LENGTH);
             final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
             if (input.read(bytes, 0, length) != length) {
                 return false;

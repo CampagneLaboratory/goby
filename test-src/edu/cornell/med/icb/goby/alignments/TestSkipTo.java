@@ -26,10 +26,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import static org.junit.Assert.*;
 
@@ -46,6 +43,7 @@ public class TestSkipTo {
     private static final String BASE_TEST_DIR = "test-results/alignments-skip-to";
     private int numEntriesPerChunk = 2;
     private int constantQueryLength = 40;
+
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -362,16 +360,18 @@ public class TestSkipTo {
 
         // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
         //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
-        AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain-reindexed.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/EJOYQAZ-small-hybrid.entries");
         reader.readHeader();
-        reader.reposition(10, 100000000);
-        Alignments.AlignmentEntry entry = reader.skipTo(10, 100000000);
+        reader.reposition(0, 1256375);
+        Alignments.AlignmentEntry entry = reader.skipTo(0, 1256375);
         assertNotNull(entry);
-        assertEquals(10, entry.getTargetIndex());
-        assertTrue(100000000 <= entry.getPosition());
+        assertEquals(0, entry.getTargetIndex());
+        assertEquals(16676, entry.getQueryIndex());
+        assertTrue(1256375 <= entry.getPosition());
 
     }
-   @Test
+
+    @Test
     public void testSkipToHybrid() throws IOException {
 
         // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
@@ -385,20 +385,68 @@ public class TestSkipTo {
         assertTrue(1014810 <= entry.getPosition());
 
     }
+
+    @Test
+    public void testDataInputOutput() throws IOException {
+        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bytes);
+
+        dos.writeByte(0xFE);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.close();
+        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+
+        assertEquals((byte) 0xFE, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+
+        DataOutputStream dosFile = new DataOutputStream(new FileOutputStream("test-results/alignments-skip-to/bytes.data"));
+        DataInputStream disFile = new DataInputStream(new FileInputStream("test-results/alignments-skip-to/bytes.data"));
+
+
+        roundTripByteOrder(dosFile, disFile);
+
+
+    }
+
+    private void roundTripByteOrder(DataOutputStream dos, DataInputStream dis) throws IOException {
+        dos.writeByte(0xFE);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.writeByte(0xFF);
+        dos.close();
+        assertEquals((byte) 0xFE, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+        assertEquals((byte) 0xFF, dis.readByte());
+    }
+
     @Test
     public void testHybridWindow() throws IOException {
 
-        AlignmentReader reader = new AlignmentReaderImpl("test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries");
+        AlignmentReader reader = new AlignmentReaderImpl(0x304,0x1999,"test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries");
         reader.readHeader();
 
         Alignments.AlignmentEntry entry = reader.next();
         assertNotNull(entry);
         System.out.println(entry.getQueryIndex());
         System.out.flush();
-        assertEquals(12809, entry.getQueryIndex());
+        assertEquals(39, entry.getQueryIndex());
 
 
     }
+
     @Test
     public void testUrlRange() throws IOException {
 

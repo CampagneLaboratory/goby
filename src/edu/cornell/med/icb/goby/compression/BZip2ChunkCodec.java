@@ -19,14 +19,10 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.tools.bzip2.CBZip2InputStream;
 import org.apache.tools.bzip2.CBZip2OutputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * A BZIP2 Chunk coder. Simply bzip2 the protocol buffer collection.
@@ -47,7 +43,7 @@ public class BZip2ChunkCodec implements ChunkCodec {
     private final byte[] bytes=new byte[7];
 
     @Override
-    public boolean validate(FastBufferedInputStream input) {
+    public boolean validate(DataInputStream input) {
         try {
             final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
 

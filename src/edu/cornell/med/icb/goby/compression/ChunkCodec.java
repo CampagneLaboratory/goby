@@ -22,6 +22,7 @@ import com.google.protobuf.Message;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
@@ -67,8 +68,9 @@ public interface ChunkCodec {
     /**
      * Validate that the input stream is at the start of a chunk encoded with this codec.
      *
+     *
      * @param input input stream positioned at the start of the chunk.
      * @return True if the chunk is valid, false otherwise.
      */
-    boolean validate(FastBufferedInputStream input);
+    boolean validate(DataInputStream input);
 }

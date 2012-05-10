@@ -19,9 +19,9 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
@@ -41,7 +41,7 @@ public class NullChunkCodec implements ChunkCodec {
     }
 
     @Override
-    public boolean validate(FastBufferedInputStream input) {
+    public boolean validate(DataInputStream input) {
         // the null codec is always valid.
         return true;
     }

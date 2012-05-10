@@ -155,8 +155,10 @@ public class MessageChunksReader implements Closeable {
     private boolean installCodec(final byte registrationCode) {
         chunkCodec = ChunkCodecHelper.withRegistrationCodeSilent(registrationCode);
         if (chunkCodec != null) {
-            chunkCodec.setHandler(handler);   return true;
-        }                                                 return false;
+            chunkCodec.setHandler(handler);
+            return true;
+        }
+        return false;
     }
 
 

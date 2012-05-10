@@ -42,6 +42,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private static final Log LOG = LogFactory.getLog(FastBufferedMessageChunksReader.class);
     private final long end;
     private final FastBufferedInputStream input;
+    private final DataInputStream dis;
     /**
      * Start offset of the slice in the file, in bytes.
      */
@@ -86,9 +87,12 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         }
         this.end = end;
         this.input = input;
+        this.dis = new DataInputStream(input);
         supportedCodecRegistrationCodes = ChunkCodecHelper.registrationCodes();
         reposition(start, end);
     }
+
+    byte lastCodecCodeSeen = 0;
 
     private void reposition(final long start, final long end) throws IOException {
         assert end >= start : "end must be larger than start ";
@@ -98,59 +102,59 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         int contiguousDelimiterBytes = 0;
         long skipped = 0;
         long position = 0;
+
+        /*   while (dis.available() > 0) {
+           final byte c = dis.readByte();
+           System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes++);
+           if (contiguousDelimiterBytes > 20) break;
+       } */
         //TODO make sure we can recover if a spurious delimiter is encountered that is either
         // 1. not followed by a valid codec
         // 2. followed by a negative size.
-
+        boolean codecSeen = false;
         // search though the input stream until a delimiter chunk or end of stream is reached
-        while ((b = input.read()) != -1) {
-            final byte c = (byte) b;
+        while (dis.available() > 0) {
 
-            if (c == MessageChunksWriter.DELIMITER_CONTENT) {
+            final byte c = dis.readByte();
+            //     System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes);
+            //    System.out.flush();
+            if (!codecSeen && hasValidCodecCode(c)) {
+                skipped++;
                 contiguousDelimiterBytes++;
-            } else {
-                contiguousDelimiterBytes = 0;
+                codecSeen = true;
+                continue;
             }
-            ++skipped;
-            if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH) {
-                if (hasValidCodecCode(input)) {
-                    skipped++;
-                    contiguousDelimiterBytes++;
-                } else {
-                    contiguousDelimiterBytes = 0;
-                }
+            if (codecSeen && c == MessageChunksWriter.DELIMITER_CONTENT) {
+                contiguousDelimiterBytes++;
 
+            } else {
                 if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH + 1) {
-                    // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
-                    // a delimiter was found, start reading data from here
-                    /*               final int size = readSize(input);
-
-       skipped+=4;
-       if (size >= 0 && size <= input.available()) {     */
-                    if (!chunkCodec.validate(input)) {
+                    chunkCodec = ChunkCodecHelper.withRegistrationCode(lastCodecCodeSeen);
+                    input.position(start + skipped);
+                    if (!chunkCodec.validate(dis)) {
                         contiguousDelimiterBytes = 0;
-                        chunkCodec=null;
+                        chunkCodec = null;
+                        lastCodecCodeSeen = 0;
+                        codecSeen = true;
                         continue;
                     }
-                    in = new DataInputStream(input);
-                    // -4 in line below when comments are removed
+                    in = dis;
                     final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
                     input.position(seekPosition);
+
                     break;
-                    /*  }  else {
-                       System.out.printf("Found spurious boundary at %d %n", input.position());
-                       // we did not find a valid chunk, this was just a spurious boundary.
-                       // Try again further down the stream
-                       skipped+=1;
-                       contiguousDelimiterBytes=0;
-                       // read some to advance:
-                       input.read();
-                   } */
+
                 }
                 if (skipped > MessageChunksWriter.DELIMITER_LENGTH + 1) {
-                   contiguousDelimiterBytes = 0;
+                    contiguousDelimiterBytes = 0;
+                    codecSeen = false;
                 }
+
+
             }
+            ++skipped;
+
+
         }
         position = start + skipped;
     }
@@ -169,18 +173,13 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
     }
 
-    private boolean hasValidCodecCode(FastBufferedInputStream input) throws IOException {
-        if (input.available() >= 1) {
-            int b = input.read();
-            byte code = (byte) b;
-            if (supportedCodecRegistrationCodes.contains(code)) {
-                if (chunkCodec==null) {
-                    chunkCodec= ChunkCodecHelper.withRegistrationCode(code);
-                }
-                return true;
-            } else return false;
-        }
-        return false;
+    private boolean hasValidCodecCode(byte registrationCode) throws IOException {
+
+        if (supportedCodecRegistrationCodes.contains(registrationCode)) {
+            lastCodecCodeSeen = registrationCode;
+            return true;
+        } else return false;
+
 
     }
 

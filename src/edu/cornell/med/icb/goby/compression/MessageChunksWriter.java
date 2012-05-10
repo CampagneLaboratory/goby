@@ -74,7 +74,7 @@ public class MessageChunksWriter {
             "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
             "template-compression:boolean, when true use template compression.:true",
             "codec:string, name of the chunk codec to use.:gzip",
-            String.format("chunk-size:integer, the number of entries per chunk.:%d",OPTION_NOT_SET));
+            String.format("chunk-size:integer, the number of entries per chunk.:%d", OPTION_NOT_SET));
 
     public static DynamicOptionClient doc() {
         DynamicOptionRegistry.register(AlignmentCollectionHandler.doc());
@@ -101,13 +101,15 @@ public class MessageChunksWriter {
         chunkCodec = ChunkCodecHelper.load(codecName);
         useTemplateCompression = doc.getBoolean("template-compression");
         numEntriesPerChunk = doc.getInteger("chunk-size");
-        if (numEntriesPerChunk==-1) {
+        if (numEntriesPerChunk == -1) {
             // if the option was not set, use the chunk codec suggested chunk size:
-          numEntriesPerChunk=chunkCodec.getSuggestedChunkSize();
+            numEntriesPerChunk = chunkCodec.getSuggestedChunkSize();
         }
-        chunkSizeWarning.warn(LOG,"Using chunk-size="+numEntriesPerChunk);
+        chunkSizeWarning.warn(LOG, "Using chunk-size=" + numEntriesPerChunk);
     }
-   private static WarningCounter chunkSizeWarning=new WarningCounter(1);
+
+    private static WarningCounter chunkSizeWarning = new WarningCounter(1);
+
     /**
      * Write the entry collection as needed to the output stream. When the number of entries
      * per chunk is reached, the chunk is written to disk and the collection cleared. Clients
@@ -216,7 +218,7 @@ public class MessageChunksWriter {
     public void close(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
         flush(collectionBuilder);
-        out.writeByte(chunkCodec.registrationCode());
+        out.writeByte(0xFF);  // termination codec is always GZIP
         writtenBytes += 1;
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
             out.writeByte(DELIMITER_CONTENT);

@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,6 +33,7 @@ import java.util.zip.CRC32;
  *         Time: 2:35 PM
  */
 public class HybridChunkCodec1 implements ChunkCodec {
+
     private boolean debug = false;
 
     @Override
@@ -137,9 +137,38 @@ public class HybridChunkCodec1 implements ChunkCodec {
     }
 
     @Override
-    public boolean validate(FastBufferedInputStream input) {
-        // TODO use CRC to validate
-        return true;
+    public boolean validate(final DataInputStream input) {
+     try {
+            final DataInputStream dis = new DataInputStream(input);
+
+            crc32.reset();
+            final int compressedSize = dis.readInt();
+            final int storedChecksum = dis.readInt();
+            if (compressedSize < 0) {
+                return false;
+            }
+            if (compressedSize > dis.available()) {
+                return false;
+            }
+            final byte[] bytes = new byte[compressedSize];
+            int totalRead = 0;
+            int offset = 0;
+            while (totalRead < compressedSize) {
+                final int numRead = dis.read(bytes, offset, compressedSize - totalRead);
+                if (numRead == -1) {
+                    break;
+                }
+                totalRead += numRead;
+                offset += numRead;
+
+            }
+            crc32.update(bytes);
+            final int computedChecksum = (int) crc32.getValue();
+            return computedChecksum == storedChecksum;
+        } catch (IOException e) {
+            return false;
+        }
+
     }
 
 
