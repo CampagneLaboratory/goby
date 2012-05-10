@@ -42,7 +42,7 @@ public class NotCompressedChunkCodec implements ChunkCodec {
     }
 
     @Override
-    public boolean validate(final DataInputStream input) {
+    public boolean validate(byte c, final DataInputStream input) {
         return true;
     }
 

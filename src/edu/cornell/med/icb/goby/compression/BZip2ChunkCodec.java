@@ -44,14 +44,14 @@ public class BZip2ChunkCodec implements ChunkCodec {
     private final byte[] bytes = new byte[7];
 
     @Override
-    public boolean validate(DataInputStream input) {
+    public boolean validate(byte firstByte, DataInputStream input) {
         try {
             final int length = 4 + 3;    // size 4 bytes + magic number 0x42 0x5A 0x68
 
             if (input.read(bytes, 0, length) != length) {
                 return false;
             } else {
-                return bytes[4] == (byte) 0x42 && bytes[5] == (byte) 0x5A && bytes[6] == (byte) 0x68;
+                return bytes[3] == (byte) 0x42 && bytes[4] == (byte) 0x5A && bytes[5] == (byte) 0x68;
             }
         } catch (IOException e) {
             return false;

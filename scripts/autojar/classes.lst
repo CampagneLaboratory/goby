@@ -18,6 +18,7 @@ edu.cornell.med.icb.goby.compression.GZipChunkCodec.class
 edu.cornell.med.icb.goby.compression.BZip2ChunkCodec.class
 edu.cornell.med.icb.goby.compression.NullChunkCodec.class
 it.unimi.dsi.fastutil.io.RepositionableStream.class
+edu.cornell.med.icb.goby.compression.MessageChunksWriter.class
 it.unimi.dsi.fastutil.bytes.ByteList.class
 it.unimi.dsi.fastutil.bytes.ByteArrayList.class
 it/unimi/dsi/io/*.in.*

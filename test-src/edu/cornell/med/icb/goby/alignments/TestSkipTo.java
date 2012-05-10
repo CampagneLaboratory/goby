@@ -372,6 +372,40 @@ public class TestSkipTo {
 
     }
 
+     @Test
+    public void testOldHybrid() throws IOException {
+
+        // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
+        //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("http://gobyweb.apps.campagnelab.org/data/H_T_D/MYHZZJH/MYHZZJH-hybrid-domain.entries");
+        reader.readHeader();
+        reader.reposition(0, 1256375);
+        Alignments.AlignmentEntry entry = reader.skipTo(0, 1256375);
+        assertNotNull(entry);
+        assertEquals(0, entry.getTargetIndex());
+        assertEquals(1160266, entry.getQueryIndex());
+        assertTrue(1256375 <= entry.getPosition());
+
+    }
+    /*
+    chr11:67,501,982-67,505,747
+     */
+
+       @Test
+    public void testOldHybridHZ() throws IOException {
+
+        // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
+        //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("http://gobyweb.apps.campagnelab.org/data/H_T_D/HZFWPTI/HZFWPTI-hybrid-domain.entries");
+        reader.readHeader();
+        reader.reposition(10, 67501982);
+        Alignments.AlignmentEntry entry = reader.skipTo(10, 67501982);
+        assertNotNull(entry);
+        assertEquals(10, entry.getTargetIndex());
+        assertEquals(1921857, entry.getQueryIndex());
+        assertTrue(67501982 <= entry.getPosition());
+
+    }
     @Test
     public void testSkipToHybrid() throws IOException {
 

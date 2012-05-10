@@ -42,15 +42,18 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private static final Log LOG = LogFactory.getLog(FastBufferedMessageChunksReader.class);
     private final long end;
     private final FastBufferedInputStream input;
-    private final DataInputStream dis;
+
     /**
      * Start offset of the slice in the file, in bytes.
      */
-    private long startOffset;
+    private final long startOffset;
     /**
      * End offset of the slice in the file, in bytes.
      */
-    private long endOffset;
+    private final long endOffset;
+
+
+
     private ByteSet supportedCodecRegistrationCodes;
 
     /**
@@ -68,8 +71,8 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     public FastBufferedMessageChunksReader(final long start, long end,
                                            final FastBufferedInputStream input) throws IOException {
         super();
-        this.startOffset = start;
-        this.endOffset = end;
+        startOffset = start;
+        endOffset = end;
         if (start < 0L) {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be less than zero");
@@ -87,7 +90,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         }
         this.end = end;
         this.input = input;
-        this.dis = new DataInputStream(input);
+        this.in = new DataInputStream(input);
         supportedCodecRegistrationCodes = ChunkCodecHelper.registrationCodes();
         reposition(start, end);
     }
@@ -96,26 +99,21 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
     private void reposition(final long start, final long end) throws IOException {
         assert end >= start : "end must be larger than start ";
-        input.position(start);
+       if (start==0 && input.position()==0) {
 
-        int b;
+            return;
+        }
+        input.position(start);
+        in=new DataInputStream(input);
         int contiguousDelimiterBytes = 0;
         long skipped = 0;
         long position = 0;
 
-        /*   while (dis.available() > 0) {
-           final byte c = dis.readByte();
-           System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes++);
-           if (contiguousDelimiterBytes > 20) break;
-       } */
-        //TODO make sure we can recover if a spurious delimiter is encountered that is either
-        // 1. not followed by a valid codec
-        // 2. followed by a negative size.
         boolean codecSeen = false;
         // search though the input stream until a delimiter chunk or end of stream is reached
-        while (dis.available() > 0) {
+        while (in.available() > 0) {
 
-            final byte c = dis.readByte();
+            final byte c = in.readByte();
             //     System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes);
             //    System.out.flush();
             if (!codecSeen && hasValidCodecCode(c)) {
@@ -130,20 +128,21 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             } else {
                 if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH + 1) {
                     chunkCodec = ChunkCodecHelper.withRegistrationCode(lastCodecCodeSeen);
-                    // position exactly after the 7th 0xFF byte:
-                    input.position(start + skipped);
-                    if (!chunkCodec.validate(dis)) {
+                    // position exactly after the 7th 0xFF byte, past the first byte of the size:
+                    // the first byte of size was already read and is provided in c.
+                    long positionBeforeValidation=input.position();
+                    if (!chunkCodec.validate(c, in)) {
+                        LOG.warn(String.format("Found spurious boundary around position %d ", input.position()));
                         contiguousDelimiterBytes = 0;
                         chunkCodec = null;
                         lastCodecCodeSeen = 0;
                         codecSeen = true;
                         continue;
                     }
-                    in = dis;
-                    final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
-                    input.position(seekPosition);
 
-                    break;
+                    final long newPosition = positionBeforeValidation - (MessageChunksWriter.DELIMITER_LENGTH + 2);
+                    input.position(newPosition);
+                    return;
 
                 }
                 if (skipped > MessageChunksWriter.DELIMITER_LENGTH + 1) {
@@ -154,25 +153,12 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
             }
             ++skipped;
-
-
         }
         position = start + skipped;
-    }
-
-
-    private int readSize(FastBufferedInputStream input) throws IOException {
-        byte[] bytes = new byte[4];
-        if (input.read(bytes, 0, 4) == 4) {
-            final int value = (((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) |
-                    ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
-            System.out.printf("Returning size=%d input.position=%d %n", value, input.position());
-            return value;
-        } else {
-            return -1;
-        }
+        streamPositionAtStart=input.position();
 
     }
+
 
     private boolean hasValidCodecCode(byte registrationCode) throws IOException {
 
@@ -184,15 +170,6 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
     }
 
-    // TODO probably should check for valid codec here, rather than for the GZIP codec (0xFF):
-    private boolean hasFF(FastBufferedInputStream input) throws IOException {
-        if (input.available() >= 1) {
-            int b = input.read();
-            byte code = (byte) b;
-            if (code == -1) return true;
-        }
-        return false;
-    }
 
     /**
      * Seek to the given position in the compact file.

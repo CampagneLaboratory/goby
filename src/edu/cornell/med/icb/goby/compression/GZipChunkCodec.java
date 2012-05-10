@@ -43,13 +43,13 @@ public class GZipChunkCodec implements ChunkCodec {
    private final byte[] bytes=new byte[7];
 
     @Override
-    public boolean validate(DataInputStream input) {
+    public boolean validate(byte c, DataInputStream input) {
         try {
             final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
             if (input.read(bytes, 0, length) != length) {
                 return false;
             } else {
-                return bytes[4] == (byte)0x1F && bytes[5] == (byte)0x8B  && bytes[6] == (byte)0x8;
+                return bytes[3] == (byte)0x1F && bytes[4] == (byte)0x8B  && bytes[5] == (byte)0x8;
             }
         } catch (IOException e) {
             return false;

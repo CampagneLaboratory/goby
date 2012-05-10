@@ -137,30 +137,32 @@ public class HybridChunkCodec1 implements ChunkCodec {
     }
 
     @Override
-    public boolean validate(final DataInputStream input) {
+    public boolean validate(byte firstByte, final DataInputStream input) {
 
         try {
             crc32.reset();
-            final int fullCodecContentSize = input.readInt();
-            final int hibridContentSize = input.readInt();
+
+            final byte b = input.readByte();
+            final byte c = input.readByte();
+            final byte d = input.readByte();
+            final int fullCodecContentSize = firstByte << 24 | (b& 0xFF) << 16 | (c & 0xFF)<< 8 | (d& 0xFF);
+           // System.out.printf("read %X %X %X %X but found size=%X", firstByte, b, c, d,fullCodecContentSize);
+
+            final int hybridContentSize = input.readInt();
             final int storedChecksum = input.readInt();
             if (fullCodecContentSize < 0) {
                 return false;
             }
-            if (fullCodecContentSize > input.available()) {
+
+            if (hybridContentSize < 0) {
                 return false;
             }
-            if (hibridContentSize < 0) {
-                return false;
-            }
-            if (hibridContentSize > input.available()) {
-                return false;
-            }
-            final byte[] bytes = new byte[hibridContentSize];
+
+            final byte[] bytes = new byte[hybridContentSize];
             int totalRead = 0;
             int offset = 0;
-            while (totalRead < hibridContentSize) {
-                final int numRead = input.read(bytes, offset, hibridContentSize - totalRead);
+            while (totalRead < hybridContentSize) {
+                final int numRead = input.read(bytes, offset, hybridContentSize - totalRead);
                 if (numRead == -1) {
                     break;
                 }
@@ -168,7 +170,9 @@ public class HybridChunkCodec1 implements ChunkCodec {
                 offset += numRead;
 
             }
-            if (totalRead != hibridContentSize) return false;
+            if (totalRead != hybridContentSize) {
+                return false;
+            }
             crc32.update(bytes);
             final int computedChecksum = (int) crc32.getValue();
             return computedChecksum == storedChecksum;

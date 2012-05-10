@@ -67,10 +67,13 @@ public interface ChunkCodec {
 
     /**
      * Validate that the input stream is at the start of a chunk encoded with this codec.
-     * The input stream is positioned exactly after the 7th 0xFF delimiter byte.
+     * The input stream is positioned after the 7th 0xFF delimiter byte, past the first byte
+     * of size (complete codec data size for the chunk).
      *
+     *
+     * @param c
      * @param input input stream positioned at the start of the chunk.
      * @return True if the chunk is valid, false otherwise.
      */
-    boolean validate(DataInputStream input);
+    boolean validate(byte c, DataInputStream input);
 }

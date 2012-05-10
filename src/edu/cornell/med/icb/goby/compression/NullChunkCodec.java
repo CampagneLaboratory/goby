@@ -41,7 +41,7 @@ public class NullChunkCodec implements ChunkCodec {
     }
 
     @Override
-    public boolean validate(DataInputStream input) {
+    public boolean validate(byte c, DataInputStream input) {
         // the null codec is always valid.
         return true;
     }

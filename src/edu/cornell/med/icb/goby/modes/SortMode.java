@@ -553,6 +553,7 @@ public class SortMode extends AbstractGobyMode {
 
                 } catch (Exception e) {
                     LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(),  e.getMessage()));
+                    e.printStackTrace();
                     exceptions.add(e);
                 }
             }
@@ -630,6 +631,7 @@ public class SortMode extends AbstractGobyMode {
                     sortedSplits.add(merged);
                 } catch (Exception e) {
                     LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(),  e.getMessage()));
+                   e.printStackTrace();
                     exceptions.add(e);
                 } finally {
                     try {

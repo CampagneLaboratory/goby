@@ -165,7 +165,7 @@ public class RepositionableInputStream extends InputStream implements Reposition
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setRequestProperty("Range", "bytes="+Long.toString(startOffset)+"-");
                 LOG.debug(String.format("Opening URL=%s at startOffset=%d", resource, startOffset));
-                return urlConnection.getInputStream();
+                return new BufferedInputStream(urlConnection.getInputStream());
             }
 
         } catch (MalformedURLException e) {

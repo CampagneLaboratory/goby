@@ -18,12 +18,15 @@
 
 package edu.cornell.med.icb.goby.compression;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import org.junit.Test;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -38,21 +41,33 @@ public class TestChunkCodecs {
     public void testValidateHybrid() throws IOException {
 
         DataInputStream dis = new DataInputStream(new FileInputStream("test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries"));
-        dis.skip(8);
+        dis.skip(9);
 
         HybridChunkCodec1 hybridCodec = new HybridChunkCodec1();
-        assertTrue(hybridCodec.validate(dis));
+        assertTrue(hybridCodec.validate((byte) 0, dis));
 
+    }
+
+    @Test
+    public void testValidateHybridOld() throws IOException {
+
+        DataInputStream dis = new DataInputStream(new FileInputStream("test-data/GDFQPGI-pickrellNA18486_yale-hybrid.entries"));
+        dis.skip(9);
+
+        HybridChunkCodec1 hybridCodec = new HybridChunkCodec1();
+        assertTrue(hybridCodec.validate((byte) 0, dis));
+        AlignmentReader reader = new AlignmentReaderImpl("test-data/GDFQPGI-pickrellNA18486_yale-hybrid.entries");
+        assertTrue(reader.hasNext());
     }
 
     @Test
     public void testValidateGZip() throws IOException {
 
         DataInputStream dis = new DataInputStream(new FileInputStream("test-data/alignment-hybrid-codec/EJOYQAZ-small-gzip.entries"));
-        dis.skip(8);
+        dis.skip(9);
 
         GZipChunkCodec chunkCodec = new GZipChunkCodec();
-        assertTrue(chunkCodec.validate(dis));
+        assertTrue(chunkCodec.validate((byte) 0, dis));
 
     }
 
@@ -60,10 +75,10 @@ public class TestChunkCodecs {
     public void testValidateBZip2() throws IOException {
 
         DataInputStream dis = new DataInputStream(new FileInputStream("test-data/alignment-hybrid-codec/EJOYQAZ-small-bzip2.entries"));
-        dis.skip(8);
+        dis.skip(9);
 
         BZip2ChunkCodec chunkCodec = new BZip2ChunkCodec();
-        assertTrue(chunkCodec.validate(dis));
+        assertTrue(chunkCodec.validate((byte) 0, dis));
 
     }
 

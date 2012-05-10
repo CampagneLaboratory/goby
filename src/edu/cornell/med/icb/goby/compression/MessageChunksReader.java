@@ -46,6 +46,7 @@ public class MessageChunksReader implements Closeable {
     long bytesRead = 0;
     protected ChunkCodec chunkCodec;
     private int chunkIndex = 0;
+    protected long streamPositionAtStart=0;
 
     public byte[] getCompressedBytes() {
         return compressedBytes;
@@ -88,6 +89,7 @@ public class MessageChunksReader implements Closeable {
                 }
                 // read the codec registration id:
                 final byte codecRegistrationCode = in.readByte();
+                bytesRead += 1;
                 // confirm the delimiter before trying to install a chunk codec. If the delimiter is absent, we may be done already.
                 if (!confirmDelimiter(in)) {
                     compressedBytes = null;
@@ -96,9 +98,14 @@ public class MessageChunksReader implements Closeable {
                 if (chunkCodec == null || codecRegistrationCode != chunkCodec.registrationCode()) {
                     installCodec(codecRegistrationCode);
                 }
+                assert chunkCodec != null : "chunkCodec code must not be null";
                 chunkIndex++;
                 // read the number of compressed bytes to follow:
                 final int numBytes = in.readInt();
+                if (numBytes < 0) {
+                    LOG.error(String.format("Negative number of bytes at position %d was size=%X %n", bytesRead+streamPositionAtStart, numBytes));
+                    return false;
+                }
                 bytesRead += 4;
                 if (numBytes == 0) {
                     compressedBytes = null;
