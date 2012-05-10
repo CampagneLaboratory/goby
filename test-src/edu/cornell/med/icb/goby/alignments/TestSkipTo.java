@@ -23,7 +23,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,11 +30,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -377,7 +371,34 @@ public class TestSkipTo {
         assertTrue(100000000 <= entry.getPosition());
 
     }
+   @Test
+    public void testSkipToHybrid() throws IOException {
 
+        // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
+        //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries");
+        reader.readHeader();
+        reader.reposition(0, 1014810);
+        Alignments.AlignmentEntry entry = reader.skipTo(0, 1014810);
+        assertNotNull(entry);
+        assertEquals(0, entry.getTargetIndex());
+        assertTrue(1014810 <= entry.getPosition());
+
+    }
+    @Test
+    public void testHybridWindow() throws IOException {
+
+        AlignmentReader reader = new AlignmentReaderImpl("test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries");
+        reader.readHeader();
+
+        Alignments.AlignmentEntry entry = reader.next();
+        assertNotNull(entry);
+        System.out.println(entry.getQueryIndex());
+        System.out.flush();
+        assertEquals(12809, entry.getQueryIndex());
+
+
+    }
     @Test
     public void testUrlRange() throws IOException {
 

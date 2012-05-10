@@ -38,12 +38,15 @@
             <defaults>
                 <string>plain</string>
             </defaults>
-            <help>Format of the output file (plain, html). Especially if writing to HTML,
+            <help>Format of the output file (plain, html, prototext). Especially if writing to HTML,
                 you should consider using the -s and -e flags to limit how much of the alignment
                 file will be processed and the -n flag to control how many alignment entries to output.
-                Realistically, most browsers probably cannot
-                handle more than about 50,000 entries.
-                For HTML, it is recommended that you only output the first portion of the file, which can be accomplished with "-e 1"</help>
+                Realistically, most browsers probably cannot handle more than about 50,000 entries.
+                For HTML, it is recommended that you only output the first portion of the file,
+                which can be accomplished with "-e 1".
+                The format prototext is an automatic rendering of protocol buffer messages to text which shows
+                the message structure and field values.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>constant-read-length</id>
