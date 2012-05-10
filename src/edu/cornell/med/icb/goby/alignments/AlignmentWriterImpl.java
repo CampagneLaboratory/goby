@@ -414,6 +414,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
         permutator.close();
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
+
         if (sortedState && targetPositionOffsets != null) {
             writeIndex();
         }

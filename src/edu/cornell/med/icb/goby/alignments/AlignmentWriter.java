@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
 
 /**
  * An interface for alignment writers.
@@ -69,4 +70,10 @@ public interface AlignmentWriter extends Closeable {
     void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList);
 
     void printStats(PrintStream out);
+
+    void setStatistics(Properties statistics);
+
+    void setSmallestSplitQueryIndex(int smallestSplitQueryIndex);
+
+    void setLargestSplitQueryIndex(int largestSplitQueryIndex);
 }

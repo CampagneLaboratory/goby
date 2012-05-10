@@ -24,6 +24,7 @@ import it.unimi.dsi.lang.MutableString;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
 
 /**
  * @author Fabien Campagne
@@ -89,12 +90,28 @@ public class AlignmentToTextWriter implements AlignmentWriter {
 
     @Override
     public void setTargetIdentifiers(IndexedIdentifier targetIdentifiers) {
-        throw new UnsupportedOperationException("This method has not yet been implemented");
+        textOutput.append("Set targetIdentifiers: {");
+        for (MutableString key : targetIdentifiers.keySet()) {
+            textOutput.append(targetIdentifiers.getInt(key));
+            textOutput.append("->");
+            textOutput.append(key);
+            textOutput.append("\n");
+        }
+        textOutput.append("}\n");
     }
 
     @Override
     public void setTargetLengths(int[] targetLengths) {
-        throw new UnsupportedOperationException("This method has not yet been implemented");
+        textOutput.append("Set targetLengths: {");
+        int i = 0;
+        for (int length : targetLengths) {
+
+            textOutput.append(i++);
+            textOutput.append("->");
+            textOutput.append(length);
+            textOutput.append("\n");
+        }
+        textOutput.append("}\n");
     }
 
     @Override
@@ -144,11 +161,26 @@ public class AlignmentToTextWriter implements AlignmentWriter {
 
     @Override
     public void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
-          throw new UnsupportedOperationException("This method has not yet been implemented");
+        throw new UnsupportedOperationException("This method has not yet been implemented");
     }
 
     @Override
     public void printStats(PrintStream out) {
         throw new UnsupportedOperationException("This method has not yet been implemented");
+    }
+
+    @Override
+    public void setStatistics(Properties statistics) {
+        textOutput.append(String.format("Set statistics { %s }%n", statistics.toString()));
+    }
+
+    @Override
+    public void setSmallestSplitQueryIndex(int smallestSplitQueryIndex) {
+        textOutput.append(String.format("Set smallestSplitQueryIndex=%d%n", smallestSplitQueryIndex));
+    }
+
+    @Override
+    public void setLargestSplitQueryIndex(int largestSplitQueryIndex) {
+        textOutput.append(String.format("Set largestSplitQueryIndex=%d%n", largestSplitQueryIndex));
     }
 }

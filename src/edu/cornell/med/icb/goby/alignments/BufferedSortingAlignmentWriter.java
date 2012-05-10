@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Comparator;
+import java.util.Properties;
 
 /**
  * An an implementation of AlignmentWriter that buffers entries up to a certain capacity and ensures
@@ -110,6 +111,20 @@ public class BufferedSortingAlignmentWriter implements AlignmentWriter {
     @Override
     public void printStats(PrintStream out) {
         delegate.printStats(out);
+    }
+
+    @Override
+    public void setStatistics(Properties statistics) {
+       delegate.setStatistics(statistics);
+    }
+
+    @Override
+    public void setSmallestSplitQueryIndex(int smallestSplitQueryIndex) {
+        delegate.setSmallestSplitQueryIndex(smallestSplitQueryIndex);
+    }
+    @Override
+    public void setLargestSplitQueryIndex(int largestSplitQueryIndex) {
+        delegate.setLargestSplitQueryIndex(largestSplitQueryIndex);
     }
 
     @Override
