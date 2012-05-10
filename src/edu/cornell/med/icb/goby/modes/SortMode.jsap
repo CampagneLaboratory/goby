@@ -54,7 +54,7 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>50</string>
+                <string>30</string>
             </defaults>
             <help>The number of splits / files per merge. The maximum value you can use for this is related to the
                 number of file descriptors available from your OS. sort-large mode will open approximately ((4 *
@@ -126,7 +126,7 @@
                 per thread. If, during sort-large-mode, you are running out of memory, INCREASE the value for
                 split-size-scaling-factor. Also, if you are running out of memory, it is advisable to increase the
                 overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
-                the program with a total of 8g of memory. The relatively large value for this (the default is 50)
+                the program with a total of 8g of memory. The relatively large value for this (the default is 30)
                 is required because the alignments will be decompressed after being read.
             </help>
         </flaggedOption>

@@ -83,12 +83,12 @@ public class SortMode extends AbstractGobyMode {
     private String basename;
 
     private int numThreads = -1;
-    private int filesPerMerge = 50;
+    private int filesPerMerge = 30;
     private long splitSize = -1;
     private String tempDir = "/tmp";
 
     private double memoryPercentageForWork = 0.75;
-    private int splitSizeScalingFactor = 50;
+    private int splitSizeScalingFactor = 100;
 
     /*
      * The following data structures are used to assist the parallelization of the sort/merge.
@@ -628,12 +628,9 @@ public class SortMode extends AbstractGobyMode {
                     // Sort/merge finished
                     numMergesExecuted.incrementAndGet();
                     sortedSplits.add(merged);
-                } catch (IOException e) {
-                    LOG.error(String.format("[%s] Exception sorting!! message=%s", threadId, e.getMessage()));
+                } catch (Exception e) {
+                    LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(),  e.getMessage()));
                     exceptions.add(e);
-                } catch (Throwable t) {
-                    LOG.error(String.format("[%s] Throwable sorting!! message=%s", threadId, t.getMessage()));
-                    exceptions.add(t);
                 } finally {
                     try {
                         if (concatReader != null) {
