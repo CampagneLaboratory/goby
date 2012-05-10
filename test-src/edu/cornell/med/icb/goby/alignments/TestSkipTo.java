@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.compression.HybridChunkCodec1;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -374,8 +375,6 @@ public class TestSkipTo {
     @Test
     public void testSkipToHybrid() throws IOException {
 
-        // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
-        //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
         AlignmentReader reader = new AlignmentReaderImpl("test-data/alignment-hybrid-codec/EJOYQAZ-small-hybrid.entries");
         reader.readHeader();
         reader.reposition(0, 1014810);
@@ -386,51 +385,8 @@ public class TestSkipTo {
 
     }
 
-    @Test
-    public void testDataInputOutput() throws IOException {
-        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(bytes);
-
-        dos.writeByte(0xFE);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.close();
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
-
-        assertEquals((byte) 0xFE, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-
-        DataOutputStream dosFile = new DataOutputStream(new FileOutputStream("test-results/alignments-skip-to/bytes.data"));
-        DataInputStream disFile = new DataInputStream(new FileInputStream("test-results/alignments-skip-to/bytes.data"));
 
 
-        roundTripByteOrder(dosFile, disFile);
-
-
-    }
-
-    private void roundTripByteOrder(DataOutputStream dos, DataInputStream dis) throws IOException {
-        dos.writeByte(0xFE);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.writeByte(0xFF);
-        dos.close();
-        assertEquals((byte) 0xFE, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-        assertEquals((byte) 0xFF, dis.readByte());
-    }
 
     @Test
     public void testHybridWindow() throws IOException {
@@ -442,7 +398,7 @@ public class TestSkipTo {
         assertNotNull(entry);
         System.out.println(entry.getQueryIndex());
         System.out.flush();
-        assertEquals(39, entry.getQueryIndex());
+        assertEquals(97, entry.getQueryIndex());
 
 
     }

@@ -65,16 +65,16 @@ public class HybridChunkCodec1 implements ChunkCodec {
         }
         final ByteArrayOutputStream result = new ByteArrayOutputStream();
         final DataOutputStream completeChunkData = new DataOutputStream(result);
-        final ByteArrayOutputStream compressedBits = new ByteArrayOutputStream();
-        final Message reducedProtoBuff = handler.compressCollection(readCollection, compressedBits);
+        final ByteArrayOutputStream hybridStreamBytes = new ByteArrayOutputStream();
+        final Message reducedProtoBuff = handler.compressCollection(readCollection, hybridStreamBytes);
 
-        final int compressedBitSize = compressedBits.size();
-        final byte[] bytes = compressedBits.toByteArray();
-        completeChunkData.writeInt(compressedBitSize);
+        final int hybridStreamSize = hybridStreamBytes.size();
+        final byte[] bytes = hybridStreamBytes.toByteArray();
 
         crc32.reset();
         crc32.update(bytes);
         final int crcChecksum = (int) crc32.getValue();
+        completeChunkData.writeInt(hybridStreamSize);
         completeChunkData.writeInt(crcChecksum);
         completeChunkData.write(bytes);
 
@@ -89,10 +89,10 @@ public class HybridChunkCodec1 implements ChunkCodec {
             //TODO remove compression of original collection. Only useful for stat collection
             int originalGzipSize = gzipCodec.encode(readCollection).toByteArray().length;
 
-            final int gain = originalGzipSize - (gzipBytesSize + compressedBitSize);
+            final int gain = originalGzipSize - (gzipBytesSize + hybridStreamSize);
             LOG.info(String.format("compressed size=%d gzip size=%d (original gzip=%d) percent compressed/(compressed+gzip) %g gain=%d, %g%% ",
-                    compressedBitSize, gzipBytesSize, originalGzipSize,
-                    100d * ((double) compressedBitSize) / (compressedBitSize + gzipBytesSize),
+                    hybridStreamSize, gzipBytesSize, originalGzipSize,
+                    100d * ((double) hybridStreamSize) / (hybridStreamSize + gzipBytesSize),
                     gain, gain * 100d / originalGzipSize));
 
         }
@@ -138,23 +138,29 @@ public class HybridChunkCodec1 implements ChunkCodec {
 
     @Override
     public boolean validate(final DataInputStream input) {
-     try {
-            final DataInputStream dis = new DataInputStream(input);
 
+        try {
             crc32.reset();
-            final int compressedSize = dis.readInt();
-            final int storedChecksum = dis.readInt();
-            if (compressedSize < 0) {
+            final int fullCodecContentSize = input.readInt();
+            final int hibridContentSize = input.readInt();
+            final int storedChecksum = input.readInt();
+            if (fullCodecContentSize < 0) {
                 return false;
             }
-            if (compressedSize > dis.available()) {
+            if (fullCodecContentSize > input.available()) {
                 return false;
             }
-            final byte[] bytes = new byte[compressedSize];
+            if (hibridContentSize < 0) {
+                return false;
+            }
+            if (hibridContentSize > input.available()) {
+                return false;
+            }
+            final byte[] bytes = new byte[hibridContentSize];
             int totalRead = 0;
             int offset = 0;
-            while (totalRead < compressedSize) {
-                final int numRead = dis.read(bytes, offset, compressedSize - totalRead);
+            while (totalRead < hibridContentSize) {
+                final int numRead = input.read(bytes, offset, hibridContentSize - totalRead);
                 if (numRead == -1) {
                     break;
                 }
@@ -162,6 +168,7 @@ public class HybridChunkCodec1 implements ChunkCodec {
                 offset += numRead;
 
             }
+            if (totalRead != hibridContentSize) return false;
             crc32.update(bytes);
             final int computedChecksum = (int) crc32.getValue();
             return computedChecksum == storedChecksum;

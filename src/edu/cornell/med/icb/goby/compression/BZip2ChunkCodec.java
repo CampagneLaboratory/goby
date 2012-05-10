@@ -34,23 +34,24 @@ import java.io.*;
 public class BZip2ChunkCodec implements ChunkCodec {
 
     private ProtobuffCollectionHandler parser;
+    private byte[] magicSignature = {(byte) 0x42, (byte) 0x5A, (byte) 0x68};
 
     @Override
     public void setHandler(final ProtobuffCollectionHandler parser) {
         this.parser = parser;
     }
 
-    private final byte[] bytes=new byte[7];
+    private final byte[] bytes = new byte[7];
 
     @Override
     public boolean validate(DataInputStream input) {
         try {
-            final int length = 4 + 3;    // size 4 bytes + magic number 1F 8B 08
+            final int length = 4 + 3;    // size 4 bytes + magic number 0x42 0x5A 0x68
 
             if (input.read(bytes, 0, length) != length) {
                 return false;
             } else {
-                return bytes[4] == (byte)0x42 && bytes[5] == (byte)0x5A && bytes[6] == (byte)0x68;
+                return bytes[4] == (byte) 0x42 && bytes[5] == (byte) 0x5A && bytes[6] == (byte) 0x68;
             }
         } catch (IOException e) {
             return false;
@@ -73,6 +74,8 @@ public class BZip2ChunkCodec implements ChunkCodec {
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream(10000);
 
+
+        byteBuffer.write(magicSignature);
         final OutputStream bZip2OutputStream = new CBZip2OutputStream(byteBuffer);
         readCollection.writeTo(bZip2OutputStream);
         bZip2OutputStream.flush();
@@ -83,7 +86,14 @@ public class BZip2ChunkCodec implements ChunkCodec {
 
     @Override
     public Message decode(final byte[] bytes) throws IOException {
-        final CBZip2InputStream uncompressStream = new CBZip2InputStream(new ByteArrayInputStream(bytes));
+        if (bytes[0] != magicSignature[0] ||
+                bytes[1] != magicSignature[1] ||
+                bytes[2] != magicSignature[2]) {
+            return null;
+        }
+
+        // remove the magic numbers:
+        final CBZip2InputStream uncompressStream = new CBZip2InputStream(new ByteArrayInputStream(bytes, 0, bytes.length));
         try {
             return parser.parse(uncompressStream);
         } finally {

@@ -37,6 +37,7 @@ import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.util.Random;
 
 /**
  * @author Fabien Campagne
@@ -87,6 +88,10 @@ public class EmpiricalPMode extends AbstractGobyMode {
      * When True, write an estimate of false discovery rate, rather than the empirical P (FWER).
      */
     private boolean fdr;
+    /**
+     * The number of test pairs to consider.
+     */
+    private int testN;
 
 
     public static DynamicOptionClient doc() {
@@ -131,6 +136,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
         forceEstimation = jsapResult.getBoolean("force-estimation");
         //fdr = jsapResult.getBoolean("fdr");
 
+        testN = jsapResult.getInt("test-n",Integer.MAX_VALUE);
+
         {
             densityFilename = jsapResult.getString("density-filename");
             if (densityFilename != null) {
@@ -142,9 +149,9 @@ public class EmpiricalPMode extends AbstractGobyMode {
                         density = EstimatedDistribution.load(densityFilename);
                         //testDensities = EstimatedTestDistributions.load(EmpiricalPValueEstimator.suggestFilename(densityFilename));
                         statisticName = density.getStatAdaptor().statName();
-                      /*  assert density.getStatAdaptor().statName().equals(testDensities.getStatAdaptor().statName()) :
-                                "null and test distributions must be estimated with the same statistic";
-                                */
+                        /*  assert density.getStatAdaptor().statName().equals(testDensities.getStatAdaptor().statName()) :
+                        "null and test distributions must be estimated with the same statistic";
+                        */
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         System.exit(1);
@@ -214,7 +221,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
             EstimatedDistribution.store(estimator.getNullDistribution(), densityFilename);
 
             final String testFilename = EmpiricalPValueEstimator.suggestFilename(densityFilename);
-        /*    System.err.println("Writing estimated test distributions to: " + testFilename);
+            /*    System.err.println("Writing estimated test distributions to: " + testFilename);
             EstimatedTestDistributions.store(estimator.getTestDistributions(), testFilename);
             */
 
@@ -223,8 +230,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
         System.out.printf("Rate of true positives: %3.2f%%%n", 100d * ((numTP + 0d) / (1000d)));
 
         System.out.printf("Rate of false negatives: %3.2f%%%n", 100d * ((numFN + 0d) / 1000d));
-        System.out.printf("Rate of false positives: %3.2f%%%n", 100d * ((numFP + 0d) / (numOther+0d)));
-        System.out.printf("Overall false discovery rate: %3.2f%%%n", (1d - (0d+numTP)/(0d+numTP+numFP))*100d);
+        System.out.printf("Rate of false positives: %3.2f%%%n", 100d * ((numFP + 0d) / (numOther + 0d)));
+        System.out.printf("Overall false discovery rate: %3.2f%%%n", (1d - (0d + numTP) / (0d + numTP + numFP)) * 100d);
 
     }
 
@@ -345,7 +352,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
                          IntArrayList covariatesA, IntArrayList covariatesB) {
         switch (typeOfPair) {
             case BETWEEN_GROUP_PAIR:
-                if (!useExistingDensity) {
+                if (!useExistingDensity && testDensities != null) {
                     observeTestDistributions(groupComparison, valuesA, valuesB, covariatesA, covariatesB);
                 }
                 estimateP(elementIds, valuesA, valuesB, covariatesA, covariatesB);
@@ -383,6 +390,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     boolean first = true;
 
     private void estimateP(ObjectArrayList<String> elementIds, IntArrayList valuesA, IntArrayList valuesB, IntArrayList covariatesA, IntArrayList covariatesB) {
+
         //  System.out.println(elementIds);
         if (first) {
             outputWriter.print("LABEL");
@@ -418,6 +426,43 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
     }
 
+    Random random = new Random();
+
+    private void subsample(ObjectArrayList<IntArrayList> valuesA, ObjectArrayList<IntArrayList> covariatesA, int testN) {
+
+        int size = valuesA.size();
+
+        assert size == covariatesA.size() :        "value and covariate size must match!";
+        boolean[] remove = new boolean[size];
+        boolean done = false;
+        int removedCount = 0;
+        while (!done) {
+            int index =Math.round( random.nextFloat() * (size - 1.0f));
+            remove[index] = true;
+
+            if (removedCount(remove) == size-testN) {
+                done = true;
+            }
+        }
+        int removed=0;
+        for (int i = 0; i < size; i++) {
+            int index=i-removed++;
+            if (remove[i]) {
+                valuesA.remove(index);
+                covariatesA.remove(index);
+            }
+        }
+  //      System.out.println("STOP");
+    }
+
+    private int removedCount(boolean[] remove) {
+        int count=0;
+        for (boolean removed: remove) {
+            count+=removed?1:0;
+        }
+        return count;
+    }
+
     private void write(ObjectArrayList<String> elementIds) {
         outputWriter.print(label);
         outputWriter.print("\tP-VALUE");
@@ -440,6 +485,12 @@ public class EmpiricalPMode extends AbstractGobyMode {
             System.out.println(elementIds);
         }
         final String groupComparison = elementIds.get(0);
+
+        if (valuesACollector.size() >= testN) {
+            subsample(valuesACollector, covariatesACollector, testN);
+            subsample(valuesBCollector, covariatesBCollector, testN);
+        }
+
         final double p = estimator.estimateEmpiricalP(groupComparison,
                 valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
                 valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),
@@ -456,6 +507,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         }
         if (index >= 1000) {
             if (p <= alpha) {
+                System.out.println("STOP FP "+elementIds+" p="+p);
                 numFP++;
             } else {
                 numTN++;

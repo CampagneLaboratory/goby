@@ -58,7 +58,7 @@ public class ChunkCodecHelper {
                 }
             }
             if (codec == null) {
-                LOG.info("Could not find codec " + codecName);
+                LOG.warn("Could not find codec " + codecName);
             }
         }
         return codec;

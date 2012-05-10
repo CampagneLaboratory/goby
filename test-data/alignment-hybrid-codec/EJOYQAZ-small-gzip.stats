@@ -1,15 +1,15 @@
 #Statistics for merged alignment. 
-#Thu May 10 13:46:12 EDT 2012
+#Thu May 10 13:50:12 EDT 2012
 overall.matched.percent=0.314
 part1.part1.part1.number-of-entries-written=31928754
-basename=EJOYQAZ-small-hybrid
+basename=EJOYQAZ-small-gzip
 number.alignment.entries=40001
 part1.part1.part1.min.query.index=12732078
 part1.part1.part1.number.alignment.entries=31928754
 min.query.index=12732081
 part1.part1.min.query.index=12732079
 part1.part1.overall.matched.percent=0.00
-basename.full=EJOYQAZ-small-hybrid
+basename.full=EJOYQAZ-small-gzip
 part1.part1.part1.basename.full=EJOYQAZ
 part1.part1.part1.max.query.index=0
 part1.part1.max.query.index=0

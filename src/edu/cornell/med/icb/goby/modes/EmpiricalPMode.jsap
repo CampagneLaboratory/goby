@@ -53,6 +53,17 @@
             <required>false</required>
             <help>The filename to read or write a density.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>test-n</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>test-n</longFlag>
+             <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+
+            <required>false</required>
+            <help>The number of test pairs to consider when estimating empirical-P. When more than n test pairs are available, the tool randomly selects n out of the total number.</help>
+        </flaggedOption>
         <switch>
             <id>force-estimation</id>
             <shortFlag>f</shortFlag>

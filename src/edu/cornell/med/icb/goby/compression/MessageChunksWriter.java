@@ -99,6 +99,7 @@ public class MessageChunksWriter {
         compressingCodec = doc.getBoolean("compressing-codec");
         final String codecName = doc.getString("codec");
         chunkCodec = ChunkCodecHelper.load(codecName);
+
         useTemplateCompression = doc.getBoolean("template-compression");
         numEntriesPerChunk = doc.getInteger("chunk-size");
         if (numEntriesPerChunk == -1) {
