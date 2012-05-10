@@ -141,6 +141,42 @@ public class EntryFlagHelper {
         return (entry.getPairFlags() & 0x1L) != 0;
     }
 
+    public static int paired() {
+        return 1;
+    }
+
+    public static int properlyPaired() {
+        return 1 << 1;
+    }
+
+    public static int readUnmapped() {
+        return 1 << 2;
+    }
+
+    public static int mateUnmapped() {
+        return 1 << 3;
+    }
+
+    public static int readReverseStrand() {
+        return 1 << 4;
+    }
+
+    public static int mateReverseStrand() {
+        return 1 << 5;
+    }
+
+    public static int firstInPair() {
+        return 1 << 6;
+    }
+
+    public static int secondInPair() {
+        return 1 << 7;
+    }
+
+    public static int notPrimaryAlignment() {
+        return 1 << 8;
+    }
+
     /**
      * If this alignment entry is properly paired. (e.g., mapped in the correct orientation and
      * within reasonable distance on the same reference sequence).
