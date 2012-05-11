@@ -33,7 +33,7 @@ import java.util.List;
  * Class for comparing two SAMRecords. Used with both tests and
  * with SAMComparisonMode.
  */
-public class SamComparison {
+public class SamComparison implements SamComparisonInterface {
 
     /**
      * Configuration values.
@@ -46,21 +46,14 @@ public class SamComparison {
     /**
      * Running totals, etc.
      */
-    private int readNum;
-    private int comparisonFailureCount;
-
-    /**
-     * Data to compare.
-     */
-    private SAMRecord expectedSamRecord;
-    private SAMRecord actualSamRecord;
-    private Alignments.AlignmentEntry gobyAlignment;
+    protected int readNum;
+    protected int comparisonFailureCount;
 
     /**
      * State.
      */
     private final MutableString comparisonErrorDump;
-    private List<String> comparisonFailures;
+    private final List<String> comparisonFailures;
     private boolean initialized;
 
     /**
@@ -91,6 +84,7 @@ public class SamComparison {
      * file preserved mapped qualities.
      * @return if it is assumed ...
      */
+    @Override
     public boolean isMappedQualitiesPreserved() {
         return mappedQualitiesPreserved;
     }
@@ -100,6 +94,7 @@ public class SamComparison {
      * file preserved mapped qualities.
      * @param mappedQualitiesPreserved if it is assumed...
      */
+    @Override
     public void setMappedQualitiesPreserved(final boolean mappedQualitiesPreserved) {
         this.mappedQualitiesPreserved = mappedQualitiesPreserved;
     }
@@ -109,6 +104,7 @@ public class SamComparison {
      * file preserved soft clips.
      * @return if it is assumed ...
      */
+    @Override
     public boolean isSoftClipsPreserved() {
         return softClipsPreserved;
     }
@@ -118,6 +114,7 @@ public class SamComparison {
      * file preserved soft clips.
      * @param softClipsPreserved if it is assumed ...
      */
+    @Override
     public void setSoftClipsPreserved(final boolean softClipsPreserved) {
         this.softClipsPreserved = softClipsPreserved;
     }
@@ -129,6 +126,7 @@ public class SamComparison {
      * set to false. Default is false.
      * @return if mates will be checked
      */
+    @Override
     public boolean isCheckMate() {
         return checkMate;
     }
@@ -140,6 +138,7 @@ public class SamComparison {
      * set to false. Default is false.
      * @return if mates will be checked
      */
+    @Override
     public void setCheckMate(final boolean checkMate) {
         this.checkMate = checkMate;
     }
@@ -151,6 +150,7 @@ public class SamComparison {
      * By default this is enabled.
      * @return if ...
      */
+    @Override
     public boolean isCanonicalMdzForComparison() {
         return canonicalMdzForComparison;
     }
@@ -162,6 +162,7 @@ public class SamComparison {
      * By default this is enabled.
      * @param canonicalMdzForComparison if ...
      */
+    @Override
     public void setCanonicalMdzForComparison(final boolean canonicalMdzForComparison) {
         this.canonicalMdzForComparison = canonicalMdzForComparison;
     }
@@ -170,6 +171,7 @@ public class SamComparison {
      * Return how many reads have been compared since reset() was last called.
      * @return how many...
      */
+    @Override
     public int getReadNum() {
         return readNum;
     }
@@ -178,69 +180,21 @@ public class SamComparison {
      * Return how many comparison failures have been found since reset() was last called.
      * @return how many...
      */
+    @Override
     public int getComparisonFailureCount() {
         return comparisonFailureCount;
     }
 
     /**
-     * Get the expected sam record. This contains the values we EXPECT TO FIND, ie, the source SAM/BAM file.
-     * @return the expected sam record.
-     */
-    public SAMRecord getExpectedSamRecord() {
-        return expectedSamRecord;
-    }
-
-    /**
-     * Set the expected sam record. This contains the values we EXPECT TO FIND, ie, the source SAM/BAM file.
-     * @param expectedSamRecord the expected sam record.
-     */
-    public void setExpectedSamRecord(final SAMRecord expectedSamRecord) {
-        this.expectedSamRecord = expectedSamRecord;
-    }
-
-    /**
-     * Get the ACTUAL sam record. This contains the values we will compare against the expected, ie, the destination
-     * SAM/BAM file.
-     * @return the actual sam record.
-     */
-    public SAMRecord getActualSamRecord() {
-        return actualSamRecord;
-    }
-
-    /**
-     * Set the ACTUAL sam record. This contains the values we will compare against the expected, ie, the destination
-     * SAM/BAM file.
-     * @param actualSamRecord the actual sam record.
-     */
-    public void setActualSamRecord(final SAMRecord actualSamRecord) {
-        this.actualSamRecord = actualSamRecord;
-    }
-
-    /**
-     * Get the Goby Compact Alignment (optional). This should be the intermediate record that was created
-     * from the expected record and was used to create the actual record. Providing this will generate some additional
-     * output when there are comparison failures.
-     * @return the goby alignment
-     */
-    public Alignments.AlignmentEntry getGobyAlignment() {
-        return gobyAlignment;
-    }
-
-    /**
-     * Set the Goby Compact Alignment (optional). This should be the intermediate record that was created
-     * from the expected record and was used to create the actual record. Providing this will generate some additional
-     * output when there are comparison failures.
-     * @param gobyAlignment the goby alignment
-     */
-    public void setGobyAlignment(final Alignments.AlignmentEntry gobyAlignment) {
-        this.gobyAlignment = gobyAlignment;
-    }
-
-    /**
      * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
+     * @param expectedSamRecord the expected sam record
+     * @param actualSamRecord the actual sam record
+     * @param gobyAlignment the actual goby alignment record
      * @return true if the two records are found to be the same
      */
-    public boolean compareSamRecords() {
+    @Override
+    public boolean compare(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
+                           final Alignments.AlignmentEntry gobyAlignment) {
         if (!initialized) {
             initialized = true;
             reset();
@@ -276,32 +230,8 @@ public class SamComparison {
         }
         compareField("MD:Z doesn't match", eMdz, aMdz);
 
-        final String eRead;
-        final String aRead;
-        if (softClipsPreserved) {
-            eRead = expectedSamRecord.getReadString();
-            aRead = actualSamRecord.getReadString();
-        } else {
-            int clipLeft = 0;
-            int clipRight = 0;
-            final List<CigarElement> eCigarElements = expectedSamRecord.getCigar().getCigarElements();
-            if (!eCigarElements.isEmpty()) {
-                final CigarElement firstCigar = eCigarElements.get(0);
-                if (firstCigar.getOperator() == CigarOperator.S) {
-                    clipLeft = firstCigar.getLength();
-                }
-            }
-            if (eCigarElements.size() > 1) {
-                final CigarElement lastCigar = eCigarElements.get(eCigarElements.size() - 1);
-                if (lastCigar.getOperator() == CigarOperator.S) {
-                    clipRight = lastCigar.getLength();
-                }
-            }
-            eRead = expectedSamRecord.getReadString().substring(clipLeft, expectedSamRecord.getReadLength() - clipRight);
-            aRead = actualSamRecord.getReadString().substring(clipLeft, actualSamRecord.getReadLength() - clipRight);
-            compareField("Clipped size doesn't compute",
-                    actualSamRecord.getReadLength(), aRead.length() + clipLeft + clipRight);
-        }
+        final String eRead = usableReadOf(expectedSamRecord);
+        final String aRead = usableReadOf(actualSamRecord);
 
         compareField("Reads didn't match", eRead, aRead);
         if (mappedQualitiesPreserved) {
@@ -331,18 +261,26 @@ public class SamComparison {
         }
         readNum++;
         if (!comparisonFailures.isEmpty()) {
-            dumpComparison();
+            dumpComparison(expectedSamRecord, actualSamRecord, gobyAlignment);
             comparisonFailureCount++;
         }
         return comparisonFailures.isEmpty();
+    }
+
+    @Override
+    public void finished() {
     }
 
     /**
      * Dump the details of expectedSamRecord and actualSamRecord (and gobyAlignment if available). This is
      * called when there are differences between expected and actual to help debug the conversion process.
      * The differences are written to stdout.
+     * @param expectedSamRecord the expected sam record
+     * @param actualSamRecord the actual sam record
+     * @param gobyAlignment the actual goby alignment record
      */
-    public void dumpComparison() {
+    private void dumpComparison(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
+                               final Alignments.AlignmentEntry gobyAlignment) {
         comparisonErrorDump.setLength(0);
         comparisonErrorDump.append("Read Num         : ").append(readNum).append('\n');
         comparisonErrorDump.append("     ERROR(s)    : ").append(ArrayUtils.toString(comparisonFailures)).append('\n');
@@ -412,6 +350,29 @@ public class SamComparison {
     private void compareField(final String error, final boolean expected, final boolean actual) {
         if (expected != actual) {
             comparisonFailures.add(error);
+        }
+    }
+
+    public String usableReadOf(final SAMRecord samRecord) {
+        if (softClipsPreserved) {
+            return samRecord.getReadString();
+        } else {
+            int clipLeft = 0;
+            int clipRight = 0;
+            final List<CigarElement> eCigarElements = samRecord.getCigar().getCigarElements();
+            if (!eCigarElements.isEmpty()) {
+                final CigarElement firstCigar = eCigarElements.get(0);
+                if (firstCigar.getOperator() == CigarOperator.S) {
+                    clipLeft = firstCigar.getLength();
+                }
+            }
+            if (eCigarElements.size() > 1) {
+                final CigarElement lastCigar = eCigarElements.get(eCigarElements.size() - 1);
+                if (lastCigar.getOperator() == CigarOperator.S) {
+                    clipRight = lastCigar.getLength();
+                }
+            }
+            return samRecord.getReadString().substring(clipLeft, samRecord.getReadLength() - clipRight);
         }
     }
 }

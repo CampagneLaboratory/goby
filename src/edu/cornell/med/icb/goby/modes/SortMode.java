@@ -29,9 +29,9 @@ import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Merge;
 import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
 import edu.cornell.med.icb.util.ICBStringUtils;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,12 +60,12 @@ public class SortMode extends AbstractGobyMode {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(SortMode.class);
+    private static final Logger LOG = Logger.getLogger(SortMode.class);
 
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "sort-1";
+    private static final String MODE_NAME = "sort";
 
     /**
      * The mode description help text.
@@ -106,6 +106,9 @@ public class SortMode extends AbstractGobyMode {
 
     private final ConcurrentLinkedQueue<Throwable> exceptions = new ConcurrentLinkedQueue<Throwable>();
     private final ConcurrentLinkedQueue<File> filesToDelete = new ConcurrentLinkedQueue<File>();
+
+    ProgressLogger progressSplitSort;
+    ProgressLogger progressMergeSort;
 
     @Override
     public String getModeName() {
@@ -364,6 +367,14 @@ public class SortMode extends AbstractGobyMode {
         long splitStart = 0;
         boolean lastSplit = false;
         boolean firstSort = true;
+
+        progressSplitSort = new ProgressLogger(LOG, "split/sorts");
+        final int estimatedNumberOfSplits = (int) Math.ceil((double) fileSize / (double) splitSize);
+        progressSplitSort.displayFreeMemory = true;
+        progressSplitSort.expectedUpdates = estimatedNumberOfSplits;
+        LOG.info("Expecting to make " + estimatedNumberOfSplits + " initial splits.");
+        progressSplitSort.start();
+        
         while (!lastSplit) {
             long splitEnd = splitStart + splitSize;
             if (splitEnd >= fileSize - 1) {
@@ -382,6 +393,11 @@ public class SortMode extends AbstractGobyMode {
         }
 
         LOG.debug(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+
+        progressMergeSort = new ProgressLogger(LOG, "merges");
+        progressMergeSort.displayFreeMemory = true;
+        progressMergeSort.expectedUpdates = numberOfSplits;
+        progressMergeSort.start();
 
         // Subsequent sorts
         boolean lastMerge = false;
@@ -470,6 +486,9 @@ public class SortMode extends AbstractGobyMode {
             }
         }
 
+        progressSplitSort.stop();
+        progressMergeSort.stop();
+
         if (!filesToDelete.isEmpty()) {
             // These files weren't deleted after merge for some reason. We'll try again one more time.
             while (true) {
@@ -556,6 +575,7 @@ public class SortMode extends AbstractGobyMode {
                     e.printStackTrace();
                     exceptions.add(e);
                 }
+                progressSplitSort.update();
             }
         };
         if (executorService != null) {
@@ -659,6 +679,7 @@ public class SortMode extends AbstractGobyMode {
                         deleteFile(new File(mergeFromBasename + ".stats"), true);
                     }
 
+                    progressMergeSort.update(toMerge.size() - 1);
                 }
             }
         };

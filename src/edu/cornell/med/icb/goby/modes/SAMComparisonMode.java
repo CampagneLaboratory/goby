@@ -22,15 +22,18 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
-import edu.cornell.med.icb.goby.readers.sam.SamComparison;
+import edu.cornell.med.icb.goby.readers.sam.SamComparisonInterface;
+import edu.cornell.med.icb.goby.readers.sam.SamPerPositionComparison;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import org.apache.log4j.Logger;
 
@@ -79,9 +82,6 @@ public class SAMComparisonMode extends AbstractGobyMode {
 
     private boolean runningFromCommandLine = false;
     private boolean debug = false;
-
-    // --------- FOR COMPARISON ---------
-    private SamComparison samComparison = new SamComparison();
 
     @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(SAMComparisonMode.class,
@@ -309,15 +309,18 @@ public class SAMComparisonMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
         progress.start();
+
+        // --------- FOR COMPARISON ---------
+        final SamComparisonInterface samComparison = new SamPerPositionComparison();
+
         samComparison.setMappedQualitiesPreserved(mappedQualitiesPreserved);
         samComparison.setSoftClipsPreserved(softClipsPreserved);
         samComparison.setCheckMate(checkMate);
         samComparison.setCanonicalMdzForComparison(canonicalMdzForComparison);
-        samComparison.reset();
         int numRecordsSkipped = 0;
         while (sourceIterator.hasNext()) {
-            samComparison.setExpectedSamRecord(sourceIterator.next());
-            if (samComparison.getExpectedSamRecord().getReadUnmappedFlag()) {
+            final SAMRecord expected = sourceIterator.next();
+            if (expected.getReadUnmappedFlag()) {
                 // We don't store unmapped reads, so skip this source record
                 numRecordsSkipped++;
                 continue;
@@ -326,18 +329,20 @@ public class SAMComparisonMode extends AbstractGobyMode {
                 LOG.error("Not enough records in --destination-bam SAM/BAM file");
                 return;
             }
-            samComparison.setActualSamRecord(destIterator.next());
+            final SAMRecord actual = destIterator.next();
+            Alignments.AlignmentEntry gobyActual = null;
             if (gobyReader != null) {
                 if (!gobyReader.hasNext()) {
-                    LOG.error("Not enough records in goby compact-alignment file");
+                    LOG.error("Not enough records in --destination-goby compact-alignment file");
                     return;
                 }
-                samComparison.setGobyAlignment(gobyReader.next());
+                gobyActual = gobyReader.next();
             }
 
-            samComparison.compareSamRecords();
+            samComparison.compare(expected, actual, gobyActual);
             progress.lightUpdate();
         }
+        samComparison.finished();
         progress.stop();
         System.out.println("Number of records compared   : " + samComparison.getReadNum());
         System.out.println("Number of records unmapped   : " + numRecordsSkipped);

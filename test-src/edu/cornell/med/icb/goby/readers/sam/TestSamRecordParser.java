@@ -38,6 +38,8 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -67,6 +69,10 @@ public class TestSamRecordParser {
     //  testSamToCompactTrickCase1-3 fails because this the sam reference builder requires an MD:Z tag.
     //
 
+    @BeforeClass
+    public static void beforeClass() {
+        new File(BASE_TEST_DIR).mkdirs();
+    }
 
     @Test
     // like 9 no genome
@@ -453,8 +459,9 @@ public class TestSamRecordParser {
     }
 
     /**
-     * Test that DOES fail, for local testing, not for server testing.
-     * The 1M doesn't exist on the testing server.
+     * Test that SHOULD fail, for local testing, not for server testing.
+     * This is designed to be run manually as the 1M doesn't exist on the testing server.
+     * Before running this test, run testRoundTrip1M().
      * @throws IOException error
      */
     // @Test
@@ -464,6 +471,24 @@ public class TestSamRecordParser {
         rtc.sourceBamFilename = "test-data/splicedsamhelper/HZFWPTI-first-500.sam";
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
+        rtc.convertBamToGoby = false;
+        rtc.convertGobyToBam = false;
+        testRoundTripAny(rtc);
+    }
+
+    /**
+     * Full check of HZF. This dataset is NOT on the server so this test shouldn't be run on the server.
+     * @throws IOException error
+     */
+    // @Test
+    public void testHzFullCompare() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sourceBamFilename = "/tmp/HZ-bam-bam/HZFWPTI-source.bam";
+        rtc.destGobyBasename = "/tmp/HZ-bam-bam/HZFWPTI";
+        rtc.destBamFilename = "/tmp/HZ-bam-bam/HZFWPTI.bam";
+        rtc.keepQualityScores = true;
+        rtc.keepSoftClips = true;
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
         testRoundTripAny(rtc);
@@ -532,8 +557,8 @@ public class TestSamRecordParser {
         rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
         rtc.destGobyBasename = "/tmp/HENGLIT-to-goby";
         rtc.destBamFilename = "/tmp/HENGLIT-from-goby.bam";
-        // rtc.convertBamToGoby = false;
-        // rtc.convertGobyToBam = false;
+        rtc.convertBamToGoby = false;
+        rtc.convertGobyToBam = false;
         rtc.canonicalMdzForComparison = false;
         testRoundTripAny(rtc);
     }
@@ -569,12 +594,16 @@ public class TestSamRecordParser {
 
         assertNotNull("Could not locate random-access-genome in specified locations", rtc.inputGenomeFilename);
         RandomAccessSequenceInterface genome = null;
-        if (rtc.convertBamToGoby || rtc.convertGobyToBam) {
-            genome = new DualRandomAccessSequenceCache();
-            try {
-                ((DualRandomAccessSequenceCache)genome).load(rtc.inputGenomeFilename);
-            } catch (ClassNotFoundException e) {
-                throw new IOException("Could not load genome", e);
+        if (rtc.convertGobyToBam || rtc.convertBamToGoby) {
+            if (rtc.convertBamToGoby || rtc.convertGobyToBam) {
+                genome = new DualRandomAccessSequenceCache();
+                try {
+                    System.out.print("Loading random access genome...");
+                    ((DualRandomAccessSequenceCache)genome).load(rtc.inputGenomeFilename);
+                    System.out.println(" done");
+                } catch (ClassNotFoundException e) {
+                    throw new IOException("Could not load genome", e);
+                }
             }
         }
 
@@ -614,35 +643,39 @@ public class TestSamRecordParser {
         }
         final ProgressLogger progress = new ProgressLogger(LOG);
         progress.displayFreeMemory = true;
-        final SamComparison samComparison = new SamComparison();
+        final SamComparisonInterface samComparison = new SamPerPositionComparison();
         progress.start();
         samComparison.setMappedQualitiesPreserved(rtc.keepQualityScores);
         samComparison.setSoftClipsPreserved(rtc.keepSoftClips);
         samComparison.setCheckMate(false);
         samComparison.setCanonicalMdzForComparison(rtc.canonicalMdzForComparison);
-        samComparison.reset();
         while (sourceIterator.hasNext()) {
-            samComparison.setExpectedSamRecord(sourceIterator.next());
-            if (samComparison.getExpectedSamRecord().getReadUnmappedFlag()) {
+            final SAMRecord expected = sourceIterator.next();
+            if (expected.getReadUnmappedFlag()) {
                 // We don't store unmapped reads, so skip this source record
                 continue;
             }
             assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
-            samComparison.setActualSamRecord(destIterator.next());
+            final SAMRecord actual = destIterator.next();
+            Alignments.AlignmentEntry gobyActual = null;
             if (gobyReader != null) {
                 assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
-                samComparison.setGobyAlignment(gobyReader.next());
+                gobyActual = gobyReader.next();
             }
-            if (rtc.stopAtOneFailure) {
-                assertTrue("sam comparison failed", samComparison.compareSamRecords());
-            } else {
-                samComparison.compareSamRecords();
+            final boolean compared = samComparison.compare(expected, actual, gobyActual);
+            if (rtc.stopAtOneFailure && !compared) {
+                fail("Comparison failed");
             }
             progress.lightUpdate();
         }
+        samComparison.finished();
         progress.stop();
         if (!rtc.stopAtOneFailure && samComparison.getComparisonFailureCount() > 0) {
+            System.out.println("Number of records processed: " + samComparison.getReadNum());
             fail("Number of comparison failures: " + samComparison.getComparisonFailureCount());
+        } else {
+            System.out.println("Number of records processed: " + samComparison.getReadNum());
+            System.out.println("Number of comparison failures: " + samComparison.getComparisonFailureCount());
         }
     }
 
