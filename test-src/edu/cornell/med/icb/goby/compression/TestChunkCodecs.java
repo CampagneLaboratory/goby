@@ -18,15 +18,12 @@
 
 package edu.cornell.med.icb.goby.compression;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import org.junit.Test;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -48,17 +45,6 @@ public class TestChunkCodecs {
 
     }
 
-    @Test
-    public void testValidateHybridOld() throws IOException {
-
-        DataInputStream dis = new DataInputStream(new FileInputStream("test-data/GDFQPGI-pickrellNA18486_yale-hybrid.entries"));
-        dis.skip(9);
-
-        HybridChunkCodec1 hybridCodec = new HybridChunkCodec1();
-        assertTrue(hybridCodec.validate((byte) 0, dis));
-        AlignmentReader reader = new AlignmentReaderImpl("test-data/GDFQPGI-pickrellNA18486_yale-hybrid.entries");
-        assertTrue(reader.hasNext());
-    }
 
     @Test
     public void testValidateGZip() throws IOException {

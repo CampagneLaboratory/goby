@@ -53,8 +53,8 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private final long endOffset;
 
 
-
     private ByteSet supportedCodecRegistrationCodes;
+    private boolean withinSlice = true;
 
     /**
      * Support for splitting the entries on the file system.
@@ -99,21 +99,33 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
     private void reposition(final long start, final long end) throws IOException {
         assert end >= start : "end must be larger than start ";
-       if (start==0 && input.position()==0) {
+        if (start == 0 && input.position() == 0) {
 
             return;
         }
+
+      /*  if (start > input.length()) {
+            withinSlice = false;
+            return;
+        }*/
         input.position(start);
-        in=new DataInputStream(input);
+        if (input.position()!=start) {
+          // must have happened because we are past the end of stream.
+            withinSlice = false;
+            return;
+        }
+        in = new DataInputStream(input);
         int contiguousDelimiterBytes = 0;
         long skipped = 0;
         long position = 0;
 
+        withinSlice = true;
         boolean codecSeen = false;
-        // search though the input stream until a delimiter chunk or end of stream is reached
-        while (in.available() > 0) {
+        // search though the input stream until a delimiter chunk, end of stream, or end of slice is reached
+        int b;
+        while ((b=in.read())!=-1 && input.position() < end) {
 
-            final byte c = in.readByte();
+            final byte c = (byte)b;
             //     System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes);
             //    System.out.flush();
             if (!codecSeen && hasValidCodecCode(c)) {
@@ -130,7 +142,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                     chunkCodec = ChunkCodecHelper.withRegistrationCode(lastCodecCodeSeen);
                     // position exactly after the 7th 0xFF byte, past the first byte of the size:
                     // the first byte of size was already read and is provided in c.
-                    long positionBeforeValidation=input.position();
+                    long positionBeforeValidation = input.position();
                     if (!chunkCodec.validate(c, in)) {
                         LOG.warn(String.format("Found spurious boundary around position %d ", input.position()));
                         contiguousDelimiterBytes = 0;
@@ -154,8 +166,12 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             ++skipped;
         }
+        if (b==-1||input.position() >= end) {
+            withinSlice = false;
+        }
         position = start + skipped;
-        streamPositionAtStart=input.position();
+        streamPositionAtStart = input.position();
+
 
     }
 
@@ -205,7 +221,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                     throw new GobyRuntimeException(e);
                 }
             }
-            return in != null && super.hasNext(collection, collectionSize);
+            return withinSlice && in != null && super.hasNext(collection, collectionSize);
         } else {
             compressedBytes = null;
         }
