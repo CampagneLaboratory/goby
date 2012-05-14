@@ -94,13 +94,16 @@ public class SamplePairEnumerator {
                 sampleIndicesInGroup.add(sampleIndex);
             }
         }
-        for (int sampleIndexA : sampleIndicesInGroup) {
-            for (int sampleIndexB : sampleIndicesInGroup) {
-                if (sampleIndexA < sampleIndexB) {
-                    samplePairsForGroup[groupIndex].add(new SamplePair(sampleIndexA, sampleIndexB));
+
+        final ObjectArraySet<SamplePair> set = new ObjectArraySet<SamplePair>();
+        for (final int sampleIndexA : sampleIndicesInGroup) {
+            for (final int sampleIndexB : sampleIndicesInGroup) {
+                if (sampleIndexA != sampleIndexB) {
+                    set.add(new SamplePair(sampleIndexA, sampleIndexB));
                 }
             }
         }
+        samplePairsForGroup[groupIndex].addAll(set);
     }
 
     /**

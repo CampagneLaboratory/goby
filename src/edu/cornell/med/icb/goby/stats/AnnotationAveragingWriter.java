@@ -22,7 +22,7 @@ import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.EstimatedDistribution;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.PTestStatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
@@ -221,10 +221,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             }
 
             if (estimateIntraGroupDifferences) {
-                empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
                 empiricalPValueEstimator.setNullDistribution(new EstimatedDistribution(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
-
-
             }
             if ((estimateIntraGroupDifferences || estimateIntraGroupP) && !(obsWriter instanceof DummyObservationWriter)) {
                 empiricalPValueEstimator.getStatAdaptor().setObservationWriter(obsWriter);
@@ -588,12 +585,12 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     obsWriter.setTypeOfPair(ObservationWriter.TypeOfPair.WITHIN_GROUP_PAIR);
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
                         identifiers[0] = contexts[currentContext];
-                        for (final GroupComparison comparison : groupComparisons) {
-                            obsWriter.setNullComparison(comparison.nameGroup1);
-                            empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup1, counter);
-                            obsWriter.setNullComparison(comparison.nameGroup2);
-                            empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup2, counter);
+                        int groupIndex = 0;
+                        for (String group : groups) {
+                            empiricalPValueEstimator.estimateNullDensity(currentContext, groupIndex, counter);
+                            groupIndex++;
                         }
+
                     }
                 }
                 if (estimateIntraGroupP) {
@@ -631,7 +628,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             return "";
 
         } else {
-            return String.format("%4g", value);
+            return String.format("%.4g", value);
         }
     }
 
