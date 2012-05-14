@@ -20,14 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Merge;
-import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.util.ICBStringUtils;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.ArrayUtils;
@@ -35,18 +28,11 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
 
 /**
  * Sort an alignment by reference and reference position for very large alignments.
@@ -60,7 +46,7 @@ public class SortMode extends AbstractGobyMode {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(SortMode.class);
+    private static final org.apache.log4j.Logger LOG = Logger.getLogger(SortMode.class);
 
     /**
      * The mode name.
@@ -97,6 +83,7 @@ public class SortMode extends AbstractGobyMode {
     private final ConcurrentLinkedQueue<SortMergeSplit> splitsToMerge = new ConcurrentLinkedQueue<SortMergeSplit>();
     // Number of splits that are waiting to be sorted/merged. Not just using splitsToMerge.size() for efficiency
     private final AtomicInteger splitsToMergeSize = new AtomicInteger(0);
+    private final AtomicInteger numSplitsCompleted = new AtomicInteger(0);
     // Splits that have been sorted or sorted/merged, waiting for the next sort/merge
     private final ConcurrentLinkedQueue<SortMergeSplit> sortedSplits = new ConcurrentLinkedQueue<SortMergeSplit>();
     // The number of sorts or sorts/merges that are running or queued right now
@@ -107,8 +94,8 @@ public class SortMode extends AbstractGobyMode {
     private final ConcurrentLinkedQueue<Throwable> exceptions = new ConcurrentLinkedQueue<Throwable>();
     private final ConcurrentLinkedQueue<File> filesToDelete = new ConcurrentLinkedQueue<File>();
 
-    ProgressLogger progressSplitSort;
-    ProgressLogger progressMergeSort;
+    private ProgressLogger progressSplitSort;
+    private ProgressLogger progressMergeSort;
 
     @Override
     public String getModeName() {
@@ -368,13 +355,13 @@ public class SortMode extends AbstractGobyMode {
         boolean lastSplit = false;
         boolean firstSort = true;
 
-        progressSplitSort = new ProgressLogger(LOG, "split/sorts");
+        progressSplitSort = new ProgressLogger(LOG, "split-sorts");
         final int estimatedNumberOfSplits = (int) Math.ceil((double) fileSize / (double) splitSize);
         progressSplitSort.displayFreeMemory = true;
         progressSplitSort.expectedUpdates = estimatedNumberOfSplits;
         LOG.info("Expecting to make " + estimatedNumberOfSplits + " initial splits.");
         progressSplitSort.start();
-        
+
         while (!lastSplit) {
             long splitEnd = splitStart + splitSize;
             if (splitEnd >= fileSize - 1) {
@@ -393,12 +380,20 @@ public class SortMode extends AbstractGobyMode {
         }
 
         LOG.debug(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+        while (numSplitsCompleted.get() != numberOfSplits) {
+            // Wait a bit for tasks to finish before finding more to submit
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        progressSplitSort.done();
 
         progressMergeSort = new ProgressLogger(LOG, "merges");
         progressMergeSort.displayFreeMemory = true;
         progressMergeSort.expectedUpdates = numberOfSplits;
         progressMergeSort.start();
-
         // Subsequent sorts
         boolean lastMerge = false;
         boolean done = false;
@@ -428,7 +423,7 @@ public class SortMode extends AbstractGobyMode {
             final int numSplitsForMerge;
             if (splitsToMergeSizeLocal == numberOfSplits) {
                 numSplitsForMerge = 1;
-                lastMerge=true;
+                lastMerge = true;
             } else if (splitsToMergeSizeLocal == 0) {
                 // Nothing to sort this iteration
                 numSplitsForMerge = 0;
@@ -486,7 +481,6 @@ public class SortMode extends AbstractGobyMode {
             }
         }
 
-        progressSplitSort.stop();
         progressMergeSort.stop();
 
         if (!filesToDelete.isEmpty()) {
@@ -545,7 +539,7 @@ public class SortMode extends AbstractGobyMode {
                     alignmentIterator.setOutputFilename(subOutputFilename);
                     alignmentIterator.setBasename(subBasename);
 
-                    // Iterate through each alignment and write sequence variations to output file:
+                    // Iterate through each alignment and entries to output file:
                     LOG.debug(String.format("[%s] Loading entries...", threadId));
                     final SortMergeSplitFileRange range = toSort.ranges.get(0);
                     alignmentIterator.iterate(range.min, range.max, basename);
@@ -568,12 +562,16 @@ public class SortMode extends AbstractGobyMode {
                             alignmentReader.close();
                         }
                         sortedSplits.add(toSort);
+
                     }
 
                 } catch (Exception e) {
-                    LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(),  e.getMessage()));
+                    LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(), e.getMessage()));
                     e.printStackTrace();
                     exceptions.add(e);
+                } finally {
+                    progressSplitSort.update();
+                    numSplitsCompleted.incrementAndGet();
                 }
                 progressSplitSort.update();
             }
@@ -650,8 +648,8 @@ public class SortMode extends AbstractGobyMode {
                     numMergesExecuted.incrementAndGet();
                     sortedSplits.add(merged);
                 } catch (Exception e) {
-                    LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(),  e.getMessage()));
-                   e.printStackTrace();
+                    LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(), e.getMessage()));
+                    e.printStackTrace();
                     exceptions.add(e);
                 } finally {
                     try {

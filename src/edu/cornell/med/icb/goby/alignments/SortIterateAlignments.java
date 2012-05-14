@@ -85,6 +85,11 @@ public class SortIterateAlignments extends IterateAlignments {
         Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
     }
 
+    /**
+     * This method writes the content of the iterator to the writer, then closes the writer.
+     * @param writer
+     * @throws IOException
+     */
     public void write(final AlignmentWriterImpl writer) throws IOException {
         // too many hits is prepared as for Merge:
         try {

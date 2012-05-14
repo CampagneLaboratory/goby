@@ -135,7 +135,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
                 if (codec != null) {
                     codec.newChunk();
                 }
-                if (collection.getReadsCount() == 0) {
+                if (collection==null || collection.getReadsCount() == 0) {
                     return false;
                 }
             }

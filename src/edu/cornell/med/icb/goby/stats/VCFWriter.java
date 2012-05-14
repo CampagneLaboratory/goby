@@ -556,32 +556,10 @@ public class VCFWriter {
      * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
      *
      * @param infoFieldIndex Index returned by definedField("INFO",...)
-     * @param format
      * @param value          Value of the field.
      */
-    public final void setInfo(final int infoFieldIndex, final String format, final double value) {
-        infoValues[infoFieldIndex] = String.format(format, value);
-    }
-
-    /**
-     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
-     *
-     * @param infoFieldIndex Index returned by definedField("INFO",...)
-     * @param value          Value of the field.
-     */
-    public final void setInfo(final int infoFieldIndex, final float value) {
+    public void setInfo(int infoFieldIndex, float value) {
         infoValues[infoFieldIndex] = Float.toString(value);
-    }
-
-    /**
-     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
-     *
-     * @param infoFieldIndex Index returned by definedField("INFO",...)
-     * @param format         format specification to convert float to string (see String.format)
-     * @param value          Value of the field.
-     */
-    public final void setInfo(final int infoFieldIndex, final String format, final float value) {
-        infoValues[infoFieldIndex] = String.format(format, value);
     }
 
     /**
@@ -628,11 +606,9 @@ public class VCFWriter {
         formatFieldActive[formatFieldIndex] = true;
         formatValues[formatFieldIndex][sampleIndex] = value;
     }
-
     protected CharSequence getSampleValue(final int formatFieldIndex, final int sampleIndex) {
-        return formatValues[formatFieldIndex][sampleIndex];
+        return  formatValues[formatFieldIndex][sampleIndex];
     }
-
     /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *
@@ -683,35 +659,10 @@ public class VCFWriter {
      *
      * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
      * @param sampleIndex      Index of the sample
-     * @param format           String.format specification to convert the integer to a string.
      * @param value            Value to set the field to for the current record.
      */
-    public final void setSampleValue(final int formatFieldIndex, final int sampleIndex, final String format, final int value) {
-        setSampleValue(formatFieldIndex, sampleIndex, String.format(format, value));
-    }
-
-    /**
-     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
-     *
-     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
-     * @param sampleIndex      Index of the sample
-     * @param format           String.format specification to convert the float to a string.
-     * @param value            Value to set the field to for the current record.
-     */
-    public final void setSampleValue(final int formatFieldIndex, final int sampleIndex, final String format, final float value) {
-        setSampleValue(formatFieldIndex, sampleIndex, String.format(format, value));
-    }
-
-    /**
-     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
-     *
-     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
-     * @param sampleIndex      Index of the sample
-     * @param format           String.format specification to convert the float to a string.
-     * @param value            Value to set the field to for the current record.
-     */
-    public final void setSampleValue(final int formatFieldIndex, final int sampleIndex, final String format, final double value) {
-        setSampleValue(formatFieldIndex, sampleIndex, String.format(format, value));
+    public void setSampleValue(int formatFieldIndex, int sampleIndex, float value) {
+        setSampleValue(formatFieldIndex, sampleIndex, Float.toString(value));
     }
 
     public void setSampleValue(String formatToken, int sampleIndex, String value) {

@@ -426,7 +426,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
-    private int codeIndex              (String                     currentContext) {
+    private int codeIndex
+            (String
+                     currentContext) {
         int contextIndex = -1;
         for (int i = 0; i < contexts.length; i++) {
             if (currentContext.equals(contexts[i])) {
@@ -623,21 +625,17 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * @param value
      * @return
      */
-    private String formatDouble
-    (
-            double value) {
+    private String formatDouble(double value) {
         if (value != value) {
             // value is NaN
             return "";
 
         } else {
-            return String.format("%.4g", value);
+            return String.format("%4g", value);
         }
     }
 
-    private boolean checkCounts
-            (FormatFieldCounter
-                     tempCounter, int currentContext) {
+    private boolean checkCounts(FormatFieldCounter tempCounter, int currentContext) {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
         for (int indexGroup = 0; indexGroup < numGroups; indexGroup++) {

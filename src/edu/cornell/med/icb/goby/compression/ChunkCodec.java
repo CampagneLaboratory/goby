@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -55,6 +54,12 @@ public interface ChunkCodec {
      */
     ByteArrayOutputStream encode(Message readCollection) throws IOException;
 
+    /**
+     * Decode the bytes to collection. Note that result can be null if the chunk is byte content does not validate.
+     * @param bytes bytes for codec compressed stream.
+     * @return Decoded PB collection.
+     * @throws IOException
+     */
     Message decode(byte[] bytes) throws IOException;
 
     /**

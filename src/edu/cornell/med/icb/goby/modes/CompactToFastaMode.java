@@ -362,18 +362,16 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     writer.write(newEntryCharacter);
                     writer.write(description);
                     writer.write('\n');
-                    if (processPairs) {
+                    final boolean processPairInThisRead = processPairs && readEntry.hasSequencePair();
+                    if (processPairInThisRead) {
                         pairWriter.write(newEntryCharacter);
                         pairWriter.write(description);
                         pairWriter.write('\n');
                     }
                     observeReadIndex(readEntry.getReadIndex());
                     ReadsReader.decodeSequence(readEntry, sequence);
-                    if (processPairs && !readEntry.hasSequencePair()) {
-                        System.err.println("The input file has no pair sequence information. Cannot write paired output.");
-                        System.exit(1);
-                    }
-                    if (processPairs) {
+
+                    if (processPairInThisRead) {
                         ReadsReader.decodeSequence(readEntry, sequencePair, true);
                     }
 
@@ -386,7 +384,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     if (outputColorMode) {
                         ColorSpaceConverter.convert(transformedSequence, colorSpaceBuffer, referenceConversion);
                         transformedSequence = colorSpaceBuffer;
-                        if (processPairs) {
+                        if (processPairInThisRead) {
                             ColorSpaceConverter.convert(transformedSequencePair, colorSpaceBuffer, referenceConversion);
                             transformedSequencePair = colorSpaceBuffer;
                         }
@@ -395,7 +393,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                         for (int i = 0; i < transformedSequence.length(); i++) {
                             transformedSequence.charAt(i, getFakeNtCharacter(transformedSequence.charAt(i)));
                         }
-                        if (processPairs) {
+                        if (processPairInThisRead) {
                             for (int i = 0; i < transformedSequencePair.length(); i++) {
                                 transformedSequencePair.charAt(i, getFakeNtCharacter(transformedSequencePair.charAt(i)));
                             }
@@ -403,7 +401,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     }
                     if (trimAdaptorLength > 0) {
                         transformedSequence = transformedSequence.substring(trimAdaptorLength);
-                        if (processPairs) {
+                        if (processPairInThisRead) {
                             transformedSequencePair = transformedSequencePair.substring(trimAdaptorLength);
                         }
                     }
@@ -415,7 +413,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                             }
                         }
                     }
-                    if (processPairs) {
+                    if (processPairInThisRead) {
                         if (alphabet != null) {
 
                             for (int i = 0; i < transformedSequencePair.length(); i++) {
@@ -426,7 +424,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                         }
                     }
                     writeSequence(writer, transformedSequence, fastaLineLength);
-                    if (processPairs) {
+                    if (processPairInThisRead) {
                         writeSequence(pairWriter, transformedSequencePair, fastaLineLength);
                     }
                     if (outputFormat == OutputFormat.FASTQ) {
@@ -437,7 +435,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                         writeQualityScores(writer, hasQualityScores, qualityScores,
                                 outputFakeQualityMode, readLength);
 
-                        if (processPairs) {
+                        if (processPairInThisRead) {
                             final int readLengthPair = transformedSequencePair.length();
                             final byte[] qualityScoresPair = readEntry.getQualityScoresPair().toByteArray();
                             final boolean hasPairQualityScores =

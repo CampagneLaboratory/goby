@@ -196,7 +196,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             fisherExactPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                     1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
             deltaMRColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("Delta_MR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Float, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Integer, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
             if (estimateEmpiricalP) {
                 empiricalPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("empiricalP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                         1, ColumnType.Float, String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
@@ -278,8 +278,6 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
     }
 
-    final String PVALUE_FORMAT = "%.4g";
-
     @Override
     public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator,
                             final SampleCountInfo[] sampleCounts,
@@ -325,9 +323,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             statWriter.setInfo(notMethylatedCCountsIndex[groupIndex], mci.unmethylatedCCountPerGroup[groupIndex]);
             statWriter.setInfo(methylatedCCountsIndex[groupIndex], mci.methylatedCCountPerGroup[groupIndex]);
-            final float mr = getMR(groupIndex);
-            statWriter.setInfo(methylationRatePerGroupIndex[groupIndex], "%.1f", mr);
-
+            statWriter.setInfo(methylationRatePerGroupIndex[groupIndex], getMR(groupIndex));
         }
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -386,14 +382,13 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
             final double group1MR = getMR(indexGroup1);
             final double group2MR = getMR(indexGroup2);
-            final float deltaMR = (int) Math.round(Math.abs(group1MR - group2MR));
+            final int deltaMR = (int) Math.round(Math.abs(group1MR - group2MR));
 
-            statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], PVALUE_FORMAT, log2OddsRatio);
-            statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], PVALUE_FORMAT, logOddsRatioSE);
-            statWriter.setInfo(log2OddsRatioZColumnIndex[comparison.index],PVALUE_FORMAT,  log2OddsRatioZValue);
-
-            statWriter.setInfo(fisherExactPValueColumnIndex[comparison.index], PVALUE_FORMAT, fisherP);
-            statWriter.setInfo(deltaMRColumnIndex[comparison.index], "%.0f", deltaMR);
+            statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
+            statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], logOddsRatioSE);
+            statWriter.setInfo(log2OddsRatioZColumnIndex[comparison.index], log2OddsRatioZValue);
+            statWriter.setInfo(fisherExactPValueColumnIndex[comparison.index], fisherP);
+            statWriter.setInfo(deltaMRColumnIndex[comparison.index], deltaMR);
 
         }
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, oneBasedPosition);
@@ -451,7 +446,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             for (final GroupComparison comparison : groupComparisons) {
 
                 final double p = empiricalPValueEstimator.estimateEmpiricalPValue(0, comparison, mci);
-                statWriter.setInfo(empiricalPValueColumnIndex[comparison.index], PVALUE_FORMAT, p);
+                statWriter.setInfo(empiricalPValueColumnIndex[comparison.index], p);
                 if (p <= fixedWindowEmpiricalPSignificanceThreshold) {
                     fixedWindow[comparison.index].add(referenceIndex, position);
                 } else {

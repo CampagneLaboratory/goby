@@ -122,6 +122,9 @@ public class HybridChunkCodec1 implements ChunkCodec {
         // the number of bytes to encode the checksum.
         System.arraycopy(bytes, 8 + compressedSize, leftOver, 0, bytesLeft);
         final Message reducedProtoBuff = gzipCodec.decode(leftOver);
+        if (reducedProtoBuff==null) {
+            return null;
+        }
         return handler.decompressCollection(reducedProtoBuff, compressedBytes);
     }
 

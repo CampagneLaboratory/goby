@@ -448,7 +448,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                 final byte[] compressedBytes = alignmentEntryReader.getCompressedBytes();
                 if (compressedBytes != null) {
                     collection = (Alignments.AlignmentCollection) codec.decode(compressedBytes);
-                    if (collection.getAlignmentEntriesCount() == 0) {
+                    if (collection==null || collection.getAlignmentEntriesCount() == 0) {
                         return false;
                     }
                     if (LOG.isTraceEnabled()) {

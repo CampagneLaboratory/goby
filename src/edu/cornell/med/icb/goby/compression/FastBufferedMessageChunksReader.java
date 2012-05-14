@@ -40,7 +40,7 @@ import java.io.IOException;
  */
 public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private static final Log LOG = LogFactory.getLog(FastBufferedMessageChunksReader.class);
-    private final long end;
+
     private final FastBufferedInputStream input;
 
     /**
@@ -71,8 +71,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     public FastBufferedMessageChunksReader(final long start, long end,
                                            final FastBufferedInputStream input) throws IOException {
         super();
-        startOffset = start;
-        endOffset = end;
+
         if (start < 0L) {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be less than zero");
@@ -88,7 +87,8 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         if (end != Long.MAX_VALUE && start != end) {
             end += MessageChunksWriter.DELIMITER_LENGTH + 4;
         }
-        this.end = end;
+        startOffset = start;
+        endOffset = end;
         this.input = input;
         this.in = new DataInputStream(input);
         supportedCodecRegistrationCodes = ChunkCodecHelper.registrationCodes();
@@ -104,13 +104,13 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             return;
         }
 
-      /*  if (start > input.length()) {
+        /*  if (start > input.length()) {
             withinSlice = false;
             return;
         }*/
         input.position(start);
-        if (input.position()!=start) {
-          // must have happened because we are past the end of stream.
+        if (input.position() != start) {
+            // must have happened because we are past the end of stream.
             withinSlice = false;
             return;
         }
@@ -123,9 +123,9 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         boolean codecSeen = false;
         // search though the input stream until a delimiter chunk, end of stream, or end of slice is reached
         int b;
-        while ((b=in.read())!=-1 && input.position() < end) {
+        while ((b = in.read()) != -1 && input.position() < end) {
 
-            final byte c = (byte)b;
+            final byte c = (byte) b;
             //     System.out.printf("%2X(%d) ", c, contiguousDelimiterBytes);
             //    System.out.flush();
             if (!codecSeen && hasValidCodecCode(c)) {
@@ -166,7 +166,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             ++skipped;
         }
-        if (b==-1||input.position() >= end) {
+        if (b == -1 || input.position() >= end) {
             withinSlice = false;
         }
         position = start + skipped;
@@ -210,11 +210,13 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
      */
     @Override
     public boolean hasNext(final GeneratedMessage collection, final int collectionSize) {
-        // do not read a new collection if we are past the end of the file split allocated to us
         if (collection == null || entryIndex >= collectionSize) {
             if (input != null) {
                 try {
-                    if (input.position() >= end) {
+                    // do not read a new collection if we are before the start or past the end of the file split allocated to us
+                    final long position = input.position();
+                    if (position < startOffset || position >= endOffset) {
+                        withinSlice = false;
                         return false;
                     }
                 } catch (IOException e) {

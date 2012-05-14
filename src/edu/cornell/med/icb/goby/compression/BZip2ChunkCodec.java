@@ -93,7 +93,7 @@ public class BZip2ChunkCodec implements ChunkCodec {
         }
 
         // remove the magic numbers:
-        final CBZip2InputStream uncompressStream = new CBZip2InputStream(new ByteArrayInputStream(bytes, 0, bytes.length));
+        final CBZip2InputStream uncompressStream = new CBZip2InputStream(new ByteArrayInputStream(bytes, 3, bytes.length));
         try {
             return parser.parse(uncompressStream);
         } finally {

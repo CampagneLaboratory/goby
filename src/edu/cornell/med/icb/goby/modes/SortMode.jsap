@@ -117,7 +117,7 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>100</string>
+                <string>10</string>
             </defaults>
             <help>The larger the value of split-size-scaling-factor the more splits will be made because this
                 value controls the COMPRESSED size of a single split, based on the equation
@@ -126,7 +126,7 @@
                 per thread. If, during sort-large-mode, you are running out of memory, INCREASE the value for
                 split-size-scaling-factor. Also, if you are running out of memory, it is advisable to increase the
                 overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
-                the program with a total of 8g of memory. The relatively large value for this (the default is 30)
+                the program with a total of 8g of memory. The relatively large value for this (the default is 10)
                 is required because the alignments will be decompressed after being read.
             </help>
         </flaggedOption>
