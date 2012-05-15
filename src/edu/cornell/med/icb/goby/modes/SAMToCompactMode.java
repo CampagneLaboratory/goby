@@ -400,6 +400,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 System.out.println("mapping=" + chromosomeNameMapping(genome, samRecord.getReferenceName()));
                 System.exit(10);
             }
+            int segmentIndex=0;
             for (final GobySamSegment gobySamSegment : gobySamRecord.getSegments()) {
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
@@ -438,7 +439,8 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 if (preserveAllMappedQuals) {
 
                     final byte[] sourceQualAsBytes = gobySamRecord.getReadQualitiesAsBytes();
-                    if (sourceQualAsBytes != null) {
+                    // we only store the full quality score on the first entry with a given query index:
+                    if (sourceQualAsBytes != null && segmentIndex==0) {
                         currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
                     }
                 }
@@ -469,6 +471,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     }
                 }
                 builders.add(currentEntry);
+                segmentIndex++;
             }
             final int numFragments = builders.size();
             for (final Alignments.AlignmentEntry.Builder builder : builders) {
