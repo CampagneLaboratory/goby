@@ -424,7 +424,7 @@ public class SortMode extends AbstractGobyMode {
                     break;
                 }
             }
-            final int splitsToMergeSizeLocal = splitsToMergeSize.get();
+            int splitsToMergeSizeLocal = splitsToMergeSize.get();
             if (lastMerge && splitsToMergeSizeLocal == 1) {
                 // We're done
                 break;
@@ -462,7 +462,7 @@ public class SortMode extends AbstractGobyMode {
             if (numSplitsForMerge > 0) {
                 final List<SortMergeSplit> toMerge = new ArrayList<SortMergeSplit>(numSplitsForMerge);
                 for (int i = 0; i < numSplitsForMerge; i++) {
-                    splitsToMergeSize.decrementAndGet();
+                    splitsToMergeSizeLocal=splitsToMergeSize.decrementAndGet();
                     toMerge.add(splitsToMerge.poll());
                 }
                 LOG.debug(String.format("[%s] %d items in queue to sort after removing %d for sorting",
@@ -629,8 +629,7 @@ public class SortMode extends AbstractGobyMode {
 
                     final int numSplits = toMerge.size();
                     for (int i = 1; i < numSplits; i++) {
-                        merged.addRangesFromSplit(toMerge.get(i));
-                        merged.numFiles += toMerge.get(i).numFiles;
+                        merged.mergeWith(toMerge.get(i));
                     }
                     merged.ranges = mergeRangeList(merged.ranges);
 
@@ -803,7 +802,10 @@ public class SortMode extends AbstractGobyMode {
         }
 
         public SortMergeSplit(SortMergeSplit source) {
-            this(source.min(), source.max());
+            ranges = new ArrayList<SortMergeSplitFileRange>();
+            ranges.addAll(source.ranges);
+            numFiles = 1;
+            tag = ICBStringUtils.generateRandomString(10);
         }
 
         private long min() {
@@ -841,6 +843,15 @@ public class SortMode extends AbstractGobyMode {
 
         public String toString() {
             return ArrayUtils.toString(ranges);
+        }
+
+        /**
+         * Add the content of source to this range.
+         * @param sortMergeSplit
+         */
+        public void mergeWith(SortMergeSplit sortMergeSplit) {
+            addRangesFromSplit(sortMergeSplit);
+            numFiles += sortMergeSplit.numFiles;
         }
     }
 
