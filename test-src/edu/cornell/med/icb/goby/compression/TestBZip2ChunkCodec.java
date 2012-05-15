@@ -40,7 +40,12 @@ public class TestBZip2ChunkCodec {
     public void roundTrip() throws IOException {
         BZip2ChunkCodec codec=new BZip2ChunkCodec();
         codec.setHandler(new ReadProtobuffCollectionHandler());
-        Message collection= Reads.ReadCollection.newBuilder().build();
+        final Reads.ReadCollection.Builder builder = Reads.ReadCollection.newBuilder();
+        Reads.ReadEntry.Builder entry=Reads.ReadEntry.newBuilder();
+        entry.setReadIndex(0);
+        entry.setReadLength(1);
+        builder.addReads(entry);
+        Message collection= builder.build();
         ByteArrayOutputStream stream = codec.encode(collection);
         Message decoded = codec.decode(stream.toByteArray());
         assertNotNull(decoded);
