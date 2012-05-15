@@ -102,7 +102,7 @@ public class TestHiCMerge {
             "}\n" +
             "Set targetLengths: {0->249250621\n" +
             "}\n" +
-            "Set numQueries=45639256\n" +
+            "Set numQueries=22819628\n" +
             "Set numTargets=1\n" +
             "Set statistics { {part1.number.aligned.reads=1, part1.basename.full=mantis-1355, part2.basename.full=mantis-1355, part2.basename=mantis-1355, part1.max.query.index=537, part1.number.of.queries=22819628, part2.max.query.index=537, part2.number-of-entries-written=1, part2.number.aligned.reads=1, part1.number-of-entries-written=1, part2.min.query.index=0, part1.min.query.index=0, part2.number.of.queries=22819628, part1.basename=mantis-1355} }\n" +
             "Closed\n";

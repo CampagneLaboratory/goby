@@ -122,7 +122,7 @@ public class TestConcatAlignmentReader {
         concatReader.readHeader();
         System.out.println(concatReader.getSmallestSplitQueryIndex());
         System.out.println(concatReader.getLargestSplitQueryIndex());
-        assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
+        assertEquals(Math.max(numQueries101 , numQueries102), concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
     }
@@ -346,7 +346,7 @@ public class TestConcatAlignmentReader {
          */
         // There are exactly 12 entries between position 33031693 and 33031798
         final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(new DefaultAlignmentReaderFactory(),
-                false, 21, 33031693, 21, 33031798,
+                true, 21, 33031693, 21, 33031798,
                 "http://dl.dropbox.com/u/357497/KHTFWNT-419-bis6-chr22-simulated-flat.entries",
                 "http://dl.dropbox.com/u/357497/MCQPRWA-419-bis6-chr22-simulated-spikes.entries");
         count = countAlignmentEntries(concatReader);

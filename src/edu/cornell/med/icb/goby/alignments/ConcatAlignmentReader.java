@@ -205,7 +205,12 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 targetNumbers.add(reader.getNumberOfTargets());
                 final int numQueriesForReader = reader.getNumberOfQueries();
                 numQueriesPerReader[readerIndex] = numQueriesForReader;
-                numberOfQueries += numQueriesForReader;
+                if (adjustQueryIndices) {
+                    numberOfQueries +=numQueriesForReader;
+                }   else {
+
+                    numberOfQueries =Math.max(numberOfQueries,numQueriesForReader);
+                }
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
                 mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList(), readers.length);
 
