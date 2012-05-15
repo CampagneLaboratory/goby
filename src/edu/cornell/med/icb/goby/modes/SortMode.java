@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.util.ICBStringUtils;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -96,6 +97,7 @@ public class SortMode extends AbstractGobyMode {
 
     private ProgressLogger progressSplitSort;
     private ProgressLogger progressMergeSort;
+    private boolean dryRun;
 
     @Override
     public String getModeName() {
@@ -290,6 +292,7 @@ public class SortMode extends AbstractGobyMode {
         filesPerMerge = jsapResult.getInt("files-per-merge");
         setSplitSize(jsapResult.getLong("split-size"));
         tempDir = jsapResult.getString("temp-dir");
+        dryRun = jsapResult.getBoolean("dry-run");
 
         setMemoryPercentageForWork(jsapResult.getDouble("memory-percentage-for-work"));
         splitSizeScalingFactor = jsapResult.getInt("thread-memory-scaling-factor");
@@ -359,6 +362,7 @@ public class SortMode extends AbstractGobyMode {
         progressSplitSort.displayFreeMemory = true;
 
         int count = 0;
+        ObjectArrayList<Runnable> splits = new ObjectArrayList<Runnable>();
         while (!lastSplit) {
             long splitEnd = splitStart + splitSize;
             if (splitEnd >= fileSize - 1) {
@@ -367,22 +371,22 @@ public class SortMode extends AbstractGobyMode {
             }
             final SortMergeSplit split = new SortMergeSplit(splitStart, splitEnd);
             numberOfSplits++;
-            sortSplit(split, firstSort);
+            splits.add(sortSplit(split, firstSort));
             firstSort = false;
             splitStart = splitEnd;
 
-            if (!exceptions.isEmpty()) {
-                break;
-            }
-            /*    count++;
-            if (count>2) {
-                numberOfSplits=2;
-                break;
-            }*/
         }
+        LOG.info(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+
         progressSplitSort.expectedUpdates = numberOfSplits;
         progressSplitSort.start();
-        LOG.info(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+        for (Runnable toRun : splits) {
+            if (executorService != null) {
+                executorService.submit(toRun);
+            } else {
+                toRun.run();
+            }
+        }
         while (numSplitsCompleted.get() != numberOfSplits) {
             // Wait a bit for tasks to finish before finding more to submit
             if (!exceptions.isEmpty()) {
@@ -427,8 +431,8 @@ public class SortMode extends AbstractGobyMode {
             }
 
             final int numSplitsForMerge;
-            if (splitsToMergeSizeLocal == numberOfSplits) {
-                numSplitsForMerge = 1;
+            if (splitsToMergeSizeLocal == numberOfSplits && numberOfSplits <= filesPerMerge) {
+                numSplitsForMerge = (int) numberOfSplits;
                 lastMerge = true;
             } else if (splitsToMergeSizeLocal == 0) {
                 // Nothing to sort this iteration
@@ -523,11 +527,17 @@ public class SortMode extends AbstractGobyMode {
      * @param toSort    the split to sort
      * @param firstSort if this is the first sort (TMH will be written only during the first sort)
      */
-    private void sortSplit(final SortMergeSplit toSort, final boolean firstSort) {
+    private Runnable sortSplit(final SortMergeSplit toSort, final boolean firstSort) {
         numSortMergesRunning.incrementAndGet();
         final Runnable toRun = new Runnable() {
             @Override
             public void run() {
+                if (dryRun) {
+                    System.out.println("dry-run: will sort-split " + toSort);
+                    sortedSplits.add(toSort);
+                    numSplitsCompleted.incrementAndGet();
+                    return;
+                }
                 // Before sort
 
                 // SORT
@@ -553,7 +563,7 @@ public class SortMode extends AbstractGobyMode {
                     alignmentIterator.iterate(range.min, range.max, basename);
                     LOG.debug(String.format("[%s] Sorting...", threadId));
                     alignmentIterator.sort();
-                    LOG.debug(String.format("[%s] Writing sorted alignment for %s at %s...", threadId, toSort.toString(), toSort.tag));
+                    LOG.debug(String.format("[%s] Writing sorted alignment for %s with tag %s...", threadId, toSort.toString(), toSort.tag));
                     alignmentIterator.write(writer);
 
                     AlignmentReader alignmentReader = null;
@@ -569,6 +579,7 @@ public class SortMode extends AbstractGobyMode {
                         if (alignmentReader != null) {
                             alignmentReader.close();
                         }
+                        deleteOnExit(threadId, subOutputFilename);
                         checkBasename(threadId, subOutputFilename);
                         sortedSplits.add(toSort);
                     }
@@ -583,11 +594,16 @@ public class SortMode extends AbstractGobyMode {
                 }
             }
         };
-        if (executorService != null) {
-            executorService.submit(toRun);
-        } else {
-            toRun.run();
-        }
+        return toRun;
+    }
+
+    private void deleteOnExit(String threadId, String basename) {
+
+        new File(basename + ".entries").deleteOnExit();
+        new File(basename + ".header").deleteOnExit();
+        new File(basename + ".index").deleteOnExit();
+        new File(basename + ".stats").deleteOnExit();
+
     }
 
     /**
@@ -601,6 +617,7 @@ public class SortMode extends AbstractGobyMode {
         final Runnable toRun = new Runnable() {
             @Override
             public void run() {
+
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
                 final List<String> mergeFromBasenames = new LinkedList<String>();
                 ConcatSortedAlignmentReader concatReader = null;
@@ -608,10 +625,11 @@ public class SortMode extends AbstractGobyMode {
                 try {
                     System.gc();
                     // Prepare to merge
-                    final SortMergeSplit merged = toMerge.get(0);
+                    final SortMergeSplit merged = new SortMergeSplit(toMerge.get(0));
+
                     final int numSplits = toMerge.size();
                     for (int i = 1; i < numSplits; i++) {
-                        merged.addRangesFomSplit(toMerge.get(i));
+                        merged.addRangesFromSplit(toMerge.get(i));
                         merged.numFiles += toMerge.get(i).numFiles;
                     }
                     merged.ranges = mergeRangeList(merged.ranges);
@@ -625,16 +643,18 @@ public class SortMode extends AbstractGobyMode {
                         final String inputBasename = tempDir + "/sorted-" + mergeFrom.tag;
                         mergeFromBasenames.add(inputBasename);
                     }
-                    // note that we don't adjust query indices because they are already not overlaping (all come from the
+                    // note that we don't adjust query indices because they are already not overlapping (all come from the
                     // same input file)
                     final String[] mergeFromBasenamesArray =
                             mergeFromBasenames.toArray(new String[mergeFromBasenames.size()]);
                     for (final String mergeBasename : mergeFromBasenamesArray) {
                         checkBasename(threadId, mergeBasename);
                     }
-                    concatReader = new ConcatSortedAlignmentReader(
-                            false, mergeFromBasenamesArray);
-                    concatReader.readHeader();
+                    if (!dryRun) {
+                        concatReader = new ConcatSortedAlignmentReader(
+                                false, mergeFromBasenamesArray);
+                        concatReader.readHeader();
+                    }
                     // We've used merged's tag as input. Let's get a new tag for it's output
                     merged.makeNewTag();
 
@@ -645,17 +665,21 @@ public class SortMode extends AbstractGobyMode {
                         final String subBasename = "sorted-" + merged.tag;
                         subOutputFilename = tempDir + "/" + subBasename;
                     }
-                    writer = new AlignmentWriterImpl(subOutputFilename);
+                    if (!dryRun) {
+                        writer = new AlignmentWriterImpl(subOutputFilename);
 
-                    if (concatReader.getTargetLength() != null) {
-                        writer.setTargetLengths(concatReader.getTargetLength());
+                        if (concatReader.getTargetLength() != null) {
+                            writer.setTargetLengths(concatReader.getTargetLength());
+                        }
+                        writer.setTargetIdentifiers(concatReader.getTargetIdentifiers());
+                        writer.setSorted(true);
+                        for (final Alignments.AlignmentEntry entry : concatReader) {
+                            writer.appendEntry(entry);
+                        }
                     }
-                    writer.setTargetIdentifiers(concatReader.getTargetIdentifiers());
-                    writer.setSorted(true);
-                    for (final Alignments.AlignmentEntry entry : concatReader) {
-                        writer.appendEntry(entry);
+                    if (dryRun) {
+                        System.out.printf("dry-run: will sort-merge %d splits into %s %n", toMerge.size(), merged.toString());
                     }
-
                     // Sort/merge finished
                     numMergesExecuted.incrementAndGet();
                     sortedSplits.add(merged);
@@ -712,7 +736,7 @@ public class SortMode extends AbstractGobyMode {
     private boolean checkFile(final String threadId, final String filename) {
         final File file = new File(filename);
         final boolean exists = file.exists();
-        LOG.debug(String.format("[%s] %s exists? %s", threadId, filename, exists ? "Yes" : "No"));
+        //   LOG.debug(String.format("[%s] %s exists? %s", threadId, filename, exists ? "Yes" : "No"));
         return exists;
     }
 
@@ -778,12 +802,32 @@ public class SortMode extends AbstractGobyMode {
             tag = ICBStringUtils.generateRandomString(10);
         }
 
+        public SortMergeSplit(SortMergeSplit source) {
+            this(source.min(), source.max());
+        }
+
+        private long min() {
+            long min = Integer.MAX_VALUE;
+            for (SortMergeSplitFileRange range : ranges) {
+                min = Math.min(min, range.min);
+            }
+            return min;
+        }
+
+        private long max() {
+            long max = Integer.MIN_VALUE;
+            for (SortMergeSplitFileRange range : ranges) {
+                max = Math.max(max, range.max);
+            }
+            return max;
+        }
+
         /**
          * Add a split to this split (for merging)
          *
          * @param split the split we are merging this one with
          */
-        private void addRangesFomSplit(final SortMergeSplit split) {
+        private void addRangesFromSplit(final SortMergeSplit split) {
             ranges.addAll(split.ranges);
         }
 

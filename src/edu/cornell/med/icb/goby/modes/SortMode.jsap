@@ -30,6 +30,11 @@
             <required>true</required>
             <help>The compact alignment file to read as input.</help>
         </unflaggedOption>
+        <switch>
+           <id>dry-run</id>
+            <longFlag>dry-run</longFlag>
+            <help>Do not execute the sort, but print the split/merge plan for inspection.</help>
+        </switch>
         <flaggedOption>
             <id>num-threads</id>
             <shortFlag>t</shortFlag>
