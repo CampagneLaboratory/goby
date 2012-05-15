@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.util.HeaderUtil;
 import edu.cornell.med.icb.util.ICBStringUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -449,7 +450,7 @@ public class SortMode extends AbstractGobyMode {
                     // Last merge.
                     lastMerge = true;
                     numSplitsForMerge = splitsToMergeSizeLocal;
-                } else if (splitsToMergeSize.get() == filesPerMerge) {
+                } else if (splitsToMergeSizeLocal == filesPerMerge) {
                     // We have enough to merge, but it's not the last merge
                     numSplitsForMerge = splitsToMergeSizeLocal;
                 } else {
@@ -462,7 +463,7 @@ public class SortMode extends AbstractGobyMode {
             if (numSplitsForMerge > 0) {
                 final List<SortMergeSplit> toMerge = new ArrayList<SortMergeSplit>(numSplitsForMerge);
                 for (int i = 0; i < numSplitsForMerge; i++) {
-                    splitsToMergeSizeLocal=splitsToMergeSize.decrementAndGet();
+                    splitsToMergeSizeLocal = splitsToMergeSize.decrementAndGet();
                     toMerge.add(splitsToMerge.poll());
                 }
                 LOG.debug(String.format("[%s] %d items in queue to sort after removing %d for sorting",
@@ -564,16 +565,20 @@ public class SortMode extends AbstractGobyMode {
                     LOG.debug(String.format("[%s] Sorting...", threadId));
                     alignmentIterator.sort();
                     LOG.debug(String.format("[%s] Writing sorted alignment for %s with tag %s...", threadId, toSort.toString(), toSort.tag));
-                    alignmentIterator.write(writer);
-
                     AlignmentReader alignmentReader = null;
+
                     try {
+
                         if (firstSort) {
                             LOG.debug(String.format("[%s] Writing TMH", threadId));
                             alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
                             alignmentReader.readHeader();
                             Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
+                            writer.setNumQueries(alignmentReader.getNumberOfQueries());
                         }
+                        alignmentIterator.write(writer);
+
+
                     } finally {
                         // Sort finished
                         if (alignmentReader != null) {
@@ -650,8 +655,7 @@ public class SortMode extends AbstractGobyMode {
                         checkBasename(threadId, mergeBasename);
                     }
                     if (!dryRun) {
-                        concatReader = new ConcatSortedAlignmentReader(
-                                false, mergeFromBasenamesArray);
+                        concatReader = new ConcatSortedAlignmentReader(         false, mergeFromBasenamesArray);
                         concatReader.readHeader();
                     }
                     // We've used merged's tag as input. Let's get a new tag for it's output
@@ -666,12 +670,9 @@ public class SortMode extends AbstractGobyMode {
                     }
                     if (!dryRun) {
                         writer = new AlignmentWriterImpl(subOutputFilename);
-
-                        if (concatReader.getTargetLength() != null) {
-                            writer.setTargetLengths(concatReader.getTargetLength());
-                        }
-                        writer.setTargetIdentifiers(concatReader.getTargetIdentifiers());
+                        HeaderUtil.copyHeader(concatReader,writer);
                         writer.setSorted(true);
+
                         for (final Alignments.AlignmentEntry entry : concatReader) {
                             writer.appendEntry(entry);
                         }
@@ -847,6 +848,7 @@ public class SortMode extends AbstractGobyMode {
 
         /**
          * Add the content of source to this range.
+         *
          * @param sortMergeSplit
          */
         public void mergeWith(SortMergeSplit sortMergeSplit) {
