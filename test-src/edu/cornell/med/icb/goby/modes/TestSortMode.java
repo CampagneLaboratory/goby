@@ -72,6 +72,6 @@ public class TestSortMode {
         // quick way to check the entries and header files were created. Since it is a checksum, if the test fails, it is possible
         // content is correct, but written sligthly differently.
         assertEquals(2970895517L, FileUtils.checksumCRC32(new File(FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-small-sorted.entries")))) ;
-        assertEquals(1283804747, FileUtils.checksumCRC32(new File(FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-small-sorted.header")))) ;
+        assertEquals(2375098082L, FileUtils.checksumCRC32(new File(FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-small-sorted.header")))) ;
     }
 }
