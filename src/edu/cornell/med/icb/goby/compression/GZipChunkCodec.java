@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.compression;
 import com.google.protobuf.Message;
 
 import java.io.*;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -72,7 +73,8 @@ public class GZipChunkCodec implements ChunkCodec {
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream(10000);
 
-        final OutputStream gzipOutputStream = new GZIPOutputStream(byteBuffer);
+        final OutputStream gzipOutputStream = new GzipOutputStreamWithCustomLevel(Deflater.BEST_COMPRESSION,
+                byteBuffer);
         readCollection.writeTo(gzipOutputStream);
         gzipOutputStream.flush();
         gzipOutputStream.close();
