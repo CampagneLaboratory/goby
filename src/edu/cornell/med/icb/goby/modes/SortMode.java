@@ -356,12 +356,9 @@ public class SortMode extends AbstractGobyMode {
         boolean firstSort = true;
 
         progressSplitSort = new ProgressLogger(LOG, "split-sorts");
-        final int estimatedNumberOfSplits = (int) Math.ceil((double) fileSize / (double) splitSize);
         progressSplitSort.displayFreeMemory = true;
-        progressSplitSort.expectedUpdates = estimatedNumberOfSplits;
-        LOG.info("Expecting to make " + estimatedNumberOfSplits + " initial splits.");
-        progressSplitSort.start();
 
+        int count = 0;
         while (!lastSplit) {
             long splitEnd = splitStart + splitSize;
             if (splitEnd >= fileSize - 1) {
@@ -377,11 +374,20 @@ public class SortMode extends AbstractGobyMode {
             if (!exceptions.isEmpty()) {
                 break;
             }
+            /*    count++;
+            if (count>2) {
+                numberOfSplits=2;
+                break;
+            }*/
         }
-
-        LOG.debug(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+        progressSplitSort.expectedUpdates = numberOfSplits;
+        progressSplitSort.start();
+        LOG.info(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
         while (numSplitsCompleted.get() != numberOfSplits) {
             // Wait a bit for tasks to finish before finding more to submit
+            if (!exceptions.isEmpty()) {
+                break;
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -535,6 +541,8 @@ public class SortMode extends AbstractGobyMode {
                     final SortIterateAlignments alignmentIterator = new SortIterateAlignments();
                     final String subBasename = "sorted-" + toSort.tag;
                     final String subOutputFilename = tempDir + "/" + subBasename;
+                    LOG.debug(String.format("[%s] Sorting %s to %s",
+                            threadId, toSort.toString(), subOutputFilename));
                     writer = new AlignmentWriterImpl(subOutputFilename);
                     alignmentIterator.setOutputFilename(subOutputFilename);
                     alignmentIterator.setBasename(subBasename);
@@ -545,7 +553,7 @@ public class SortMode extends AbstractGobyMode {
                     alignmentIterator.iterate(range.min, range.max, basename);
                     LOG.debug(String.format("[%s] Sorting...", threadId));
                     alignmentIterator.sort();
-                    LOG.debug(String.format("[%s] Writing sorted alignment...", threadId));
+                    LOG.debug(String.format("[%s] Writing sorted alignment for %s at %s...", threadId, toSort.toString(), toSort.tag));
                     alignmentIterator.write(writer);
 
                     AlignmentReader alignmentReader = null;
@@ -561,11 +569,11 @@ public class SortMode extends AbstractGobyMode {
                         if (alignmentReader != null) {
                             alignmentReader.close();
                         }
+                        checkBasename(threadId, subOutputFilename);
                         sortedSplits.add(toSort);
-
                     }
 
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(), e.getMessage()));
                     e.printStackTrace();
                     exceptions.add(e);
@@ -573,7 +581,6 @@ public class SortMode extends AbstractGobyMode {
                     progressSplitSort.update();
                     numSplitsCompleted.incrementAndGet();
                 }
-                progressSplitSort.update();
             }
         };
         if (executorService != null) {
@@ -620,8 +627,13 @@ public class SortMode extends AbstractGobyMode {
                     }
                     // note that we don't adjust query indices because they are already not overlaping (all come from the
                     // same input file)
+                    final String[] mergeFromBasenamesArray =
+                            mergeFromBasenames.toArray(new String[mergeFromBasenames.size()]);
+                    for (final String mergeBasename : mergeFromBasenamesArray) {
+                        checkBasename(threadId, mergeBasename);
+                    }
                     concatReader = new ConcatSortedAlignmentReader(
-                            false, mergeFromBasenames.toArray(new String[mergeFromBasenames.size()]));
+                            false, mergeFromBasenamesArray);
                     concatReader.readHeader();
                     // We've used merged's tag as input. Let's get a new tag for it's output
                     merged.makeNewTag();
@@ -647,7 +659,7 @@ public class SortMode extends AbstractGobyMode {
                     // Sort/merge finished
                     numMergesExecuted.incrementAndGet();
                     sortedSplits.add(merged);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOG.error(String.format("[%s] Exception sorting!! class=%s message=%s", threadId, e.getClass().getName(), e.getMessage()));
                     e.printStackTrace();
                     exceptions.add(e);
@@ -686,6 +698,22 @@ public class SortMode extends AbstractGobyMode {
         } else {
             toRun.run();
         }
+    }
+
+    private boolean checkBasename(final String threadId, final String basename) {
+        boolean exists = true;
+        exists &= checkFile(threadId, basename + ".entries");
+        exists &= checkFile(threadId, basename + ".header");
+        exists &= checkFile(threadId, basename + ".index");
+        exists &= checkFile(threadId, basename + ".stats");
+        return exists;
+    }
+
+    private boolean checkFile(final String threadId, final String filename) {
+        final File file = new File(filename);
+        final boolean exists = file.exists();
+        LOG.debug(String.format("[%s] %s exists? %s", threadId, filename, exists ? "Yes" : "No"));
+        return exists;
     }
 
     private void deleteFile(final File file, final boolean queueIfFailed) {

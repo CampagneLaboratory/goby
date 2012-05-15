@@ -246,7 +246,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
-     * This method will try to upgrade the alignment to the latest version of the Goby data structures on the fly.
+     * Please note that this method does not attempt to upgrade the alignment since the offsets would likely be wrong
+     * against an upgraded file.
      *
      * @param startOffset Position in the file where reading will start (in bytes).
      * @param endOffset   Position in the file where reading will end (in bytes).
@@ -254,7 +255,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @throws IOException If an error occurs opening or reading the file.
      */
     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename) throws IOException {
-        this(startOffset, endOffset, basename, true);
+        // do not try to upgrade when we provide explicit offsets since the offsets would be wrong in the upgraded file anyway.
+        this(startOffset, endOffset, basename, false);
     }
 
     /**
