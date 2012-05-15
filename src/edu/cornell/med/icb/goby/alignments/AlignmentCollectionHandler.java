@@ -1036,7 +1036,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeQueryIndices("queryIndices", queryIndices, out);
 
         writeArithmetic("numReadQualityScores", numReadQualityScores, out);
-        writeArithmetic("allReadQualityScoresLengths", allReadQualityScores, out);
+        writeArithmetic("allReadQualityScores", allReadQualityScores, out);
 
         writeArithmetic("sampleIndices", sampleIndices, out);
         writeArithmetic("readOriginIndices", readOriginIndices, out);
@@ -1175,7 +1175,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         } else {
             result.setSplicedBackwardAlignmentLink(link);
         }
-        final Alignments.AlignmentEntry partial = result.clone().build();
         if (source.hasReadQualityScores()) {
 
             final ByteString quals = source.getReadQualityScores();
@@ -1185,9 +1184,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 allReadQualityScores.add(quals.byteAt(i));
                 qualScoreIndex++;
             }
+            result.clearReadQualityScores();
         } else {
             numReadQualityScores.add(0);
         }
+        final Alignments.AlignmentEntry partial = result.clone().build();
+
         if (previousPartial != null && indexInReducedCollection >= 1 && fastEquals(previousPartial, partial)) {
             //   System.out.println("same");
             //  print(partial);
