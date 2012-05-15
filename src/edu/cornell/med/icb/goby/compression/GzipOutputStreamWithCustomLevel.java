@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * A sub-class of GZipOutputStream that makes it possible to configure the compression level.
+ *
  * @author Fabien Campagne
  *         Date: 5/15/12
  *         Time: 2:45 PM
@@ -36,6 +38,7 @@ public final class GzipOutputStreamWithCustomLevel extends GZIPOutputStream {
 
     /**
      * Set the level of GZip compression required.
+     *
      * @param level A number between 0 and 9.
      */
     public void setLevel(int level) {
