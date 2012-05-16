@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -93,7 +94,7 @@ public class DifferentialExpressionCalculator {
     public void createDefaultGroup() {
 
         for (final String sampleId : sampleToCounts.keySet()) {
-            associateSampleToGroup(sampleId, "all-samples");
+            associateSampleToGroup(sampleId, "all-samples/all-samples");
         }
     }
 
@@ -295,6 +296,13 @@ public class DifferentialExpressionCalculator {
      */
     public String getGroup(String sampleId) {
         return sampleToGroupMap.get(sampleId);
+    }
+
+    public DifferentialExpressionResults compare(DifferentialExpressionResults results,
+                                                 final NormalizationMethod method,
+                                                 final StatisticCalculator tester,
+                                                 final GroupComparison comparison) {
+        return compare(results, method, tester, comparison.nameGroup1, comparison.nameGroup2);
     }
 
     public DifferentialExpressionResults compare(DifferentialExpressionResults results,

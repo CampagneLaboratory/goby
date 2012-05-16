@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import java.util.ServiceLoader;
 
 /**
- * Created by IntelliJ IDEA.
- * User: nyasha
- * Date: Mar 24, 2010
- * Time: 3:29:26 PM
- * Class that organizes group comparisons and facillitates differential expression
+ * Class that organizes group comparisons and facilitates differential expression
  * statistical testing.
+ *
+ * @author Nyasha Chambwe
+ *         Date: Mar 24, 2010
+ *         Time: 3:29:26 PM
  */
 public class DifferentialExpressionAnalysis {
     /**
@@ -43,10 +43,6 @@ public class DifferentialExpressionAnalysis {
      */
     private static final Log LOG = LogFactory.getLog(DifferentialExpressionAnalysis.class);
 
-    /**
-     * The groups that should be compared, order matters.
-     */
-    private String[] groupComparison;
 
     private String[] groups;
     private final Object2ObjectMap<String, Integer> groupSizes =
@@ -129,7 +125,7 @@ public class DifferentialExpressionAnalysis {
         return false;
     }
 
-    ArrayList<GroupComparison> groupComparisons;
+    private ArrayList<GroupComparison> groupComparisons;
 
     public ArrayList<GroupComparison> parseCompare(final String compare) {
         groupComparisons = new ArrayList<GroupComparison>();
@@ -163,7 +159,7 @@ public class DifferentialExpressionAnalysis {
                         groupLanguageText[0], groupLanguageText[0]);
                 System.exit(1);
             } else {
-                System.err.printf("Ignoring group comparison %s. Use A/B to compare two groups.%n", groupLanguageText[0]);
+                System.err.printf("Comparing %s/%s %n", groupLanguageText[0], groupLanguageText[1]);
             }
             int groupIndex = -1;
             for (final String groupId : groupLanguageText) {
@@ -173,7 +169,7 @@ public class DifferentialExpressionAnalysis {
                     System.exit(1);
                 }
             }
-            groupComparison = groupLanguageText;
+
             int firstGroupIndex = 0;
             int secondGroupIndex = groupLanguageText.length - 1;
             groupComparisons.add(new GroupComparison(groupLanguageText[firstGroupIndex],
@@ -237,7 +233,7 @@ public class DifferentialExpressionAnalysis {
         if (!doComparison) {
             deCalculator.createDefaultGroup();
             // make groupComparison be all samples
-            groupComparison = new String[]{"all-samples"};
+            groupComparisons.add(new GroupComparison("all-samples", "all-samples", 0, 0, 0));
         }
         results = null;
         deCalculator.setRunInParallel(runInParalell);
@@ -245,7 +241,7 @@ public class DifferentialExpressionAnalysis {
         if (eval("raw-counts")) {
             results = deCalculator.compare(results, null, new CountRawSampleIdsCalculator());
         }
-        // TODO support multiple group comparisons in a similar way to discover sequence variants.
+
         for (final NormalizationMethod method : normalizationMethods) {
             method.normalize(deCalculator, getGroupComparison());
 
@@ -260,53 +256,57 @@ public class DifferentialExpressionAnalysis {
             }
 
             if (doComparison) {
-                // evaluate differences between groups:
-                if (eval("fold-change")) {
-                    results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
-                }
-                //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
-                if (eval("fold-change-magnitude")) {
-                    results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
-                }
-                if (eval("log2-fold-change")) {
-                    results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
-                }
-
                 if (eval("group-averages")) {
-                    results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
+                    results = deCalculator.compare(results, method, new AverageCalculator(), groups);
                 }
+                for (final GroupComparison groupComparison : groupComparisons) {
 
-                ttestflag = checkTtest();
-                if (ttestflag) {
-                    if (eval("t-test")) {
-                        results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
+                    // evaluate differences between groups:
+                    if (eval("fold-change")) {
+                        results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
+                    }
+                    //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
+                    if (eval("fold-change-magnitude")) {
+                        results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
+                    }
+                    if (eval("log2-fold-change")) {
+                        results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
+                    }
+
+                    ttestflag = checkTtest();
+                    if (ttestflag) {
+                        if (eval("t-test")) {
+                            results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
+                        }
+                    }
+                    if (eval("fisher")) {
+                        results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
+                    }
+                    if (eval("fisher-r")) {
+                        results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);
+                    }
+                    if (eval("chi-square")) {
+                        results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
                     }
                 }
-                if (eval("fisher")) {
-                    results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
-                }
-                if (eval("fisher-r")) {
-                    results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);
-                }
-                if (eval("chi-square")) {
-                    results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
-                }
-            }
-            final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-            final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
+                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
 
-            if (eval("Bonferroni")) {
-                results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-            }
-            if (eval("BH")) {
-                results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-            }
+                if (eval("Bonferroni")) {
+                    results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                }
+                if (eval("BH")) {
+                    results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                }
 
+            }
         }
-
         return results;
     }
 
+    private GroupComparison makeComparisonForGroup(String group) {
+        return new GroupComparison(group, group, groupIndex(group), groupIndex(group), -1);
+    }
 
     public boolean eval(final String evalName) {
         return evalSet.contains(evalName.toLowerCase());

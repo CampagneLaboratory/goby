@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountIterateAlignments;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.xml.AnnotationLength;
@@ -52,14 +53,14 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Reads a compact alignment and genome annotations and output read counts that overlap with
+ * Reads Goby alignments and genome annotations and output read counts that overlap with
  * the annotation segments.
  *
- * @author Xutao Deng
  * @author Fabien Campagne
  */
 public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
@@ -121,6 +122,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
     private String infoOutputFilename;
     private boolean removeSharedSegments;
+    /**
+     * List of comparisons to perform.
+     */
+    private ArrayList<GroupComparison> groupComparisonsList;
 
 
     @Override
@@ -168,7 +173,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             doComparison = true;
         }
         if (doComparison) {
-            deAnalyzer.parseCompare(compare);
+              groupComparisonsList = deAnalyzer.parseCompare(compare);
         }
         deAnalyzer.setRunInParallel(parallel);
         includeReferenceNameCommas = jsapResult.getString("include-reference-names");
@@ -832,7 +837,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final Reader annotReader) throws IOException {
 
         BufferedReader reader = null;
-        final Object2ObjectMap<String, Annotation> annots = new Object2ObjectOpenHashMap<String, Annotation>();
+        final Object2ObjectMap<String, Annotation> annots = new Object2ObjectAVLTreeMap<String, Annotation>();
         try {
             reader = new BufferedReader(annotReader);
             String line;

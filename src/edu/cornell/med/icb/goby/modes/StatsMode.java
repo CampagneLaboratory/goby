@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.xml.AnnotationLength;
 import edu.cornell.med.icb.goby.algorithmic.data.xml.InfoOutput;
 import edu.cornell.med.icb.goby.algorithmic.data.xml.SampleTotalCount;
@@ -43,6 +44,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * Estimate statistics for a table produced with alignment-to-counts. Varied statistics can be produced, including
@@ -84,6 +86,7 @@ public class StatsMode extends AbstractGobyMode {
     private String[] sampleIds;
     private int numElements;
     private String infoFilename;
+    private ArrayList<GroupComparison> groupComparisonList;
 
     @Override
     public String getModeName() {
@@ -124,7 +127,7 @@ public class StatsMode extends AbstractGobyMode {
         final String compare = jsapResult.getString("compare");
         doComparison = compare != null;
         if (doComparison) {
-            deAnalyzer.parseCompare(compare);
+            groupComparisonList=deAnalyzer.parseCompare(compare);
         }
         deAnalyzer.setRunInParallel(parallel);
 
