@@ -540,7 +540,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             if (toExport.hasMate()) {
                 samRecord.setMateReferenceIndex(toExport.getMateReferenceIndex());
                 samRecord.setMateAlignmentStart(toExport.getMateAlignmentStart());
-                samRecord.setInferredInsertSize(toExport.getInferredInsertSize());
+                //samRecord.setInferredInsertSize(toExport.getInferredInsertSize());
             }
             if (hasReadGroups) {
                 samRecord.setAttribute("RG", toExport.getReadGroup());

@@ -465,10 +465,12 @@ public class SAMToCompactSamHelperMode extends AbstractGobyMode {
 
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
+                    /* BAM does not store the inferred insert size, it is calculated from the read and mate positions on demand. We therefore do
+                       not store it either.
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
                     if (inferredInsertSize != 0) {
                         currentEntry.setInsertSize(inferredInsertSize);
-                    }
+                    }  */
                 }
 
                 for (final SamSequenceVariation variation : samHelper.getSequenceVariations()) {

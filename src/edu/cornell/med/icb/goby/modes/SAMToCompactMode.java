@@ -183,7 +183,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         storeReadOrigin = !doc().getBoolean("ignore-read-origin");
-        System.out.printf("Store read origin: %b%n",storeReadOrigin);
+        System.out.printf("Store read origin: %b%n", storeReadOrigin);
         final String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
             System.err.println("Loading genome " + genomeFilename);
@@ -335,7 +335,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                         LOG.warn(message);
                         // we continue because it is possible BufferedSortingAlignmentWriter will succeed in sorting the file
                         // nevertheless. It will set sorted to false if the file cannot be locally sorted.
-                   }
+                    }
                 }
             }
 
@@ -400,7 +400,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 System.out.println("mapping=" + chromosomeNameMapping(genome, samRecord.getReferenceName()));
                 System.exit(10);
             }
-            int segmentIndex=0;
+            int segmentIndex = 0;
             for (final GobySamSegment gobySamSegment : gobySamRecord.getSegments()) {
                 // the record represents a mapped read..
                 final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
@@ -440,7 +440,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
                     final byte[] sourceQualAsBytes = gobySamRecord.getReadQualitiesAsBytes();
                     // we only store the full quality score on the first entry with a given query index:
-                    if (sourceQualAsBytes != null && segmentIndex==0) {
+                    if (sourceQualAsBytes != null && segmentIndex == 0) {
                         currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
                     }
                 }
@@ -448,10 +448,12 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
-                    final int inferredInsertSize = samRecord.getInferredInsertSize();
-                    if (inferredInsertSize != 0) {
-                        currentEntry.setInsertSize(inferredInsertSize);
-                    }
+                    /* BAM does not store the inferred insert size, it is calculated from the read and mate positions on demand. We therefore do
+                  not store it either.
+                 final int inferredInsertSize = samRecord.getInferredInsertSize();
+                   if (inferredInsertSize != 0) {
+                       currentEntry.setInsertSize(inferredInsertSize);
+                   } */
                 }
 
                 for (final GobyQuickSeqvar variation : gobySamSegment.getSequenceVariations()) {
@@ -690,7 +692,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Adjust reference names to match genome.
      *
-     * @param genome reference genome
+     * @param genome        reference genome
      * @param referenceName reference name
      * @return the possibly re-mapped reference name
      */
@@ -726,7 +728,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Unconsume one fragment index.
      *
-     * @param queryIndex the query index
+     * @param queryIndex                   the query index
      * @param queryIndex2NextFragmentIndex the map query index to next fragment indexes
      */
     private void uncomsumeFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
