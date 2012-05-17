@@ -73,7 +73,8 @@ Towards 2.1
  - DistinctIntValueCounterBitSet now uses LongArrayBitVector as its bit set implementation. The java BitSet implementation
    was found to throw java.lang.ArrayIndexOutOfBoundsException for indices that should fit easily in a bit array (e.g.,
    2,080,948 which can stored with about 230 MB).
-
+ - AlignmentEntry field insertSize is now stored in protobuf with sint32 rather than uint32 since negative values can be
+   stored in this field.
 
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)

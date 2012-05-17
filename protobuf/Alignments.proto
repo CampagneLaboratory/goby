@@ -163,7 +163,7 @@ message AlignmentEntry {
     See http://seqanswers.com/forums/showthread.php?t=8730 for details. Insert size is inferred for each pair
     of reads by the aligner and is recorded here if was estimated (i.e., for paired-end reads).
     */
-    optional uint32 insert_size = 20;
+    optional sint32 insert_size = 20;
 
     /*
        The sample index. Uniquely identifies the aligned sample this read was read from. Storing the sample index in the

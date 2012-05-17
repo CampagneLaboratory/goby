@@ -382,7 +382,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "latedAlignmentEntry\022D\n\037spliced_backward_"
     "alignment_link\030\026 \001(\0132\033.goby.RelatedAlign"
     "mentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013inse"
-    "rt_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q"
+    "rt_size\030\024 \001(\021\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q"
     "uery_index_occurrences\030\031 \001(\r\022\021\n\tambiguit"
     "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_"
     "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde"
@@ -735,7 +735,7 @@ void AlignmentEntry::SharedCtor() {
   spliced_forward_alignment_link_ = NULL;
   spliced_backward_alignment_link_ = NULL;
   spliced_flags_ = 0u;
-  insert_size_ = 0u;
+  insert_size_ = 0;
   sample_index_ = 0u;
   query_index_occurrences_ = 0u;
   ambiguity_ = 0u;
@@ -818,7 +818,7 @@ void AlignmentEntry::Clear() {
       if (spliced_backward_alignment_link_ != NULL) spliced_backward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
     }
     spliced_flags_ = 0u;
-    insert_size_ = 0u;
+    insert_size_ = 0;
     sample_index_ = 0u;
     query_index_occurrences_ = 0u;
     ambiguity_ = 0u;
@@ -1151,13 +1151,13 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // optional uint32 insert_size = 20;
+      // optional sint32 insert_size = 20;
       case 20: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_insert_size:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_SINT32>(
                  input, &insert_size_)));
           set_has_insert_size();
         } else {
@@ -1427,9 +1427,9 @@ void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(19, this->spliced_flags(), output);
   }
   
-  // optional uint32 insert_size = 20;
+  // optional sint32 insert_size = 20;
   if (has_insert_size()) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(20, this->insert_size(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteSInt32(20, this->insert_size(), output);
   }
   
   // optional uint32 sample_index = 21;
@@ -1600,9 +1600,9 @@ void AlignmentEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(19, this->spliced_flags(), target);
   }
   
-  // optional uint32 insert_size = 20;
+  // optional sint32 insert_size = 20;
   if (has_insert_size()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(20, this->insert_size(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteSInt32ToArray(20, this->insert_size(), target);
   }
   
   // optional uint32 sample_index = 21;
@@ -1812,10 +1812,10 @@ int AlignmentEntry::ByteSize() const {
           this->spliced_flags());
     }
     
-    // optional uint32 insert_size = 20;
+    // optional sint32 insert_size = 20;
     if (has_insert_size()) {
       total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        ::google::protobuf::internal::WireFormatLite::SInt32Size(
           this->insert_size());
     }
     

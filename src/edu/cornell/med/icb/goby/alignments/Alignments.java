@@ -651,7 +651,7 @@ public final class Alignments {
     boolean hasSplicedFlags();
     int getSplicedFlags();
     
-    // optional uint32 insert_size = 20;
+    // optional sint32 insert_size = 20;
     boolean hasInsertSize();
     int getInsertSize();
     
@@ -937,7 +937,7 @@ public final class Alignments {
       return splicedFlags_;
     }
     
-    // optional uint32 insert_size = 20;
+    // optional sint32 insert_size = 20;
     public static final int INSERT_SIZE_FIELD_NUMBER = 20;
     private int insertSize_;
     public boolean hasInsertSize() {
@@ -1176,7 +1176,7 @@ public final class Alignments {
         output.writeUInt32(19, splicedFlags_);
       }
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
-        output.writeUInt32(20, insertSize_);
+        output.writeSInt32(20, insertSize_);
       }
       if (((bitField0_ & 0x00100000) == 0x00100000)) {
         output.writeUInt32(21, sampleIndex_);
@@ -1292,7 +1292,7 @@ public final class Alignments {
       }
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(20, insertSize_);
+          .computeSInt32Size(20, insertSize_);
       }
       if (((bitField0_ & 0x00100000) == 0x00100000)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1980,7 +1980,7 @@ public final class Alignments {
             }
             case 160: {
               bitField0_ |= 0x00100000;
-              insertSize_ = input.readUInt32();
+              insertSize_ = input.readSInt32();
               break;
             }
             case 168: {
@@ -2830,7 +2830,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional uint32 insert_size = 20;
+      // optional sint32 insert_size = 20;
       private int insertSize_ ;
       public boolean hasInsertSize() {
         return ((bitField0_ & 0x00100000) == 0x00100000);
@@ -10219,7 +10219,7 @@ public final class Alignments {
       "latedAlignmentEntry\022D\n\037spliced_backward_" +
       "alignment_link\030\026 \001(\0132\033.goby.RelatedAlign" +
       "mentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013inse" +
-      "rt_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q",
+      "rt_size\030\024 \001(\021\022\024\n\014sample_index\030\025 \001(\r\022\037\n\027q",
       "uery_index_occurrences\030\031 \001(\r\022\021\n\tambiguit" +
       "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_" +
       "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde" +

@@ -333,12 +333,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 spliced_flags() const;
   inline void set_spliced_flags(::google::protobuf::uint32 value);
   
-  // optional uint32 insert_size = 20;
+  // optional sint32 insert_size = 20;
   inline bool has_insert_size() const;
   inline void clear_insert_size();
   static const int kInsertSizeFieldNumber = 20;
-  inline ::google::protobuf::uint32 insert_size() const;
-  inline void set_insert_size(::google::protobuf::uint32 value);
+  inline ::google::protobuf::int32 insert_size() const;
+  inline void set_insert_size(::google::protobuf::int32 value);
   
   // optional uint32 sample_index = 21;
   inline bool has_sample_index() const;
@@ -496,7 +496,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 fragment_index_;
   ::google::protobuf::uint32 spliced_flags_;
   ::goby::RelatedAlignmentEntry* spliced_backward_alignment_link_;
-  ::google::protobuf::uint32 insert_size_;
+  ::google::protobuf::int32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
   ::google::protobuf::uint32 query_index_occurrences_;
   ::google::protobuf::uint32 ambiguity_;
@@ -2242,7 +2242,7 @@ inline void AlignmentEntry::set_spliced_flags(::google::protobuf::uint32 value) 
   spliced_flags_ = value;
 }
 
-// optional uint32 insert_size = 20;
+// optional sint32 insert_size = 20;
 inline bool AlignmentEntry::has_insert_size() const {
   return (_has_bits_[0] & 0x00100000u) != 0;
 }
@@ -2253,13 +2253,13 @@ inline void AlignmentEntry::clear_has_insert_size() {
   _has_bits_[0] &= ~0x00100000u;
 }
 inline void AlignmentEntry::clear_insert_size() {
-  insert_size_ = 0u;
+  insert_size_ = 0;
   clear_has_insert_size();
 }
-inline ::google::protobuf::uint32 AlignmentEntry::insert_size() const {
+inline ::google::protobuf::int32 AlignmentEntry::insert_size() const {
   return insert_size_;
 }
-inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
+inline void AlignmentEntry::set_insert_size(::google::protobuf::int32 value) {
   set_has_insert_size();
   insert_size_ = value;
 }
