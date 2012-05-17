@@ -94,6 +94,18 @@ public interface SamComparisonInterface {
     public void setCanonicalMdzForComparison(final boolean canonicalMdzForComparison);
 
     /**
+     * Get if sam flags should be checked.
+     * @return if ...
+     */
+    public boolean isCheckSamFlags();
+
+    /**
+     * Set if sam flags should be checked.
+     * @param checkSamFlags if ...
+     */
+    public void setCheckSamFlags(final boolean checkSamFlags);
+
+    /**
      * Return how many reads have been compared since reset() was last called.
      * @return how many...
      */

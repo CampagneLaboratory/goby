@@ -356,7 +356,7 @@ public class TestSamRecordParser {
             assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
 
             final GobySamSegment first = gobySamRecord.getSegment(0);
-            
+
             assertEquals(45881869 - 1, first.getPosition());
 
             //509.6.68.19057.157284	83	chr1	45881869	29	6S23M1I6M1D16M1I47M	=	45881519	-443	TTACCCGCTTTCCTTGCCCAAATTTTAAGTTTCNGGAAAAGGGGAGGGAAATGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC	#######################################################ECGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHH	MD:Z:3G4A7C4C1A2T2^T2C4T3A0G5C44	RG:Z:1	XG:i:3	AM:i:29	NM:i:14	SM:i:29	XM:i:10	XO:i:3	XT:A:M
@@ -551,7 +551,7 @@ public class TestSamRecordParser {
      * The first 1000 alignments of JRO. Round trip test.
      * @throws IOException error
      */
-    // @Test
+    @Test
     public void testRoundTripJROFirst1000() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
         rtc.inputGenomeFilename = findMM9();
@@ -559,6 +559,7 @@ public class TestSamRecordParser {
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000.sam");
         rtc.keepQualityScores = false;
+        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -650,6 +651,7 @@ public class TestSamRecordParser {
         boolean keepSoftClips = true;
         boolean stopAtOneFailure = false;
         boolean canonicalMdzForComparison = true;
+        boolean checkSamFlags = true;
     }
 
     public void testRoundTripAny(final RoundTripConfig rtc) throws IOException {
@@ -722,6 +724,7 @@ public class TestSamRecordParser {
         samComparison.setSoftClipsPreserved(rtc.keepSoftClips);
         samComparison.setCheckMate(false);
         samComparison.setCanonicalMdzForComparison(rtc.canonicalMdzForComparison);
+        samComparison.setCheckSamFlags(rtc.checkSamFlags);
         while (sourceIterator.hasNext()) {
             final SAMRecord expected = sourceIterator.next();
             if (expected.getReadUnmappedFlag()) {
@@ -999,7 +1002,7 @@ public class TestSamRecordParser {
         readBases = "GTGC";
         convertBases = samToCompact.convertBases(0, 5, readBases.getBytes(), 1, 1 + 3);
         assertEquals("=G=", convertBases);
-        
+
         // Before the left side of the reference
         readBases = "AAACAG";
         convertBases = samToCompact.convertBases(0, -3, readBases.getBytes(), 0, 0 + 6);
@@ -1021,3 +1024,4 @@ public class TestSamRecordParser {
 
 
 }
+

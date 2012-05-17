@@ -42,6 +42,7 @@ public class SamComparison implements SamComparisonInterface {
     private boolean softClipsPreserved;
     private boolean checkMate;
     private boolean canonicalMdzForComparison;
+    private boolean checkSamFlags;
 
     /**
      * Running totals, etc.
@@ -69,6 +70,7 @@ public class SamComparison implements SamComparisonInterface {
         checkMate = false;
         canonicalMdzForComparison = true;
         outputFailedComparisons = true;
+        checkSamFlags = true;
     }
 
     /**
@@ -171,6 +173,22 @@ public class SamComparison implements SamComparisonInterface {
     }
 
     /**
+     * Get if sam flags should be checked.
+     * @return if ...
+     */
+    public boolean isCheckSamFlags() {
+        return checkSamFlags;
+    }
+
+    /**
+     * Set if sam flags should be checked.
+     * @param checkSamFlags if ...
+     */
+    public void setCheckSamFlags(final boolean checkSamFlags) {
+        this.checkSamFlags = checkSamFlags;
+    }
+
+    /**
      * Return how many reads have been compared since reset() was last called.
      * @return how many...
      */
@@ -186,6 +204,10 @@ public class SamComparison implements SamComparisonInterface {
     @Override
     public int getComparisonFailureCount() {
         return comparisonFailureCount;
+    }
+
+    public List<String> getComparisonFailures() {
+        return comparisonFailures;
     }
 
     /**
@@ -222,8 +244,10 @@ public class SamComparison implements SamComparisonInterface {
         }
         comparisonFailures.clear();
         compareField("Positions don't match", expectedSamRecord.getAlignmentStart(), actualSamRecord.getAlignmentStart());
-        compareField("Ref Index don't match", expectedSamRecord.getReferenceIndex(), actualSamRecord.getReferenceIndex());
-        compareField("Flags don't match", expectedSamRecord.getFlags(), actualSamRecord.getFlags());
+        compareField("Ref Index don't match", expectedSamRecord.getReferenceName(), expectedSamRecord.getReferenceName());
+        if (checkSamFlags) {
+            compareField("Flags don't match", expectedSamRecord.getFlags(), actualSamRecord.getFlags());
+        }
         compareField("Mapping quality doesn't match", expectedSamRecord.getMappingQuality(), actualSamRecord.getMappingQuality());
         compareField("Read paired flag doesn't match", expectedSamRecord.getReadPairedFlag(), actualSamRecord.getReadPairedFlag());
         compareField("Read length doesn't match", expectedSamRecord.getReadLength(), actualSamRecord.getReadLength());
@@ -272,9 +296,14 @@ public class SamComparison implements SamComparisonInterface {
                                 checkPosition = seqvar.getReadIndex() + i - 1;
                             }
                             try {
-                                compareField("Quality at location specified by seqvar (" + checkPosition + ") doesn't match ",
-                                        expectedSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1),
-                                        actualSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1));
+                                final String eQual = expectedSamRecord.getBaseQualityString();
+                                final String aQual = actualSamRecord.getBaseQualityString();
+                                compareField("Quality at location specified by seqvar (" + checkPosition +
+                                        ") doesn't match " +
+                                        "e=" + eQual.substring(checkPosition, checkPosition + 1) + " " +
+                                        "a=" + aQual.substring(checkPosition, checkPosition + 1),
+                                        eQual.substring(checkPosition, checkPosition + 1),
+                                        aQual.substring(checkPosition, checkPosition + 1));
                             } catch (IndexOutOfBoundsException e) {
                                 comparisonFailures.add("Quality at " + checkPosition + " index out of bounds.");
                             }

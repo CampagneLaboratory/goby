@@ -102,7 +102,7 @@ public class SamPerPositionComparison extends SamComparison {
         int resultSum = 0;
         if (!sources.isEmpty()) {
             for (final SAMRecord source : sources) {
-                SAMRecord dest;
+                SAMRecord dest = null;
                 Alignments.AlignmentEntry gobyDest = null;
 
                 final String sourceClippedRead = usableReadOf(source);
@@ -142,7 +142,9 @@ public class SamPerPositionComparison extends SamComparison {
                         // Found the best destination record
                         indexesList.removeFirstOccurrence(leastDiffIndex);
                         if (leastDiffValue > 0) {
-                            comparisonFailureCount++;
+                            // To have the correct comparison failure details, we need to re-compare or the
+                            // dump will have an incorrect comparison failure list.
+                            super.compare(source, dest, gobyDest);
                             if (outputFailedComparisons) {
                                 // Output the failed but still best failure here.
                                 dest = dests.get(leastDiffIndex);

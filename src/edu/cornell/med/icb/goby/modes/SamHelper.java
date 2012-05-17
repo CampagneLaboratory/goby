@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 public class SamHelper implements Resettable {
 
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
-    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
+    private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[acgtnACGTN]|\\^[acgtnACGTN]+)");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
 
     private static final Pattern FIRST_NUMBER_PATTERN = Pattern.compile("^(\\d+)");
@@ -845,7 +845,7 @@ public class SamHelper implements Resettable {
         if (!lastMdzPartWasNumeric) {
             result.append("0");
         }
-        return result.toString();
+        return result.toString().toUpperCase();
     }
 
     /**
