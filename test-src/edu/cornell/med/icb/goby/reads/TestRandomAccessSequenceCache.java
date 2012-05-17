@@ -37,7 +37,7 @@ public class TestRandomAccessSequenceCache {
     public void testEncodeDecodeOneSequence() throws IOException {
 
         final String seqs = ">1\n" +
-                "ACTGNNNACTGMARARRAQA\n";
+                "aCtGNNNACTGMARARRAQA\n";
         final RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
         cache.loadFasta(new StringReader(seqs));
         int i = 0;

@@ -422,10 +422,10 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         return sizes.size();
     }
 
-    private void encode(final int c,
+    private void encode(final int base,
                         final OutputBitStream compressed,
                         final BitVector ignoreList) throws IOException {
-        switch (c) {
+        switch (Character.toUpperCase(base)) {
             case 'A':
                 compressed.writeBit(1);
                 compressed.writeBit(1);
