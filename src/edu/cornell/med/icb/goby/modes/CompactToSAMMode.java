@@ -253,7 +253,14 @@ public class CompactToSAMMode extends AbstractGobyMode {
     public void execute() throws IOException {
         debug = Util.log4JIsConfigured();
         queryIndexToFragmentsMap = new Int2ObjectAVLTreeMap<Int2ObjectMap<ExportableAlignmentEntryData>>();
-        exportData = new ExportableAlignmentEntryData(genome, qualityEncoding);
+
+
+        final AlignmentReader gobyReader = new AlignmentReaderImpl(inputBasename);
+        gobyReader.readHeader();
+        final DoubleIndexedIdentifier targetIdentifiers = new DoubleIndexedIdentifier(gobyReader.getTargetIdentifiers());
+        gobyReader.close();
+
+        exportData = new ExportableAlignmentEntryData(genome, qualityEncoding, targetIdentifiers);
         final String[] basenames = new String[1];
         basenames[0] = inputBasename;
         progress = new ProgressLogger(LOG);

@@ -25,20 +25,20 @@ import edu.cornell.med.icb.goby.alignments.PerQueryAlignmentData;
 import edu.cornell.med.icb.goby.alignments.TestIteratedSortedAlignment2;
 import edu.cornell.med.icb.goby.modes.CompactToSAMMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
-import edu.cornell.med.icb.goby.modes.SamHelper;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
+import junit.framework.Assert;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -60,8 +60,6 @@ import static org.junit.Assert.fail;
 public class TestSamRecordParser {
 
     private static final Logger LOG = Logger.getLogger(TestSamRecordParser.class);
-
-    private SamHelper globalGamHelper = new SamHelper();
 
     private static final String BASE_TEST_DIR = "test-results/splicedsamhelper";
 
@@ -86,7 +84,7 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
 
             assertEquals(3 - 1, first.getPosition());
         }
@@ -105,11 +103,9 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
 
-            if (gobySamRecord.readNum == 0) {
-                assertEquals(3 - 1, first.getPosition());
-            } else if (gobySamRecord.readNum == 1) {
+            if (gobySamRecord.readNum == 0 || gobySamRecord.readNum == 1) {
                 assertEquals(3 - 1, first.getPosition());
             }
         }
@@ -126,11 +122,10 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
             assertEquals(26800015 - 1, first.getPosition());
         }
     }
-
 
     @Test
     // like 9 no genome
@@ -144,8 +139,8 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
-            GobySamSegment second = gobySamRecord.getSegment(1);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -169,8 +164,8 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
-            GobySamSegment second = gobySamRecord.getSegment(1);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(15013, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -204,8 +199,8 @@ public class TestSamRecordParser {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
 
             assertEquals("Incorrect number of segments", 2, gobySamRecord.getNumSegments());
-            GobySamSegment first = gobySamRecord.getSegment(0);
-            GobySamSegment second = gobySamRecord.getSegment(1);
+            final GobySamSegment first = gobySamRecord.getSegment(0);
+            final GobySamSegment second = gobySamRecord.getSegment(1);
 
             assertEquals(4, first.getPosition());
             assertEquals(3, first.getQueryPosition());
@@ -272,45 +267,44 @@ public class TestSamRecordParser {
             assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
             final GobySamSegment segment = gobySamRecord.getSegment(0);
             if (gobySamRecord.readNum == 0) {
-                final GobySamSegment first = segment;
-                assertEquals(190077 - 1, first.getPosition());
-                assertEquals(13, first.getQueryPosition());
-                assertEquals("AGTGGCAGCACGA", first.getSoftClippedBasesLeft());
-                assertEquals("TGCT", first.getSoftClippedBasesRight());
-                assertEquals(51, first.getQueryAlignedLength());
-                assertEquals(50, first.getTargetAlignedLength());
+                assertEquals(190077 - 1, segment.getPosition());
+                assertEquals(13, segment.getQueryPosition());
+                assertEquals("AGTGGCAGCACGA", segment.getSoftClippedBasesLeft());
+                assertEquals("TGCT", segment.getSoftClippedBasesRight());
+                assertEquals(51, segment.getQueryAlignedLength());
+                assertEquals(50, segment.getTargetAlignedLength());
 
-                assertEquals(5, first.getSequenceVariationsCount());
+                assertEquals(5, segment.getSequenceVariationsCount());
 
-                GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
+                GobyQuickSeqvar seqvar = segment.getSequenceVariations(0);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("C", seqvar.getTo());
                 assertEquals(22, seqvar.getReadIndex());
                 assertEquals(9, seqvar.getPosition());
                 assertArrayEquals(byteArray(3), seqvar.getToQualitiesAsBytes());  // 8 returned in the old test, 3 is right
 
-                seqvar = first.getSequenceVariations(1);
+                seqvar = segment.getSequenceVariations(1);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("G", seqvar.getTo());    // Original test said A
                 assertEquals(26, seqvar.getReadIndex());
                 assertEquals(13, seqvar.getPosition());
                 assertArrayEquals(byteArray(34), seqvar.getToQualitiesAsBytes());  // 24 in the old test, this is right
 
-                seqvar = first.getSequenceVariations(2);
+                seqvar = segment.getSequenceVariations(2);
                 assertEquals("C", seqvar.getFrom());
                 assertEquals("A", seqvar.getTo());
                 assertEquals(33, seqvar.getReadIndex());
                 assertEquals(20, seqvar.getPosition());
                 assertArrayEquals(byteArray(28), seqvar.getToQualitiesAsBytes());  // 14 in the old test
 
-                seqvar = first.getSequenceVariations(3);
+                seqvar = segment.getSequenceVariations(3);
                 assertEquals("-", seqvar.getFrom());
                 assertEquals("C", seqvar.getTo());   // Original test said CG
                 assertEquals(35, seqvar.getReadIndex());
                 assertEquals(21, seqvar.getPosition());
                 assertArrayEquals(byteArray(27), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
-                seqvar = first.getSequenceVariations(4);
+                seqvar = segment.getSequenceVariations(4);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("A", seqvar.getTo());   // Original test said CG
                 assertEquals(36, seqvar.getReadIndex());
@@ -318,18 +312,17 @@ public class TestSamRecordParser {
                 assertArrayEquals(byteArray(35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
             } else if (gobySamRecord.readNum == 1) {
-                final GobySamSegment second = segment;
                 //second's CIGAR is 20S48M
-                assertEquals(190246 - 1, second.getPosition());
-                assertEquals(20, second.getQueryPosition());
-                assertEquals("CAGTGTCGTGGCTGCACGCC", second.getSoftClippedBasesLeft());
-                assertEquals("", second.getSoftClippedBasesRight());
-                assertEquals(48, second.getQueryAlignedLength());
-                assertEquals(48, second.getTargetAlignedLength());
+                assertEquals(190246 - 1, segment.getPosition());
+                assertEquals(20, segment.getQueryPosition());
+                assertEquals("CAGTGTCGTGGCTGCACGCC", segment.getSoftClippedBasesLeft());
+                assertEquals("", segment.getSoftClippedBasesRight());
+                assertEquals(48, segment.getQueryAlignedLength());
+                assertEquals(48, segment.getTargetAlignedLength());
 
-                assertEquals(1, second.getSequenceVariationsCount());
+                assertEquals(1, segment.getSequenceVariationsCount());
 
-                GobyQuickSeqvar seqvar = second.getSequenceVariations(0);
+                final GobyQuickSeqvar seqvar = segment.getSequenceVariations(0);
                 assertEquals("A", seqvar.getFrom());
                 assertEquals("C", seqvar.getTo());
                 assertEquals(18, seqvar.getReadIndex());
@@ -349,7 +342,7 @@ public class TestSamRecordParser {
      * Read group = 1
      * ----------------------
      * Read name = 509.6.68.19057.157284
-     * @throws IOException
+     * @throws IOException error reading
      */
     @Test
     public void testSamToCompactTrickCase17() throws IOException {
@@ -374,7 +367,7 @@ public class TestSamRecordParser {
 
             assertEquals(13, first.getSequenceVariationsCount());
 
-            GobyQuickSeqvar last = first.getSequenceVariations(12);
+            final GobyQuickSeqvar last = first.getSequenceVariations(12);
             assertEquals("T", last.getTo());
             assertEquals("C", last.getFrom());
             assertArrayEquals(byteArray(36), last.getToQualitiesAsBytes());
@@ -383,11 +376,11 @@ public class TestSamRecordParser {
 
     /**
      * Same test as above, but write the sam to compact and then read the sequence variation form the compact.
-     * @throws IOException
+     * @throws IOException error reading
      */
     @Test
     public void testSamToCompactTrickCase17ViaWriter() throws IOException {
-        SAMToCompactMode importer = new SAMToCompactMode();
+        final SAMToCompactMode importer = new SAMToCompactMode();
         importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-17.sam");
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-17");
         importer.setPreserveSoftClips(true);
@@ -409,7 +402,7 @@ public class TestSamRecordParser {
 
         assertEquals(13, first.getSequenceVariationsCount());
 
-        Alignments.SequenceVariation last = first.getSequenceVariations(12);
+        final Alignments.SequenceVariation last = first.getSequenceVariations(12);
         assertEquals("T", last.getTo());
         assertEquals("C", last.getFrom());
         assertArrayEquals(byteArray(36), last.getToQuality().toByteArray());
@@ -446,6 +439,27 @@ public class TestSamRecordParser {
                 "/tmp/1000g",
                 "/scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference",
                 "/home/ccontrol/goby-data/1000g-random-access" };
+        for (final String dir : dirs) {
+            final String testRootFilename = dir + "/" + "random-access-genome";
+            final String testFilename = testRootFilename + ".names";
+            System.out.println("Looking for :" + testFilename);
+            final File testFile = new File(testFilename);
+            if (testFile.exists()) {
+                return testRootFilename;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the local mm9 random genome from an array of options.
+     * @return the local celegans random genome.
+     */
+    private String findMM9() {
+        final String[] dirs = {
+                "/tmp/mm9",
+                "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/mm9",
+                "/home/ccontrol/goby-data/mm9-random-access" };
         for (final String dir : dirs) {
             final String testRootFilename = dir + "/" + "random-access-genome";
             final String testFilename = testRootFilename + ".names";
@@ -531,6 +545,44 @@ public class TestSamRecordParser {
         testRoundTripAny(rtc);
     }
 
+
+
+    /**
+     * The first 1000 alignments of JRO. Round trip test.
+     * @throws IOException error
+     */
+    // @Test
+    public void testRoundTripJROFirst1000() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findMM9();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/JRODTYG-source-1000-with-header.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000.sam");
+        rtc.keepQualityScores = false;
+        testRoundTripAny(rtc);
+    }
+
+    /**
+     * We had a problem with the target indexes/lengths being written twice in SamToCompact. The second
+     * time was wrong. This checks that it is right.
+     * @throws IOException error
+     */
+    @Test
+    public void testTestTargetIndexCreation() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findMM9();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/JRODTYG-source-1000-with-header.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
+        createCompactFromSam(rtc);
+
+        final AlignmentReaderImpl gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
+        gobyReader.readHeader();
+        final int[] targetsLengths = gobyReader.getTargetLength();
+        final IndexedIdentifier identifiers = gobyReader.getTargetIdentifiers();
+        final int chr1Index = identifiers.getInt(new MutableString("chr1"));
+        Assert.assertEquals("Incorrect sequence length", 197195432, targetsLengths[chr1Index]);
+    }
+
     /**
      * The first 1M alignments of UAN. This large dataset does not exist on the testing server.
      * @throws IOException error
@@ -543,7 +595,9 @@ public class TestSamRecordParser {
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
         rtc.canonicalMdzForComparison = false;
+        final long start = System.currentTimeMillis();
         testRoundTripAny(rtc);
+        System.out.printf("Execution time in ms=%d%n", System.currentTimeMillis() - start);
     }
 
     /**
@@ -559,6 +613,25 @@ public class TestSamRecordParser {
         rtc.destBamFilename = "/tmp/HENGLIT-from-goby.bam";
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
+        rtc.canonicalMdzForComparison = false;
+        testRoundTripAny(rtc);
+    }
+
+    /**
+     * The whole of HENGLIT. This large dataset does not exist on the testing server.
+     * THIS version doesn't store read quals to better test the comparison when read quals aren't stored.
+     * @throws IOException error
+     */
+    // @Test
+    public void testRoundTripHenglitNoQuals() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findCelegansGenome();
+        rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
+        rtc.destGobyBasename = "/tmp/HENGLIT-to-goby-no-qual";
+        rtc.destBamFilename = "/tmp/HENGLIT-from-goby-no-qual.bam";
+        rtc.convertBamToGoby = false;
+        rtc.convertGobyToBam = false;
+        rtc.keepQualityScores = false;
         rtc.canonicalMdzForComparison = false;
         testRoundTripAny(rtc);
     }
@@ -662,8 +735,8 @@ public class TestSamRecordParser {
                 assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
                 gobyActual = gobyReader.next();
             }
-            final boolean compared = samComparison.compare(expected, actual, gobyActual);
-            if (rtc.stopAtOneFailure && !compared) {
+            final int compared = samComparison.compare(expected, actual, gobyActual);
+            if (rtc.stopAtOneFailure && compared > 0) {
                 fail("Comparison failed");
             }
             progress.lightUpdate();
@@ -679,6 +752,29 @@ public class TestSamRecordParser {
         }
     }
 
+    private void createCompactFromSam(final RoundTripConfig rtc) throws IOException {
+
+        assertNotNull("Could not locate random-access-genome in specified locations", rtc.inputGenomeFilename);
+        final RandomAccessSequenceInterface genome = new DualRandomAccessSequenceCache();
+        try {
+            System.out.print("Loading random access genome...");
+            ((DualRandomAccessSequenceCache)genome).load(rtc.inputGenomeFilename);
+            System.out.println(" done");
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Could not load genome", e);
+        }
+
+        LOG.info("Converting bam to compact alignment");
+        final SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile(rtc.sourceBamFilename);
+        importer.setPreserveSoftClips(rtc.keepSoftClips);
+        importer.setPreserveAllTags(true);
+        importer.setOutputFile(rtc.destGobyBasename);
+        importer.setGenome(genome);
+        importer.setPreserveReadQualityScores(rtc.keepQualityScores);
+        importer.execute();
+    }
+
     @Test
     public void testDelNonSplice1() throws IOException {
         final String inputFile = "test-data/splicedsamhelper/del-nonsplice-1.sam";
@@ -691,17 +787,16 @@ public class TestSamRecordParser {
             assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
             final GobySamSegment segment = gobySamRecord.getSegment(0);
             if (gobySamRecord.readNum == 0) {
-                final GobySamSegment first = segment;
-                assertEquals(31 - 1, first.getPosition());
-                assertEquals(0, first.getQueryPosition());
-                assertEquals("", first.getSoftClippedBasesLeft());
-                assertEquals("", first.getSoftClippedBasesRight());
-                assertEquals(47, first.getQueryAlignedLength());
-                assertEquals(50, first.getTargetAlignedLength());
+                assertEquals(31 - 1, segment.getPosition());
+                assertEquals(0, segment.getQueryPosition());
+                assertEquals("", segment.getSoftClippedBasesLeft());
+                assertEquals("", segment.getSoftClippedBasesRight());
+                assertEquals(47, segment.getQueryAlignedLength());
+                assertEquals(50, segment.getTargetAlignedLength());
 
-                assertEquals(1, first.getSequenceVariationsCount());
+                assertEquals(1, segment.getSequenceVariationsCount());
 
-                GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
+                final GobyQuickSeqvar seqvar = segment.getSequenceVariations(0);
                 assertEquals("TCC", seqvar.getFrom());
                 assertEquals("---", seqvar.getTo());
                 assertEquals(26, seqvar.getReadIndex());
@@ -723,17 +818,16 @@ public class TestSamRecordParser {
             assertEquals("Incorrect number of segments", 1, gobySamRecord.getNumSegments());
             final GobySamSegment segment = gobySamRecord.getSegment(0);
             if (gobySamRecord.readNum == 0) {
-                final GobySamSegment first = segment;
-                assertEquals(6 - 1, first.getPosition());
-                assertEquals(5, first.getQueryPosition());
-                assertEquals("AAAAA", first.getSoftClippedBasesLeft());
-                assertEquals("", first.getSoftClippedBasesRight());
-                assertEquals(45, first.getQueryAlignedLength());
-                assertEquals(45, first.getTargetAlignedLength());
+                assertEquals(6 - 1, segment.getPosition());
+                assertEquals(5, segment.getQueryPosition());
+                assertEquals("AAAAA", segment.getSoftClippedBasesLeft());
+                assertEquals("", segment.getSoftClippedBasesRight());
+                assertEquals(45, segment.getQueryAlignedLength());
+                assertEquals(45, segment.getTargetAlignedLength());
 
-                assertEquals(1, first.getSequenceVariationsCount());
+                assertEquals(1, segment.getSequenceVariationsCount());
 
-                GobyQuickSeqvar seqvar = first.getSequenceVariations(0);
+                final GobyQuickSeqvar seqvar = segment.getSequenceVariations(0);
                 assertEquals("A", seqvar.getFrom());
                 assertEquals("G", seqvar.getTo());
                 assertEquals(20, seqvar.getReadIndex());
@@ -747,7 +841,7 @@ public class TestSamRecordParser {
     /**
      * Compare the gsnap->sam created sequence variations we find when we parse the sam file with
      * SamRecordParser exactly match those generated with gsnap->compactAlignment->displaySequenceVariations(per-base).
-     * @throws IOException
+     * @throws IOException error
      */
     @Test
     public void testSeqVarReads() throws IOException {
@@ -784,7 +878,7 @@ public class TestSamRecordParser {
 
                 int fromOffset = 0;
                 int toOffset = 0;
-                final int readIndexIncrementValue = (gobySamRecord.isReverseStrand() ? -1 : 1);
+                final int readIndexIncrementValue = gobySamRecord.isReverseStrand() ? -1 : 1;
                 for (int i = 0; i < fromLength; i++) {
                     final char fromChar = from.charAt(i);
                     final char toChar = to.charAt(i);
@@ -820,8 +914,8 @@ public class TestSamRecordParser {
         verifySequenceVariationsMatch(seqvarQueryIndexes, samSeqvarQueryIndexes, seqvarDataMap, samSeqvarDataMap);
     }
 
-    public static void dumpSeqVars(int[] seqvarQueryIndexes, final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap) {
-        for (int queryIndex : seqvarQueryIndexes) {
+    public static void dumpSeqVars(final int[] seqvarQueryIndexes, final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap) {
+        for (final int queryIndex : seqvarQueryIndexes) {
             final PerQueryAlignmentData align = seqvarDataMap.get(queryIndex);
             System.out.println("queryIndex=" + queryIndex);
             System.out.println(align.toString());
@@ -834,13 +928,12 @@ public class TestSamRecordParser {
      * @param alignmentQueryIndexes the sorted query indexes for the alignmentDataMap
      * @param seqvarDataMap the query index to PerQueryAlignmentData for the "expected" values
      * @param alignmentDataMap the query index to PerQueryAlignmentData for the "actual" values
-     * @throws IOException error reading input files
      */
     public static void verifySequenceVariationsMatch(
             final int[] seqvarQueryIndexes,
             final int[] alignmentQueryIndexes,
             final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap,
-            final Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap) throws IOException {
+            final Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap) {
         assertArrayEquals("queryIndexes are not the same", seqvarQueryIndexes, alignmentQueryIndexes);
         for (final int queryIndex : seqvarQueryIndexes) {
             final PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
@@ -887,12 +980,12 @@ public class TestSamRecordParser {
         final MutableString seq = new MutableString();
         //          01234567
         seq.append("CAGTGTAC");
-        String[] refs = {seq.toString()};
+        final String[] refs = {seq.toString()};
 
-        RandomAccessSequenceTestSupport genome = new RandomAccessSequenceTestSupport(refs);
+        final RandomAccessSequenceTestSupport genome = new RandomAccessSequenceTestSupport(refs);
 
 
-        SAMToCompactMode samToCompact = new SAMToCompactMode();
+        final SAMToCompactMode samToCompact = new SAMToCompactMode();
         samToCompact.setGenome(genome);
 
         // AT the left side of the reference

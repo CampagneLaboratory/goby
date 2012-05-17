@@ -281,26 +281,29 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
             }
         }
-        if (sortedInput) {
-            // if the input is sorted, request creation of the index when writing the alignment.
-            final int numTargets = Math.max(samHeader.getSequenceDictionary().size(), targetIds.size());
-            final int[] targetLengths = new int[numTargets];
-            for (int i = 0; i < numTargets; i++) {
-                final SAMSequenceRecord seq = samHeader.getSequence(i);
-                if (seq != null) {
-                    final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
-                    if (targetIndex < targetLengths.length) {
-                        targetLengths[targetIndex] = seq.getSequenceLength();
-                    }
+
+        if (!targetIds.isEmpty() && targetIds.size() != samHeader.getSequenceDictionary().size()) {
+            LOG.warn("targets: " + targetIds.size() + ", records: " + samHeader.getSequenceDictionary().size());
+        }
+
+        final int numTargets = Math.max(samHeader.getSequenceDictionary().size(), targetIds.size());
+        final int[] targetLengths = new int[numTargets];
+        for (int i = 0; i < numTargets; i++) {
+            final SAMSequenceRecord seq = samHeader.getSequence(i);
+            if (seq != null) {
+                final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+                if (targetIndex < targetLengths.length) {
+                    targetLengths[targetIndex] = seq.getSequenceLength();
                 }
             }
-
-            writer.setTargetLengths(targetLengths);
+        }
+        writer.setTargetLengths(targetLengths);
+        if (sortedInput) {
+            // if the input is sorted, request creation of the index when writing the alignment.
             writer.setSorted(true);
         }
+
         final Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
-
-
         final ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
 
         final SamRecordParser samRecordParser = new SamRecordParser();
@@ -562,27 +565,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         // write information from SAM file header
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
-        int targetCount = targetIds.size();
-        if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size()))
 
-        {
-
-            LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
-        }
-
-        targetCount = Math.max(samSequenceRecords.size(), targetCount);
-        final int[] targetLengths = new int[targetCount];
-        for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords)
-
-        {
-            final int index = samSequenceRecord.getSequenceIndex();
-            if (debug && LOG.isDebugEnabled()) {
-                LOG.debug("Sam record: " + samSequenceRecord.getSequenceName() + " at " + index);
-            }
-            targetLengths[index] = samSequenceRecord.getSequenceLength();
-        }
-
-        writer.setTargetLengths(targetLengths);
         writer.setReadOriginInfo(readOriginInfoBuilderList);
         progress.stop();
         writer.close();

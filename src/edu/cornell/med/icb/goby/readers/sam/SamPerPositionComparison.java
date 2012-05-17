@@ -50,20 +50,19 @@ public class SamPerPositionComparison extends SamComparison {
         currentPosition = -1;
     }
 
-    //@Override
-    public boolean comparex(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest) {
-        if (source.getAlignmentStart() != currentPosition) {
-            System.out.println("-----------------");
-        }
-        currentPosition = source.getAlignmentStart();
-        System.out.println("s:" + usableReadOf(source));
-        System.out.println("d:" + usableReadOf(dest));
-        return true;
-    }
-
+    /**
+     * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
+     * Returns the number of differences found, 0 if the same. Unlike SamComparison, this class
+     * compares all the records at a single alignment start position, so until alignment start
+     * position changes, this will just emit zero.
+     * @param source the expected sam record
+     * @param dest the actual sam record
+     * @param gobyDest the actual goby alignment record
+     * @return the number of comparison failures. 0 is the preferred.
+     */
     @Override
-    public boolean compare(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest) {
-        boolean result = true;
+    public int compare(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest) {
+        int result = 0;
         if (source.getAlignmentStart() != currentPosition) {
             result = makeComparisons();
         }
@@ -84,8 +83,8 @@ public class SamPerPositionComparison extends SamComparison {
     }
 
     @Override
-    public void finished() {
-        makeComparisons();
+    public int finished() {
+        return makeComparisons();
     }
 
     private void resetForPosition() {
@@ -95,66 +94,79 @@ public class SamPerPositionComparison extends SamComparison {
         destclippedReadToIndexesMap.clear();
     }
 
-    private boolean makeComparisons() {
-        boolean result = true;
+    /**
+     * Make comparisons of every record at a specific alignment start position.
+     * @return The total of the comparison failures for all of the records compared
+     */
+    private int makeComparisons() {
+        int resultSum = 0;
         if (!sources.isEmpty()) {
             for (final SAMRecord source : sources) {
-                SAMRecord dest = null;
+                SAMRecord dest;
                 Alignments.AlignmentEntry gobyDest = null;
-                if (dests.size() == 1) {
-                    dest = dests.get(0);
-                    if (!gobyDests.isEmpty()) {
-                        gobyDest = gobyDests.get(0);
-                    }
-                } else {
-                    //
-                    // TODO: The logic here is a little tricky. When multiple items match at the same position,
-                    // TODO: which is common, AND they have the exact same read since we don't have the read name.
-                    // TODO: If we are keeping qualities, we can use the qualities + clippedReads to do a really
-                    // TODO: good lineup of read-to-read but without qualities, we use cigar which is NOT good
-                    // TODO: at lining them up.
-                    final String sourceClippedRead = usableReadOf(source);
-                    final LinkedList<Integer> indexesList = destclippedReadToIndexesMap.get(sourceClippedRead);
-                    if (indexesList != null) {
-                        // Get the index of the first unused matching destination that contains the same
-                        // exact usable read as the source.
-                        int foundDestIndex = -1;
-                        for (final int localDestIndex : indexesList) {
-                            dest = dests.get(localDestIndex);
-                            if (isMappedQualitiesPreserved()) {
-                                if (source.getBaseQualityString().equals(dest.getBaseQualityString())) {
-                                    foundDestIndex = localDestIndex;
-                                    break;
-                                }
-                            } else if (dest.getCigarString().equals(source.getCigarString())) {
-                                foundDestIndex = localDestIndex;
+
+                final String sourceClippedRead = usableReadOf(source);
+                final LinkedList<Integer> indexesList = destclippedReadToIndexesMap.get(sourceClippedRead);
+                int leastDiffIndex = -1;
+                int leastDiffValue = Integer.MAX_VALUE;
+                if (indexesList != null) {
+                    // Get the index of the first unused matching destination that contains the same
+                    // exact usable read as the source. Run a comparison with all diffs that match with
+                    // this same read. Keep the one with the fewest differences. If we find a perfect
+                    // match, stop and use that one. Unfortunately, without the read name stored in goby,
+                    // there isn't a faster way to do this that I can think of.
+                    final boolean tempOutputFailedComparisons = outputFailedComparisons;
+                    // Save comparisonFailureCount because we may do multiple comparisons
+                    // but only one failure or success will count.
+                    final int tempComparisonFailureCount = comparisonFailureCount;
+                    // Never output failed comparisons during this phase
+                    outputFailedComparisons = false;
+                    for (final int currentDestIndex : indexesList) {
+                        dest = dests.get(currentDestIndex);
+                        if (!gobyDests.isEmpty()) {
+                            gobyDest = gobyDests.get(currentDestIndex);
+                        }
+                        final int currentDiffValue = super.compare(source, dest, gobyDest);
+                        if (currentDiffValue < leastDiffValue) {
+                            leastDiffValue = currentDiffValue;
+                            leastDiffIndex = currentDestIndex;
+                            if (currentDiffValue == 0) {
+                                // Stop if we get a diff of 0
                                 break;
                             }
                         }
-                        if (foundDestIndex != -1) {
-                            // Found the best destination record
-                            indexesList.removeFirstOccurrence(foundDestIndex);
-                            if (!gobyDests.isEmpty()) {
-                                gobyDest = gobyDests.get(foundDestIndex);
+                    }
+                    outputFailedComparisons = tempOutputFailedComparisons;
+                    comparisonFailureCount = tempComparisonFailureCount;
+                    if (leastDiffIndex != -1) {
+                        // Found the best destination record
+                        indexesList.removeFirstOccurrence(leastDiffIndex);
+                        if (leastDiffValue > 0) {
+                            comparisonFailureCount++;
+                            if (outputFailedComparisons) {
+                                // Output the failed but still best failure here.
+                                dest = dests.get(leastDiffIndex);
+                                if (!gobyDests.isEmpty()) {
+                                    gobyDest = gobyDests.get(leastDiffIndex);
+                                }
+                                dumpComparison(source, dest, gobyDest);
                             }
                         }
                     }
                 }
-                if (dest != null) {
-                    if (!super.compare(source, dest, gobyDest)) {
-                        result = false;
-                    }
-                } else {
+                if (leastDiffIndex == -1) {
+                    // Couldn't find anything to diff with AT ALL, nothing with the same clipped read bases
                     readNum++;
                     comparisonFailureCount++;
                     System.out.println("ERROR: Couldn't find a dest record to compare against for readName=" + source.getReadName());
                     // Consider: When this is done, pick the sources that didn't get compared with the dest's that
                     // didn't get compared. Often there may just be 1 and 1??
-                    result = false;
+                } else {
+                    resultSum += leastDiffValue;
                 }
             }
         }
         resetForPosition();
-        return result;
+        return resultSum;
     }
 }

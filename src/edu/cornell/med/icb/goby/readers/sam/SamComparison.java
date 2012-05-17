@@ -48,6 +48,7 @@ public class SamComparison implements SamComparisonInterface {
      */
     protected int readNum;
     protected int comparisonFailureCount;
+    protected boolean outputFailedComparisons;
 
     /**
      * State.
@@ -67,6 +68,7 @@ public class SamComparison implements SamComparisonInterface {
         softClipsPreserved = false;
         checkMate = false;
         canonicalMdzForComparison = true;
+        outputFailedComparisons = true;
     }
 
     /**
@@ -74,6 +76,7 @@ public class SamComparison implements SamComparisonInterface {
      * one entire file with another). Calling the first time is optional as it will be called if a comparison
      * is done and it has never been called.
      */
+    @Override
     public void reset() {
         readNum = 0;
         comparisonFailureCount = 0;
@@ -136,7 +139,7 @@ public class SamComparison implements SamComparisonInterface {
      * If the source SAM/BAM file is a complete file you can set this to true,
      * if you are using an incomplete source SAM/BAM file, this should be
      * set to false. Default is false.
-     * @return if mates will be checked
+     * @param checkMate if mates will be checked
      */
     @Override
     public void setCheckMate(final boolean checkMate) {
@@ -186,15 +189,33 @@ public class SamComparison implements SamComparisonInterface {
     }
 
     /**
+     * Get if details of failed comparisons should be written to stdout automatically.
+     * Default is true.
+     * @return if ...
+     */
+    public boolean isOutputFailedComparisons() {
+        return outputFailedComparisons;
+    }
+
+    /**
+     * Set if details of failed comparisons should be written to stdout automatically.
+     * Default is true.
+     * @param outputFailedComparisons if ...
+     */
+    public void setOutputFailedComparisons(final boolean outputFailedComparisons) {
+        this.outputFailedComparisons = outputFailedComparisons;
+    }
+
+    /**
      * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
      * @param expectedSamRecord the expected sam record
      * @param actualSamRecord the actual sam record
      * @param gobyAlignment the actual goby alignment record
-     * @return true if the two records are found to be the same
+     * @return the number of comparison failures. 0 means the records were found to be effectively the same.
      */
     @Override
-    public boolean compare(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
-                           final Alignments.AlignmentEntry gobyAlignment) {
+    public int compare(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
+                       final Alignments.AlignmentEntry gobyAlignment) {
         if (!initialized) {
             initialized = true;
             reset();
@@ -250,9 +271,13 @@ public class SamComparison implements SamComparisonInterface {
                             } else {
                                 checkPosition = seqvar.getReadIndex() + i - 1;
                             }
-                            compareField("Quality at location specified by seqvar (" + checkPosition + ") doesn't match ",
-                                    expectedSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1),
-                                    actualSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1));
+                            try {
+                                compareField("Quality at location specified by seqvar (" + checkPosition + ") doesn't match ",
+                                        expectedSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1),
+                                        actualSamRecord.getBaseQualityString().substring(checkPosition, checkPosition + 1));
+                            } catch (IndexOutOfBoundsException e) {
+                                comparisonFailures.add("Quality at " + checkPosition + " index out of bounds.");
+                            }
                             i++;
                         }
                     }
@@ -261,14 +286,17 @@ public class SamComparison implements SamComparisonInterface {
         }
         readNum++;
         if (!comparisonFailures.isEmpty()) {
-            dumpComparison(expectedSamRecord, actualSamRecord, gobyAlignment);
+            if (outputFailedComparisons) {
+                dumpComparison(expectedSamRecord, actualSamRecord, gobyAlignment);
+            }
             comparisonFailureCount++;
         }
-        return comparisonFailures.isEmpty();
+        return comparisonFailures.size();
     }
 
     @Override
-    public void finished() {
+    public int finished() {
+        return 0;
     }
 
     /**
@@ -279,7 +307,7 @@ public class SamComparison implements SamComparisonInterface {
      * @param actualSamRecord the actual sam record
      * @param gobyAlignment the actual goby alignment record
      */
-    private void dumpComparison(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
+    public void dumpComparison(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
                                final Alignments.AlignmentEntry gobyAlignment) {
         comparisonErrorDump.setLength(0);
         comparisonErrorDump.append("Read Num         : ").append(readNum).append('\n');

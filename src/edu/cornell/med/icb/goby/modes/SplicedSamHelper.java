@@ -19,12 +19,12 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.util.pool.NullResettableObjectPool;
+import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.SAMRecord;
-import org.apache.commons.pool.BaseObjectPool;
-import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -42,47 +42,44 @@ import java.util.regex.Pattern;
 public class SplicedSamHelper {
     private static final Logger LOG = Logger.getLogger(SplicedSamHelper.class);
 
+    private final boolean debug;
+
     private int numEntries;
     private int cursorIndex;
     private ObjectArrayList<SamHelper> helpers = new ObjectArrayList<SamHelper>();
-    private final org.apache.commons.pool.ObjectPool<SamHelper> helperPool = new BaseObjectPool<SamHelper>() {
+    private final ResettableObjectPoolInterface<SamHelper> helperPool = new NullResettableObjectPool<SamHelper>() {
         @Override
-        public SamHelper borrowObject() throws Exception {
+        public SamHelper makeObject() {
             return new SamHelper();
+            // The helper factory was doing this, but the helper factory was no longer being used.
+            // if (encoding != null) {
+            //     samHelper.setQualityEncoding(encoding);
+            // }
         }
-
-        @Override
-        public void returnObject(SamHelper samHelper) throws Exception {
-
-        }
-
-        @Override
-        public void invalidateObject(SamHelper samHelper) throws Exception {
-
-        }
-    };//<SamHelper>(new SamHelperFactory());
+    };
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMIDN])");
     private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
     private static final Pattern NUMERIC_REGEX = Pattern.compile("^[0-9]+$");
     private boolean usingGenome;
     private int queryLength;
 
+    private QualityEncoding encoding;
+
 
     /**
      * Compute limits from cigar and mdString. Each N stretch in the cigar string separates two alignment segments.
      * The Limits instances describe individual segments.
      *
-     * @param cigar
-     * @param mdString
-     * @return
+     * @param position the position
+     * @param cigar the cigar string
+     * @param mdString the md string
+     * @return the limits
      */
-    protected Limits[] getLimits(int position, String cigar, CharSequence mdString) {
+    protected Limits[] getLimits(final int position, final String cigar, final CharSequence mdString) {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying cigar=%s", cigar));
         }
-        int numEntries = countEntries(cigar);
-        int posInReads = 0;
-        ObjectArrayList<Limits> list = new ObjectArrayList<Limits>();
+        final ObjectArrayList<Limits> list = new ObjectArrayList<Limits>();
 
         analyzeCigar(position, cigar, list);
         if (mdString != null) {
@@ -92,8 +89,7 @@ public class SplicedSamHelper {
     }
 
     private void analyzeMd(final int position, final String mdString, final ObjectArrayList<Limits> list) {
-        for (int i = 0; i < list.size(); i++) {
-            Limits limit = list.get(i);
+        for (final Limits limit : list) {
             adjust(mdString, limit);
         }
         if (list.size() == 1) {
@@ -101,22 +97,21 @@ public class SplicedSamHelper {
         }
     }
 
-    private void adjust(String mdString, Limits limit) {
-
+    private void adjust(final String mdString, final Limits limit) {
         final Matcher matcher = MD_REGEX.matcher(mdString);
         int mdIndex = 0;
         int previousMdIndex = 0;
         int positionInRead = 0;
         int previousPositionInRead = 0;
         while (matcher.find()) {
-            String mdPart = matcher.group();
+            final String mdPart = matcher.group();
             if (NUMERIC_REGEX.matcher(mdPart).matches()) {
-                int baseLength = Integer.parseInt(mdPart);
+                final int baseLength = Integer.parseInt(mdPart);
                 positionInRead += baseLength;
                 mdIndex += mdPart.length();
                 if (overlaps(limit, previousPositionInRead, positionInRead)) {
-                    final int mathingSpanInLimit = Math.min(limit.readEnd - limit.readStart, baseLength);
-                    limit.md = limit.md + Integer.toString(mathingSpanInLimit);
+                    final int matchingSpanInLimit = Math.min(limit.readEnd - limit.readStart, baseLength);
+                    limit.md = limit.md + Integer.toString(matchingSpanInLimit);
                 }
                 previousPositionInRead = positionInRead;
             } else {
@@ -134,22 +129,19 @@ public class SplicedSamHelper {
 
     }
 
-    private boolean overlaps(Limits limit, int a, int b) {
-        final int e = limit.readStart;
-        final int f = limit.readEnd;
-        final boolean result = a >= e && b <= f;
-        //   System.out.printf("testing read-span[%d-%d] with limit[%d-%d] = %b%n", a, b, e, f, result);
-        return result;
+    private boolean overlaps(final Limits limit, final int limitStartA, final int limitEndA) {
+        final int limitStartB = limit.readStart;
+        final int limitEndB = limit.readEnd;
+        return limitStartA >= limitStartB && limitEndA <= limitEndB;
     }
 
-    private void analyzeCigar(int position, String cigar, ObjectArrayList<Limits> list) {
-        Matcher matcher = CIGAR_REGEX.matcher(cigar);
+    private void analyzeCigar(int position, final String cigar, final ObjectArrayList<Limits> list) {
+        final Matcher matcher = CIGAR_REGEX.matcher(cigar);
         int previousCigarIndex = 0;
         int cigarIndex = 0;
         int previousPosition = position;
         int previousPositionInRead = 0;
         int positionInRead = 0;
-        int initialRefPosition = position;
         int trim = 0;
         while (matcher.find()) {
             final int cigarLength = matcher.group(1).length() + matcher.group(2).length();
@@ -185,49 +177,14 @@ public class SplicedSamHelper {
             cigarIndex += cigarLength;
 
         }
-        final Limits k = new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead, positionInRead, previousPosition, position);
-        k.setTrim(trim);
-        list.add(k);
+        final Limits newLimit = new Limits(previousPosition, previousCigarIndex, cigarIndex, previousPositionInRead,
+                positionInRead, previousPosition, position);
+        newLimit.setTrim(trim);
+        list.add(newLimit);
     }
 
-    private void insertSomeInRef(int position, int initialRefPosition, int readBasesLength) {
-        for (int j = 0; j < readBasesLength; j++) {
-
-            final int index = position - initialRefPosition;
-            if (index >= refSequence.length()) break;
-            refSequence.insert(index, '-');
-
-        }
-    }
-
-    private QualityEncoding encoding;
-
-    public void setQualityEncoding(QualityEncoding qualityEncoding) {
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
         encoding = qualityEncoding;
-    }
-
-
-
-    private class SamHelperFactory extends BasePoolableObjectFactory<SamHelper> {
-        // for makeObject we'll simply return a new buffer
-        public SamHelper makeObject() {
-            final SamHelper samHelper = new SamHelper();
-            if (encoding != null) {
-                samHelper.setQualityEncoding(encoding);
-            }
-            return samHelper;
-        }
-
-        // when an object is returned to the pool,
-        // we'll clear it out
-        public void passivateObject(SamHelper helper) {
-            helper.reset();
-
-        }
-
-        // for all other methods, the no-op
-        // implementation in BasePoolableObjectFactory
-        // will suffice
     }
 
     public SplicedSamHelper() {
@@ -243,7 +200,6 @@ public class SplicedSamHelper {
     public final void reset() {
         try {
             for (final SamHelper h : helpers) {
-
                 helperPool.returnObject(h);
             }
         } catch (Exception e) {
@@ -253,7 +209,7 @@ public class SplicedSamHelper {
         numEntries = 1;
         helpers.clear();
         refSequence.setLength(0);
-        this.usingGenome = false;
+        usingGenome = false;
     }
 
     private static final String N_STRING = "N";
@@ -296,13 +252,15 @@ public class SplicedSamHelper {
     MutableString refSequence = new MutableString();
 
     /**
-     * @param queryIndex
-     * @param sourceQuery
-     * @param sourceQual
-     * @param cigar
-     * @param md
+     * Set the source
+     * @param queryIndex query index
+     * @param sourceQuery source query
+     * @param sourceQual source qualities
+     * @param cigar cigar string
+     * @param md md:z string
      * @param position      one-based position
-     * @param reverseStrand
+     * @param reverseStrand if reverse strand
+     * @param readLength the read length
      */
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
                           final CharSequence cigar, final CharSequence md, final int position,
@@ -352,19 +310,6 @@ public class SplicedSamHelper {
         }
     }
 
-
-    private boolean debug;
-
-
-    private int countEntries(String cigar) {
-        int countN = 0;
-        for (int i = 0; i < cigar.length(); i++) {
-
-            if (cigar.charAt(i) == 'N') countN++;
-        }
-        return countN + 1;
-    }
-
     protected static class Limits {
         public int readStart;
         public int readEnd;
@@ -377,7 +322,8 @@ public class SplicedSamHelper {
         public int refEnd;
         private int trim;
 
-        private Limits(final int position, final int cigarStart, final int cigarEnd, int readStart, int readEnd, int refStart, int refEnd) {
+        private Limits(final int position, final int cigarStart, final int cigarEnd, final int readStart,
+                       final int readEnd, final int refStart, final int refEnd) {
             this.cigarStart = cigarStart;
             this.cigarEnd = cigarEnd;
             this.readStart = readStart;
@@ -392,7 +338,7 @@ public class SplicedSamHelper {
          */
         public int position;
 
-        public void setTrim(int trim) {
+        public void setTrim(final int trim) {
             this.trim = trim;
         }
     }
@@ -414,7 +360,7 @@ public class SplicedSamHelper {
      *
      * @param cursorIndex an index less than getNumEntries() and at least zero.
      */
-    public void setEntryCursor(int cursorIndex) {
+    public void setEntryCursor(final int cursorIndex) {
         this.cursorIndex = cursorIndex;
     }
 

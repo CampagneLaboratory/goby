@@ -23,6 +23,7 @@ import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
@@ -88,7 +89,11 @@ public class TestExportableAlignmentEntryData {
         }
 
         final AlignmentReader reader = new AlignmentReaderImpl("test-data/seq-var-test/sorted-seq-var-reads-gsnap.entries");
-        final ExportableAlignmentEntryData exportData = new ExportableAlignmentEntryData(genome, QualityEncoding.PHRED);
+        reader.readHeader();
+        final DoubleIndexedIdentifier targetIdentifiers = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
+
+        final ExportableAlignmentEntryData exportData = new ExportableAlignmentEntryData(
+                genome, QualityEncoding.PHRED, targetIdentifiers);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
             final ReadsDataEntry actualReadsEntry = reads.get(alignmentEntry.getQueryIndex());

@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.SamHelper;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
@@ -82,7 +83,8 @@ public class ExportableAlignmentEntryData {
     private boolean hasReadGroups;
     private String readGroup;
 
-    LinkedList<Integer> deleteQualityIndexes;
+    private LinkedList<Integer> deleteQualityIndexes;
+    private DoubleIndexedIdentifier targetIdentifiers;
 
     /**
      * Marked private so it won't be used, always needs the genome version.
@@ -97,11 +99,12 @@ public class ExportableAlignmentEntryData {
      * @param qualityEncoding the quality encoder to use
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
-                                        final QualityEncoding qualityEncoding) {
+                                        final QualityEncoding qualityEncoding,
+                                        final DoubleIndexedIdentifier targetIdentifiers) {
         debug = Util.log4JIsConfigured() && LOG.isDebugEnabled();
         this.genome = genome;
         this.qualityEncoding = qualityEncoding;
-
+        this.targetIdentifiers = targetIdentifiers;
         refBases = new CharArrayList();
         readBases = new CharArrayList();
         readBasesOriginal = new MutableString();
@@ -159,7 +162,8 @@ public class ExportableAlignmentEntryData {
      * @return the duplicated object
      */
     public static ExportableAlignmentEntryData duplicateFrom(final ExportableAlignmentEntryData from) {
-        final ExportableAlignmentEntryData to = new ExportableAlignmentEntryData(from.genome, from.qualityEncoding);
+        final ExportableAlignmentEntryData to = new ExportableAlignmentEntryData(
+                from.genome, from.qualityEncoding, from.targetIdentifiers);
 
         to.refBases.addAll(from.refBases);
         to.readBases.addAll(from.readBases);
@@ -540,19 +544,19 @@ public class ExportableAlignmentEntryData {
         final int endOfLoop =Math.max(queryAlignedLength + startClip + endClip ,
                 targetAlignedLength + startClip + endClip + numInserts);
 
-        final int targetIndex = alignmentEntry.getTargetIndex();
+        final int gobyAlignmentTargetIndex = alignmentEntry.getTargetIndex();
+        final MutableString genomeTargetName = targetIdentifiers.getId(gobyAlignmentTargetIndex);
+        final int genomeTargetIndex = genome.getReferenceIndex(genomeTargetName.toString());
+
         final char[] predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ?
                 alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
         final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
                 alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
-        //TODO Can we garantee that targetIndex in the alignment matches the same reference in the genome?
-        //TODO consider whether the index should be transformed to an ID using the alignment target id map
-        //TODO and queried in the genome with that id.
-        final int genomeLength = genome.getLength(targetIndex);
+        final int genomeLength = genome.getLength(genomeTargetIndex);
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
             final char base = genomePosition >= 0 && genomePosition < genomeLength ?
-                    genome.get(targetIndex, i + startPosition - startClip) : 'N';
+                    genome.get(genomeTargetIndex, i + startPosition - startClip) : 'N';
             if (i < startClip) {
                 // Clipped read bases. We cannot reconstruct them, oh well.
                 if (predefStartClips != null) {
@@ -701,7 +705,7 @@ public class ExportableAlignmentEntryData {
                     final char clipBase = predefEndClips[i];
                     if (clipBase == '=') {
                         final char base = genomePosition >= 0 && genomePosition < genomeLength ?
-                                genome.get(targetIndex, genomePosition + i) : 'N';
+                                genome.get(genomeTargetIndex, genomePosition + i) : 'N';
                         readBases.set(pos, base);
                     } else {
                         readBases.set(pos, clipBase);

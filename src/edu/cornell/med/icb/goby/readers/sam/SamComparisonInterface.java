@@ -22,16 +22,12 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import net.sf.samtools.SAMRecord;
 
 /**
- * Created by IntelliJ IDEA.
- * User: kdorff
- * Date: 5/10/12
- * Time: 4:40 PM
- * To change this template use File | Settings | File Templates.
+ * Interface for comparing SAM records.
  */
 public interface SamComparisonInterface {
     public void reset();
-    public boolean compare(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest);
-    public void finished();
+    public int compare(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest);
+    public int finished();
 
     /**
      * Get if it is assumed that the compact file created from the BAM/SAM
@@ -75,7 +71,7 @@ public interface SamComparisonInterface {
      * If the source SAM/BAM file is a complete file you can set this to true,
      * if you are using an incomplete source SAM/BAM file, this should be
      * set to false. Default is false.
-     * @return if mates will be checked
+     * @param checkMate if mates will be checked
      */
     public void setCheckMate(final boolean checkMate);
 

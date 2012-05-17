@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.util.pool.Resettable;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -38,7 +39,7 @@ import java.util.regex.Pattern;
  *
  * @author Kevin Dorff
  */
-public class SamHelper {
+public class SamHelper implements Resettable {
 
     private static final Pattern CIGAR_REGEX = Pattern.compile("([0-9]+)([SMID])");
     private static final Pattern MD_REGEX = Pattern.compile("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
@@ -55,14 +56,14 @@ public class SamHelper {
      */
     private static final Logger LOG = Logger.getLogger(SamHelper.class);
 
-    private byte minQualValue = 0;
-    private MutableString cigar = new MutableString();
-    private MutableString md = new MutableString();
-    private MutableString sourceQuery = new MutableString();
-    private MutableString sourceQual = new MutableString();
-    private MutableString query = new MutableString();
-    private MutableString qual = new MutableString();
-    private MutableString ref = new MutableString();
+    private byte minQualValue;
+    private final MutableString cigar = new MutableString();
+    private final MutableString md = new MutableString();
+    private final MutableString sourceQuery = new MutableString();
+    private final MutableString sourceQual = new MutableString();
+    private final MutableString query = new MutableString();
+    private final MutableString qual = new MutableString();
+    private final MutableString ref = new MutableString();
     private int alignedLength;
     private int queryAlignedLength;
     private int targetAlignedLength;
@@ -77,11 +78,11 @@ public class SamHelper {
     private int queryPosition;
     private int queryLength;
     private boolean reverseStrand;
-    private IntList refPositions = new IntArrayList();
-    private IntList readIndexes = new IntArrayList();
-    private ObjectList<SamSequenceVariation> sequenceVariations = new ObjectArrayList<SamSequenceVariation>();
+    private final IntList refPositions = new IntArrayList();
+    private final IntList readIndexes = new IntArrayList();
+    private final ObjectList<SamSequenceVariation> sequenceVariations = new ObjectArrayList<SamSequenceVariation>();
 
-    private MutableString logval = new MutableString();
+    private final MutableString logval = new MutableString();
 
     private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
     private static boolean debug = true;
@@ -93,6 +94,7 @@ public class SamHelper {
         debug = debug && Util.log4JIsConfigured();
     }
 
+    @Override
     public void reset() {
         cigar.setLength(0);
         md.setLength(0);
@@ -124,8 +126,8 @@ public class SamHelper {
                           final CharSequence md,
                           final int position,
                           final boolean reverseStrand,
-                          int readLength) {
-        this.queryLength = readLength;
+                          final int readLength) {
+        queryLength = readLength;
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSource --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -203,28 +205,28 @@ public class SamHelper {
         this.position = position - 1;  // SAM positions are 1-based, goby are 0-based
         queryPosition = 0;
         this.reverseStrand = reverseStrand;
-        this.numInsertions = 0;
-        this.numDeletions = 0;
-        this.numLeftClipped = 0;
-        this.numRightClipped = 0;
-        this.alignedLength = query.length();
-        this.queryAlignedLength = query.length();
-        this.queryLength = query.length();
-        this.targetAlignedLength = ref.length();
-        int scanLength = Math.min(query.length(), ref.length());
-        this.numMisMatches = 0;
+        numInsertions = 0;
+        numDeletions = 0;
+        numLeftClipped = 0;
+        numRightClipped = 0;
+        alignedLength = query.length();
+        queryAlignedLength = query.length();
+        queryLength = query.length();
+        targetAlignedLength = ref.length();
+        final int scanLength = Math.min(query.length(), ref.length());
+        numMisMatches = 0;
         for (int i = 0; i < scanLength; i++) {
             if (query.charAt(i) != ref.charAt(i)) {
                 numMisMatches++;
                 ref.setCharAt(i, Character.toLowerCase(ref.charAt(i)));
             }
         }
-        this.score = alignedLength - numMisMatches;
+        score = alignedLength - numMisMatches;
         findSequenceVariations();
         SamSequenceVariation.merge(sequenceVariations);
         if (debug && LOG.isDebugEnabled()) {
-            for (SamSequenceVariation var : sequenceVariations) {
-                LOG.debug("... Variation " + var.toString());
+            for (final SamSequenceVariation seqvar : sequenceVariations) {
+                LOG.debug("... Variation " + seqvar.toString());
             }
         }
     }
@@ -386,7 +388,7 @@ public class SamHelper {
         numInsertions = 0;
         numDeletions = 0;
         numMisMatches = 0;
-        Matcher matcher = CIGAR_REGEX.matcher(cigar);
+        final Matcher matcher = CIGAR_REGEX.matcher(cigar);
         while (matcher.find()) {
             final int length = Integer.parseInt(matcher.group(1));
             final char op = matcher.group(2).charAt(0);
@@ -512,12 +514,15 @@ public class SamHelper {
     }
 
     private void findSequenceVariations() {
-        char refChar, queryChar;
-        int readIndex, refPosition;
-        int genomicLength = ref.length();
-        int paddedLength = numLeftClipped + genomicLength + numRightClipped;
+        char refChar;
+        char queryChar;
+        int readIndex;
+        int refPosition;
+        final int genomicLength = ref.length();
+        final int paddedLength = numLeftClipped + genomicLength + numRightClipped;
         boolean tooBig = false;
-        int tooBigReadIndex = 0, tooBigRefPosition = 0;
+        int tooBigReadIndex = 0;
+        int tooBigRefPosition = 0;
         refPositions.size(10);
 
         readIndexes.size(paddedLength);
@@ -530,7 +535,7 @@ public class SamHelper {
                 // In alignment padding refPosition doesn't increment
                 // but read position does
                 readIndex++;
-            } else if (i >= (genomicLength + numLeftClipped)) {
+            } else if (i >= genomicLength + numLeftClipped) {
                 // In alignment padding/clipping refPosition doesn't increment
                 // but read position does
                 readIndex++;
@@ -578,7 +583,7 @@ public class SamHelper {
             for (int i = 0; i < paddedLength; i++) {
                 if (i < numLeftClipped) {
                     refChar = '_';
-                } else if (i >= (genomicLength + numLeftClipped)) {
+                } else if (i >= genomicLength + numLeftClipped) {
                     refChar = '_';
                 } else {
                     refChar = ref.charAt(i - numLeftClipped);
@@ -592,7 +597,7 @@ public class SamHelper {
             for (int i = 0; i < paddedLength; i++) {
                 if (i < numLeftClipped) {
                     queryChar = '_';
-                } else if (i >= (numLeftClipped + genomicLength)) {
+                } else if (i >= numLeftClipped + genomicLength) {
                     queryChar = '_';
                 } else {
                     queryChar = query.charAt(i - numLeftClipped);
@@ -614,8 +619,8 @@ public class SamHelper {
             }
             refChar = Character.toUpperCase(ref.charAt(i));
             queryChar = Character.toUpperCase(query.charAt(i));
-            boolean hasQual;
-            byte qualChar;
+            final boolean hasQual;
+            final byte qualChar;
             // We check queryChar != '-' because we don't have a qual score on deletions
             if (qual.length() > 0 && queryChar != '-') {
                 hasQual = true;
