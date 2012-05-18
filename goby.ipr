@@ -1050,6 +1050,8 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="Make" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1083,6 +1085,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1138,7 +1141,9 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="JavaRebel" />
       <ConfigurationWrapper RunnerId="Run" />
-      <method />
+      <method>
+        <option name="AntTarget" enabled="false" />
+      </method>
     </configuration>
     <configuration default="false" name="FisherExact" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" runner="emma" />
@@ -1170,6 +1175,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1203,6 +1209,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1253,6 +1260,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1286,6 +1294,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1319,6 +1328,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1352,6 +1362,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1386,6 +1397,7 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1420,6 +1432,7 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1453,6 +1466,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1486,6 +1500,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1519,6 +1534,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
