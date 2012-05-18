@@ -1,5 +1,7 @@
 Towards 2.1
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
+ - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
+   depths independently of fragments.
 2.0 RC1
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
    compact-to-sam.
