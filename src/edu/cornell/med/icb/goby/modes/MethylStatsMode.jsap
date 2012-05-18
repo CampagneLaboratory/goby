@@ -46,12 +46,62 @@
             <help>Filename for the reference genome.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>conversion-rates-output</id>
+            <longFlag>conversion-rates-output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Filename for the TSV conversion rate output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>cytosine-frequencies-output</id>
+            <longFlag>cytosine-frequencies-output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Filename for the cytosine frequencies TSV output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>depths-output</id>
+            <longFlag>depths-output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Filename for the depth TSV output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>non-conversion-per-context-output</id>
+            <longFlag>non-conversion-per-context-output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Filename for the non-conversion per-context output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>min-coverage-threshold</id>
+            <longFlag>min-coverage-threshold</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <defaults>
+                <string>10</string>
+            </defaults>
+            <help>Minimum coverage required across all samples to count a site as observed over all samples.</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>depths</id>
             <shortFlag>d</shortFlag>
             <longFlag>depths</longFlag>
             <required>false</required>
             <defaults>
-                <string>5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100,150,200,300,500</string>
+                <string>5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90,
+                    100,150,200,300,500,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000
+                </string>
             </defaults>
             <help>Depth thresholds to consider when calculating how many CpG sites have more than a given depth
                 threshold.
@@ -73,6 +123,6 @@
             <longFlag>fragments</longFlag>
             <shortFlag>f</shortFlag>
             <help>Activate fragment length analysis.</help>
-         </switch>
+        </switch>
     </parameters>
 </jsap>

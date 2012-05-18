@@ -175,8 +175,19 @@ public class MethylStats {
     public void observedInSample(final int depth, final int fragmentLength) {
         if (depth >= 1) {
             numberCpGsPerFragmentBinObserved[indexToIncrement(fragmentLengthBins, fragmentLength)] += 1;
-            numberCpGsPerDepth[indexToIncrement(depths, depth)] += 1;
             numberCpGsObserved++;
+        }
+    }
+
+    /**
+     * This method should be called when a CpG has been observed in a sample.
+     *
+     * @param depth Number of passing filter bases that covered the CpG site.
+     */
+    public void observedDepth(final int depth) {
+        if (depth >= 1) {
+            numberCpGsPerDepth[indexToIncrement(depths, depth)] += 1;
+
         }
     }
 
@@ -196,17 +207,30 @@ public class MethylStats {
      * Frequency of methylated C followed by G A C or T (in array order).
      */
     final long[] mcpXFrequencies = new long[4];
-        public static final int CPMIN = 0;
-        public static final int CPG = 0;
-        public static final int CPA = 1;
-        public static final int CPC = 2;
-        public static final int CPT = 3;
-        public static final int CPMAX = 4;
+    /**
+     * The number of methylated Cs in a given CpX context. Index is CPMIN to CPMAX and indicates the context (CPG, CPA, CPC, CPT).
+     */
+    final long[] observedcpXFrequencies = new long[4];
+    public static final int CPMIN = 0;
+    public static final int CPG = 0;
+    public static final int CPA = 1;
+    public static final int CPC = 2;
+    public static final int CPT = 3;
+    public static final int CPMAX = 4;
 
+    /**
+     * Return a table with the frequency of methylated Cs followed by G A C or T (in array order).
+     */
     public long[] getMethylCpXFreqs() {
         return mcpXFrequencies;
     }
 
+    /**
+     * Return a table with the frequency of methylated Cs followed by G A C or T (in array order).
+     */
+    public long[] getObservedCpXFreqs() {
+        return observedcpXFrequencies;
+    }
     /**
      * The number of cytosines in CpG or TpG in reference CpG context seen in the sample.
      */
