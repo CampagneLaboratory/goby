@@ -159,8 +159,8 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         final ReadSet outputSet = new ReadSet();
-        final int maxQueryIndex = reader.getSmallestSplitQueryIndex();
-        final int minQueryIndex = reader.getLargestSplitQueryIndex();
+        final int minQueryIndex = reader.getSmallestSplitQueryIndex();
+        final int maxQueryIndex = reader.getLargestSplitQueryIndex();
         final IntSet matchingIndices = new IntOpenHashSet();
         for (final Alignments.AlignmentEntry entry : reader) {
             final int queryIndex = entry.getQueryIndex();
