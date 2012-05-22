@@ -335,15 +335,19 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlEntry_setMultiplicity=%u\n", value));
         writerHelper->alignmentEntry->set_multiplicity(value);
     }
-    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%u\n", value));
+    void gobyAlignments_observeQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlignments_observeQueryIndex=%u\n", value));
         if (writerHelper->smallestQueryIndex == -1) {
             writerHelper->smallestQueryIndex = value;
             writerHelper->largestQueryIndex = value;
         } else {
             writerHelper->smallestQueryIndex = min(value, writerHelper->smallestQueryIndex);
-            writerHelper->largestQueryIndex = max(value, writerHelper->smallestQueryIndex);
+            writerHelper->largestQueryIndex = max(value, writerHelper->largestQueryIndex);
         }
+    }
+    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%u\n", value));
+        gobyAlignments_observeQueryIndex(writerHelper, value);
         writerHelper->alignmentEntry->set_query_index(value);
     }
     unsigned int gobyAlEntry_getQueryIndex(CAlignmentsWriterHelper *writerHelper) {

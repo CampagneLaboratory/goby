@@ -205,7 +205,7 @@ extern "C" {
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
-    unsigned long gobyReads_nextSequence(
+    unsigned int gobyReads_nextSequence(
         CReadsHelper *readsHelper,
         char **readIdentifierpp, char **descriptionpp,
         char **sequencepp, int *sequenceLength,
@@ -257,7 +257,7 @@ extern "C" {
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
-    unsigned long gobyReads_nextSequencePair(
+    unsigned int gobyReads_nextSequencePair(
         CReadsHelper *readsHelper,
         char **readIdentifierpp, char **descriptionpp,
         char **sequencepp, int *sequenceLength,

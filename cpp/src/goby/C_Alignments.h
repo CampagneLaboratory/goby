@@ -88,6 +88,7 @@ extern "C" {
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
     void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int padding_left, int padding_right);
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlignments_observeQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     unsigned int gobyAlEntry_getQueryIndex(CAlignmentsWriterHelper *writerHelper);
     void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);

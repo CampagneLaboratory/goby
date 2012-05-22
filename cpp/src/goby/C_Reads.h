@@ -40,12 +40,12 @@ extern "C" {
     void gobyReads_setQualityAdjustment(CReadsHelper *readsHelper, int value);
     void gobyReads_avoidZeroQuals(CReadsHelper *readsHelper, int value);
     int gobyReads_hasNext(CReadsHelper *readsHelper);
-    unsigned long gobyReads_nextSequence(
+    unsigned int gobyReads_nextSequence(
         CReadsHelper *readsHelper,
         char **readIdentifierpp, char **descriptionpp,
         char **sequencepp, int *sequenceLength,
         char **qualitypp, int *qualityLength);
-    unsigned long gobyReads_nextSequencePair(
+    unsigned int gobyReads_nextSequencePair(
         CReadsHelper *readsHelper,
         char **readIdentifierpp, char **descriptionpp,
         char **sequencepp, int *sequenceLength,
