@@ -20,6 +20,11 @@
 
 package edu.cornell.med.icb.goby.readers.vcf;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+
+import java.util.Set;
+
 /**
  * Meta information about fields of VCF columns.
  *
@@ -28,6 +33,7 @@ package edu.cornell.med.icb.goby.readers.vcf;
  *         Time: 3:17:32 PM
  */
 public class ColumnField {
+    public static final String[] NO_GROUPS = new String[0];
     /**
      * Field identifier.
      */
@@ -36,7 +42,7 @@ public class ColumnField {
      * Global index of this field across all columns of the input file.
      * Value -1 indicates that the index has not yet been assigned.
      */
-    public int globalFieldIndex=-1;
+    public int globalFieldIndex = -1;
     /**
      * Number of values listed in this field.
      */
@@ -54,9 +60,9 @@ public class ColumnField {
      * manipulate columns that are related together. For instance, a UI could provide the option of hidding or
      * showing all columns in a group at the same time. The default group is "MAIN".
      */
-    public String group="MAIN";
+    public String group = "MAIN";
 
-    
+
     public ColumnInfo column;
     public boolean notSeen;
 
@@ -68,16 +74,40 @@ public class ColumnField {
 
     /**
      * Construct a field with provided information.
-     * @param id Field identifier
+     *
+     * @param id             Field identifier
      * @param numberOfValues Number of values in the field
-     * @param type  Field type.
-     * @param description Description for field content.
+     * @param type           Field type.
+     * @param description    Description for field content.
      */
-    public ColumnField(String id, int numberOfValues, ColumnType type, String description) {
+    public ColumnField(final String id, final int numberOfValues, ColumnType type, final String description) {
+        this(id, numberOfValues, type, description, NO_GROUPS);
+    }
+
+    /**
+     * Construct a field with provided information.
+     *
+     * @param id             Field identifier
+     * @param numberOfValues Number of values in the field
+     * @param type           Field type.
+     * @param description    Description for field content.
+     * @param groups         a list of groups the field belongs to.
+     */
+    public ColumnField(final String id, final int numberOfValues, final ColumnType type, final String description, String... groups) {
         this.id = id;
         this.numberOfValues = numberOfValues;
         this.type = type;
         this.description = description;
+        this.groups = new ObjectArraySet<String>();
+        this.groups.addAll(ObjectArrayList.wrap(groups));
     }
 
+    private ObjectArraySet<String> groups;
+
+    public Set<String> getGroups() {
+        return groups;
+    }
+    public void addGroup(final String ...group) {
+        groups.addAll(ObjectArrayList.wrap(group));
+    }
 }

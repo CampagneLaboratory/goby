@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.util.pool.Resettable;
 import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
@@ -59,6 +60,8 @@ public class GobySamSegment implements Resettable {
     boolean reverseStrand;
 
     private MutableString debugMessage;
+    ByteArrayList softClippedQualityLeft;
+    ByteArrayList softClippedQualityRight;
 
     /**
      * Not for use.
@@ -71,6 +74,8 @@ public class GobySamSegment implements Resettable {
         this.gobyQuickSeqvarPool = gobyQuickSeqvarPool;
         softClippedBasesLeft = new MutableString();
         softClippedBasesRight = new MutableString();
+        softClippedQualityLeft = new ByteArrayList();
+        softClippedQualityRight = new ByteArrayList();
         sequenceVariations = new ArrayList<GobyQuickSeqvar>();
         readBases = new MutableString();
         readQuals = new ByteArrayList();
@@ -91,6 +96,8 @@ public class GobySamSegment implements Resettable {
         position = 0;
         softClippedBasesLeft.length(0);
         softClippedBasesRight.length(0);
+        softClippedQualityRight.size(0);
+        softClippedQualityLeft.size(0);
         for (final GobyQuickSeqvar seqvar : sequenceVariations) {
             gobyQuickSeqvarPool.returnObject(seqvar);
         }
@@ -263,4 +270,10 @@ public class GobySamSegment implements Resettable {
         }
     }
 
+    public ByteString getSoftClippedQualityRight() {
+        return ByteString.copyFrom(softClippedQualityRight.toByteArray());
+    }
+     public ByteString getSoftClippedQualityLeft() {
+        return ByteString.copyFrom(softClippedQualityLeft.toByteArray());
+    }
 }

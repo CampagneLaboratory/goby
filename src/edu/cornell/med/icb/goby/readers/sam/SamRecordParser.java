@@ -59,7 +59,7 @@ public class SamRecordParser implements Resettable {
 
         qualityEncoding = QualityEncoding.SANGER;
         gobySamRecord = new GobySamRecord();
-        diffBases =  new MutableString();
+        diffBases = new MutableString();
         numRecordsProcessed = 0;
         numRecordsSkipped = 0;
         allReadQuals = new ByteArrayList();
@@ -100,9 +100,10 @@ public class SamRecordParser implements Resettable {
      * If not spliced, this will return a GobySamRecord that contains one segment.
      * If the alignment entry in the samRecord was spliced, this will return a GobySamRecord which
      * contains one GobySamSegment for each splice segment
+     *
      * @param samRecord the samRecord to parse.
      * @return null if the read was unmapped OR a GobySamRecord which is ready to be converted to AlignmentEntries
-     * (and SequenceVariations)
+     *         (and SequenceVariations)
      */
     public GobySamRecord processRead(final SAMRecord samRecord) {
         if (samRecord.getReadUnmappedFlag()) {
@@ -197,23 +198,26 @@ public class SamRecordParser implements Resettable {
             }
 
             if (cigarOperator.consumesReadBases()) {
+                final int readStringEnd = readStringPosition + cigarLength;
                 if (cigarOperator == CigarOperator.S) {
                     // Q: This will save soft clipping with leftmost cigar element and right most, is that enought?
                     if (cigarElementNum == 0) {
-                        segment.softClippedBasesLeft.append(allReadBases.substring(readStringPosition, readStringPosition + cigarLength));
+                        segment.softClippedBasesLeft.append(allReadBases.substring(readStringPosition, readStringEnd));
+                        copyQuality(hasReadQuals, allReadQuals, segment.softClippedQualityLeft, readStringPosition, readStringEnd);
                         numSoftClippedBasesLeft += cigarLength;
                     } else if (cigarElementNum == numCigarElements - 1) {
-                        segment.softClippedBasesRight.append(allReadBases.substring(readStringPosition, readStringPosition + cigarLength));
+                        segment.softClippedBasesRight.append(allReadBases.substring(readStringPosition, readStringEnd));
+                        copyQuality(hasReadQuals, allReadQuals, segment.softClippedQualityRight, readStringPosition, readStringEnd);
                     }
                 } else {
                     segment.setPositions(readStringPosition, readIndex, refPosition);
-                    segment.readBases.append(allReadBases.substring(readStringPosition, readStringPosition + cigarLength));
+                    segment.readBases.append(allReadBases.substring(readStringPosition, readStringEnd));
                     if (hasReadQuals) {
-                        segment.readQuals.addAll(allReadQuals.subList(readStringPosition, readStringPosition + cigarLength));
+                        segment.readQuals.addAll(allReadQuals.subList(readStringPosition, readStringEnd));
                     }
                     segment.queryAlignedLength += cigarLength;
                 }
-                newReadStringPosition = readStringPosition + cigarLength;
+                newReadStringPosition = readStringEnd;
                 readIndexDelta += cigarLength;
             } else {
                 if (cigarOperator == CigarOperator.N) {
@@ -264,8 +268,18 @@ public class SamRecordParser implements Resettable {
         return gobySamRecord;
     }
 
+    private void copyQuality(boolean hasReadQuals, ByteList source, ByteArrayList destination, int readStringPosition, int readStringEnd) {
+        if (hasReadQuals) {
+            destination.size(0);
+            for (int i = readStringPosition; i < readStringEnd; i++) {
+                destination.add(source.get(i));
+            }
+        }
+    }
+
     /**
      * For debugging. Append to the debug string to output the reference bases along with their reference positions.
+     *
      * @param refs the reference bases.
      */
     private void debugOutputRefBases(final String refs) {
@@ -288,14 +302,15 @@ public class SamRecordParser implements Resettable {
 
     /**
      * For debugging. Append to the debug string to output the read bases along with their read positions.
-     * @param reads the read bases
+     *
+     * @param reads         the read bases
      * @param reverseStrand if the read was aligned in the reverse strand
      */
     private void debugOutputReadBases(final String reads, final boolean reverseStrand) {
         debugMessage.append("allReadBases=").append(reads).append('\n');
         debugMessage.append("             ");
         if (reverseStrand) {
-            for (int i = reads.length() ; i >= 1; i--) {
+            for (int i = reads.length(); i >= 1; i--) {
                 debugMessage.append(i % 10);
             }
         } else {
@@ -309,6 +324,7 @@ public class SamRecordParser implements Resettable {
     /**
      * For debugging. Append to the debug string to output the read qualities both in the original ASCII
      * and as transformed by the qualityEncoder.
+     *
      * @param readQualsString the read qualities string, exactly as it appears in the SAM file
      */
     private void debugOutputReadQuals(final String readQualsString) {

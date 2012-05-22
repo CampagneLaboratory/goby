@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.util.pool.QueueResettableObjectPool;
 import edu.cornell.med.icb.goby.util.pool.Resettable;
 import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
@@ -206,4 +207,6 @@ public class GobySamRecord implements Resettable {
             queryAlignedLength += segment.queryAlignedLength;
         }
     }
+
+
 }

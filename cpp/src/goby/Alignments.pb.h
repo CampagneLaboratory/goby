@@ -417,6 +417,50 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_softclippedbasesright();
   inline ::std::string* release_softclippedbasesright();
   
+  // optional bytes softClippedQualityLeft = 32;
+  inline bool has_softclippedqualityleft() const;
+  inline void clear_softclippedqualityleft();
+  static const int kSoftClippedQualityLeftFieldNumber = 32;
+  inline const ::std::string& softclippedqualityleft() const;
+  inline void set_softclippedqualityleft(const ::std::string& value);
+  inline void set_softclippedqualityleft(const char* value);
+  inline void set_softclippedqualityleft(const void* value, size_t size);
+  inline ::std::string* mutable_softclippedqualityleft();
+  inline ::std::string* release_softclippedqualityleft();
+  
+  // optional bytes softClippedQualityRight = 33;
+  inline bool has_softclippedqualityright() const;
+  inline void clear_softclippedqualityright();
+  static const int kSoftClippedQualityRightFieldNumber = 33;
+  inline const ::std::string& softclippedqualityright() const;
+  inline void set_softclippedqualityright(const ::std::string& value);
+  inline void set_softclippedqualityright(const char* value);
+  inline void set_softclippedqualityright(const void* value, size_t size);
+  inline ::std::string* mutable_softclippedqualityright();
+  inline ::std::string* release_softclippedqualityright();
+  
+  // optional bytes placedUnmappedSequence = 40;
+  inline bool has_placedunmappedsequence() const;
+  inline void clear_placedunmappedsequence();
+  static const int kPlacedUnmappedSequenceFieldNumber = 40;
+  inline const ::std::string& placedunmappedsequence() const;
+  inline void set_placedunmappedsequence(const ::std::string& value);
+  inline void set_placedunmappedsequence(const char* value);
+  inline void set_placedunmappedsequence(const void* value, size_t size);
+  inline ::std::string* mutable_placedunmappedsequence();
+  inline ::std::string* release_placedunmappedsequence();
+  
+  // optional bytes placedUnmappedQuality = 41;
+  inline bool has_placedunmappedquality() const;
+  inline void clear_placedunmappedquality();
+  static const int kPlacedUnmappedQualityFieldNumber = 41;
+  inline const ::std::string& placedunmappedquality() const;
+  inline void set_placedunmappedquality(const ::std::string& value);
+  inline void set_placedunmappedquality(const char* value);
+  inline void set_placedunmappedquality(const void* value, size_t size);
+  inline ::std::string* mutable_placedunmappedquality();
+  inline ::std::string* release_placedunmappedquality();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -473,6 +517,14 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_softclippedbasesleft();
   inline void set_has_softclippedbasesright();
   inline void clear_has_softclippedbasesright();
+  inline void set_has_softclippedqualityleft();
+  inline void clear_has_softclippedqualityleft();
+  inline void set_has_softclippedqualityright();
+  inline void clear_has_softclippedqualityright();
+  inline void set_has_placedunmappedsequence();
+  inline void clear_has_placedunmappedsequence();
+  inline void set_has_placedunmappedquality();
+  inline void clear_has_placedunmappedquality();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -486,9 +538,9 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 number_of_mismatches_;
   ::google::protobuf::uint32 number_of_indels_;
   ::google::protobuf::uint32 query_aligned_length_;
+  ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation > sequence_variations_;
   ::google::protobuf::uint32 target_aligned_length_;
   ::google::protobuf::uint32 query_length_;
-  ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation > sequence_variations_;
   ::google::protobuf::int32 mapping_quality_;
   ::google::protobuf::uint32 pair_flags_;
   ::goby::RelatedAlignmentEntry* pair_alignment_link_;
@@ -504,10 +556,14 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::std::string* read_quality_scores_;
   ::std::string* softclippedbasesleft_;
   ::std::string* softclippedbasesright_;
+  ::std::string* softclippedqualityleft_;
+  ::std::string* softclippedqualityright_;
+  ::std::string* placedunmappedsequence_;
+  ::std::string* placedunmappedquality_;
   ::google::protobuf::uint32 read_origin_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(29 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(33 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2566,6 +2622,238 @@ inline ::std::string* AlignmentEntry::release_softclippedbasesright() {
   } else {
     ::std::string* temp = softclippedbasesright_;
     softclippedbasesright_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes softClippedQualityLeft = 32;
+inline bool AlignmentEntry::has_softclippedqualityleft() const {
+  return (_has_bits_[0] & 0x20000000u) != 0;
+}
+inline void AlignmentEntry::set_has_softclippedqualityleft() {
+  _has_bits_[0] |= 0x20000000u;
+}
+inline void AlignmentEntry::clear_has_softclippedqualityleft() {
+  _has_bits_[0] &= ~0x20000000u;
+}
+inline void AlignmentEntry::clear_softclippedqualityleft() {
+  if (softclippedqualityleft_ != &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityleft_->clear();
+  }
+  clear_has_softclippedqualityleft();
+}
+inline const ::std::string& AlignmentEntry::softclippedqualityleft() const {
+  return *softclippedqualityleft_;
+}
+inline void AlignmentEntry::set_softclippedqualityleft(const ::std::string& value) {
+  set_has_softclippedqualityleft();
+  if (softclippedqualityleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityleft_ = new ::std::string;
+  }
+  softclippedqualityleft_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedqualityleft(const char* value) {
+  set_has_softclippedqualityleft();
+  if (softclippedqualityleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityleft_ = new ::std::string;
+  }
+  softclippedqualityleft_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedqualityleft(const void* value, size_t size) {
+  set_has_softclippedqualityleft();
+  if (softclippedqualityleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityleft_ = new ::std::string;
+  }
+  softclippedqualityleft_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_softclippedqualityleft() {
+  set_has_softclippedqualityleft();
+  if (softclippedqualityleft_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityleft_ = new ::std::string;
+  }
+  return softclippedqualityleft_;
+}
+inline ::std::string* AlignmentEntry::release_softclippedqualityleft() {
+  clear_has_softclippedqualityleft();
+  if (softclippedqualityleft_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = softclippedqualityleft_;
+    softclippedqualityleft_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes softClippedQualityRight = 33;
+inline bool AlignmentEntry::has_softclippedqualityright() const {
+  return (_has_bits_[0] & 0x40000000u) != 0;
+}
+inline void AlignmentEntry::set_has_softclippedqualityright() {
+  _has_bits_[0] |= 0x40000000u;
+}
+inline void AlignmentEntry::clear_has_softclippedqualityright() {
+  _has_bits_[0] &= ~0x40000000u;
+}
+inline void AlignmentEntry::clear_softclippedqualityright() {
+  if (softclippedqualityright_ != &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityright_->clear();
+  }
+  clear_has_softclippedqualityright();
+}
+inline const ::std::string& AlignmentEntry::softclippedqualityright() const {
+  return *softclippedqualityright_;
+}
+inline void AlignmentEntry::set_softclippedqualityright(const ::std::string& value) {
+  set_has_softclippedqualityright();
+  if (softclippedqualityright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityright_ = new ::std::string;
+  }
+  softclippedqualityright_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedqualityright(const char* value) {
+  set_has_softclippedqualityright();
+  if (softclippedqualityright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityright_ = new ::std::string;
+  }
+  softclippedqualityright_->assign(value);
+}
+inline void AlignmentEntry::set_softclippedqualityright(const void* value, size_t size) {
+  set_has_softclippedqualityright();
+  if (softclippedqualityright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityright_ = new ::std::string;
+  }
+  softclippedqualityright_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_softclippedqualityright() {
+  set_has_softclippedqualityright();
+  if (softclippedqualityright_ == &::google::protobuf::internal::kEmptyString) {
+    softclippedqualityright_ = new ::std::string;
+  }
+  return softclippedqualityright_;
+}
+inline ::std::string* AlignmentEntry::release_softclippedqualityright() {
+  clear_has_softclippedqualityright();
+  if (softclippedqualityright_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = softclippedqualityright_;
+    softclippedqualityright_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes placedUnmappedSequence = 40;
+inline bool AlignmentEntry::has_placedunmappedsequence() const {
+  return (_has_bits_[0] & 0x80000000u) != 0;
+}
+inline void AlignmentEntry::set_has_placedunmappedsequence() {
+  _has_bits_[0] |= 0x80000000u;
+}
+inline void AlignmentEntry::clear_has_placedunmappedsequence() {
+  _has_bits_[0] &= ~0x80000000u;
+}
+inline void AlignmentEntry::clear_placedunmappedsequence() {
+  if (placedunmappedsequence_ != &::google::protobuf::internal::kEmptyString) {
+    placedunmappedsequence_->clear();
+  }
+  clear_has_placedunmappedsequence();
+}
+inline const ::std::string& AlignmentEntry::placedunmappedsequence() const {
+  return *placedunmappedsequence_;
+}
+inline void AlignmentEntry::set_placedunmappedsequence(const ::std::string& value) {
+  set_has_placedunmappedsequence();
+  if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedsequence_ = new ::std::string;
+  }
+  placedunmappedsequence_->assign(value);
+}
+inline void AlignmentEntry::set_placedunmappedsequence(const char* value) {
+  set_has_placedunmappedsequence();
+  if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedsequence_ = new ::std::string;
+  }
+  placedunmappedsequence_->assign(value);
+}
+inline void AlignmentEntry::set_placedunmappedsequence(const void* value, size_t size) {
+  set_has_placedunmappedsequence();
+  if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedsequence_ = new ::std::string;
+  }
+  placedunmappedsequence_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_placedunmappedsequence() {
+  set_has_placedunmappedsequence();
+  if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedsequence_ = new ::std::string;
+  }
+  return placedunmappedsequence_;
+}
+inline ::std::string* AlignmentEntry::release_placedunmappedsequence() {
+  clear_has_placedunmappedsequence();
+  if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = placedunmappedsequence_;
+    placedunmappedsequence_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes placedUnmappedQuality = 41;
+inline bool AlignmentEntry::has_placedunmappedquality() const {
+  return (_has_bits_[1] & 0x00000001u) != 0;
+}
+inline void AlignmentEntry::set_has_placedunmappedquality() {
+  _has_bits_[1] |= 0x00000001u;
+}
+inline void AlignmentEntry::clear_has_placedunmappedquality() {
+  _has_bits_[1] &= ~0x00000001u;
+}
+inline void AlignmentEntry::clear_placedunmappedquality() {
+  if (placedunmappedquality_ != &::google::protobuf::internal::kEmptyString) {
+    placedunmappedquality_->clear();
+  }
+  clear_has_placedunmappedquality();
+}
+inline const ::std::string& AlignmentEntry::placedunmappedquality() const {
+  return *placedunmappedquality_;
+}
+inline void AlignmentEntry::set_placedunmappedquality(const ::std::string& value) {
+  set_has_placedunmappedquality();
+  if (placedunmappedquality_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedquality_ = new ::std::string;
+  }
+  placedunmappedquality_->assign(value);
+}
+inline void AlignmentEntry::set_placedunmappedquality(const char* value) {
+  set_has_placedunmappedquality();
+  if (placedunmappedquality_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedquality_ = new ::std::string;
+  }
+  placedunmappedquality_->assign(value);
+}
+inline void AlignmentEntry::set_placedunmappedquality(const void* value, size_t size) {
+  set_has_placedunmappedquality();
+  if (placedunmappedquality_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedquality_ = new ::std::string;
+  }
+  placedunmappedquality_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_placedunmappedquality() {
+  set_has_placedunmappedquality();
+  if (placedunmappedquality_ == &::google::protobuf::internal::kEmptyString) {
+    placedunmappedquality_ = new ::std::string;
+  }
+  return placedunmappedquality_;
+}
+inline ::std::string* AlignmentEntry::release_placedunmappedquality() {
+  clear_has_placedunmappedquality();
+  if (placedunmappedquality_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = placedunmappedquality_;
+    placedunmappedquality_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }

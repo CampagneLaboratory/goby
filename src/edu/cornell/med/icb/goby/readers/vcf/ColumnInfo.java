@@ -20,6 +20,9 @@
 
 package edu.cornell.med.icb.goby.readers.vcf;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+
 import java.util.Arrays;
 
 /**
@@ -46,22 +49,40 @@ public class ColumnInfo implements Cloneable {
      * Index of this column in the file being parsed. Index is zero-based. Zero is the first (left-most) column.
      * Value is -1 if this index has not been set yet.
      */
-    public int columnIndex=-1;
-    public boolean useFormat=false;
-    public int formatIndex=0;
+    public int columnIndex = -1;
+    public boolean useFormat = false;
+    public int formatIndex = 0;
+
     /**
-     * Create a ColumnInfo with provided information.
+     * Create a ColumnInfo with provided information. This method does not transfer groups from field to column.
      *
      * @param columnName Name of the new column.
      * @param fields     Fields in this column.
      */
     public ColumnInfo(String columnName, ColumnField... fields) {
+    this(columnName,false,fields);
+    }
+    /**
+     * Create a ColumnInfo with provided information.
+     *
+     * @param columnName Name of the new column.
+     * @param transferGroups  Indicate that the column groups should be initialized with a copy of the fields' groups.
+     * @param fields     Fields in this column.
+     */
+    public ColumnInfo(String columnName, final boolean transferGroups, ColumnField... fields) {
         this.columnName = columnName;
         this.fields.addAll(Arrays.asList(fields));
-        for (ColumnField field: fields) {
-            field.column=this;
+        for (ColumnField field : fields) {
+            field.column = this;
+            if (transferGroups) {
+                columnGroups.addAll(field.getGroups());
+            }
         }
+
     }
+
+    private ObjectArraySet<String> columnGroups = new ObjectArraySet<String>();
+
 
     /**
      * Create a ColumnInfo with empty information.
@@ -70,9 +91,16 @@ public class ColumnInfo implements Cloneable {
 
     }
 
+    /**
+     * Add a field to this column. Note that any group associated with the column is added to the field.
+     * @param field Field to add to this column.
+     */
     public void addField(ColumnField field) {
         fields.add(field);
-        field.column=this;
+        field.column = this;
+        for (String columnGroup: columnGroups) {
+            field.addGroup(columnGroup);
+        }
     }
 
     public boolean hasField(String fieldName) {
@@ -84,13 +112,23 @@ public class ColumnInfo implements Cloneable {
     }
 
 
-    public ColumnInfo copy()  {
-        ColumnField[] fieldCopy=new ColumnField[fields.size()];
-        int i=0;
-        for (ColumnField f: fields) {
-            fieldCopy[i++]=new ColumnField(f.id, f.numberOfValues,f.type, f.description );
+    public ColumnInfo copy() {
+        ColumnField[] fieldCopy = new ColumnField[fields.size()];
+        int i = 0;
+        for (ColumnField f : fields) {
+            fieldCopy[i++] = new ColumnField(f.id, f.numberOfValues, f.type, f.description,
+                    f.getGroups().toArray(new String[f.getGroups().size()]));
         }
-        ColumnInfo copy=new ColumnInfo(columnName, fieldCopy);
+        ColumnInfo copy = new ColumnInfo(columnName, fieldCopy);
+        copy.addGroup(columnGroups.toArray(new String[columnGroups.size()]));
         return copy;
+    }
+
+    private void addGroup(String... columnGroups) {
+       this. columnGroups.addAll(ObjectArrayList.wrap(columnGroups));
+    }
+
+    public String[] getGroups() {
+        return columnGroups.toArray(new String[columnGroups.size()]);
     }
 }

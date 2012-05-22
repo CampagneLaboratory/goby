@@ -31,13 +31,7 @@ import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.io.IOUtils;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -137,6 +131,7 @@ public class VCFParser implements Closeable {
      * When this field is true, the permutation of the first line computed is reused for subsequent lines.
      */
     private boolean cacheFieldPermutation;
+    private String associationString;
 
     /**
      * Constructs a VCF parser.
@@ -562,8 +557,8 @@ public class VCFParser implements Closeable {
 
                     previousColumnFieldIndices.add(fieldIndex);
                     fieldIndex++;
-                    fieldIndex=Math.min(fieldEnds.length-1,fieldIndex);
-                    fieldIndex=Math.min(fieldStarts.length-1,fieldIndex);
+                    fieldIndex = Math.min(fieldEnds.length - 1, fieldIndex);
+                    fieldIndex = Math.min(fieldStarts.length - 1, fieldIndex);
                 }
             }
             if (c == columnSeparatorCharacter) {
@@ -575,8 +570,8 @@ public class VCFParser implements Closeable {
             }
 
         }
-        int numberOfFieldsOnLine = Math.min(fieldIndex, fieldEnds.length-1);
-        int numberOfColumnsOnLine = Math.min(columnIndex,columnEnds.length-1);
+        int numberOfFieldsOnLine = Math.min(fieldIndex, fieldEnds.length - 1);
+        int numberOfColumnsOnLine = Math.min(columnIndex, columnEnds.length - 1);
         columnStarts[0] = 0;
         columnEnds[numberOfColumnsOnLine - (TSV ? 1 : 0)] = line.length();
         fieldStarts[0] = 0;
@@ -755,6 +750,7 @@ public class VCFParser implements Closeable {
 
         headerLineNotParsed = false;
         // System.out.printf("header line:%s%n", line);
+
         // drop the #
         line = line.substring(1);
         final String[] columnNames = line.toString().split("[\\t]");
@@ -833,6 +829,7 @@ public class VCFParser implements Closeable {
         }
     }
 
+
     private void defineFixedColumn(final String columnName) {
         for (final ColumnInfo fixed : fixedColumns) {
             if (fixed.columnName.equals(columnName) && !columns.hasColumnName(columnName)) {
@@ -863,46 +860,46 @@ public class VCFParser implements Closeable {
 
     }
 
+
     final static private ColumnInfo fixedColumns[] = new ColumnInfo[]{
-            new ColumnInfo("CHROM", new ColumnField("VALUE", 1, ColumnType.String, "The reference position, with the 1st base having position 1. " +
-                    "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.")),
-            new ColumnInfo("POS", new ColumnField("VALUE", 1, ColumnType.Integer, "he reference position, with the 1st base having position 1. " +
-                    "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.")),
-            new ColumnInfo("ID", new ColumnField("VALUE", 1, ColumnType.String, "ID semi-colon separated list of unique identifiers where available. " +
+            new ColumnInfo("CHROM", true, new ColumnField("VALUE", 1, ColumnType.String, "The reference position, with the 1st base having position 1. " +
+                    "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.", "genomic-coordinate", "cross-sample-field")),
+            new ColumnInfo("POS", true, new ColumnField("VALUE", 1, ColumnType.Integer, "he reference position, with the 1st base having position 1. " +
+                    "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.", "genomic-coordinate", "cross-sample-field")),
+            new ColumnInfo("ID", true, new ColumnField("VALUE", 1, ColumnType.String, "ID semi-colon separated list of unique identifiers where available. " +
                     "If this is a dbSNP variant it is encouraged to use the rs number(s). " +
                     "No identifier should be present in more than one data record. " +
-                    "If there is no identifier available, then the missing value should be used.")),
-            new ColumnInfo("REF", new ColumnField("VALUE", 1, ColumnType.String, "Reference base(s): Each base must be one of A,C,G,T,N. " +
+                    "If there is no identifier available, then the missing value should be used.", "external-identifiers", "cross-sample-field")),
+            new ColumnInfo("REF", true, new ColumnField("VALUE", 1, ColumnType.String, "Reference base(s): Each base must be one of A,C,G,T,N. " +
                     "Bases should be in uppercase. Multiple bases are permitted. " +
                     "The value in the POS field refers to the position of the first base in the String. " +
                     "For InDels, the reference String must include the base before the event " +
-                    "(which must be reflected in the POS field).")),
-
-            new ColumnInfo("ALT", new ColumnField("VALUE", 1, ColumnType.String,
+                    "(which must be reflected in the POS field).", "cross-sample-field")),
+            new ColumnInfo("ALT", true, new ColumnField("VALUE", 1, ColumnType.String,
                     "Comma separated list of alternate non-reference alleles called on at least one of the samples. " +
                             "Options are base Strings made up of the bases A,C,G,T,N, or " +
                             "an angle-bracketed ID String (\"<ID>\"). " +
                             "If there are no alternative alleles, then the missing value should be used. " +
                             "Bases should be in uppercase. (Alphanumeric String; no whitespace, commas, " +
-                            "or angle-brackets are permitted in the ID String itself).")),
-            new ColumnInfo("QUAL", new ColumnField("VALUE", 1, ColumnType.Float,
+                            "or angle-brackets are permitted in the ID String itself).", "cross-sample-field")),
+            new ColumnInfo("QUAL", true, new ColumnField("VALUE", 1, ColumnType.Float,
                     "Phred-scaled quality score for the assertion made in ALT. i.e. give -10log_10 prob(call in ALT is wrong). " +
                             "If ALT is \".\" (no variant) then this is -10log_10 p(variant), " +
                             "and if ALT is not \".\" this is -10log_10 p(no variant). " +
                             "High QUAL scores indicate high confidence calls. " +
                             "Although traditionally people use integer phred scores, this field is permitted to be " +
-                            "a floating point to enable higher resolution for low confidence calls if desired.")),
-            new ColumnInfo("FILTER", new ColumnField("VALUE", 1, ColumnType.String,
+                            "a floating point to enable higher resolution for low confidence calls if desired.", "cross-sample-field")),
+            new ColumnInfo("FILTER", true, new ColumnField("VALUE", 1, ColumnType.String,
                     "Filter: PASS if this position has passed all filters, i.e. a call is made at this position. " +
                             "Otherwise, if the site has not passed all filters, a semicolon-separated list of codes " +
                             "for filters that fail. e.g. \"10;s50\" might indicate that at this site the quality is " +
                             "below 10 and the number of samples with data is below 50%% of the total number of samples. " +
                             "\"0\" is reserved and should not be used as a filter String. " +
-                            "If filters have not been applied, then this field should be set to the missing value.")),
-            new ColumnInfo("INFO", new ColumnField("VALUE", 1, ColumnType.String,
+                            "If filters have not been applied, then this field should be set to the missing value.", "cross-sample-field")),
+            new ColumnInfo("INFO", true, new ColumnField("VALUE", 1, ColumnType.String,
                     "Additional information: INFO fields are encoded as a semicolon-separated series of short keys " +
                             "with optional values in the format: <key>=<data>[,data]. Arbitrary keys are permitted, " +
-                            "although some sub-fields are reserved.")),
+                            "although some sub-fields are reserved.", "cross-sample-field")),
     };
 
 
@@ -917,8 +914,11 @@ public class VCFParser implements Closeable {
 
 
     private void processMetaInfo(final String columnName, final MutableString infoDefinition) throws SyntaxException {
-        if ("fileformat".equals(columnName) ||
-                "samtoolsVersion".equals(columnName)) {
+        if (line.startsWith("##FieldGroupAssociations=")) {
+            associationString = line.replace("##FieldGroupAssociations=", "").toString();
+            return;
+        }
+        if ("fileformat".equals(columnName) || "samtoolsVersion".equals(columnName)) {
             return;
         }
         if (!infoDefinition.startsWith("<") && !infoDefinition.endsWith(">")) {
@@ -1029,6 +1029,10 @@ public class VCFParser implements Closeable {
 
     public void setCacheFieldPermutation(boolean cacheFieldPermutation) {
         this.cacheFieldPermutation = cacheFieldPermutation;
+    }
+
+    public GroupAssociations getGroupAssociations() {
+        return new GroupAssociations(associationString,columns.find("FORMAT"),getColumnNamesUsingFormat());
     }
 
 

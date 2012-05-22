@@ -76,10 +76,17 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private ArrayList<GroupComparison> groupComparisons;
     private int numberOfComparisons;
 
+    public void setWriteFieldGroupAssociations(boolean writeFieldGroupAssociations) {
+        this.writeFieldGroupAssociations = writeFieldGroupAssociations;
+    }
+
+    private boolean writeFieldGroupAssociations=true;
+
 
     public void defineColumns(OutputInfo outputInfo, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         statsWriter = new VCFWriter(outputInfo.getPrintWriter());
+        statsWriter.setWriteFieldGroupAssociations(writeFieldGroupAssociations);
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         genotypeFormatter.defineInfoFields(statsWriter);
         groupComparisons = mode.getGroupComparisons();
@@ -90,7 +97,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                     String.format("P[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                     1, ColumnType.Float,
                     String.format("P-values of a t-test comparing arcsin transformed values of the ratio between groups %s and %s.",
-                            comparison.nameGroup1, comparison.nameGroup2));
+                            comparison.nameGroup1, comparison.nameGroup2),
+                    "p-value", "statistic");
 
         }
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {

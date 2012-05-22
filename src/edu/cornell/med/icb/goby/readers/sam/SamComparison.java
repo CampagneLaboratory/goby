@@ -345,7 +345,9 @@ public class SamComparison implements SamComparisonInterface {
             comparisonErrorDump.append("     g.index     : ").append(gobyAlignment.getQueryIndex()).append('\n');
             comparisonErrorDump.append("     g.position  : ").append(gobyAlignment.getPosition()).append('\n');
             comparisonErrorDump.append("     g.leftClip  : ").append(gobyAlignment.getSoftClippedBasesLeft()).append('\n');
+            comparisonErrorDump.append("     g.leftClipQual  : ").append(gobyAlignment.getSoftClippedQualityLeft()).append('\n');
             comparisonErrorDump.append("     g.rightClip : ").append(gobyAlignment.getSoftClippedBasesRight()).append('\n');
+            comparisonErrorDump.append("     g.rightClipQual : ").append(gobyAlignment.getSoftClippedQualityRight()).append('\n');
             comparisonErrorDump.append("     g.qAlignLen : ").append(gobyAlignment.getQueryAlignedLength()).append('\n');
             comparisonErrorDump.append("     g.tAlignLen : ").append(gobyAlignment.getTargetAlignedLength()).append('\n');
         }

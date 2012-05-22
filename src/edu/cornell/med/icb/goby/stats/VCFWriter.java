@@ -18,11 +18,13 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -73,6 +75,17 @@ public class VCFWriter {
     private boolean[] infoFlag;
     protected Object2IntMap<String> formatTypeToFormatFieldIndex = new Object2IntArrayMap<String>();
     private int numFormatFields;
+    private static final String[] NO_GROUPS = new String[0];
+
+    /**
+     * When this flag is true, writeHeader writes associations between columns and groups.
+     * @param writeFieldGroupAssociations True or False.
+     */
+    public void setWriteFieldGroupAssociations(final boolean writeFieldGroupAssociations) {
+        this.writeFieldGroupAssociations = writeFieldGroupAssociations;
+    }
+
+    private boolean writeFieldGroupAssociations;
 
 
     protected CharSequence getChromosome() {
@@ -178,6 +191,9 @@ public class VCFWriter {
 
         outWriter.printf("##fileformat=VCFv4.1%n" +
                 "##Goby=%s%n", VersionUtils.getImplementationVersion(GobyDriver.class));
+        if (writeFieldGroupAssociations) {
+            outWriter.printf("##FieldGroupAssociations=%s%n", buildGroupDeclaration());
+        }
         columnList.addAll(columns);
         Collections.sort(columnList, VCFParser.COLUMN_SORT);
 
@@ -258,8 +274,51 @@ public class VCFWriter {
     }
 
     /**
+     * Build a text encoding of field group associations, in the format globalFieldIndex=group,...
+     * This format supports associating multiple groups to one field.
+     *
+     * @return text encoding of field group associations.
+     */
+    private String buildGroupDeclaration() {
+        MutableString sb = new MutableString();
+        for (ColumnInfo column : columns) {
+
+            for (String columnGroup : column.getGroups()) {
+                sb.append(column.getColumnName());
+                sb.append('=');
+                sb.append(columnGroup);
+                sb.append(',');
+            }
+            for (ColumnField field : column.fields) {
+                for (String group : field.getGroups()) {
+                    sb.append(column.getColumnName());
+                    sb.append('/');
+                    sb.append(field.id);
+                    sb.append('=');
+                    sb.append(group);
+                    sb.append(',');
+                }
+            }
+        }
+        ColumnInfo formatColumn = columns.find("FORMAT");
+        for (String sample : sampleIds) {
+            for (String group : formatColumn.getGroups()) {
+                sb.append("FORMAT");
+                sb.append('/');
+                sb.append(sample);
+                sb.append('=');
+                sb.append(group);
+                sb.append(',');
+            }
+
+        }
+        return sb.toString();
+    }
+
+    /**
      * Append a record. Call the various setter before writing a record.
      */
+
     public void writeRecord() {
         outWriter.append(chrom);
         outWriter.append('\t');
@@ -505,9 +564,8 @@ public class VCFWriter {
 
 
     ColumnInfo infoColumn = new ColumnInfo("INFO");
-
-    /**
-     * Define a VCF field for a column.
+     /**
+     * Define a VCF field for a column. No groups associated with the field.
      *
      * @param columnName  Name of an existing column.
      * @param fieldName   Name of the new field.
@@ -517,6 +575,21 @@ public class VCFWriter {
      * @return index of the field in the column.
      */
     public int defineField(String columnName, String fieldName, int numValues, ColumnType type, String description) {
+
+      return defineField(columnName,fieldName,numValues,type,description, NO_GROUPS);
+    }
+    /**
+     * Define a VCF field for a column.
+     *
+     * @param columnName  Name of an existing column.
+     * @param fieldName   Name of the new field.
+     * @param numValues   Number of values in this field.
+     * @param type        Type of data for individual values of the field.
+     * @param description Description of data represented by the field.
+     * @param groups      Groups associated with the new field.
+     * @return index of the field in the column.
+     */
+    public int defineField(String columnName, String fieldName, int numValues, ColumnType type, String description, String... groups) {
         ColumnInfo c = columns.find(columnName);
         if (c == null) {
             throw new IllegalArgumentException("Could not find column " + columnName);
@@ -528,7 +601,8 @@ public class VCFWriter {
         final ColumnField columnField = new ColumnField(fieldName, numValues, type, description);
         columnField.globalFieldIndex = maxIndex + 1;
         c.addField(columnField);
-
+        columnField.addGroup(groups);
+        fieldGroups.add(new ObjectArrayList<String>());
         return columnField.globalFieldIndex;
     }
 
@@ -606,9 +680,11 @@ public class VCFWriter {
         formatFieldActive[formatFieldIndex] = true;
         formatValues[formatFieldIndex][sampleIndex] = value;
     }
+
     protected CharSequence getSampleValue(final int formatFieldIndex, final int sampleIndex) {
-        return  formatValues[formatFieldIndex][sampleIndex];
+        return formatValues[formatFieldIndex][sampleIndex];
     }
+
     /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *
@@ -743,12 +819,15 @@ public class VCFWriter {
     }
 
     /**
-     * Return true if the writer has at least one alternate alllele defined at the current record.
+     * Return true if the writer has at least one alternate allele defined at the current record.
      *
      * @return True or False.
      */
     public boolean hasAlternateAllele() {
         return !altAlleles.isEmpty();
     }
+
+    private ObjectArrayList<ObjectArrayList<String>> fieldGroups = new ObjectArrayList<ObjectArrayList<String>>();
+
 
 }

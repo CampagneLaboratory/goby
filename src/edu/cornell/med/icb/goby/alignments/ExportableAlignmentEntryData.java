@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.modes.SamHelper;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -95,7 +96,7 @@ public class ExportableAlignmentEntryData {
     /**
      * Constructor
      *
-     * @param genome the genome accessor.
+     * @param genome          the genome accessor.
      * @param qualityEncoding the quality encoder to use
      */
     public ExportableAlignmentEntryData(final RandomAccessSequenceInterface genome,
@@ -541,33 +542,47 @@ public class ExportableAlignmentEntryData {
 
 
         // Construct read & ref before any sequence variations (indels, mutations)
-        final int endOfLoop =Math.max(queryAlignedLength + startClip + endClip ,
+        final int endOfLoop = Math.max(queryAlignedLength + startClip + endClip,
                 targetAlignedLength + startClip + endClip + numInserts);
 
         final int gobyAlignmentTargetIndex = alignmentEntry.getTargetIndex();
         final MutableString genomeTargetName = targetIdentifiers.getId(gobyAlignmentTargetIndex);
         final int genomeTargetIndex = genome.getReferenceIndex(genomeTargetName.toString());
-
-        final char[] predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ?
-                alignmentEntry.getSoftClippedBasesLeft().toCharArray() : null;
-        final char[] predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ?
-                alignmentEntry.getSoftClippedBasesRight().toCharArray() : null;
+        assert genomeTargetIndex != -1 : String.format("The reference sequence %s must be found in the genome.", genomeTargetName);
+        final String predefStartClips = alignmentEntry.hasSoftClippedBasesLeft() ? alignmentEntry.getSoftClippedBasesLeft() : buildArrayOfNs(startClip);
+        final String predefEndClips = alignmentEntry.hasSoftClippedBasesRight() ? alignmentEntry.getSoftClippedBasesRight() : buildArrayOfNs(endClip);
+        final ByteString predefStartClipQuality = alignmentEntry.hasSoftClippedQualityLeft() ? alignmentEntry.getSoftClippedQualityLeft() : null;
+        final ByteString predefEndClipQuality = alignmentEntry.hasSoftClippedQualityRight() ? alignmentEntry.getSoftClippedQualityRight() : null;
         final int genomeLength = genome.getLength(genomeTargetIndex);
+        int rightClipIndex = 0;
+
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
             final char base = genomePosition >= 0 && genomePosition < genomeLength ?
                     genome.get(genomeTargetIndex, i + startPosition - startClip) : 'N';
-            if (i < startClip) {
-                // Clipped read bases. We cannot reconstruct them, oh well.
-                if (predefStartClips != null) {
-                    final char clipBase = predefStartClips[i];
+
+            boolean qualAddedForClip = false;
+            if (isClipPosition(endOfLoop, i)) {
+                // Clipped read bases.
+                final boolean leftClippedPosition = isLeftClippedPosition(endOfLoop, i, predefStartClips);
+                final boolean rightClippedPosition = isRightClippedPosition(endOfLoop, i, predefEndClips);
+                if (leftClippedPosition || rightClippedPosition) {
+
+                    final char clipBase = leftClippedPosition ? predefStartClips.charAt(i) : predefEndClips.charAt(rightClipIndex);
                     if (clipBase == '=') {
                         readBases.add(base);
                     } else {
                         readBases.add(clipBase);
                     }
+                    if (!predefinedQuals && (predefStartClipQuality != null || predefEndClipQuality != null)) {
+                        qualities.add(leftClippedPosition ? predefStartClipQuality.byteAt(i) : predefEndClipQuality.byteAt(rightClipIndex));
+                        qualAddedForClip = true;
+                        if (rightClippedPosition) {
+                            rightClipIndex += 1;
+                        }
+                    }
                 } else {
-                    readBases.add('N');
+                    readBases.add(base);
                 }
             } else {
                 readBases.add(base);
@@ -575,7 +590,7 @@ public class ExportableAlignmentEntryData {
             refBases.add(base);
 
             // By default, we don't know qualities. Phred score of 127?
-            if (!predefinedQuals) {
+            if (!predefinedQuals && !qualAddedForClip) {
                 qualities.add(UNKNOWN_MAPPING_VALUE);  // SAMRecord.UNKNOWN_MAPPING_VALUE is 255, which isn't a byte
             }
         }
@@ -612,7 +627,7 @@ public class ExportableAlignmentEntryData {
                 if (from == '-') {
                     // Insertion, missing base in the reference.
                     try {
-                        refBases.add(refPosition + seqVarInsertsInRead +1, from);
+                        refBases.add(refPosition + seqVarInsertsInRead + 1, from);
                         readBases.add(refPosition + seqVarInsertsInRead + 1, to);
                     } catch (IndexOutOfBoundsException e) {
                         invalidMessage.append("Error: Index out of bounds exception for queryIndex=")
@@ -671,6 +686,7 @@ public class ExportableAlignmentEntryData {
                     readBases.set(refPosition + seqVarInsertsInRead, to);
                     // refBases.set(refPosition, from);  // Possible fix for no seqvar
                     if (toQual != null && !predefinedQuals) {
+                        //     qualities.size(refPosition + seqVarInsertsInRead + 1);
                         qualities.set(refPosition + seqVarInsertsInRead, toQual);
                         hasQualities = true;
                     }
@@ -702,7 +718,7 @@ public class ExportableAlignmentEntryData {
                 if (predefEndClips == null) {
                     readBases.set(pos, 'N');
                 } else {
-                    final char clipBase = predefEndClips[i];
+                    final char clipBase = predefEndClips.charAt(i);
                     if (clipBase == '=') {
                         final char base = genomePosition >= 0 && genomePosition < genomeLength ?
                                 genome.get(genomeTargetIndex, genomePosition + i) : 'N';
@@ -723,6 +739,31 @@ public class ExportableAlignmentEntryData {
         if (debug) {
             LOG.debug("\n" + toString());
         }
+    }
+
+    /**
+     * Build a String with just Ns, the length of the clipped bases. Ns are used when teh alignment did not store clipped reads.
+     * @param length
+     * @return
+     */
+    private String buildArrayOfNs(int length) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            result.append('N');
+        }
+        return result.toString();
+    }
+
+    private boolean isRightClippedPosition(int endOfLoop, int position, String endClips) {
+        return position > endOfLoop - endClip && endClips != null;
+    }
+
+    private boolean isLeftClippedPosition(int endOfLoop, int i, String startClips) {
+        return i < startClip && startClips != null;
+    }
+
+    private boolean isClipPosition(final int endOfLoop, int position) {
+        return position < startClip || position > endOfLoop - endClip;
     }
 
     public List<String> getBamAttributesList() {

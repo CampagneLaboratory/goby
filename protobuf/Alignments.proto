@@ -228,6 +228,26 @@ message AlignmentEntry {
     to  queryLength - queryAlignedLength - queryPosition.
     */
     optional string softClippedBasesRight = 31;
+
+    /*
+    Quality scores for bases in softClippedBasesLeft.  Stored in Phred Units.
+    */
+    optional bytes softClippedQualityLeft = 32;
+   /*
+    Quality scores for bases in softClippedBasesRight.  Stored in Phred Units.
+    */
+    optional bytes softClippedQualityRight = 33;
+    /*
+     Sequence for a read placed near this entry, but unmapped to the reference sequence. For instance, used to record
+     the sequence of a mate that did not map to the reference. We know that the mate maps in the proximity of this entry
+     (it is placed) but are unable to map it to a specific genomic position. The sequence is always given as obtained
+     from the reads file.
+    */
+    optional bytes placedUnmappedSequence=40;
+    /*
+    Quality scores for a read placed near this entry.  Phred units.
+    */
+    optional bytes placedUnmappedQuality=41;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations

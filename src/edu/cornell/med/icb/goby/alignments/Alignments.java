@@ -687,6 +687,22 @@ public final class Alignments {
     // optional string softClippedBasesRight = 31;
     boolean hasSoftClippedBasesRight();
     String getSoftClippedBasesRight();
+    
+    // optional bytes softClippedQualityLeft = 32;
+    boolean hasSoftClippedQualityLeft();
+    com.google.protobuf.ByteString getSoftClippedQualityLeft();
+    
+    // optional bytes softClippedQualityRight = 33;
+    boolean hasSoftClippedQualityRight();
+    com.google.protobuf.ByteString getSoftClippedQualityRight();
+    
+    // optional bytes placedUnmappedSequence = 40;
+    boolean hasPlacedUnmappedSequence();
+    com.google.protobuf.ByteString getPlacedUnmappedSequence();
+    
+    // optional bytes placedUnmappedQuality = 41;
+    boolean hasPlacedUnmappedQuality();
+    com.google.protobuf.ByteString getPlacedUnmappedQuality();
   }
   public static final class AlignmentEntry extends
       com.google.protobuf.GeneratedMessage
@@ -1075,6 +1091,46 @@ public final class Alignments {
       }
     }
     
+    // optional bytes softClippedQualityLeft = 32;
+    public static final int SOFTCLIPPEDQUALITYLEFT_FIELD_NUMBER = 32;
+    private com.google.protobuf.ByteString softClippedQualityLeft_;
+    public boolean hasSoftClippedQualityLeft() {
+      return ((bitField0_ & 0x08000000) == 0x08000000);
+    }
+    public com.google.protobuf.ByteString getSoftClippedQualityLeft() {
+      return softClippedQualityLeft_;
+    }
+    
+    // optional bytes softClippedQualityRight = 33;
+    public static final int SOFTCLIPPEDQUALITYRIGHT_FIELD_NUMBER = 33;
+    private com.google.protobuf.ByteString softClippedQualityRight_;
+    public boolean hasSoftClippedQualityRight() {
+      return ((bitField0_ & 0x10000000) == 0x10000000);
+    }
+    public com.google.protobuf.ByteString getSoftClippedQualityRight() {
+      return softClippedQualityRight_;
+    }
+    
+    // optional bytes placedUnmappedSequence = 40;
+    public static final int PLACEDUNMAPPEDSEQUENCE_FIELD_NUMBER = 40;
+    private com.google.protobuf.ByteString placedUnmappedSequence_;
+    public boolean hasPlacedUnmappedSequence() {
+      return ((bitField0_ & 0x20000000) == 0x20000000);
+    }
+    public com.google.protobuf.ByteString getPlacedUnmappedSequence() {
+      return placedUnmappedSequence_;
+    }
+    
+    // optional bytes placedUnmappedQuality = 41;
+    public static final int PLACEDUNMAPPEDQUALITY_FIELD_NUMBER = 41;
+    private com.google.protobuf.ByteString placedUnmappedQuality_;
+    public boolean hasPlacedUnmappedQuality() {
+      return ((bitField0_ & 0x40000000) == 0x40000000);
+    }
+    public com.google.protobuf.ByteString getPlacedUnmappedQuality() {
+      return placedUnmappedQuality_;
+    }
+    
     private void initFields() {
       multiplicity_ = 0;
       queryIndex_ = 0;
@@ -1105,6 +1161,10 @@ public final class Alignments {
       readOriginIndex_ = 0;
       softClippedBasesLeft_ = "";
       softClippedBasesRight_ = "";
+      softClippedQualityLeft_ = com.google.protobuf.ByteString.EMPTY;
+      softClippedQualityRight_ = com.google.protobuf.ByteString.EMPTY;
+      placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+      placedUnmappedQuality_ = com.google.protobuf.ByteString.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1198,6 +1258,18 @@ public final class Alignments {
       }
       if (((bitField0_ & 0x04000000) == 0x04000000)) {
         output.writeBytes(31, getSoftClippedBasesRightBytes());
+      }
+      if (((bitField0_ & 0x08000000) == 0x08000000)) {
+        output.writeBytes(32, softClippedQualityLeft_);
+      }
+      if (((bitField0_ & 0x10000000) == 0x10000000)) {
+        output.writeBytes(33, softClippedQualityRight_);
+      }
+      if (((bitField0_ & 0x20000000) == 0x20000000)) {
+        output.writeBytes(40, placedUnmappedSequence_);
+      }
+      if (((bitField0_ & 0x40000000) == 0x40000000)) {
+        output.writeBytes(41, placedUnmappedQuality_);
       }
       for (int i = 0; i < bamAttributes_.size(); i++) {
         output.writeBytes(50, bamAttributes_.getByteString(i));
@@ -1321,6 +1393,22 @@ public final class Alignments {
       if (((bitField0_ & 0x04000000) == 0x04000000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(31, getSoftClippedBasesRightBytes());
+      }
+      if (((bitField0_ & 0x08000000) == 0x08000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(32, softClippedQualityLeft_);
+      }
+      if (((bitField0_ & 0x10000000) == 0x10000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(33, softClippedQualityRight_);
+      }
+      if (((bitField0_ & 0x20000000) == 0x20000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(40, placedUnmappedSequence_);
+      }
+      if (((bitField0_ & 0x40000000) == 0x40000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(41, placedUnmappedQuality_);
       }
       {
         int dataSize = 0;
@@ -1537,6 +1625,14 @@ public final class Alignments {
         bitField0_ = (bitField0_ & ~0x08000000);
         softClippedBasesRight_ = "";
         bitField0_ = (bitField0_ & ~0x10000000);
+        softClippedQualityLeft_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x20000000);
+        softClippedQualityRight_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x40000000);
+        placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x80000000);
+        placedUnmappedQuality_ = com.google.protobuf.ByteString.EMPTY;
+        bitField1_ = (bitField1_ & ~0x00000001);
         return this;
       }
       
@@ -1574,6 +1670,7 @@ public final class Alignments {
       public edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry buildPartial() {
         edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry result = new edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry(this);
         int from_bitField0_ = bitField0_;
+        int from_bitField1_ = bitField1_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
@@ -1710,6 +1807,22 @@ public final class Alignments {
           to_bitField0_ |= 0x04000000;
         }
         result.softClippedBasesRight_ = softClippedBasesRight_;
+        if (((from_bitField0_ & 0x20000000) == 0x20000000)) {
+          to_bitField0_ |= 0x08000000;
+        }
+        result.softClippedQualityLeft_ = softClippedQualityLeft_;
+        if (((from_bitField0_ & 0x40000000) == 0x40000000)) {
+          to_bitField0_ |= 0x10000000;
+        }
+        result.softClippedQualityRight_ = softClippedQualityRight_;
+        if (((from_bitField0_ & 0x80000000) == 0x80000000)) {
+          to_bitField0_ |= 0x20000000;
+        }
+        result.placedUnmappedSequence_ = placedUnmappedSequence_;
+        if (((from_bitField1_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x40000000;
+        }
+        result.placedUnmappedQuality_ = placedUnmappedQuality_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1842,6 +1955,18 @@ public final class Alignments {
         }
         if (other.hasSoftClippedBasesRight()) {
           setSoftClippedBasesRight(other.getSoftClippedBasesRight());
+        }
+        if (other.hasSoftClippedQualityLeft()) {
+          setSoftClippedQualityLeft(other.getSoftClippedQualityLeft());
+        }
+        if (other.hasSoftClippedQualityRight()) {
+          setSoftClippedQualityRight(other.getSoftClippedQualityRight());
+        }
+        if (other.hasPlacedUnmappedSequence()) {
+          setPlacedUnmappedSequence(other.getPlacedUnmappedSequence());
+        }
+        if (other.hasPlacedUnmappedQuality()) {
+          setPlacedUnmappedQuality(other.getPlacedUnmappedQuality());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2022,6 +2147,26 @@ public final class Alignments {
               softClippedBasesRight_ = input.readBytes();
               break;
             }
+            case 258: {
+              bitField0_ |= 0x20000000;
+              softClippedQualityLeft_ = input.readBytes();
+              break;
+            }
+            case 266: {
+              bitField0_ |= 0x40000000;
+              softClippedQualityRight_ = input.readBytes();
+              break;
+            }
+            case 322: {
+              bitField0_ |= 0x80000000;
+              placedUnmappedSequence_ = input.readBytes();
+              break;
+            }
+            case 330: {
+              bitField1_ |= 0x00000001;
+              placedUnmappedQuality_ = input.readBytes();
+              break;
+            }
             case 402: {
               ensureBamAttributesIsMutable();
               bamAttributes_.add(input.readBytes());
@@ -2037,6 +2182,7 @@ public final class Alignments {
       }
       
       private int bitField0_;
+      private int bitField1_;
       
       // optional uint32 multiplicity = 7;
       private int multiplicity_ ;
@@ -3085,6 +3231,102 @@ public final class Alignments {
         bitField0_ |= 0x10000000;
         softClippedBasesRight_ = value;
         onChanged();
+      }
+      
+      // optional bytes softClippedQualityLeft = 32;
+      private com.google.protobuf.ByteString softClippedQualityLeft_ = com.google.protobuf.ByteString.EMPTY;
+      public boolean hasSoftClippedQualityLeft() {
+        return ((bitField0_ & 0x20000000) == 0x20000000);
+      }
+      public com.google.protobuf.ByteString getSoftClippedQualityLeft() {
+        return softClippedQualityLeft_;
+      }
+      public Builder setSoftClippedQualityLeft(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x20000000;
+        softClippedQualityLeft_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSoftClippedQualityLeft() {
+        bitField0_ = (bitField0_ & ~0x20000000);
+        softClippedQualityLeft_ = getDefaultInstance().getSoftClippedQualityLeft();
+        onChanged();
+        return this;
+      }
+      
+      // optional bytes softClippedQualityRight = 33;
+      private com.google.protobuf.ByteString softClippedQualityRight_ = com.google.protobuf.ByteString.EMPTY;
+      public boolean hasSoftClippedQualityRight() {
+        return ((bitField0_ & 0x40000000) == 0x40000000);
+      }
+      public com.google.protobuf.ByteString getSoftClippedQualityRight() {
+        return softClippedQualityRight_;
+      }
+      public Builder setSoftClippedQualityRight(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x40000000;
+        softClippedQualityRight_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSoftClippedQualityRight() {
+        bitField0_ = (bitField0_ & ~0x40000000);
+        softClippedQualityRight_ = getDefaultInstance().getSoftClippedQualityRight();
+        onChanged();
+        return this;
+      }
+      
+      // optional bytes placedUnmappedSequence = 40;
+      private com.google.protobuf.ByteString placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+      public boolean hasPlacedUnmappedSequence() {
+        return ((bitField0_ & 0x80000000) == 0x80000000);
+      }
+      public com.google.protobuf.ByteString getPlacedUnmappedSequence() {
+        return placedUnmappedSequence_;
+      }
+      public Builder setPlacedUnmappedSequence(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x80000000;
+        placedUnmappedSequence_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearPlacedUnmappedSequence() {
+        bitField0_ = (bitField0_ & ~0x80000000);
+        placedUnmappedSequence_ = getDefaultInstance().getPlacedUnmappedSequence();
+        onChanged();
+        return this;
+      }
+      
+      // optional bytes placedUnmappedQuality = 41;
+      private com.google.protobuf.ByteString placedUnmappedQuality_ = com.google.protobuf.ByteString.EMPTY;
+      public boolean hasPlacedUnmappedQuality() {
+        return ((bitField1_ & 0x00000001) == 0x00000001);
+      }
+      public com.google.protobuf.ByteString getPlacedUnmappedQuality() {
+        return placedUnmappedQuality_;
+      }
+      public Builder setPlacedUnmappedQuality(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField1_ |= 0x00000001;
+        placedUnmappedQuality_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearPlacedUnmappedQuality() {
+        bitField1_ = (bitField1_ & ~0x00000001);
+        placedUnmappedQuality_ = getDefaultInstance().getPlacedUnmappedQuality();
+        onChanged();
+        return this;
       }
       
       // @@protoc_insertion_point(builder_scope:goby.AlignmentEntry)
@@ -10202,7 +10444,7 @@ public final class Alignments {
     java.lang.String[] descriptorData = {
       "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol" +
       "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
-      "y.AlignmentEntry\"\371\006\n\016AlignmentEntry\022\024\n\014m" +
+      "y.AlignmentEntry\"\371\007\n\016AlignmentEntry\022\024\n\014m" +
       "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \001(\r\022\024" +
       "\n\014target_index\030\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037" +
       "\n\027matching_reverse_strand\030\006 \001(\010\022\026\n\016query" +
@@ -10224,45 +10466,49 @@ public final class Alignments {
       "y\030\033 \001(\r\022\026\n\016bam_attributes\0302 \003(\t\022\033\n\023read_" +
       "quality_scores\0307 \001(\014\022\031\n\021read_origin_inde" +
       "x\030\032 \001(\r\022\034\n\024softClippedBasesLeft\030\036 \001(\t\022\035\n" +
-      "\025softClippedBasesRight\030\037 \001(\t\"p\n\025RelatedA" +
-      "lignmentEntry\022\024\n\014target_index\030\001 \001(\r\022\020\n\010p" +
-      "osition\030\002 \001(\r\022\026\n\016fragment_index\030\003 \001(\r\022\027\n" +
-      "\017optimized_index\0302 \001(\r\"g\n\021SequenceVariat" +
-      "ion\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010positio" +
-      "n\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto_qualit",
-      "y\030\004 \001(\014\"\304\005\n\017AlignmentHeader\022\"\n\032smallest_" +
-      "split_query_index\030\t \001(\r\022!\n\031largest_split" +
-      "_query_index\030\013 \001(\r\0223\n\022query_name_mapping" +
-      "\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023targe" +
-      "t_name_mapping\030\002 \001(\0132\027.goby.IdentifierMa" +
-      "pping\022\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021numb" +
-      "er_of_targets\030\006 \001(\r\022\037\n\027number_of_aligned" +
-      "_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\035" +
-      "\n\025constant_query_length\030\n \001(\r\022\025\n\rtarget_" +
-      "length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030",
-      "\016 \001(\010\022\'\n\037query_lengths_stored_in_entries" +
-      "\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligner_" +
-      "version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n\017sample" +
-      "_basename\030\036 \003(\t\022#\n\033query_indices_were_pe" +
-      "rmuted\030\032 \001(\010\022\037\n\027query_index_occurrences\030" +
-      "# \001(\010\022#\n\033ambiguity_stored_in_entries\030$ \001" +
-      "(\010\022\037\n\027all_read_quality_scores\030( \001(\010\022)\n\013r" +
-      "ead_origin\030\033 \003(\0132\024.goby.ReadOriginInfo\";" +
-      "\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\0132\024." +
-      "goby.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n",
-      "\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016ReadOrigi" +
-      "nInfo\022\024\n\014origin_index\030\001 \002(\r\022\021\n\torigin_id" +
-      "\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n\010platform\030\005 \001(\t" +
-      "\022\017\n\007library\030\010 \001(\t\022\025\n\rplatform_unit\030\014 \001(\t" +
-      "\022\020\n\010run_date\030\006 \001(\t\"X\n\024AlignmentTooManyHi" +
-      "ts\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004hits\030\001 " +
-      "\003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguou" +
-      "sLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_lea" +
-      "st_number_of_hits\030\002 \002(\r\022\027\n\017length_of_mat" +
-      "ch\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027target_pos",
-      "ition_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004" +
-      "B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B\002\020\001B\'\n#" +
-      "edu.cornell.med.icb.goby.alignmentsH\001"
+      "\025softClippedBasesRight\030\037 \001(\t\022\036\n\026softClip" +
+      "pedQualityLeft\030  \001(\014\022\037\n\027softClippedQuali" +
+      "tyRight\030! \001(\014\022\036\n\026placedUnmappedSequence\030" +
+      "( \001(\014\022\035\n\025placedUnmappedQuality\030) \001(\014\"p\n\025" +
+      "RelatedAlignmentEntry\022\024\n\014target_index\030\001 " +
+      "\001(\r\022\020\n\010position\030\002 \001(\r\022\026\n\016fragment_index\030",
+      "\003 \001(\r\022\027\n\017optimized_index\0302 \001(\r\"g\n\021Sequen" +
+      "ceVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n" +
+      "\010position\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nt" +
+      "o_quality\030\004 \001(\014\"\304\005\n\017AlignmentHeader\022\"\n\032s" +
+      "mallest_split_query_index\030\t \001(\r\022!\n\031large" +
+      "st_split_query_index\030\013 \001(\r\0223\n\022query_name" +
+      "_mapping\030\001 \001(\0132\027.goby.IdentifierMapping\022" +
+      "4\n\023target_name_mapping\030\002 \001(\0132\027.goby.Iden" +
+      "tifierMapping\022\031\n\021number_of_queries\030\005 \001(\r" +
+      "\022\031\n\021number_of_targets\030\006 \001(\r\022\037\n\027number_of",
+      "_aligned_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003" +
+      "(\rB\002\030\001\022\035\n\025constant_query_length\030\n \001(\r\022\025\n" +
+      "\rtarget_length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007" +
+      "indexed\030\016 \001(\010\022\'\n\037query_lengths_stored_in" +
+      "_entries\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017" +
+      "aligner_version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027" +
+      "\n\017sample_basename\030\036 \003(\t\022#\n\033query_indices" +
+      "_were_permuted\030\032 \001(\010\022\037\n\027query_index_occu" +
+      "rrences\030# \001(\010\022#\n\033ambiguity_stored_in_ent" +
+      "ries\030$ \001(\010\022\037\n\027all_read_quality_scores\030( ",
+      "\001(\010\022)\n\013read_origin\030\033 \003(\0132\024.goby.ReadOrig" +
+      "inInfo\";\n\021IdentifierMapping\022&\n\010mappings\030" +
+      "\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identifie" +
+      "rInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"\225\001\n\016R" +
+      "eadOriginInfo\022\024\n\014origin_index\030\001 \002(\r\022\021\n\to" +
+      "rigin_id\030\002 \002(\t\022\016\n\006sample\030\004 \001(\t\022\020\n\010platfo" +
+      "rm\030\005 \001(\t\022\017\n\007library\030\010 \001(\t\022\025\n\rplatform_un" +
+      "it\030\014 \001(\t\022\020\n\010run_date\030\006 \001(\t\"X\n\024AlignmentT" +
+      "ooManyHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n" +
+      "\004hits\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021",
+      "AmbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022\037" +
+      "\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017lengt" +
+      "h_of_match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027ta" +
+      "rget_position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offse" +
+      "ts\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004" +
+      "B\002\020\001B\'\n#edu.cornell.med.icb.goby.alignme" +
+      "ntsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10282,7 +10528,7 @@ public final class Alignments {
           internal_static_goby_AlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentEntry_descriptor,
-              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedForwardAlignmentLink", "SplicedBackwardAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", "QueryIndexOccurrences", "Ambiguity", "BamAttributes", "ReadQualityScores", "ReadOriginIndex", "SoftClippedBasesLeft", "SoftClippedBasesRight", },
+              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedForwardAlignmentLink", "SplicedBackwardAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", "QueryIndexOccurrences", "Ambiguity", "BamAttributes", "ReadQualityScores", "ReadOriginIndex", "SoftClippedBasesLeft", "SoftClippedBasesRight", "SoftClippedQualityLeft", "SoftClippedQualityRight", "PlacedUnmappedSequence", "PlacedUnmappedQuality", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.Builder.class);
           internal_static_goby_RelatedAlignmentEntry_descriptor =

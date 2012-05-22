@@ -321,12 +321,12 @@ public class TestConcatAlignmentReader {
     public void testLoadTwoFromFileURLs() throws IOException {
         final int count;
 
-        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader("file://./" + outputBasename1, "file://./" + outputBasename2);
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false,"file://./" + outputBasename1, "file://./" + outputBasename2);
         count = countAlignmentEntries(concatReader);
         assertEquals(count101 + count102, count);
         concatReader.readHeader();
 
-        assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
+        assertEquals(Math.max(numQueries101 , numQueries102), concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
     }
@@ -346,14 +346,14 @@ public class TestConcatAlignmentReader {
          */
         // There are exactly 12 entries between position 33031693 and 33031798
         final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(new DefaultAlignmentReaderFactory(),
-                true, 21, 33031693, 21, 33031798,
+                false, 21, 33031693, 21, 33031798,
                 "http://dl.dropbox.com/u/357497/KHTFWNT-419-bis6-chr22-simulated-flat.entries",
                 "http://dl.dropbox.com/u/357497/MCQPRWA-419-bis6-chr22-simulated-spikes.entries");
         count = countAlignmentEntries(concatReader);
         assertEquals(12, count);
         concatReader.readHeader();
 
-        assertEquals(976, concatReader.getNumberOfQueries());
+        assertEquals(488, concatReader.getNumberOfQueries());
         assertEquals(84, concatReader.getNumberOfTargets());
 
     }

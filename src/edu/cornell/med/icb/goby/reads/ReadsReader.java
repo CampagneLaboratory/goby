@@ -222,16 +222,15 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
      * Decode the quality scores in this entry to qualityScores MutableString.
      *
      * @param entry The entry which provides the sequence in encoded format.
-     * @return the quality scores byte array (or an empty byte array if no scores)
+     * @return the quality scores byte array (or null if no scores)
      */
     public static byte[] decodeQualityScores(final Reads.ReadEntry entry) {
-        final ByteString scores = entry.getQualityScores();
-        if (scores == null) {
+        if (!entry.hasQualityScores()) {
             return null;
         }
-
-        final byte[] result = new byte[scores.size()];
-        final int length = entry.getReadLength();
+        final ByteString scores = entry.getQualityScores();
+        final int length = scores.size();
+        final byte[] result = new byte[length];
         for (int i = 0; i < length; ++i) {
             result[i] = scores.byteAt(i);
         }

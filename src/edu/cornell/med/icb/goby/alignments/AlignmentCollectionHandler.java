@@ -71,7 +71,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private boolean storeReadOrigins = true;
     private final boolean useArithmeticCoding = true;
     private final boolean useHuffmanCoding = false;
-    private int streamVersion;
+
     private int numReadQualScoresIndex;
     public boolean enableDomainOptimizations = false;
     private boolean useTemplateBasedCompression = true;
@@ -151,7 +151,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 8;
+    public static final int VERSION = 9;
+    private int streamVersion;
 
     @Override
     public Message compressCollection(final Message collection, final ByteArrayOutputStream compressedBits) throws IOException {
@@ -242,6 +243,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     if (indexInStrings < numSoftClipLeftBasesInt) {
                         final String softClippedBasesLeft = entry.getSoftClippedBasesLeft();
                         softClipLeftBases.add(softClippedBasesLeft.charAt(indexInStrings));
+                        if (entry.hasSoftClippedQualityLeft()) {
+                              softClipLeftQualityScores.add(entry.getSoftClippedQualityLeft().byteAt(indexInStrings));
+                        }
                         finished1 = false;
                     }
                 }
@@ -251,13 +255,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                         final String softClippedBasesRight = entry.getSoftClippedBasesRight();
 
                         softClipRightBases.add(softClippedBasesRight.charAt(indexInStrings));
+                        if (entry.hasSoftClippedQualityRight()) {
+                              softClipRightQualityScores.add(entry.getSoftClippedQualityRight().byteAt(indexInStrings));
+                        }
                         finished2 = false;
                     }
                 }
             }
             indexInStrings++;
         }
-
+        // must clear the attributes we have collected, but cannot do this on the read-only PB entries.
     }
 
     private void restoreStrings(Alignments.AlignmentCollection.Builder alignmentCollection) {
@@ -892,6 +899,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList numSoftClipRightBases = new IntArrayList();
     private IntList softClipLeftBases = new IntArrayList();
     private IntList softClipRightBases = new IntArrayList();
+    private IntList softClipLeftQualityScores = new IntArrayList();
+    private IntList softClipRightQualityScores = new IntArrayList();
+
     protected IntList linkOffsetOptimization = new IntArrayList();
 
 
@@ -956,7 +966,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (streamVersion >= 7) {
             decodeArithmetic("linkOffsetOptimization", numEntriesInChunk, bitInput, linkOffsetOptimization);
         }
-
+        if (streamVersion >= 9) {
+            decodeArithmetic("softClipLeftQualityScores", numEntriesInChunk, bitInput, softClipLeftQualityScores);
+            decodeArithmetic("softClipRightQualityScores", numEntriesInChunk, bitInput, softClipRightQualityScores);
+        }
 
         return streamVersion;
     }
@@ -1049,6 +1062,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("softClipRightBases", softClipRightBases, out);
 
         writeArithmetic("linkOffsetOptimization", linkOffsetOptimization, out);
+        writeArithmetic("softClipLeftQualityScores", softClipLeftQualityScores, out);
+        writeArithmetic("softClipRightQualityScores", softClipRightQualityScores, out);
     }
 
     private void reset() {
@@ -1130,6 +1145,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         // clear the strings we collected earlier:
         result.clearSoftClippedBasesLeft();
         result.clearSoftClippedBasesRight();
+        result.clearSoftClippedQualityLeft();
+        result.clearSoftClippedQualityRight();
 
         if (index > 0 && targetIndex == previousTargetIndex) {
             result.clearPosition();

@@ -413,10 +413,15 @@ public class TestSamRecordParser {
      * @return the local celegans random genome.
      */
     private String findCelegansGenome() {
+        // The following directories will be scanned in sequence to find a locatio where the genome is installed. Add new
+        // locations as needed to indicate where the genome is installed on your local machine.
         final String[] dirs = {
                 "/tmp/celegans",
                 "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/cElegans",
-                "/home/ccontrol/goby-data/celegans" };
+                "/home/ccontrol/goby-data/celegans",
+                "/data/cElegans"
+        };
+
         for (final String dir : dirs) {
             final String testRootFilename = dir + "/" + "random-access-genome";
             final String testFilename = testRootFilename + ".names";
@@ -438,7 +443,8 @@ public class TestSamRecordParser {
         final String[] dirs = {
                 "/tmp/1000g",
                 "/scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference",
-                "/home/ccontrol/goby-data/1000g-random-access" };
+                "/home/ccontrol/goby-data/1000g-random-access",
+                "/data/1000g"};
         for (final String dir : dirs) {
             final String testRootFilename = dir + "/" + "random-access-genome";
             final String testFilename = testRootFilename + ".names";
@@ -459,7 +465,9 @@ public class TestSamRecordParser {
         final String[] dirs = {
                 "/tmp/mm9",
                 "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/mm9",
-                "/home/ccontrol/goby-data/mm9-random-access" };
+                "/home/ccontrol/goby-data/mm9-random-access",
+                "/data/mm9"
+        };
         for (final String dir : dirs) {
             final String testRootFilename = dir + "/" + "random-access-genome";
             final String testFilename = testRootFilename + ".names";

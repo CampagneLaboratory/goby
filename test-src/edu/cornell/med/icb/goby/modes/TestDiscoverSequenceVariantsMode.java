@@ -128,8 +128,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     }
 
 
-    //not a test, just useful to run through the code.
-
+    //not much of a test, just useful to run through the code and perhaps trigger some exceptions.
+    @Test
     public void testDiscoverMethylationOneGroup() throws IOException, JSAPException {
 
         final DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
@@ -149,8 +149,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         configureTestGenome(mode);
         mode.configure(args);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                new File("test-data/discover-variants/expected-output-methylation.tsv"));
+
 
     }
 
@@ -187,6 +186,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             @Override
             public void configureFormatter(final SequenceVariationOutputFormat formatter) {
                 ((AlleleFrequencyOutputFormat) formatter).setMinimumAllelicDifference(0);
+                ((AlleleFrequencyOutputFormat) formatter).setWriteFieldGroupAssociations(false);
             }
         };
         mode.setFormatConfigurator(configurator);

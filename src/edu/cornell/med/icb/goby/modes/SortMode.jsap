@@ -44,10 +44,11 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>-1</string>
+                <string>0</string>
             </defaults>
-            <help>The number of threads to run with. The default, -1, is to use the number of cores on the machine.
-                Specify a value of 0 or 1 to run single-threaded.
+            <help>The number of threads to run with. When -1, use as many threads as available on the machine.
+                Specify a value of 0 or 1 to run single-threaded (zero disables thread-pool, 1 runs with a thread
+                pool with one thread).
             </help>
         </flaggedOption>
         <flaggedOption>
@@ -122,7 +123,7 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>10</string>
+                <string>50</string>
             </defaults>
             <help>The larger the value of split-size-scaling-factor the more splits will be made because this
                 value controls the COMPRESSED size of a single split, based on the equation
@@ -131,8 +132,11 @@
                 per thread. If, during sort-large-mode, you are running out of memory, INCREASE the value for
                 split-size-scaling-factor. Also, if you are running out of memory, it is advisable to increase the
                 overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
-                the program with a total of 8g of memory. The relatively large value for this (the default is 10)
-                is required because the alignments will be decompressed after being read.
+                the program with a total of 8g of memory. The relatively large value for this (the default is 50)
+                is required because the alignments will be decompressed after being read. In setting this value,
+                consider which codec the data are compressed with. Codecs that compress less require lower values,
+                while codec that compress more (hybrid-1) require larger values because the same amount of disk bytes
+                yield more data in memory.
             </help>
         </flaggedOption>
     </parameters>

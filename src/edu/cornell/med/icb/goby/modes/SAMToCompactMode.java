@@ -297,13 +297,15 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 }
             }
         }
+
         writer.setTargetLengths(targetLengths);
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
             writer.setSorted(true);
         }
-
         final Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
+
+
         final ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
 
         final SamRecordParser samRecordParser = new SamRecordParser();
@@ -427,15 +429,18 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     if (leftTrim > 0) {
                         currentEntry.setSoftClippedBasesLeft(convertBases(
                                 genomeTargetIndex, gobySamSegment.getPosition() - leftTrim, samRecord.getReadBases(), 0, leftTrim));
-
+                        currentEntry.setSoftClippedQualityLeft(gobySamSegment.getSoftClippedQualityLeft());
                     }
                     final int queryAlignedLength = gobySamSegment.getQueryAlignedLength();
                     final int rightTrim = gobySamSegment.getSoftClippedBasesRight().length();
                     final int queryPosition = gobySamSegment.getQueryPosition();
                     if (rightTrim > 0) {
+                        final int startIndex = queryPosition + queryAlignedLength;
+                        final int endIndex = startIndex + rightTrim;
                         currentEntry.setSoftClippedBasesRight(convertBases(genomeTargetIndex,
                                 gobySamSegment.getPosition() + gobySamSegment.getTargetAlignedLength(),
-                                samRecord.getReadBases(), queryPosition + queryAlignedLength, queryPosition + queryAlignedLength + rightTrim));
+                                samRecord.getReadBases(), startIndex, endIndex));
+                        currentEntry.setSoftClippedQualityRight(gobySamSegment.getSoftClippedQualityRight());
                     }
                 }
 
@@ -451,12 +456,8 @@ public class SAMToCompactMode extends AbstractGobyMode {
 
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
-                    /* BAM does not store the inferred insert size, it is calculated from the read and mate positions on demand. We therefore do
-                  not store it either.
-                 final int inferredInsertSize = samRecord.getInferredInsertSize();
-                   if (inferredInsertSize != 0) {
-                       currentEntry.setInsertSize(inferredInsertSize);
-                   } */
+                    final int inferredInsertSize = samRecord.getInferredInsertSize();
+                    currentEntry.setInsertSize(inferredInsertSize);
                 }
 
                 for (final GobyQuickSeqvar variation : gobySamSegment.getSequenceVariations()) {
@@ -532,6 +533,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
                                 relatedBuilder.setTargetIndex(mateTargetIndex);
                                 builder.setPairAlignmentLink(relatedBuilder);
                             }
+                        } else  {
+                           // mate is unmapped.
+
                         }
                     }
                     writer.appendEntry(builder.build());
