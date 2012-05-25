@@ -30,8 +30,8 @@ import it.unimi.dsi.lang.MutableString;
 public class GobyQuickSeqvar implements Resettable {
     MutableString from;
     MutableString to;
-    int readIndex;
-    int position;
+    private int readIndex;
+    private int position;
     ByteList toQuals;
     int lastIndexPosition;  // bookkeeping
 
@@ -47,8 +47,8 @@ public class GobyQuickSeqvar implements Resettable {
         from.length(0);
         to.length(0);
         toQuals.clear();
-        readIndex = 0;
-        position = 0;
+        setReadIndex(1);
+        setPosition(0);
         lastIndexPosition = Integer.MAX_VALUE;
     }
 
@@ -80,10 +80,21 @@ public class GobyQuickSeqvar implements Resettable {
         String s = "sequence_variations {\n";
         s += "  to: \"" + to.toString() + "\"\n";
         s += "  from: \"" + from.toString() + "\"\n";
-        s += "  position: " + position + "\n";
+        s += "  position: " + getPosition() + "\n";
         s += "  to_quality: \"" + toQuals.toString() + "\"\n";
-        s += "  read_index: " + readIndex + "\n";
+        s += "  read_index: " + getReadIndex() + "\n";
         s += "}\n";
         return s;
+    }
+
+    public final void setPosition(final int position) {
+        assert position>=0 : "position must be positive. seqVar.position must be >=0.";
+        this.position = position;
+    }
+
+    public final void setReadIndex(final int readIndex) {
+        assert readIndex>=1 : "readIndex cannot be zero. seqVar.readIndex is one-based.";
+
+        this.readIndex = readIndex;
     }
 }

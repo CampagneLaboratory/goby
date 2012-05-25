@@ -279,8 +279,13 @@ public class ExportableAlignmentEntryData {
         return alignmentEntry.getPairAlignmentLink().getPosition() + 1;
     }
 
+    /** Return the inferred size stored in the entry, or zero if the entry has no such field.
+     *
+     * @return
+     */
     public int getInferredInsertSize() {
-        return alignmentEntry.getInsertSize();
+
+        return alignmentEntry.hasInsertSize()? alignmentEntry.getInsertSize():0;
     }
 
     public Alignments.AlignmentEntry getAlignmentEntry() {

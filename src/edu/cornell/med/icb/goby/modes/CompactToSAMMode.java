@@ -254,7 +254,6 @@ public class CompactToSAMMode extends AbstractGobyMode {
         debug = Util.log4JIsConfigured();
         queryIndexToFragmentsMap = new Int2ObjectAVLTreeMap<Int2ObjectMap<ExportableAlignmentEntryData>>();
 
-
         final AlignmentReader gobyReader = new AlignmentReaderImpl(inputBasename);
         gobyReader.readHeader();
         final DoubleIndexedIdentifier targetIdentifiers = new DoubleIndexedIdentifier(gobyReader.getTargetIdentifiers());
@@ -547,7 +546,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             if (toExport.hasMate()) {
                 samRecord.setMateReferenceIndex(toExport.getMateReferenceIndex());
                 samRecord.setMateAlignmentStart(toExport.getMateAlignmentStart());
-                //samRecord.setInferredInsertSize(toExport.getInferredInsertSize());
+                samRecord.setInferredInsertSize(toExport.getInferredInsertSize());
             }
             if (hasReadGroups) {
                 samRecord.setAttribute("RG", toExport.getReadGroup());

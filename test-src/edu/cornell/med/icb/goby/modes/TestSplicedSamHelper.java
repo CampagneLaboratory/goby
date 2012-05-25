@@ -634,6 +634,25 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
     }
 
     @Test
+    // Failed on server when converting back to BAM because seqVar.position would be set to zero:
+
+    public void testSamToCompactTrickCase19() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-19.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-19");
+        importer.setOutputFile(outputFilename);
+        importer.setPreserveSoftClips(true);
+        //  importer.setPropagateTargetIds(true);
+        importer.execute();
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+        assertFalse(reader.hasNext());
+        assertEquals("seqVar.position must be zero", 0, first.getSequenceVariations(0).getPosition());
+    }
+
+    @Test
     // Failed on server when converting back to BAM because query_aligned_length and target_aligned_length differ
     // without an apparent indel
     public void testSamToCompactTrickCase16() throws IOException {

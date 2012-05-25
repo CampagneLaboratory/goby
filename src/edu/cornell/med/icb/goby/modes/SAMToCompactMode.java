@@ -21,19 +21,11 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.BufferedSortingAlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
-import edu.cornell.med.icb.goby.readers.sam.GobyQuickSeqvar;
-import edu.cornell.med.icb.goby.readers.sam.GobySamRecord;
-import edu.cornell.med.icb.goby.readers.sam.GobySamSegment;
-import edu.cornell.med.icb.goby.readers.sam.SAMRecordIterable;
-import edu.cornell.med.icb.goby.readers.sam.SamRecordParser;
+import edu.cornell.med.icb.goby.readers.sam.*;
 import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -47,12 +39,7 @@ import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMReadGroupRecord;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -457,7 +444,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
+                    if (inferredInsertSize != 0) {   // SAM specification indicates that zero means no insert size.
                     currentEntry.setInsertSize(inferredInsertSize);
+                }
                 }
 
                 for (final GobyQuickSeqvar variation : gobySamSegment.getSequenceVariations()) {

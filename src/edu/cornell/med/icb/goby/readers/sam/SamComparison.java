@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.readers.sam;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.modes.SamHelper;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
@@ -345,9 +346,9 @@ public class SamComparison implements SamComparisonInterface {
             comparisonErrorDump.append("     g.index     : ").append(gobyAlignment.getQueryIndex()).append('\n');
             comparisonErrorDump.append("     g.position  : ").append(gobyAlignment.getPosition()).append('\n');
             comparisonErrorDump.append("     g.leftClip  : ").append(gobyAlignment.getSoftClippedBasesLeft()).append('\n');
-            comparisonErrorDump.append("     g.leftClipQual  : ").append(gobyAlignment.getSoftClippedQualityLeft()).append('\n');
+            comparisonErrorDump.append("     g.leftClipQual  : ").append(ByteArrayList.wrap(gobyAlignment.getSoftClippedQualityLeft().toByteArray())).append('\n');
             comparisonErrorDump.append("     g.rightClip : ").append(gobyAlignment.getSoftClippedBasesRight()).append('\n');
-            comparisonErrorDump.append("     g.rightClipQual : ").append(gobyAlignment.getSoftClippedQualityRight()).append('\n');
+            comparisonErrorDump.append("     g.rightClipQual : ").append(ByteArrayList.wrap(gobyAlignment.getSoftClippedQualityRight().toByteArray())).append('\n');
             comparisonErrorDump.append("     g.qAlignLen : ").append(gobyAlignment.getQueryAlignedLength()).append('\n');
             comparisonErrorDump.append("     g.tAlignLen : ").append(gobyAlignment.getTargetAlignedLength()).append('\n');
         }

@@ -88,7 +88,7 @@ public class GobySamSegment implements Resettable {
     @Override
     public void reset() {
         firstPositionsSet = false;
-        firstReadIndex = 0;
+        firstReadIndex = 1;
         firstRefPosition = 0;
         queryPosition = 0;
 
@@ -137,7 +137,8 @@ public class GobySamSegment implements Resettable {
             debugMessage.append("readIndex   =").append(firstReadIndex).append('\n');
             debugMessage.append("refBases    =").append(refBases.toString()).append('\n');
             debugMessage.append("readBases   =").append(readBases.toString()).append('\n');
-            debugMessage.append("readQuals   ="); debugOutputQuals().append('\n');
+            debugMessage.append("readQuals   =");
+            debugOutputQuals().append('\n');
 
             for (int i = 0; i < sizeRefBases; i++) {
                 final char refChar = refBases.charAt(i);
@@ -256,8 +257,8 @@ public class GobySamSegment implements Resettable {
             if (makeNewSeqvar) {
                 seqvar = gobyQuickSeqvarPool.borrowObject();
                 seqvar.lastIndexPosition = i;
-                seqvar.readIndex = readChar == '-' && reverseStrand ? currentReadIndex - 1 : currentReadIndex;
-                seqvar.position = currentRefPosition;
+                seqvar.setReadIndex(readChar == '-' && reverseStrand ? currentReadIndex - 1 : currentReadIndex);
+                seqvar.setPosition(currentRefPosition);
                 sequenceVariations.add(seqvar);
             } else {
                 seqvar.lastIndexPosition = i;

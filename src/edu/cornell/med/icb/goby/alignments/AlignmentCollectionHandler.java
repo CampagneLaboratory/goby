@@ -126,7 +126,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 final FileWriter fileWriter = appending ? new FileWriter(statsFilename, true) : new FileWriter(statsFilename);
                 statsWriter = new PrintWriter(fileWriter);
                 if (!appending) {
-                    statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\n");
+                    statsWriter.print("basename\tchunkIndex\tlabel\tnumElements\ttotalBitsWritten\tBitsPerElement\tPercentageOfCompressed\n");
                 }
 
             } catch (FileNotFoundException e) {
@@ -134,6 +134,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             } catch (IOException e) {
                 LOG.error("Cannot open stats file", e);
             }
+
         }
     }
 
@@ -466,15 +467,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 // LOG.info
                 //       (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
                 //             written, average));
+                final double percentageOfTotal = averageBitPerBase / totalBpb * 100;
                 LOG.info
                         (String.format("encoded %d %s in %d bits, average %g bpb. %2.2f%% ", n, label,
-                                written, averageBitPerBase, averageBitPerBase / totalBpb * 100));
-                statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g%n", basename, chunkIndex, label, n, written, divide(written, n)));
+                                written, averageBitPerBase, percentageOfTotal));
+                statsWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%g\t%.2g%n", basename, chunkIndex, label, n, written,
+                        divide(written, n),percentageOfTotal));
                 statsWriter.flush();
                 totalBpb += averageBitPerBase;
             }
             LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
             LOG.info(String.format("Overall: bits per aligned bases= %g", divide(writtenBits, writtenBases)));
+            statsWriter.flush();
 
         }
     }
@@ -1118,6 +1122,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         numSoftClipRightBases.clear();
         softClipLeftBases.clear();
         softClipRightBases.clear();
+        softClipLeftQualityScores.clear();
+        softClipRightQualityScores.clear();
 
         linkOffsetOptimization.clear();
         linkOffsetOptimizationIndex = 0;

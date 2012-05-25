@@ -56,7 +56,7 @@ public class NotCompressedChunkCodec implements ChunkCodec {
         return  REGISTRATION_CODE;
     }
 
-    public static final byte REGISTRATION_CODE = -4;
+    public static final byte REGISTRATION_CODE = -6;
 
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {

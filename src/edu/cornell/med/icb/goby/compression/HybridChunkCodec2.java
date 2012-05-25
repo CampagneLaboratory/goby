@@ -26,25 +26,25 @@ import java.io.*;
 import java.util.zip.CRC32;
 
 /**
- * A codec that writes highly compressed data in one pool, and keeps left-over uncompressed protobuf messages in
- * a separate pool compressed with GZip.
+ * A codec that writes highly compressed data in one pool, and keeps left-over uncompressed protobuf messages
+ * in a separate pool compressed with BZip2.
  *
  * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 2:35 PM
  */
-public class HybridChunkCodec1 implements ChunkCodec {
+public class HybridChunkCodec2 implements ChunkCodec {
 
     private boolean debug = false;
 
     @Override
     public String name() {
-        return "hybrid-1";
+        return "hybrid-2";
     }
 
-    public static final byte REGISTRATION_CODE = -2;
+    public static final byte REGISTRATION_CODE = -5;
     private ProtobuffCollectionHandler handler;
-    private final GZipChunkCodec gzipCodec = new GZipChunkCodec();
+    private final BZip2ChunkCodec bzip2Codec = new BZip2ChunkCodec();
 
     @Override
     public byte registrationCode() {
@@ -54,7 +54,7 @@ public class HybridChunkCodec1 implements ChunkCodec {
     /**
      * Used to log informational and debug messages.
      */
-    private static final Log LOG = LogFactory.getLog(HybridChunkCodec1.class);
+    private static final Log LOG = LogFactory.getLog(HybridChunkCodec2.class);
     private int chunkIndex = 0;
 
     private CRC32 crc32 = new CRC32();
@@ -79,7 +79,7 @@ public class HybridChunkCodec1 implements ChunkCodec {
         completeChunkData.writeInt(crcChecksum);
         completeChunkData.write(bytes);
 
-        final ByteArrayOutputStream out = gzipCodec.encode(reducedProtoBuff);
+        final ByteArrayOutputStream out = bzip2Codec.encode(reducedProtoBuff);
 
         final byte[] gzipBytes = out.toByteArray();
         final int gzipBytesSize = gzipBytes.length;
@@ -88,13 +88,13 @@ public class HybridChunkCodec1 implements ChunkCodec {
         if (debug && chunkIndex % 100 == 0) {
 
             //TODO remove compression of original collection. Only useful for stat collection
-            int originalGzipSize = gzipCodec.encode(readCollection).toByteArray().length;
+            final int originalBZip2Size = bzip2Codec.encode(readCollection).toByteArray().length;
 
-            final int gain = originalGzipSize - (gzipBytesSize + hybridStreamSize);
+            final int gain = originalBZip2Size - (gzipBytesSize + hybridStreamSize);
             LOG.info(String.format("compressed size=%d gzip size=%d (original gzip=%d) percent compressed/(compressed+gzip) %g gain=%d, %g%% ",
-                    hybridStreamSize, gzipBytesSize, originalGzipSize,
+                    hybridStreamSize, gzipBytesSize, originalBZip2Size,
                     100d * ((double) hybridStreamSize) / (hybridStreamSize + gzipBytesSize),
-                    gain, gain * 100d / originalGzipSize));
+                    gain, gain * 100d / originalBZip2Size));
 
         }
         chunkIndex++;
@@ -122,8 +122,8 @@ public class HybridChunkCodec1 implements ChunkCodec {
         // 8 is the number of bytes to encode the length of the compressed chunk, plus
         // the number of bytes to encode the checksum.
         System.arraycopy(bytes, 8 + compressedSize, leftOver, 0, bytesLeft);
-        final Message reducedProtoBuff = gzipCodec.decode(leftOver);
-        if (reducedProtoBuff == null) {
+        final Message reducedProtoBuff = bzip2Codec.decode(leftOver);
+        if (reducedProtoBuff==null) {
             return null;
         }
         return handler.decompressCollection(reducedProtoBuff, compressedBytes);
@@ -131,13 +131,13 @@ public class HybridChunkCodec1 implements ChunkCodec {
 
     @Override
     public int getSuggestedChunkSize() {
-        return 30000;
+        return 100000;
     }
 
     @Override
     public void setHandler(final ProtobuffCollectionHandler handler) {
         this.handler = handler;
-        gzipCodec.setHandler(handler);
+        bzip2Codec.setHandler(handler);
     }
 
     @Override
@@ -149,8 +149,8 @@ public class HybridChunkCodec1 implements ChunkCodec {
             final byte b = input.readByte();
             final byte c = input.readByte();
             final byte d = input.readByte();
-            final int fullCodecContentSize = firstByte << 24 | (b & 0xFF) << 16 | (c & 0xFF) << 8 | (d & 0xFF);
-            // System.out.printf("read %X %X %X %X but found size=%X", firstByte, b, c, d,fullCodecContentSize);
+            final int fullCodecContentSize = firstByte << 24 | (b& 0xFF) << 16 | (c & 0xFF)<< 8 | (d& 0xFF);
+           // System.out.printf("read %X %X %X %X but found size=%X", firstByte, b, c, d,fullCodecContentSize);
 
             final int hybridContentSize = input.readInt();
             final int storedChecksum = input.readInt();
