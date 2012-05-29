@@ -587,7 +587,7 @@ public class TestSamRecordParser {
      *
      * @throws IOException error
      */
-    @Test
+   //  @Test @Test Disable for now.
     public void testRoundTripEJOYFirst500() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
         rtc.inputGenomeFilename = findHG19();
@@ -606,7 +606,7 @@ public class TestSamRecordParser {
      *
      * @throws IOException error
      */
-    @Test
+  //   @Test @Test Disable for now.
     public void testRoundTripEJOYFirst1() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
         rtc.inputGenomeFilename = findHG19();
