@@ -144,13 +144,13 @@ public class SamPerPositionComparison extends SamComparison {
                         if (leastDiffValue > 0) {
                             // To have the correct comparison failure details, we need to re-compare or the
                             // dump will have an incorrect comparison failure list.
-                            super.compare(source, dest, gobyDest);
                             if (outputFailedComparisons) {
                                 // Output the failed but still best failure here.
                                 dest = dests.get(leastDiffIndex);
                                 if (!gobyDests.isEmpty()) {
                                     gobyDest = gobyDests.get(leastDiffIndex);
                                 }
+                                super.compare(source, dest, gobyDest);
                                 dumpComparison(source, dest, gobyDest);
                             }
                         }

@@ -110,6 +110,11 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     private int numberOfReadEntriesToProcess = 10000;
 
     /**
+     * If quality scores were found in the current input file.
+     */
+    boolean qualityScoresFound;
+
+    /**
      * Returns the mode name defined by subclasses.
      *
      * @return The name of the mode
@@ -239,6 +244,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         sumQualScores = 0;
         minQualScore = Integer.MAX_VALUE;
         maxQualScore = Integer.MIN_VALUE;
+        qualityScoresFound = false;
     }
 
     /**
@@ -249,7 +255,9 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         System.out.printf("Processed %d read entries.%n", numEntries);
         final int avgQualScore = (int) (sumQualScores / numQualScoresSampled);
         final String likelyEncoding;
-        if (avgQualScore <= 41) {
+        if (!qualityScoresFound) {
+            likelyEncoding = "fasta";
+        } else if (avgQualScore <= 41) {
             likelyEncoding = "Phred";
         } else if (avgQualScore <= 83) {
             likelyEncoding = "Sanger";
@@ -278,6 +286,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
             final byte[] qualityScores = entry.getQualityScores().toByteArray();
             final boolean hasQualityScores = entry.hasQualityScores() && !ArrayUtils.isEmpty(qualityScores);
             if (hasQualityScores) {
+                qualityScoresFound = true;
                 for (final int qualScore : qualityScores) {
                     minQualScore = Math.min(qualScore, minQualScore);
                     maxQualScore = Math.max(qualScore, maxQualScore);
@@ -304,6 +313,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         for (final FastXEntry entry : new FastXReader(inputFilename)) {
             final MutableString quality = entry.getQuality();
             if (quality.length() != 0) {
+                qualityScoresFound = true;
                 for (final int qualScore : quality.array()) {
                     minQualScore = Math.min(qualScore, minQualScore);
                     maxQualScore = Math.max(qualScore, maxQualScore);
