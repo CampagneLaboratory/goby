@@ -253,7 +253,12 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
      */
     private void processingEnd(final int numEntries) {
         System.out.printf("Processed %d read entries.%n", numEntries);
-        final int avgQualScore = (int) (sumQualScores / numQualScoresSampled);
+        final int avgQualScore;
+        if (numQualScoresSampled > 0) {
+            avgQualScore = (int) (sumQualScores / numQualScoresSampled);
+        } else {
+            avgQualScore = 0;
+        }
         final String likelyEncoding;
         if (!qualityScoresFound) {
             likelyEncoding = "fasta";
