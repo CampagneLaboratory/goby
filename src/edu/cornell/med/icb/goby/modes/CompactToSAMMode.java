@@ -319,7 +319,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
 
         private void initializeSam(final AlignmentReader alignmentReader) {
             // Because splices cannot be written in a sorted manner, we can never consider the output to be sorted.
-            final boolean outputIsSorted = false;
+            final boolean outputIsSorted = alignmentReader.isSorted();
 
             // Gather the target identifiers, supply them to the SAM file
             samHeader = new SAMFileHeader();
@@ -338,7 +338,11 @@ public class CompactToSAMMode extends AbstractGobyMode {
             final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
             gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
             samHeader.addProgramRecord(gobyVersionProgRec);
-            outputSam = new SAMFileWriterFactory().makeSAMOrBAMWriter(samHeader, outputIsSorted, new File(output));
+            final SAMFileWriter samBamWriter=new SAMFileWriterFactory().
+                    makeSAMOrBAMWriter(samHeader, outputIsSorted, new File(output));
+            // install a facade in front of the Sam/Bam writer to do a local sort. This is needed for spliced alignments
+            // whose segments are stored in a different order for Goby and BMA:
+            outputSam = outputIsSorted? new BufferedSortingSamBamWriter(samBamWriter):samBamWriter;
             samRecordFactory = new DefaultSAMRecordFactory();
         }
 
@@ -432,7 +436,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 final Int2ObjectMap<ExportableAlignmentEntryData> fragIndexToAlignmentsMap, Int2ObjectMap<Int2ObjectMap<ExportableAlignmentEntryData>> queryIndexToFragmentsMap, int queryIndex) {
             for (final Map.Entry<Integer, ExportableAlignmentEntryData> entry :
                     fragIndexToAlignmentsMap.entrySet()) {
-                // For THIS entry, see if all related forward/backward fragments exists in in  fragIndexToAlignmentsMap
+                // For THIS entry, see if all related forward/backward fragments exists in   fragIndexToAlignmentsMap
                 // We need to do this for every entry in our map because this map COULD contain segments
                 // that span multiple alignments (such as if we are aligning ambiguity > 1 or with pairs).
                 needFragmentIndexes.clear();
@@ -451,17 +455,24 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 }
                 // We've now walked the entire available distance, forward and backward. See if the fragment
                 // indexes that we need could be found.
-                if (needFragmentIndexes.equals(foundFragmentIndexes)) {
+                if (foundContainsNeed(foundFragmentIndexes, needFragmentIndexes)) {
                     // We have a complete set of fragments
                     for (final int fragIndex : needFragmentIndexes) {
                         completeSpliceFragments.add(fragIndexToAlignmentsMap.get(fragIndex));
                         fragIndexToAlignmentsMap.remove(fragIndex);
                     }
+                    if (needFragmentIndexes.isEmpty()) {
                     // since we have a complete list, we can now forget the queryIndex and its fragments:
                     queryIndexToFragmentsMap.remove(queryIndex);
                     break;
                 }
             }
+        }
+        }
+
+        // return true if found  foundFragmentIndexes is a subset of needFragmentIndexes
+        private boolean foundContainsNeed(LinkedList<Integer> foundFragmentIndexes, LinkedList<Integer> needFragmentIndexes) {
+            return foundFragmentIndexes.containsAll(needFragmentIndexes);
         }
 
         /**

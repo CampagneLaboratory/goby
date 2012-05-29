@@ -580,7 +580,14 @@ public class ExportableAlignmentEntryData {
                         readBases.add(clipBase);
                     }
                     if (!predefinedQuals && (predefStartClipQuality != null || predefEndClipQuality != null)) {
-                        qualities.add(leftClippedPosition ? predefStartClipQuality.byteAt(i) : predefEndClipQuality.byteAt(rightClipIndex));
+                        final byte qual;
+                        if (leftClippedPosition) {
+                            qual = predefStartClipQuality != null ? predefStartClipQuality.byteAt(i) : UNKNOWN_MAPPING_VALUE;
+                        } else {
+                            qual = predefEndClipQuality != null ? predefEndClipQuality.byteAt(rightClipIndex) : UNKNOWN_MAPPING_VALUE;
+                        }
+                        assert qualities!=null: "qualities field must never be null.";
+                        qualities.add(qual);
                         qualAddedForClip = true;
                         if (rightClippedPosition) {
                             rightClipIndex += 1;
@@ -748,6 +755,7 @@ public class ExportableAlignmentEntryData {
 
     /**
      * Build a String with just Ns, the length of the clipped bases. Ns are used when teh alignment did not store clipped reads.
+     *
      * @param length
      * @return
      */

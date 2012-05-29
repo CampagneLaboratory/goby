@@ -173,7 +173,8 @@ public class CompareGroupsVCFOutputFormat extends AbstractOutputFormat  implemen
         fisherExactPValueColumnIndex = new int[groupComparisons.size()];
 
         numberOfGroups = groups.length;
-        biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
+        biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1,
+                ColumnType.String, "Coordinates for use with Biomart.","biomart");
 
         genotypeFormatter.defineInfoFields(statWriter);
 

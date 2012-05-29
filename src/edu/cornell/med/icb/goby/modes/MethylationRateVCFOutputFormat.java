@@ -62,6 +62,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             "window-length: int, length of the fixed genomic window used to detect DMR. Default 1000 bp:1000",
             "significance-threshold: double, significance threshold to consider a site significant for DMR detection purposes. Default 0.01:0.01"
     );
+    private boolean writeFieldGroupAssociations=true;
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -179,37 +180,47 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         lastOfDMRIndex = new int[groupComparisons.size()];
 
         numberOfGroups = groups.length;
-        biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
-        strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.");
+        statWriter.setWriteFieldGroupAssociations(writeFieldGroupAssociations);
+        biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.","biomart");
+        strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.", "genomic-coordinate");
         genomicContextIndex = statWriter.defineField("INFO", "Context", 1, ColumnType.String, "Site genomic context");
 
         for (GroupComparison comparison : groupComparisons) {
             log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing methylation in  group %s versus group %s", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing methylation in  group %s versus group %s", comparison.nameGroup1, comparison.nameGroup2),
+                    "statistic");
 
             log2OddsRatioStandardErrorColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2)
+                    ,"LOD","statistic");
 
             log2OddsRatioZColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2),
+                    "LOD","statistic");
 
             fisherExactPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Float,
+                    String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2),"p-value");
+
             deltaMRColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("Delta_MR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                    1, ColumnType.Integer, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
+                    1, ColumnType.Integer, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2),
+                    "statistic");
             if (estimateEmpiricalP) {
                 empiricalPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("empiricalP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
-                        1, ColumnType.Float, String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+                        1, ColumnType.Float,
+                        String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2),"p-value","statistic");
+
                 lastOfDMRIndex[comparison.index] = statWriter.defineField("INFO", String.format("DMR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                         1, ColumnType.Integer, String.format("Number of significant sites observed in a fixed window of length %d before this significant site (inclusive). Comparing group %s and group %s.",
-                        windowLength, comparison.nameGroup1, comparison.nameGroup2));
+                        windowLength, comparison.nameGroup1, comparison.nameGroup2),"DMR");
             }
 
         }
         methylationRatePerGroupIndex = new int[groups.length];
         for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
             methylationRatePerGroupIndex[groupIndex] = statWriter.defineField("INFO", String.format("MR[%s]", groups[groupIndex]),
-                    1, ColumnType.Float, String.format("Methylation rate in group %s.", groups[groupIndex]));
+                    1, ColumnType.Float, String.format("Methylation rate in group %s.", groups[groupIndex]),
+                    "MethylationRate");
 
         }
         methylatedCCountsIndex = new int[groups.length];
@@ -217,12 +228,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
         for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
             notMethylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#C_Group[%s]", groups[groupIndex]),
-                    1, ColumnType.Integer, String.format("Number of unmethylated Cytosines at site in group %s.", groups[groupIndex]));
+                    1, ColumnType.Integer, String.format("Number of unmethylated Cytosines at site in group %s.", groups[groupIndex]),"#C");
             methylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#Cm_Group[%s]", groups[groupIndex]),
-                    1, ColumnType.Integer, String.format("Number of methylated Cytosines at site in group %s.", groups[groupIndex]));
+                    1, ColumnType.Integer, String.format("Number of methylated Cytosines at site in group %s.", groups[groupIndex]),"#Cm");
         }
         depthFieldIndex = statWriter.defineField("INFO", "DP",
-                1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
+                1, ColumnType.Integer, "Total depth of sequencing across groups at this site","Depth");
         {
             // define one VCF 'sample' for each strand of each input sample:
             String[] sampleTwice = new String[samples.length * 2];
@@ -238,9 +249,10 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         }
         // define Genotype as first field (required by VCF specification):
         genotypeFormatter.defineGenotypeField(statWriter);
-        methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
-        convertedCytosineFieldIndex = statWriter.defineField("FORMAT", "C", 1, ColumnType.Integer, "Number of converted cytosines at site.");
-        unconvertedCytosineFieldIndex = statWriter.defineField("FORMAT", "Cm", 1, ColumnType.Integer, "Number of unconverted cytosines at site");
+        methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.",
+                "MethylationRate");
+        convertedCytosineFieldIndex = statWriter.defineField("FORMAT", "C", 1, ColumnType.Integer, "Number of converted cytosines at site.","#C");
+        unconvertedCytosineFieldIndex = statWriter.defineField("FORMAT", "Cm", 1, ColumnType.Integer, "Number of unconverted cytosines at site", "#Cm");
 
         // setup empirical p-value estimator:
         String statName = doc.getString("statistic");

@@ -38,13 +38,14 @@ public class GroupAssociations {
     public GroupAssociations(String associationsAsText, ColumnInfo formatColumn, String[] sampleIds) {
        // parse associations stored in text in the header:
         associations = parse(associationsAsText);
+        if (formatColumn != null) {
         // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
         for (String sample : sampleIds) {
             for (final ColumnField formatField : formatColumn.fields) {
                 associate(String.format("%s[%s]", sample, formatField.id), sample);
             }
         }
-
+        }
     }
 
     private ObjectArrayList<String> parse(String associationsAsText) {
@@ -72,5 +73,46 @@ public class GroupAssociations {
     public ObjectArraySet<String> getColumnsWithGroup(String group) {
         return groupToColumns.get(group);
     }
+
+    /**
+     * Return a comma separated list of groups associated with a column.
+     *
+     * @param columnName Name of the column.
+     * @return comma separated list of group names.
+     */
+    public String listGroupsAsString(final String columnName) {
+        final StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for (final String association : associations) {
+
+            if (association.startsWith(columnName)) {
+                if (!first) {
+                    sb.append(",");
+                }
+                sb.append(association.replaceFirst(columnName + "=", ""));
+                first = false;
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Return a list of groups associated with a column.
+     *
+     * @param columnName Name of the column.
+     * @return list of group names that column is associated with.
+     */
+    public ObjectArrayList<String> listGroups(final String columnName) {
+        final ObjectArrayList<String> result = new ObjectArrayList<String>();
+        for (final String association : associations) {
+
+            if (association.startsWith(columnName)) {
+
+                result.add(association.replaceFirst(columnName + "=", ""));
+            }
+        }
+        return result;
+    }
+
 
 }

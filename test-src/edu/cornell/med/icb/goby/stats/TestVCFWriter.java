@@ -18,15 +18,23 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.readers.vcf.GroupAssociations;
+import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.lang.MutableString;
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
+import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Arrays;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.lang.MutableString;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Fabien Campagne
@@ -59,4 +67,56 @@ public class TestVCFWriter {
         assertEquals("Coded genotype must match expected", expectedGenotype, calculatedGenotype.toString());
     }
 
+    @Test
+    public void testWriteFieldGroups() {
+        final StringWriter stringWriter = new StringWriter();
+        VCFWriter writer = new VCFWriter(stringWriter);
+
+        int fieldIndex0 = writer.defineField("INFO",
+                "p-value1",
+                1, ColumnType.Float,
+                "A P-value", /* groups: */"p-value");
+
+        int fieldIndex1 = writer.defineField("INFO",
+                "p-value2",
+                1, ColumnType.Float,
+                "A P-value", /* groups: */"p-value");
+        String samples[] = new String[]{"SampleA", "SampleB"};
+        writer.defineSamples(samples);
+        int zygFieldIndex = writer.defineField("FORMAT", "Zygosity", 1, ColumnType.String, "Zygosity", /* groups: */ "zygozity", "sample-data");
+        int secondFormatField = writer.defineField("FORMAT", "Another", 1, ColumnType.String, "Another", /* groups: */ "another", "sample-data");
+        writer.setWriteFieldGroupAssociations(true);
+        writer.writeHeader();
+        writer.close();
+
+        final String textContent = stringWriter.getBuffer().toString();
+        System.out.println(textContent);
+        assertTrue(textContent.contains("##FieldGroupAssociations="));
+        assertTrue(textContent.contains("CHROM=cross-sample-field"));
+        assertTrue(textContent.contains("POS=genomic-coordinate"));
+        assertTrue(textContent.contains("INFO/p-value1=p-value"));
+        assertTrue(textContent.contains("INFO/p-value2=p-value"));
+        assertTrue(textContent.contains("FORMAT/Zygosity=sample-data"));
+        assertTrue(textContent.contains("FORMAT/Zygosity=zygozity"));
+        assertTrue(textContent.contains("FORMAT/Another=sample-data"));
+        assertTrue(textContent.contains("FORMAT/Another=another"));
+
+        // now check that we can read group associations with VCFParser:
+        VCFParser parser = new VCFParser(new StringReader(textContent));
+        try {
+            parser.readHeader();
+            final GroupAssociations associations = parser.getGroupAssociations();
+            final ObjectArraySet<String> columnsWithGroup = associations.getColumnsWithGroup("p-value");
+            assertNotNull(columnsWithGroup);
+            Assert.assertTrue(columnsWithGroup.contains("INFO/p-value1"));
+            Assert.assertTrue(columnsWithGroup.contains("INFO/p-value2"));
+            final ObjectArraySet<String> sampleColumnsWithGroup = associations.getColumnsWithGroup("SampleA");
+            Assert.assertTrue(sampleColumnsWithGroup.contains("SampleA[Zygosity]"));
+            Assert.assertTrue(sampleColumnsWithGroup.contains("SampleA[Another]"));
+            junit.framework.Assert.assertEquals("cross-sample-field,p-value", associations.listGroupsAsString("INFO/p-value1"));
+        } catch (VCFParser.SyntaxException e) {
+            e.printStackTrace();
+            fail("some syntax error was reported: " + e.getMessage());
+        }
+    }
 }
