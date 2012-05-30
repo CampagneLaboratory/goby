@@ -248,6 +248,11 @@ message AlignmentEntry {
     Quality scores for a read placed near this entry.  Phred units.
     */
     optional bytes placedUnmappedQuality=41;
+
+    /*
+    Read name. In SAM/BAM this is referred to as QNAME. Paired and segmented reads will have the same Read name.
+    */
+    optional string readName=42;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
