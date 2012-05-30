@@ -461,6 +461,17 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_placedunmappedquality();
   inline ::std::string* release_placedunmappedquality();
   
+  // optional string readName = 42;
+  inline bool has_readname() const;
+  inline void clear_readname();
+  static const int kReadNameFieldNumber = 42;
+  inline const ::std::string& readname() const;
+  inline void set_readname(const ::std::string& value);
+  inline void set_readname(const char* value);
+  inline void set_readname(const char* value, size_t size);
+  inline ::std::string* mutable_readname();
+  inline ::std::string* release_readname();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -525,6 +536,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_placedunmappedsequence();
   inline void set_has_placedunmappedquality();
   inline void clear_has_placedunmappedquality();
+  inline void set_has_readname();
+  inline void clear_has_readname();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -560,10 +573,11 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::std::string* softclippedqualityright_;
   ::std::string* placedunmappedsequence_;
   ::std::string* placedunmappedquality_;
+  ::std::string* readname_;
   ::google::protobuf::uint32 read_origin_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(33 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(34 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2854,6 +2868,64 @@ inline ::std::string* AlignmentEntry::release_placedunmappedquality() {
   } else {
     ::std::string* temp = placedunmappedquality_;
     placedunmappedquality_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional string readName = 42;
+inline bool AlignmentEntry::has_readname() const {
+  return (_has_bits_[1] & 0x00000002u) != 0;
+}
+inline void AlignmentEntry::set_has_readname() {
+  _has_bits_[1] |= 0x00000002u;
+}
+inline void AlignmentEntry::clear_has_readname() {
+  _has_bits_[1] &= ~0x00000002u;
+}
+inline void AlignmentEntry::clear_readname() {
+  if (readname_ != &::google::protobuf::internal::kEmptyString) {
+    readname_->clear();
+  }
+  clear_has_readname();
+}
+inline const ::std::string& AlignmentEntry::readname() const {
+  return *readname_;
+}
+inline void AlignmentEntry::set_readname(const ::std::string& value) {
+  set_has_readname();
+  if (readname_ == &::google::protobuf::internal::kEmptyString) {
+    readname_ = new ::std::string;
+  }
+  readname_->assign(value);
+}
+inline void AlignmentEntry::set_readname(const char* value) {
+  set_has_readname();
+  if (readname_ == &::google::protobuf::internal::kEmptyString) {
+    readname_ = new ::std::string;
+  }
+  readname_->assign(value);
+}
+inline void AlignmentEntry::set_readname(const char* value, size_t size) {
+  set_has_readname();
+  if (readname_ == &::google::protobuf::internal::kEmptyString) {
+    readname_ = new ::std::string;
+  }
+  readname_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_readname() {
+  set_has_readname();
+  if (readname_ == &::google::protobuf::internal::kEmptyString) {
+    readname_ = new ::std::string;
+  }
+  return readname_;
+}
+inline ::std::string* AlignmentEntry::release_readname() {
+  clear_has_readname();
+  if (readname_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = readname_;
+    readname_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
