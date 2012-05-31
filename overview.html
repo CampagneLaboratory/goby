@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright (C) 2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<html>
+<body>
+<p>Goby is a next-gen data management framework designed to facilitate the implementation of
+    efficient next-gen data analysis pipelines.  The program is distributed under the
+    <a href="http://www.gnu.org/licenses/gpl.html" title="http://www.gnu.org/licenses/gpl.html">
+    GNU General Public License</a> (GPL). See the
+    <a href="http://campagnelab.org/software/goby/download-goby/">download page</a> for the most
+    recent distribution.</p>
+
+<p>Goby provides compressed file formats that are time and space efficient. It also provides
+    a few utilities that support the most common secondary data analyses. Goby defines and uses
+    several file formats. These formats include:
+<dl>
+<dt>compact reads</dt>
+<dd>An alternative to FASTA/FASTQ, which is fast to parse, unambiguous, compact, and chunckable.
+    Chunkability means that a very large file can be processed in independent chunks without
+    having to traverse the entire file, just the chunk of interest can be read. This property is
+    leveraged by GobyWeb to support parallel alignments.</dd>
+
+<dt>compact alignments</dt>
+<dd>An alternative to Elan text format, MAQ, or SAM. Goby alignments are chunkable,
+    compact, unambiuous, fast to parse.</dd>
+
+<dt>counts</dt>
+<dd>A representation of the histogram of read count along a reference sequence, at single base
+    pair resolution. This representation is highly space efficient. Each count transition
+    (positions where the value of the count changes along the histogram) is generally encoded
+    in about 13 bits.</dd>
+
+<dt>count archives</dt>
+<dd>An archive of counts, one histogram per reference sequence in an alignment. Archives
+    can store histogram data for a complete genome. They are very space efficient, with only
+    about 20Mb needed to store a histogram of reads aligned against the human genome at base
+    pair resolution. In contrast, a wiggle plot stored at 20bp resolution needs about 45Mb.</dd>
+</dl>
+
+<p>In addition to these file formats, Goby provides utilities that implement common next-gen data
+    computations.  See <a href="http://goby.campagnelab.org/">http://goby.campagnelab.org/</a>
+    for details.</p>
+</body>
+</html>

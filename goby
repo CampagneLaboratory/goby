@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# This script runs Goby with the specified amount of memory.
+# The script will find the Goby jar if it is located in the same directory as this script
+
+# Usage: goby mem-requirement mode-name [param]+
+# Where mem-requirement indicates how much memory Goby should be given (e.g., 1g, 500m).
+# Mode-name should specify a Goby mode.
+# For instance, the following command will display the Goby version number:
+
+#     goby 40m version
+ 
+memory_requirement=$1
+shift
+other_parameters=$*
+
+WORKING_DIR=`dirname "$0"`
+if [[ $OSTYPE == "cygwin" ]]; then
+    WORKING_DIR=`cygpath -m "${WORKING_DIR}"`
+fi
+
+GOBY_HOME=${WORKING_DIR}
+GOBY_JAR=${GOBY_HOME}/goby.jar
+LOG4J_PROPS=file://${GOBY_HOME}/config/log4j-sample.properties
+ 
+if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
+  echo "Trying to set RJAVA_HOME environment variable"
+  cat >/tmp/r-cmd.txt <<EOT
+system.file("jri",package="rJava")
+EOT
+  export RJAVA_HOME=`R --no-save </tmp/r-cmd.txt|grep [1]|tail -1 |awk '{print $2}'`
+  rm -f /tmp/r-cmd.txt
+ 
+fi
+
+echo java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${LOG4J_PROPS} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${LOG4J_PROPS} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}

@@ -1,0 +1,79 @@
+#!/bin/sh
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l h_vmem=%SGE_MEMORY%
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+%SGE_MAILTO_DIRECTIVE%
+
+%SGE_ARRAY_DIRECTIVE%
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# Pull in softlib commands
+. /etc/profile
+
+# Get the full path to the transcript file to align with
+TRANSCRIPT_FILE_NAME=`/bin/sed -n "${SGE_TASK_ID}p" transcript-list.txt`
+
+TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
+TRANSCRIPT_FILE=${TRANSCRIPT_DIRECTORY}/${TRANSCRIPT_FILE_NAME}
+
+TRANSCRIPT_NAME=${TRANSCRIPT_FILE_NAME%.*}
+TRANSCRIPT_INDEX_NAME=${TRANSCRIPT_NAME}.fasta
+TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
+
+# The reads file to process
+READS_FILE=%READS%
+
+# basename includes the transcript name
+BASENAME=%BASENAME%-${TRANSCRIPT_NAME}
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
+
+# Run the alignment
+cd ${TMPDIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -jar goby.jar --mode align %COLORSPACE% --reference ${TRANSCRIPT_FILE} \
+    --aligner %ALIGNER% --search --database-name ${TRANSCRIPT_INDEX_NAME} \
+    --database-directory ${TRANSCRIPT_INDEX_DIRECTORY} \
+    --reads ${READS_FILE} --basename ${BASENAME}
+
+# Copy the results back
+RESULT_DIR=${SGE_O_WORKDIR}/results/${BASENAME}
+/bin/mkdir -p ${RESULT_DIR}
+/bin/cp *.entries *.header *.stats *.tmh ${RESULT_DIR}

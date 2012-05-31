@@ -1,0 +1,380 @@
+<project name="goby" default="test" basedir=".">
+    <!-- compiler and javadoc settings -->
+    <property name="debug" value="on"/>
+    <property name="optimize" value="on"/>
+    <property name="deprecation" value="off"/>
+    <property name="ant.build.javac.source" value="1.6"/>
+    <property name="ant.build.javac.target" value="1.6"/>
+
+    <!-- jar files created in this project -->
+    <property name="goby-jarfile-name" value="goby.jar"/>
+    <property name="goby-jarfile" location="${goby-jarfile-name}"/>
+    <property name="goby-api-jarfile" location="goby-api.jar"/>
+    <property name="goby-spi-jarfile" location="goby-spi.jar"/>
+    <property name="goby-io-jarfile" location="goby-io.jar"/>
+    <property name="goby-io-api-jarfile" location="goby-io-api.jar"/>
+
+    <property name="label" value="development"/>
+
+    <!-- default memory size for tests -->
+    <property name="test.max.memory" value="2000m"/>
+
+    <!--
+      * The target named by this task will be called before tests
+      * are run (but after dependencies are met). If one doesn't
+      * define "pre-test-task" nothing special will happen.
+      -->
+    <property name="pre-test-task" value="pre-test-task"/>
+
+    <import file="buildsupport/build.xml"/>
+
+    <if>
+        <os family="windows"/>
+        <then>
+            <property name="test.java.library.path" location="${env.R_HOME}/library/rJava/jri"/>
+        </then>
+    </if>
+
+    <import file="testsupport/build.xml"/>
+
+    <path id="compile.classpath">
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="classpath">
+        <pathelement location="${classes}"/>
+        <pathelement location="${config}"/>
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <fileset dir="${src}" id="pmd-fileset">
+        <include name="**/*.java"/>
+        <exclude name="edu/cornell/med/icb/goby/alignments/Alignments.java"/>
+        <exclude name="edu/cornell/med/icb/goby/reads/Reads.java"/>
+    </fileset>
+
+    <fileset dir="${src}" id="checkstyle-fileset">
+        <include name="**/*.java"/>
+        <exclude name="**/package-info.java"/>
+        <exclude name="edu/cornell/med/icb/goby/alignments/Alignments.java"/>
+        <exclude name="edu/cornell/med/icb/goby/reads/Reads.java"/>
+    </fileset>
+
+    <target name="init" depends="buildsupport.init, testsupport.init"/>
+
+    <target name="clean" depends="buildsupport.clean, testsupport.clean" description="Cleans up the directory">
+        <delete file="${goby-jarfile}"/>
+        <delete file="${goby-api-jarfile}"/>
+        <delete file="${goby-spi-jarfile}"/>
+    </target>
+
+    <target name="compile" depends="init,jar-goby-spi" description="compiles the source code">
+
+        <javac srcdir="${src}" destdir="${classes}" debug="${debug}" deprecation="${deprecation}">
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <copy todir="${classes}">
+            <fileset dir="${src}">
+                <include name="**/*.jsap"/>
+                <include name="**/jaxb.index"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!--
+      * Before tests, compile goby-spi jar then place it it in
+      * test-lib/ - for this target to be called, we've defined
+      * a property named "pre-test-task" that points to this target.
+      -->
+    <target name="pre-test-task" depends="jar-goby-spi">
+        <copy file="${goby-spi-jarfile}" todir="${test-lib}" overwrite="true" failonerror="true"/>
+    </target>
+
+    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io, jar-goby-io-api"
+            description="Create project jarfiles"/>
+
+    <target name="jar-goby" depends="compile"
+            description="Create the goby.jar file. Gobies are a large species of fish that include some of the smallest fish. Now, isn't that fitting?">
+        <!-- Standalone jar file. -->
+        <copy file="${config}/log4j-sample.properties" tofile="${classes}/log4j.properties" overwrite="true"
+              failonerror="true"/>
+        <jar jarfile="${goby-jarfile}">
+
+            <fileset dir="${classes}"/>
+            <zipgroupfileset dir="${lib}">
+                <include name="bdval-api.jar"/>
+                <include name="commons-collections-3.2.1.jar"/>
+                <include name="commons-configuration-1.6.jar"/>
+                <include name="commons-exec-1.0.1.jar"/>
+                <include name="commons-io-1.4.jar"/>
+                <include name="commons-lang-2.5.jar"/>
+                <include name="commons-logging-1.1.1.jar"/>
+                <include name="commons-math-2.1.jar"/>
+                <include name="commons-pool-1.6.jar"/>
+                <include name="edu.mssm.crover.cli.jar"/>
+                <include name="bzip2.jar"/>
+                <include name="fastutil-6.3.jar"/>
+                <include name="dsiutils-1.0.12.jar"/>
+                <include name="icb-utils.jar"/>
+                <include name="JSAP-2.1.jar"/>
+                <include name="log4j-1.2.15.jar"/>
+                <include name="protobuf-java-2.4.1.jar"/>
+                <include name="sam-1.64.jar"/>
+                <include name="picard-1.64.jar"/>
+                <include name="squil.jar"/>
+                <include name="reflections-0.9.5.jar"/>
+                <include name="guava-r08.jar"/>
+                <include name="slf4j-api-1.6.1.jar"/>
+                <include name="slf4j-nop-1.6.4.jar"/>
+                <include name="javassist-3.12.1.GA.jar"/>
+                <include name="tisim-api.jar"/>
+                <include name="pj*.jar"/>
+                <include name="JRI.jar"/>
+                <include name="mg4j-3.0.1.jar"/>
+                <include name="xstream-1.3.1.jar"/>
+                <!-- Required by JSAP -->
+            </zipgroupfileset>
+
+
+            <manifest>
+                <attribute name="Specification-Title" value="Goby"/>
+                <attribute name="Specification-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Main-Class" value="edu.cornell.med.icb.goby.modes.GobyDriver"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+
+            <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
+            </service>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec2"/>
+            </service>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
+        </jar>
+        <!-- Set executable permissions on the goby wrapper scrip -->
+        <chmod file="goby" perm="+x"/>
+        <chmod file="scripts/sge/*.sh" perm="+x"/>
+        <delete file="${classes}/log4j.properties" failonerror="true"/>
+    </target>
+
+    <target name="jar-goby-api" depends="compile" description="Create the goby-api.jar file">
+        <!-- Standalone jar file. -->
+        <jar jarfile="${goby-api-jarfile}">
+            <fileset dir="${classes}"/>
+            <manifest>
+                <attribute name="Specification-Title" value="Goby API"/>
+                <attribute name="Specification-Vendor"
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
+        </jar>
+    </target>
+
+    <target name="jar-goby-spi" description="Creates a manifest only jar file for Goby services">
+        <jar jarfile="${goby-spi-jarfile}">
+            <manifest>
+                <attribute name="Specification-Title" value="Goby"/>
+                <attribute name="Specification-Vendor"
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
+
+            <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
+            </service>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec2"/>
+            </service>
+
+        </jar>
+    </target>
+
+    <target name="jar-goby-io" depends="compile" description="Create the goby-io.jar file (LGPL code only)">
+        <!-- Standalone jar file. -->
+        <jar jarfile="${goby-io-jarfile}">
+            <fileset dir="${classes}">
+                <include name="edu/cornell/med/icb/goby/algorithmic/compression/**"/>
+                <include name="edu/cornell/med/icb/goby/compression/**"/>
+                <include name="edu/cornell/med/icb/goby/reads/**"/>
+                <include name="edu/cornell/med/icb/goby/readers/**"/>
+                <include name="edu/cornell/med/icb/goby/alignments/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/modes/UpgradeMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractGobyMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractCommandLineMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/TabToColumnInfoMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/GenericToolsDriver*"/>
+                <include name="edu/cornell/med/icb/goby/util/**"/>
+                <include name="edu/cornell/med/icb/goby/exception/**"/>
+                <include name="edu/cornell/med/icb/goby/identifier/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/GobyVersion*"/>
+            </fileset>
+            <zipgroupfileset dir="${lib}">
+                <include name="bzip2.jar"/>
+                <!-- Apache Software License -->
+                <include name="fastutil-6.3.jar"/>
+                <!-- LGPL -->
+                <include name="dsiutils-1.0.12.jar"/>
+                <!-- LGPL -->
+                <include name="icb-utils.jar"/>
+                <!-- LGPL -->
+                <include name="protobuf-java-2.4.1.jar"/>
+                <!-- new BSD license, compatible with LGPL? -->
+                <include name="commons-io-1.4.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="commons-lang-2.5.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="commons-logging-1.1.1.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="bdval-api.jar"/>
+                <!-- LGPL -->
+                <include name="JSAP-2.1.jar"/>
+                <!-- LGPL -->
+                <include name="xstream-1.3.1.jar"/>
+                <!-- Required by JSAP, BSD. -->
+            </zipgroupfileset>
+            <manifest>
+                <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>
+                <attribute name="Specification-Vendor"
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
+            </service>
+        </jar>
+        <chmod file="scripts/autojar/run-autojar.sh" perm="744"/>
+        <exec command="scripts/autojar/run-autojar.sh"/>
+    </target>
+
+    <target name="jar-goby-io-api" depends="compile" description="Create the goby-io-api.jar file (LGPL code only)">
+        <!-- Standalone jar file. -->
+        <jar jarfile="${goby-io-api-jarfile}">
+            <fileset dir="${classes}">
+
+                <include name="edu/cornell/med/icb/goby/compression/**"/>
+                <include name="edu/cornell/med/icb/goby/reads/**"/>
+                <include name="edu/cornell/med/icb/goby/readers/**"/>
+                <include name="edu/cornell/med/icb/goby/alignments/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/modes/UpgradeMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractGobyMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractCommandLineMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/TabToColumnInfoMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/GenericToolsDriver*"/>
+                <include name="edu/cornell/med/icb/goby/util/**"/>
+                <include name="edu/cornell/med/icb/goby/exception/**"/>
+                <include name="edu/cornell/med/icb/goby/identifier/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/GobyVersion*"/>
+            </fileset>
+            <manifest>
+                <attribute name="Specification-Title" value="Goby IO-API (LGPL compatible)"/>
+                <attribute name="Specification-Vendor"
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
+                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
+            </service>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
+            </service>
+        </jar>
+    </target>
+
+    <target name="cruisecontrol"
+            depends="clean, cobertura-setup, findbugs, test, jar, javadocs, pmd, cpd, cobertura-report"
+            description="Run CruiseControl Build and Tests"/>
+
+    <!-- =================================================================== -->
+    <!-- Creates the API documentation                                       -->
+    <!-- =================================================================== -->
+    <target name="javadocs" depends="init" description="generates the API documentation">
+        <mkdir dir="${javadocs}"/>
+        <javadoc packagenames="*"
+                 sourcepath="${src}" destdir="${javadocs}" encoding="UTF-8"
+                 author="true" version="true" windowtitle="Goby API ${label} (${buildstamp})"
+                 header="Goby API ${label} (${buildstamp})" overview="overview.html">
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+            <link href="http://fastutil.dsi.unimi.it/docs/"/>
+            <link href="http://dsiutils.dsi.unimi.it/docs/"/>
+            <link href="http://commons.apache.org/collections/api-release/"/>
+            <link href="http://commons.apache.org/configuration/apidocs/"/>
+            <link href="http://commons.apache.org/exec/apidocs/"/>
+            <link href="http://commons.apache.org/io/api-release/"/>
+            <link href="http://commons.apache.org/logging/apidocs/"/>
+            <link href="http://commons.apache.org/lang/api-release"/>
+            <link href="http://commons.apache.org/math/api-2.1/"/>
+            <link href="http://martiansoftware.com/jsap/doc/javadoc/"/>
+            <link href="http://code.google.com/apis/protocolbuffers/docs/reference/java/"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/bdval/"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/crover/"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/icb-utils/"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/squil/"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/tissueinfo/"/>
+            <link href="http://picard.sourceforge.net/javadoc/"/>
+            <classpath>
+                <path refid="compile.classpath"/>
+                <pathelement location="${classes}"/>
+            </classpath>
+            <bottom>
+                <![CDATA[<i>Copyright &#169; 2009-${year} Institute for Computational Biomedicine, All Rights Reserved.</i>]]>
+            </bottom>
+        </javadoc>
+    </target>
+</project>

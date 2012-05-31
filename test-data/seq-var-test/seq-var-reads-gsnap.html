@@ -1,0 +1,78 @@
+<body><head>
+<style type='text/css'>
+    body{ font-family: Arial, Helvetica, sans-serif; }
+    .odd { background-color: #def; }
+    .right {text-align: right;}
+    .center {text-align: center;}
+    table td {font-size:80%; }
+    tfoot input { width:60px; }
+    tfoot input.search_init { color:#777777; font-style:italic; }
+</style>
+<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css' />
+<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-context-min.css' />
+<link rel='stylesheet' type='text/css' href='http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.17/themes/ui-lightness/jquery-ui.css' />
+<link rel='stylesheet' type='text/css' href='http://campagnelab.org/files/cdn/datatables/media/css/jquery.dataTables.css'>
+<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables/media/js/jquery.js'></script>
+<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables/media/js/jquery.dataTables.min.js'></script>
+<script type='text/javascript' charset='utf8' src='http://campagnelab.org/files/cdn/datatables-plugins/js/fourButtonNavigation.js'></script>
+<script type='text/javascript'>
+    var dt;
+    jQuery(document).ready(function() {
+        dt = jQuery('#alignment').dataTable({
+            'aaData': data,
+            'aoColumns': columns,
+            'bJQueryUI': true,
+            'oLanguage': {
+                'sSearch': 'Search all columns:'
+            },
+            'aLengthMenu': [[10, 15, 20, 25, 30, 35, 40, 45, 50, -1], [10, 15, 20, 25, 30, 35, 40, 45, 50, 'All']],
+            'sPaginationType': 'four_button',
+            'sScrollX': '200px',
+            'bSort' : false
+        });
+        var asInitVals = new Array();
+        jQuery('tfoot input').keyup( function () {
+            dt.fnFilter( this.value, jQuery('tfoot input').index(this) );
+        });
+        jQuery('tfoot input').each( function (i) {
+            asInitVals[i] = this.value;
+        });
+        jQuery('tfoot input').focus( function () {
+            if (this.className == 'search_init') {
+                this.className = '';
+                this.value = '';
+            }
+        });
+        jQuery('tfoot input').blur( function (i) {
+            if ( this.value == '' ) {
+                this.className = 'search_init';
+                this.value = asInitVals[jQuery('tfoot input').index(this)];
+            }
+        });
+    });
+    jQuery(window).bind('resize', function() {
+        dt.fnAdjustColumnSizing();
+    });
+</script>
+</head>
+<html>
+<script type='text/javascript'>
+   function formatNumber(o, val) {
+        x1 = val + '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1;
+   }
+   var columns = [
+{'sTitle':'queryIndex','fnRender':formatNumber,'sClass':'right'},{'sTitle':'targetIdentifier'},{'sTitle':'position','fnRender':formatNumber,'sClass':'right'},{'sTitle':'queryLength','fnRender':formatNumber,'sClass':'right'},{'sTitle':'alignmentLength','fnRender':formatNumber,'sClass':'right'},{'sTitle':'strand'},{'sTitle':'score','fnRender':formatNumber,'sClass':'right'},{'sTitle':'mappingQuality','fnRender':formatNumber,'sClass':'right'},{'sTitle':'pairFlags','sClass':'right'},{'sTitle':'readFragmentIndex','sClass':'center'},{'sTitle':'pairFragmentIndex','sClass':'center'},{'sTitle':'pairTarget'},{'sTitle':'pairPosition','fnRender':formatNumber,'sClass':'right'},{'sTitle':'spliceFlags','sClass':'right'},{'sTitle':'spliceForwardFragmentIndex','sClass':'center'},{'sTitle':'spliceForwardTarget'},{'sTitle':'spliceForwardPosition','fnRender':formatNumber,'sClass':'right'},{'sTitle':'spliceBackwardFragmentIndex','sClass':'center'},{'sTitle':'spliceBackwardTarget'},{'sTitle':'spliceBackwardPosition','fnRender':formatNumber,'sClass':'right'},{'sTitle':'referenceLength','fnRender':formatNumber,'sClass':'right'},{'sTitle':'numIndels','fnRender':formatNumber,'sClass':'right'},{'sTitle':'numMismatches','fnRender':formatNumber,'sClass':'right'}];
+</script>
+<table cellpadding='0' cellspacing='0' border='0' class='display' id='alignment'>
+<tfoot><tr>
+<td><input type='text' name='search_queryIndex' value='filter' class='search_init'/></td><td><input type='text' name='search_targetIdentifier' value='filter' class='search_init'/></td><td><input type='text' name='search_position' value='filter' class='search_init'/></td><td><input type='text' name='search_queryLength' value='filter' class='search_init'/></td><td><input type='text' name='search_alignmentLength' value='filter' class='search_init'/></td><td><input type='text' name='search_strand' value='filter' class='search_init'/></td><td><input type='text' name='search_score' value='filter' class='search_init'/></td><td><input type='text' name='search_mappingQuality' value='filter' class='search_init'/></td><td><input type='text' name='search_pairFlags' value='filter' class='search_init'/></td><td><input type='text' name='search_readFragmentIndex' value='filter' class='search_init'/></td><td><input type='text' name='search_pairFragmentIndex' value='filter' class='search_init'/></td><td><input type='text' name='search_pairTarget' value='filter' class='search_init'/></td><td><input type='text' name='search_pairPosition' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceFlags' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceForwardFragmentIndex' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceForwardTarget' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceForwardPosition' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceBackwardFragmentIndex' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceBackwardTarget' value='filter' class='search_init'/></td><td><input type='text' name='search_spliceBackwardPosition' value='filter' class='search_init'/></td><td><input type='text' name='search_referenceLength' value='filter' class='search_init'/></td><td><input type='text' name='search_numIndels' value='filter' class='search_init'/></td><td><input type='text' name='search_numMismatches' value='filter' class='search_init'/></td></tr></tfoot>
+</table>
+<script type='text/javascript'>
+   var data = [
+[0,'synth1',30,50,50,'+',50.0,26,'',0,'','','','','','','','','','',110,0,0],[1,'synth1',30,50,50,'-',50.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,0,0],[2,'synth1',30,50,50,'+',47.0,26,'',0,'','','','','','','','','','',110,0,3],[3,'synth1',30,50,50,'-',47.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,0,3],[4,'synth1',30,50,50,'+',47.0,26,'',0,'','','','','','','','','','',110,3,0],[5,'synth1',33,50,50,'-',47.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,3,0],[6,'synth1',30,47,47,'+',47.0,26,'',0,'','','','','','','','','','',110,3,0],[7,'synth1',30,47,47,'-',47.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,3,0],[8,'synth1',0,50,50,'+',50.0,26,'',0,'','','','','','','','','','',110,0,0],[9,'synth1',0,50,50,'-',50.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,0,0],[10,'synth1',60,50,50,'+',50.0,26,'',0,'','','','','','','','','','',110,0,0],[11,'synth1',60,50,50,'-',50.0,26,'READ_REVERSE_STRAND|',0,'','','','','','','','','','',110,0,0],[12,'synth1',1,50,49,'+',48.0,26,'',0,'','','','','','','','','','',110,0,1],[13,'synth1',2,50,48,'+',47.0,26,'',0,'','','','','','','','','','',110,0,1],[14,'synth1',5,50,45,'+',44.0,26,'',0,'','','','','','','','','','',110,0,1],[15,'synth1',2,50,48,'+',48.0,26,'',0,'','','','','','','','','','',110,0,0],[16,'synth1',3,50,47,'+',47.0,26,'',0,'','','','','','','','','','',110,0,0],[17,'synth1',6,50,44,'+',44.0,26,'',0,'','','','','','','','','','',110,0,0],[18,'synth1',0,50,49,'+',49.0,26,'',0,'','','','','','','','','','',110,0,0],[19,'synth1',0,50,48,'+',48.0,26,'',0,'','','','','','','','','','',110,0,0],[20,'synth1',0,50,45,'+',45.0,26,'',0,'','','','','','','','','','',110,0,0],[21,'synth1',0,50,48,'+',48.0,26,'',0,'','','','','','','','','','',110,0,0],[22,'synth1',0,50,47,'+',47.0,26,'',0,'','','','','','','','','','',110,0,0],[23,'synth1',0,50,44,'+',44.0,26,'',0,'','','','','','','','','','',110,0,0],[24,'synth1',31,47,45,'+',43.0,26,'',0,'','','','','','','','','','',110,3,2],[27,'synth1',30,47,47,'+',45.0,26,'',0,'','','','','','','','','','',110,3,2]];
+</script></body></html>

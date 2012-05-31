@@ -1,0 +1,171 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <switch>
+            <id>include-descriptions</id>
+            <longFlag>include-descriptions</longFlag>
+            <shortFlag>d</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include description lines into the compact output. By default, ignore description lines.</help>
+        </switch>
+        <switch>
+            <id>include-identifiers</id>
+            <longFlag>include-identifiers</longFlag>
+            <shortFlag>y</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.  </help>
+        </switch>
+         <switch>
+            <id>force</id>
+            <longFlag>force</longFlag>
+            <shortFlag>f</shortFlag>
+            <help>Force overwriting files that already exist.</help>
+        </switch>
+         <switch>
+            <id>exclude-sequences</id>
+            <longFlag>exclude-sequences</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, exclude sequences. This results in not writing sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.  </help>
+        </switch>
+         <switch>
+            <id>exclude-quality</id>
+            <longFlag>exclude-quality</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, exclude quality scores. This results in not writing quality scores to the compact file. </help>
+        </switch>
+        <switch>
+            <id>verbose-quality-scores</id>
+            <longFlag>verbose-quality-scores</longFlag>
+            <defaults>false</defaults>
+            <help>Print quality scores to the console as they are read and converted to Phred score. Useful for testing with a small number of reads.</help>
+        </switch>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>Illumina</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+. Valid encodings include Illumina, Sanger and Solexa.</help>
+         </flaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The input fasta files to convert to compact reads.  The output files will have the same filename but end in .compact-reads.  If the input file ends in .gz it will be decompressed on the fly.</help>
+        </unflaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Process input files in parallel. Use when you have many input files to process. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+        </switch>
+        <flaggedOption>
+            <id>num-threads</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>num-threads</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>The number of threads to run with. When -1 defaults to the number of cores on the machine. This option is only active when --parallel is specified.</help>
+        </flaggedOption>
+         <switch>
+            <id>paired-end</id>
+            <longFlag>paired-end</longFlag>
+            <help>Indicates a paired-end run. When this switch is provided, this mode will try to locate a pair input file for each input provided. When a pair input file can be found (see --pair-indicator argument, the pair sequence, and quality scores are loaded in the output compact file. The two paired input files must have exactly the same number of sequences, and the sequences must appear in the same order.</help>
+         </switch>
+        <flaggedOption>
+            <id>pair-indicator</id>
+            <longFlag>pair-indicator</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>_1,_2</string>
+            </defaults>
+            <help>Pair indicators are used to locate paired sequence input files. The indicator must be two string tokens separated by one coma. The first token should appear in the first input filename of a pair, while the second token should appear in the second filename of a pair. This mode will substitute the first token by the second to transform an input filename into a paired input filename.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>key</id>
+            <longFlag>key</longFlag>
+             <shortFlag>k</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Provide the key for key/value pairs of meta data. Meta data will be stored in the first entry of the read file.</help>
+        </flaggedOption>
+          <flaggedOption>
+            <id>value</id>
+            <longFlag>value</longFlag>
+             <shortFlag>v</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Provide the value for key/value pairs of meta data. Meta data will be stored in the first entry of the read file. Values are matched to keys according to the order in which key value pairs appear in the argument list. For instance, -k 1 -v 2 -k a -v b will associate key 1 to value 2 and key a to value b.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>key-value-pairs</id>
+            <longFlag>key-value-pairs</longFlag>
+
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>A file with key-value pairs, in the Java property format. (key=value, one per line). Any key/value pairs defined in this file will be overriden by key/value pairs defined on the command line when the same key is used.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>codec</id>
+            <longFlag>codec</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a codec. When provided, the coded is used to compress reads.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

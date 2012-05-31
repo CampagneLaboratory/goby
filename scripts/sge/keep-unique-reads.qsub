@@ -1,0 +1,25 @@
+#!/bin/sh -l
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Name of the job
+#$ -N keep-unique-reads
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements (2Gb more than what Java heap is set to below is strongly advised)
+#$ -l h_vmem=3g
+
+# Number of threads/cpus
+#$ -pe smp 1
+
+echo 'Running on '`hostname`'with limits'
+ulimit -a
+cd ${TMP}/
+$GOBY 2g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
+

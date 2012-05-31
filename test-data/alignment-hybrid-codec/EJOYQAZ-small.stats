@@ -1,0 +1,23 @@
+#Statistics for merged alignment. 
+#Mon Apr 16 18:49:30 EDT 2012
+overall.matched.percent=0.00
+part1.part1.number-of-entries-written=31928754
+basename=EJOYQAZ-small
+number.alignment.entries=40001
+min.query.index=12732080
+part1.part1.min.query.index=12732078
+basename.full=test-data/alignment-hybrid-codec/EJOYQAZ-small
+part1.part1.max.query.index=0
+part1.part1.basename.full=EJOYQAZ
+number.of.queries=15693880
+part1.basename=EJOYQAZ-gzip
+part1.part1.number.of.queries=15693880
+part1.number.of.queries=15693880
+part1.number.alignment.entries=31928754
+part1.basename.full=EJOYQAZ-gzip
+part1.part1.number.alignment.entries=31928754
+part1.max.query.index=0
+part1.part1.basename=EJOYQAZ
+max.query.index=0
+part1.min.query.index=12732079
+part1.overall.matched.percent=0.00

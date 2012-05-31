@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact input file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact file output.</help>
+        </flaggedOption>
+          <flaggedOption>
+            <id>adapters</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>adapters</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the file with the sequence of the adapters (one sequence per line)</help>
+        </flaggedOption>
+        <switch>
+            <id>complement</id>
+            <longFlag>complement</longFlag>
+            <help>When this switch is provided, the complement of the adapter sequences are also trimmed.  </help>
+        </switch>
+          <flaggedOption>
+            <id>min-left-length</id>
+            <longFlag>min-left-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                    <string>0</string>
+            </defaults>
+            <help>Minimum number of bases the adapter must match on the left to be trimmed.</help>
+        </flaggedOption>
+        <flaggedOption>
+          <id>min-right-length</id>
+          <longFlag>min-right-length</longFlag>
+          <stringParser>
+              <classname>IntegerStringParser</classname>
+          </stringParser>
+          <required>false</required>
+          <defaults>
+                <string>0</string>
+          </defaults>
+          <help>Minimum number of bases the adapter must match on the right to be trimmed.</help>
+      </flaggedOption>
+
+    </parameters>
+</jsap>

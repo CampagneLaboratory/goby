@@ -1,0 +1,28 @@
+#!/bin/sh -l
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Name of the job
+#$ -N bz2compact
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements (2Gb more than what Java heap is set to below is strongly advised)
+#$ -l h_vmem=3g
+
+# Number of threads/cpus
+#$ -pe smp 2
+
+
+cd $TMP
+bzcat -f ${DATA_DIR}/${BASENAME}.fastq.bz2 >${BASENAME}.fastq
+$GOBY 1g fasta-to-compact --quality-encoding ${QUALITY_ENCODING} ${BASENAME}.fastq
+cp ${BASENAME}.compact-reads ${DATA_DIR}/
+
+
+

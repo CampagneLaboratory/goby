@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Name of the job
+#$ -N %SGE_JOB_NAME%-index
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l h_vmem=%SGE_MEMORY%
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+# Run as an array job
+#$ -t 1-%NUMBER_OF_TRANSCRIPTS%
+
+%SGE_MAILTO_DIRECTIVE%
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# Pull in softlib commands
+. /etc/profile
+
+# Use a transcript file as the reference file to align with
+TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
+TRANSCRIPT_FILE_NAME=`sed -n "${SGE_TASK_ID}p" transcript-list.txt`
+TRANSCRIPT_FILE=${TRANSCRIPT_DIRECTORY}/${TRANSCRIPT_FILE_NAME}
+
+TRANSCRIPT_INDEX_NAME=${TRANSCRIPT_FILE_NAME%.*}.fasta
+TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
+
+cd ${TMPDIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -jar goby.jar --mode align %COLORSPACE% --reference ${TRANSCRIPT_FILE} --aligner %ALIGNER% \
+    --index --database-name ${TRANSCRIPT_INDEX_NAME}
+
+/bin/mkdir -p ${TRANSCRIPT_INDEX_DIRECTORY}
+/bin/cp ${TRANSCRIPT_INDEX_NAME}.* ${TRANSCRIPT_INDEX_DIRECTORY}

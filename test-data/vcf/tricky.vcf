@@ -1,0 +1,42 @@
+##fileformat=VCFv4.1
+##samtoolsVersion=0.1.14 (r933:170)
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=MQ,Number=1,Type=Integer,Description="Root-mean-square mapping quality of covering reads">
+##INFO=<ID=FQ,Number=1,Type=Float,Description="Phred probability of all samples being the same">
+##INFO=<ID=AF1,Number=1,Type=Float,Description="Max-likelihood estimate of the site allele frequency of the first ALT allele">
+##INFO=<ID=CI95,Number=2,Type=Float,Description="Equal-tail Bayesian credible interval of the site allele frequency at the 95% level">
+##INFO=<ID=PV4,Number=4,Type=Float,Description="P-values for strand bias, baseQ bias, mapQ bias and tail distance bias">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=PC2,Number=2,Type=Integer,Description="Phred probability of the nonRef allele frequency in group1 samples being larger (,smaller) than in group2.">
+##INFO=<ID=PCHI2,Number=1,Type=Float,Description="Posterior weighted chi^2 P-value for testing the association between group1 and group2 samples.">
+##INFO=<ID=QCHI2,Number=1,Type=Integer,Description="Phred scaled PCHI2.">
+##INFO=<ID=RP,Number=1,Type=Integer,Description="# permutations yielding a smaller PCHI2.">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=GL,Number=3,Type=Float,Description="Likelihoods for RR,RA,AA genotypes (R=ref,A=alt)">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="# high-quality bases">
+##FORMAT=<ID=SP,Number=1,Type=Integer,Description="Phred-scaled strand bias P-value">
+##FORMAT=<ID=PL,Number=.,Type=Integer,Description="List of Phred-scaled genotype likelihoods, number of values is (#ALT+1)*(#ALT+2)/2">
+##INFO=<ID=RS,Number=1,Type=String,Description="rs ID">
+##INFO=<ID=GeneID,Number=1,Type=String,Description="Ensembl Gene ID">
+##INFO=<ID=Effect,Number=1,Type=String,Description="Effect of variation on transcript">
+##source_20110231.1=/home/gobyweb/bin/vcf-annotate -a /scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference//var-annotations-sorted.tsv.gz -d descriptions.lst -c CHROM,FR OM,INFO/RS,INFO/GeneID,INFO/Effect
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	QMMNMJW.bam	PIAXRTU.bam
+1	145497099	.	A	G	17.1	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=25;FQ=-30.8;QCHI2=1;PCHI2=0.752;PC2=3,3	GT:PL:GQ	1/1:25,3,0:42	1/1:25,3,0:42
+10	94234	.	TAA	TAAA	33.5	.	INDEL;DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=37;FQ=-38.3;QCHI2=1;PCHI2=0.749;PC2=3,3	GT:PL:GQ	1/1:37,3,0:42	1/1:37,3,0:42
+10	114158	.	A	G	17.1	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=25;FQ=-30.8;QCHI2=1;PCHI2=0.752;PC2=3,3	GT:PL:GQ	1/1:25,3,0:42	1/1:25,3,0:42
+10	123469	.	A	G	3.61	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=20;FQ=-30.7;QCHI2=1;PCHI2=0.85;PC2=3,3	GT:PL:GQ	1/1:17,3,0:42	1/1:17,3,0:42
+10	181146	.	A	G	3.61	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=37;FQ=-30.7;QCHI2=1;PCHI2=0.85;PC2=3,3	GT:PL:GQ	1/1:17,3,0:42	1/1:17,3,0:42
+10	181486	.	G	A	15.5	.	DP=4;AF1=0.5024;CI95=0.5,0.5;DP4=2,0,2,0;MQ=32;FQ=7.07;QCHI2=0;PCHI2=0.984;PC2=3,3;PV4=1,0,1,1	GT:PL:GQ	0/1:25,0,19:21	0/1:25,0,19:21
+10	181567	.	C	G	19.1	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=37;FQ=-30.8;QCHI2=1;PCHI2=0.75;PC2=3,3	GT:PL:GQ	1/1:26,3,0:42	1/1:26,3,0:42
+10	182055	.	A	C	5.04	.	DP=4;AF1=0.4976;CI95=0.5,0.5;DP4=2,0,2,0;MQ=37;FQ=7.07;QCHI2=0;PCHI2=0.98;PC2=3,3;PV4=1,0,1,1	GT:PL:GQ	0/1:19,0,25:21	0/1:19,0,25:21
+10	182057	.	C	A	6.51	.	DP=4;AF1=0.5;CI95=0.5,0.5;DP4=2,0,2,0;MQ=37;FQ=6.51;QCHI2=0;PCHI2=0.978;PC2=3,3;PV4=1,1,1,0	GT:PL:GQ	0/1:20,0,20:20	0/1:20,0,20:20
+10	182271	.	C	A	3.79	.	DP=6;AF1=0.496;CI95=0.25,0.5;DP4=4,0,2,0;MQ=37;FQ=5.73;QCHI2=0;PCHI2=0.98;PC2=3,3;PV4=1,4.5e-05,1,0.31	GT:PL:GQ	0/1:18,0,59:21	0/1:18,0,59:21
+10	182801	.	G	C	3.79	.	DP=4;AF1=0.4962;CI95=0.25,0.5;DP4=2,0,2,0;MQ=37;FQ=5.73;QCHI2=0;PCHI2=0.98;PC2=3,3;PV4=1,0,1,1	GT:PL:GQ	0/1:18,0,31:21	0/1:18,0,31:21
+10	183183	.	T	G	11.4	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=37;FQ=-30.7;QCHI2=1;PCHI2=0.763;PC2=3,3	GT:PL:GQ	1/1:22,3,0:42	1/1:22,3,0:42
+10	185358	.	C	T	3.61	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=37;FQ=-30.7;QCHI2=1;PCHI2=0.85;PC2=3,3	GT:PL:GQ	1/1:17,3,0:42	1/1:17,3,0:42
+10	186159	.	T	C	9.8	.	DP=10;AF1=0.4984;CI95=0.5,0.5;DP4=8,0,2,0;MQ=37;FQ=12.6;QCHI2=0;PCHI2=0.987;PC2=3,3;PV4=1,0.0027,1,1	GT:PL:GQ	0/1:22,0,100:25	0/1:22,0,100:25
+10	188262	.	A	T	3.79	.	DP=4;AF1=0.4962;CI95=0.25,0.5;DP4=2,0,2,0;MQ=37;FQ=5.73;QCHI2=0;PCHI2=0.98;PC2=3,3;PV4=1,0,1,1	GT:PL:GQ	0/1:18,0,31:21	0/1:18,0,31:21
+10	188345	.	T	C	9.8	.	DP=6;AF1=0.4984;CI95=0.5,0.5;DP4=4,0,2,0;MQ=33;FQ=12.6;QCHI2=0;PCHI2=0.987;PC2=3,3;PV4=1,0.00056,1,1	GT:PL:GQ	0/1:22,0,49:25	0/1:22,0,49:25
+10	189046	.	G	T	17.4	.	DP=6;AF1=0.4994;CI95=0.5,0.5;DP4=4,0,2,0;MQ=37;FQ=20.3;QCHI2=0;PCHI2=0.994;PC2=3,3;PV4=1,0.00031,1,1	GT:PL:GQ	0/1:26,0,59:29	0/1:26,0,59:29

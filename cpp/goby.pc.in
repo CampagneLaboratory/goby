@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: Goby
+Description: API for reading binary data files created using the Goby next-gen data management framework
+Version: @VERSION@
+Libs: -L${libdir} -lgoby @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
+Cflags: -I${includedir} @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@

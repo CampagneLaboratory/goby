@@ -1,0 +1,206 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <required>true</required>
+            <help>The SAM/BAM file to convert to compact alignment format, or - to read from standard input. If feeding
+                SAM from standard input, the header must be included in the stream (e.g., samtools view -h input.bam |
+                goby sam-to-compact -i -).
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The output path and basename to write the compact format to.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>query-reads-ids</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>query-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing reads which provides identifiers for each read. If provided, read
+                identifiers are propagated to the alignment header.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>target-reference-ids</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>target-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing targets which provides identifiers for each target sequence. If provided,
+                target identifiers are propagated to the alignment header.
+            </help>
+        </flaggedOption>
+        <switch>
+            <id>propagate-query-ids</id>
+            <longFlag>propagate-query-ids</longFlag>
+            <help>When this switch is provided, propagate query ids if provided in the compact file designated by the
+                query-ids option. The default is false since query ids are generally not useful and can consume a large
+                amount of storage.
+            </help>
+        </switch>
+        <switch>
+            <id>preserve-all-tags</id>
+            <longFlag>preserve-all-tags</longFlag>
+            <help>When this switch is provided, all BAM tags/attributes are preserved and imported to the bam_attributes
+                Alignment entry field. Note that the MD attribute is stored as in Goby native fields. MD attributes
+                are written back to BAM from these fields.
+            </help>
+        </switch>
+         <switch>
+            <id>preserve-soft-clips</id>
+            <longFlag>preserve-soft-clips</longFlag>
+            <help>When this switch is provided, bases that were soft-clipped by the aligner are preserved. They are put
+                 in the alignment entry fields softClippedBasesLeft and softClippedBasesRight.
+            </help>
+        </switch>
+        <switch>
+            <id>preserve-all-mapped-qualities</id>
+            <longFlag>preserve-all-mapped-qualities</longFlag>
+            <help>When this switch is provided, qualities scores for all mapped reads are preserved. The scores are
+                stored in the Goby read_quality_scores field.
+            </help>
+        </switch>
+        <switch>
+            <id>preserve-read-name</id>
+            <longFlag>preserve-read-name</longFlag>
+            <help>When this switch is provided, read names (QNAME) will be preserved.
+            </help>
+        </switch>
+        <switch>
+            <id>sorted</id>
+            <longFlag>sorted</longFlag>
+            <help>Indicates that the input file is sorted. When true, the Goby alignment file is written sorted and
+                indexed.
+            </help>
+        </switch>
+        <flaggedOption>
+            <id>propagate-target-ids</id>
+            <longFlag>propagate-target-ids</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>When this switch is provided, propagate target ids if provided in the compact file designated by the
+                target-ids option. The default is true since target ids are quite useful and not very many.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index set with multiplicity information. When provided, last-to-compact appends
+                exactly m identical entries for a read with index
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>ambiguity-threshold</id>
+            <defaults>
+                <string>2</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <longFlag>ambiguity-threshold</longFlag>
+            <required>false</required>
+            <help>Maximum number of locations that a read can match to be included in the alignment entries.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>quality-filter-parameters</id>
+            <shortFlag>p</shortFlag>
+            <defaults>
+                <string>threshold=1</string>
+            </defaults>
+            <longFlag>quality-filter-parameters</longFlag>
+            <required>false</required>
+            <help>Parameters to configure the quality filter. Use threshold=0.05 to filter out alignments with more than
+                5% bases that differ from the reference. Please note that the default value has changed in Goby 2.0 to
+                not filter any hits (Goby 1.9 had the fitler on by default at 5%).
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>number-of-reads</id>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <longFlag>number-of-reads</longFlag>
+            <required>false</required>
+            <help>The number of reads in the input file. The number is determined from the argument to the -q option
+                when provided. Use this option when importing an alignment not generated with Goby (see samtools
+                flagstat to get the number of reads in a SAM/BAM file). You can use 0 if you prefer to have the import
+                tool determine this number from the input file. In some cases the option is useful to indicate there
+                were more reads in the input than provided in the file to import.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>third-party-input</id>
+            <longFlag>third-party-input</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Use to import files not produced by Goby.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>Sanger</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM
+                specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>input-genome</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>genome</longFlag>
+            <required>false</required>
+            <help>
+                The input genome in either 'compact random-access-genome' format or 'fa + fa.fai' format. When a genome
+                is provided, soft clipped bases that match the reference are replaced with the '=' character.
+                The random-access-genome file can be made from a fasta reference using the build-sequence-cache mode.
+                If using the random-access-genome input, specify any one of the files in the random-access-genome.
+                If using the '.fa + .fa.fai' input, specify the '.fa' file but make sure the '.fa.fai' file
+                is located in the same directory.
+                Using the random-access-genome format can be considerably faster, but uses more memory than using
+                the picard indexed fasta file.
+            </help>
+        </flaggedOption>
+
+    </parameters>
+</jsap>

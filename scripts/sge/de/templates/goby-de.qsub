@@ -1,0 +1,88 @@
+#!/bin/sh
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Name of the job
+#$ -N %SGE_JOB_NAME%-de
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l h_vmem=%SGE_MEMORY%
+
+# Number of threads/cpus
+#$ -pe smp 4
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+%SGE_MAILTO_DIRECTIVE%
+
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# Pull in softlib commands
+. /etc/profile
+
+# Copy the goby and support tools to the local node
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
+
+REMOTE_HOST=%remote-host%
+MAC_LOCAL_PATH=%remote-path%
+
+# Copy input alignment files:
+for FILE in %alignment-basenames%; do
+echo Copying ${FILE%.*}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.%use-weights%-weights ${TMPDIR}
+done
+
+# Copy annotation file:
+/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/%annotation-file% ${TMPDIR}
+
+# Run the alignment
+cd ${TMPDIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+    -Dpj.nt=4 -jar goby.jar -m alignment-to-annotation-counts \
+    %alignment-basenames% --compare %group1%/%group2% \
+    --groups %group1%=%group1-basenames%/%group2%=%group2-basenames% \
+    -a %annotation-file% --parallel --normalization-methods aligned-count \
+    --include-annotation-types gene --write-annotation-counts false --eval group-averages \
+    --omit-non-informative-columns true \
+    --use-weights %use-weights% --adjust-gc-bias %adjust-gc-bias-boolean%  \
+    -s %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv
+
+
+# Copy the results back
+
+#RESULT_DIR=${SGE_O_WORKDIR}/results/
+
+#/bin/mkdir -p ${RESULT_DIR}
+/usr/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  ${REMOTE_HOST}:${MAC_LOCAL_PATH}/
+cp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv ${SGE_O_WORKDIR}/

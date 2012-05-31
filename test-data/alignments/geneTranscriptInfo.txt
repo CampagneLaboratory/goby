@@ -1,0 +1,5 @@
+geneId1 transcriptId1
+geneId1 transcriptId2
+geneId1 transcriptId3
+geneId3 transcriptId4
+geneId2 transcriptId5

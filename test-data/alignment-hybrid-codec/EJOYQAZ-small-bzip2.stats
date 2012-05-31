@@ -1,0 +1,30 @@
+#Statistics for merged alignment. 
+#Thu May 10 14:05:35 EDT 2012
+overall.matched.percent=0.314
+part1.part1.part1.number-of-entries-written=31928754
+basename=EJOYQAZ-small-bzip2
+number.alignment.entries=40001
+part1.part1.part1.min.query.index=12732078
+part1.part1.part1.number.alignment.entries=31928754
+min.query.index=12732081
+part1.part1.min.query.index=12732079
+part1.part1.overall.matched.percent=0.00
+basename.full=EJOYQAZ-small-bzip2
+part1.part1.part1.basename.full=EJOYQAZ
+part1.part1.part1.max.query.index=0
+part1.part1.max.query.index=0
+part1.part1.basename.full=EJOYQAZ-gzip
+number.of.queries=12732081
+part1.basename=EJOYQAZ-small-sorted
+part1.part1.number.of.queries=15693880
+part1.number.of.queries=12732081
+part1.number.alignment.entries=40001
+part1.part1.part1.basename=EJOYQAZ
+part1.basename.full=EJOYQAZ-small-sorted
+part1.part1.number.alignment.entries=31928754
+part1.part1.part1.number.of.queries=15693880
+part1.part1.basename=EJOYQAZ-gzip
+part1.max.query.index=0
+max.query.index=0
+part1.min.query.index=12732080
+part1.overall.matched.percent=0.00

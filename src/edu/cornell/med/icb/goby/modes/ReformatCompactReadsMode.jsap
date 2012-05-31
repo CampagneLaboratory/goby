@@ -1,0 +1,175 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <switch>
+            <id>include-descriptions</id>
+            <longFlag>include-descriptions</longFlag>
+            <shortFlag>d</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include description lines into the compact output. By default, ignore description lines.  </help>
+        </switch>
+        <switch>
+            <id>include-identifiers</id>
+            <longFlag>include-identifiers</longFlag>
+            <shortFlag>y</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.  </help>
+        </switch>
+        <switch>
+            <id>exclude-sequences</id>
+            <longFlag>exclude-sequences</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, exclude sequences. This results in not writing sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.  </help>
+        </switch>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>If there is only one read file, this will force the output file to this specific filename. Please note that the --ouptut argument is required when a single input file is provided on the command line. If there is more than one input file, the output filename will always be the input filename appended with some string and a .compact-reads suffix. You should generally use an extension of .compact-reads when writing a compact reads file.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>minimum-read-length</id>
+            <longFlag>minimum-read-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <help>Sequences below this length are omitted. </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>maximum-read-length</id>
+            <longFlag>maximum-read-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>2147483647</string>
+            </defaults>
+            <help>Sequences above this length are omitted. </help>
+        </flaggedOption>
+        <switch>
+            <id>mutate-sequences</id>
+            <longFlag>mutate-sequences</longFlag>
+            <help>When this switch is provided, each sequence is mutated according to the mutation parameters. This option is only useful to introduce mismatches in sequences to create controls. It is generally not meant to be used in a production pipeline.  </help>
+        </switch>
+        <flaggedOption>
+            <id>mismatch-number</id>
+            <longFlag>mismatch-number</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <help>When the --mutate-sequence switch is activated, indicates how many mismatches should be introduced in each input sequence (at random positions).  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>sequence-per-output</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>sequence-per-output</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The maximum number of sequences that will be written to each output file. Output files are split if the file would contain more sequences than indicated by this parameter.  </help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The compact reads files provided as input to reformat.   </help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading from. The read will actually start at the first record on or after start-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from. The read will actually end at the end of the record on or after end-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>trim-read-length</id>
+          
+            <longFlag>trim-read-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>2147483647</string>
+            </defaults>
+            <help>When this option is present read lengths will be trimmed to a maximum length of this value.  Unlike the maximum-read-length, all reads are kept but may be trimmed.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>trim-read-start</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>trim-read-start</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>When this option is present read lengths will be start trimmed by the specified number of characters.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index filter. When provided, compact-to-fasta will only write reads to the output if their index is contained in the filter.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

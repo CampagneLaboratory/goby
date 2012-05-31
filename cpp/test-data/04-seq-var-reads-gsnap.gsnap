@@ -1,0 +1,4 @@
+>CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	4 4  insertion
+ CCGCCCTTGCCCTTCCTCCCTTCCCT------------------------	1..26	+synth1:31..56	start:0..ins:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,-----------------------------TTCGGAGTCCTGGCCCCACCC	30..50	+synth1:57..77	ins:3..end:0,matches:21,sub:0
+

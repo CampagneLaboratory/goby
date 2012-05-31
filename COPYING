@@ -1,0 +1,7 @@
+The Goby IO API includes code necessary to read and write Goby file formats. This code is packaged in the goby-io.jar
+file. This code is released under the LGPL3 license. See LGPL3.license in this distribution for a
+copy of the LGPL license. 
+
+The entire Goby framework, including application programs (i.e., Goby modes) is distributed
+under the GPL3 license. See GPL3.license in this distribution for a copy of the GPL3 license.
+

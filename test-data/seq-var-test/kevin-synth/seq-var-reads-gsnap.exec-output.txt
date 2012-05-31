@@ -1,0 +1,897 @@
+Opening seq-var-reads.compact-reads
+GSNAP version 2011-03-18 called with args: -t 0 -m 6 -A goby --goby-output seq-var-reads-gsnap -D SMALL_SYNTH_DB-gsnap -d index seq-var-reads.compact-reads
+Note: >1 sequence detected, so index files are being memory mapped.  To allocate memory instead of memory mapping, use -B 3 or -B 4.
+  For more speed, also try multiple threads (-t <int>), if you have multiple processors or cores.
+Pre-loading compressed genome....done (48 bytes, 1 pages, 0.00 sec)
+Allocating memory for ref3 offsets db...done (67108868 bytes, 0.04 sec)
+Pre-loading ref3 positions db....done (132 bytes, 1 pages, 0.00 sec)
+Writing alignment to basename, entries per chunk=2786290673
+gobyAlignments_addTargetIdentifier 'synth1' = [ai=0] length=110
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=0
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: type=EXACT, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=1
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: type=EXACT, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAGGGAAGGGAGGAAGGGCAAGGGCGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGGGAAGGGAGGAAGGGCAAGGGCGG
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=2
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=47.000000
+gobyAlEntry_setNumberOfMismatches=3
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTttcGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTCGTGGAGTCCTGGCCCCACCCTGT
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTttcGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTCGTGGAGTCCTGGCCCCACCCTGT
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:t:27  27:t:28  28:c:29  29:G:30  30:G:31  31:A:32  32:G:33  33:T:34  34:C:35  35:C:36  36:T:37  37:G:38  38:G:39  39:C:40  40:C:41  41:C:42  42:C:43  43:A:44  44:C:45  45:C:46  46:C:47  47:T:48  48:G:49  49:T:50  
+read with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:C:27  27:G:28  28:T:29  29:G:30  30:G:31  31:A:32  32:G:33  33:T:34  34:C:35  35:C:36  36:T:37  37:G:38  38:G:39  39:C:40  40:C:41  41:C:42  42:C:43  43:A:44  44:C:45  45:C:46  46:C:47  47:T:48  48:G:49  49:T:50  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=27 refPosition=27 ref=T read=C hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=27 sv->position=27 from=T to=C
+gobyAlEntry_addSequenceVariation readIndex=28 refPosition=28 ref=T read=G hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=27 from=TT to=CG
+gobyAlEntry_addSequenceVariation readIndex=29 refPosition=29 ref=C read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=27 from=TTC to=CGT
+gobyAlEntry_setNumberOfMismatches=3
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=3
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=47.000000
+gobyAlEntry_setNumberOfMismatches=3
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAGggaAGGGAGGAAGGGCAAGGGCGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGTAGAGGGAGGAAGGGCAAGGGCGG
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAGggaAGGGAGGAAGGGCAAGGGCGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGTAGAGGGAGGAAGGGCAAGGGCGG
+:: Reverse complemented length=50.
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTtccCTTTCGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTCTACTTTCGGAGTCCTGGCCCCACCCTGT
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=09876543210987654321098765432109876543210987654321
+ref with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:t:22  22:c:23  23:c:24  24:C:25  25:T:26  26:T:27  27:T:28  28:C:29  29:G:30  30:G:31  31:A:32  32:G:33  33:T:34  34:C:35  35:C:36  36:T:37  37:G:38  38:G:39  39:C:40  40:C:41  41:C:42  42:C:43  43:A:44  44:C:45  45:C:46  46:C:47  47:T:48  48:G:49  49:T:50  
+read with positions
+00:C:50  01:C:49  02:G:48  03:C:47  04:C:46  05:C:45  06:T:44  07:T:43  08:G:42  09:C:41  10:C:40  11:C:39  12:T:38  13:T:37  14:C:36  15:C:35  16:T:34  17:C:33  18:C:32  19:C:31  20:T:30  21:C:29  22:T:28  23:A:27  24:C:26  25:T:25  26:T:24  27:T:23  28:C:22  29:G:21  30:G:20  31:A:19  32:G:18  33:T:17  34:C:16  35:C:15  36:T:14  37:G:13  38:G:12  39:C:11  40:C:10  41:C:09  42:C:08  43:A:07  44:C:06  45:C:05  46:C:04  47:T:03  48:G:02  49:T:01  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=29 refPosition=22 ref=T read=C hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=29 sv->position=22 from=T to=C
+gobyAlEntry_addSequenceVariation readIndex=28 refPosition=23 ref=C read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=29 sv->position=22 from=TC to=CT
+gobyAlEntry_addSequenceVariation readIndex=27 refPosition=24 ref=C read=A hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=29 sv->position=22 from=TCC to=CTA
+gobyAlEntry_setNumberOfMismatches=3
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=4
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=47
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=3
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC
+::  pos=12345678901234567890123456666789012345678901234567
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:-:26  27:-:26  28:-:26  29:T:27  30:T:28  31:C:29  32:G:30  33:G:31  34:A:32  35:G:33  36:T:34  37:C:35  38:C:36  39:T:37  40:G:38  41:G:39  42:C:40  43:C:41  44:C:42  45:C:43  46:A:44  47:C:45  48:C:46  49:C:47  
+read with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:A:27  27:T:28  28:C:29  29:T:30  30:T:31  31:C:32  32:G:33  33:G:34  34:A:35  35:G:36  36:T:37  37:C:38  38:C:39  39:T:40  40:G:41  41:G:42  42:C:43  43:C:44  44:C:45  45:C:46  46:A:47  47:C:48  48:C:49  49:C:50  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=27 refPosition=26 ref=- read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=27 sv->position=26 from=- to=A
+gobyAlEntry_addSequenceVariation readIndex=28 refPosition=26 ref=- read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=26 from=-- to=AT
+gobyAlEntry_addSequenceVariation readIndex=29 refPosition=26 ref=- read=C hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=26 from=--- to=ATC
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=5
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=33
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=47
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=3
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAG---GGAAGGGAGGAAGGGCAAGGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGATCGGAAGGGAGGAAGGGCAAGGG
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAG---GGAAGGGAGGAAGGGCAAGGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGATCGGAAGGGAGGAAGGGCAAGGG
+:: Reverse complemented length=50.
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =CCCTTGCCCTTCCTCCCTTCC---CTTTCGGAGTCCTGGCCCCACCCTGT
+:: read=CCCTTGCCCTTCCTCCCTTCCGATCTTTCGGAGTCCTGGCCCCACCCTGT
+::  pos=12345678901234567890111123456789012345678901234567
+::   ri=09876543210987654321098765432109876543210987654321
+ref with positions
+00:C:01  01:C:02  02:C:03  03:T:04  04:T:05  05:G:06  06:C:07  07:C:08  08:C:09  09:T:10  10:T:11  11:C:12  12:C:13  13:T:14  14:C:15  15:C:16  16:C:17  17:T:18  18:T:19  19:C:20  20:C:21  21:-:21  22:-:21  23:-:21  24:C:22  25:T:23  26:T:24  27:T:25  28:C:26  29:G:27  30:G:28  31:A:29  32:G:30  33:T:31  34:C:32  35:C:33  36:T:34  37:G:35  38:G:36  39:C:37  40:C:38  41:C:39  42:C:40  43:A:41  44:C:42  45:C:43  46:C:44  47:T:45  48:G:46  49:T:47  
+read with positions
+00:C:50  01:C:49  02:C:48  03:T:47  04:T:46  05:G:45  06:C:44  07:C:43  08:C:42  09:T:41  10:T:40  11:C:39  12:C:38  13:T:37  14:C:36  15:C:35  16:C:34  17:T:33  18:T:32  19:C:31  20:C:30  21:G:29  22:A:28  23:T:27  24:C:26  25:T:25  26:T:24  27:T:23  28:C:22  29:G:21  30:G:20  31:A:19  32:G:18  33:T:17  34:C:16  35:C:15  36:T:14  37:G:13  38:G:12  39:C:11  40:C:10  41:C:09  42:C:08  43:A:07  44:C:06  45:C:05  46:C:04  47:T:03  48:G:02  49:T:01  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=29 refPosition=21 ref=- read=G hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=29 sv->position=21 from=- to=G
+gobyAlEntry_addSequenceVariation readIndex=28 refPosition=21 ref=- read=A hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=29 sv->position=21 from=-- to=GA
+gobyAlEntry_addSequenceVariation readIndex=27 refPosition=21 ref=- read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=29 sv->position=21 from=--- to=GAT
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=6
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=46.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=47
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=47
+:: length=47 query_al_len=47 nindels=3
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCTGGAGTCCTGGCCCCACCCTGT
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCTTCCCT---GGAGTCCTGGCCCCACCCTGT
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=12345678901234567890123456666789012345678901234567
+ref with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:T:27  27:T:28  28:C:29  29:G:30  30:G:31  31:A:32  32:G:33  33:T:34  34:C:35  35:C:36  36:T:37  37:G:38  38:G:39  39:C:40  40:C:41  41:C:42  42:C:43  43:A:44  44:C:45  45:C:46  46:C:47  47:T:48  48:G:49  49:T:50  
+read with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:-:26  27:-:26  28:-:26  29:G:27  30:G:28  31:A:29  32:G:30  33:T:31  34:C:32  35:C:33  36:T:34  37:G:35  38:G:36  39:C:37  40:C:38  41:C:39  42:C:40  43:A:41  44:C:42  45:C:43  46:C:44  47:T:45  48:G:46  49:T:47  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=27 ref=T read=- hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=26 sv->position=27 from=T to=-
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=28 ref=T read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=26 sv->position=27 from=TT to=--
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=29 ref=C read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=26 sv->position=27 from=TTC to=---
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=7
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=30
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=46.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=47
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=47
+:: length=47 query_al_len=47 nindels=3
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAGAGGGAGGAAGGGCAAGGGCGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAGAGGGAGGAAGGGCAAGGGCGG
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =ACAGGGTGGGGCCAGGACTCCGAAAGGGAAGGGAGGAAGGGCAAGGGCGG
+:: read=ACAGGGTGGGGCCAGGACTCCGAAAG---AGGGAGGAAGGGCAAGGGCGG
+:: Reverse complemented length=50.
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+:: read=CCGCCCTTGCCCTTCCTCCCT---CTTTCGGAGTCCTGGCCCCACCCTGT
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=76543210987654321098766665432109876543210987654321
+ref with positions
+00:C:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:C:11  11:C:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:T:27  27:T:28  28:C:29  29:G:30  30:G:31  31:A:32  32:G:33  33:T:34  34:C:35  35:C:36  36:T:37  37:G:38  38:G:39  39:C:40  40:C:41  41:C:42  42:C:43  43:A:44  44:C:45  45:C:46  46:C:47  47:T:48  48:G:49  49:T:50  
+read with positions
+00:C:47  01:C:46  02:G:45  03:C:44  04:C:43  05:C:42  06:T:41  07:T:40  08:G:39  09:C:38  10:C:37  11:C:36  12:T:35  13:T:34  14:C:33  15:C:32  16:T:31  17:C:30  18:C:29  19:C:28  20:T:27  21:-:26  22:-:26  23:-:26  24:C:26  25:T:25  26:T:24  27:T:23  28:C:22  29:G:21  30:G:20  31:A:19  32:G:18  33:T:17  34:C:16  35:C:15  36:T:14  37:G:13  38:G:12  39:C:11  40:C:10  41:C:09  42:C:08  43:A:07  44:C:06  45:C:05  46:C:04  47:T:03  48:G:02  49:T:01  
+padding_left=0, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=22 ref=T read=- hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=26 sv->position=22 from=T to=-
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=23 ref=C read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=26 sv->position=22 from=TC to=--
+gobyAlEntry_addSequenceVariation readIndex=26 refPosition=24 ref=C read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=26 sv->position=22 from=TCC to=---
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=8
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: type=EXACT, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=9
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: type=EXACT, paddingLeft=0, paddingRight=0
+:: ref =GGGAGGAAGGGCAAGGGCGGCCGCGGGCACTGGGTCCAGCCCTGCCTCAG
+:: read=GGGAGGAAGGGCAAGGGCGGCCGCGGGCACTGGGTCCAGCCCTGCCTCAG
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=10
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=60
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+:: read=GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+:: read=GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:G:01  01:A:02  02:G:03  03:T:04  04:C:05  05:C:06  06:T:07  07:G:08  08:G:09  09:C:10  10:C:11  11:C:12  12:C:13  13:A:14  14:C:15  15:C:16  16:C:17  17:T:18  18:G:19  19:T:20  20:G:21  21:C:22  22:T:23  23:T:24  24:C:25  25:C:26  26:C:27  27:C:28  28:T:29  29:C:30  30:C:31  31:G:32  32:C:33  33:C:34  34:T:35  35:G:36  36:C:37  37:T:38  38:G:39  39:C:40  40:A:41  41:C:42  42:A:43  43:G:44  44:G:45  45:C:46  46:G:47  47:C:48  48:C:49  49:C:50  
+read with positions
+00:G:01  01:A:02  02:G:03  03:T:04  04:C:05  05:C:06  06:T:07  07:G:08  08:G:09  09:C:10  10:C:11  11:C:12  12:C:13  13:A:14  14:C:15  15:C:16  16:C:17  17:T:18  18:G:19  19:T:20  20:G:21  21:C:22  22:T:23  23:T:24  24:C:25  25:C:26  26:C:27  27:C:28  28:T:29  29:C:30  30:C:31  31:G:32  32:C:33  33:C:34  34:T:35  35:G:36  36:C:37  37:T:38  38:G:39  39:C:40  40:A:41  41:C:42  42:A:43  43:G:44  44:G:45  45:C:46  46:G:47  47:C:48  48:C:49  49:C:50  
+padding_left=0, padding_right=0
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=50.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=11
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=60
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=50.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=50
+gobyAlEntry_setTargetAlignedLength=50
+gobyAlEntry_setQueryLength=50
+:: length=50 query_al_len=50 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC
+:: read=GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC
+:: read=GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC
+:: Reverse complemented length=50.
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+:: read=GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC
+::  pos=12345678901234567890123456789012345678901234567890
+::   ri=09876543210987654321098765432109876543210987654321
+ref with positions
+00:G:01  01:A:02  02:G:03  03:T:04  04:C:05  05:C:06  06:T:07  07:G:08  08:G:09  09:C:10  10:C:11  11:C:12  12:C:13  13:A:14  14:C:15  15:C:16  16:C:17  17:T:18  18:G:19  19:T:20  20:G:21  21:C:22  22:T:23  23:T:24  24:C:25  25:C:26  26:C:27  27:C:28  28:T:29  29:C:30  30:C:31  31:G:32  32:C:33  33:C:34  34:T:35  35:G:36  36:C:37  37:T:38  38:G:39  39:C:40  40:A:41  41:C:42  42:A:43  43:G:44  44:G:45  45:C:46  46:G:47  47:C:48  48:C:49  49:C:50  
+read with positions
+00:G:50  01:A:49  02:G:48  03:T:47  04:C:46  05:C:45  06:T:44  07:G:43  08:G:42  09:C:41  10:C:40  11:C:39  12:C:38  13:A:37  14:C:36  15:C:35  16:C:34  17:T:33  18:G:32  19:T:31  20:G:30  21:C:29  22:T:28  23:T:27  24:C:26  25:C:25  26:C:24  27:C:23  28:T:22  29:C:21  30:C:20  31:G:19  32:C:18  33:C:17  34:T:16  35:G:15  36:C:14  37:T:13  38:G:12  39:C:11  40:A:10  41:C:09  42:A:08  43:G:07  44:G:06  45:C:05  46:G:04  47:C:03  48:C:02  49:C:01  
+padding_left=0, padding_right=0
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=50.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=12
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=1
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=1
+gobyAlEntry_setScore=48.000000
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=49
+gobyAlEntry_setTargetAlignedLength=49
+gobyAlEntry_setQueryLength=50
+:: length=49 query_al_len=49 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =cTGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=SUB, paddingLeft=1, paddingRight=0
+:: ref =_TGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=_TGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=01234567890123456789012345678901234567890123456789
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:T:01  02:G:02  03:A:03  04:G:04  05:G:05  06:C:06  07:A:07  08:G:08  09:G:09  10:G:10  11:C:11  12:T:12  13:G:13  14:G:14  15:A:15  16:C:16  17:C:17  18:C:18  19:a:19  20:G:20  21:T:21  22:G:22  23:C:23  24:C:24  25:C:25  26:G:26  27:C:27  28:G:28  29:G:29  30:C:30  31:C:31  32:G:32  33:C:33  34:C:34  35:C:35  36:T:36  37:T:37  38:G:38  39:C:39  40:C:40  41:C:41  42:T:42  43:T:43  44:C:44  45:C:45  46:T:46  47:C:47  48:C:48  49:C:49  
+read with positions
+00:_:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:G:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=1, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=20 refPosition=19 ref=A read=G hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=20 sv->position=19 from=A to=G
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setScore=48.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=13
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=2
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=2
+gobyAlEntry_setScore=48.000000
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=48
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =ctGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=TERMINAL, paddingLeft=2, paddingRight=0
+:: ref =__GAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=__GAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=00123456789012345678901234567890123456789012345678
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:_:00  02:G:01  03:A:02  04:G:03  05:G:04  06:C:05  07:A:06  08:G:07  09:G:08  10:G:09  11:C:10  12:T:11  13:G:12  14:G:13  15:A:14  16:C:15  17:C:16  18:C:17  19:a:18  20:G:19  21:T:20  22:G:21  23:C:22  24:C:23  25:C:24  26:G:25  27:C:26  28:G:27  29:G:28  30:C:29  31:C:30  32:G:31  33:C:32  34:C:33  35:C:34  36:T:35  37:T:36  38:G:37  39:C:38  40:C:39  41:C:40  42:T:41  43:T:42  44:C:43  45:C:44  46:T:45  47:C:46  48:C:47  49:C:48  
+read with positions
+00:_:01  01:_:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:G:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=2, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=20 refPosition=18 ref=A read=G hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=20 sv->position=18 from=A to=G
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=14
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=5
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=5
+gobyAlEntry_setScore=48.000000
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=45
+gobyAlEntry_setTargetAlignedLength=45
+gobyAlEntry_setQueryLength=50
+:: length=45 query_al_len=45 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =ctgAgGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=AAAAAGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=TERMINAL, paddingLeft=5, paddingRight=0
+:: ref =_____GCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=_____GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=00000123456789012345678901234567890123456789012345
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:_:00  02:_:00  03:_:00  04:_:00  05:G:01  06:C:02  07:A:03  08:G:04  09:G:05  10:G:06  11:C:07  12:T:08  13:G:09  14:G:10  15:A:11  16:C:12  17:C:13  18:C:14  19:a:15  20:G:16  21:T:17  22:G:18  23:C:19  24:C:20  25:C:21  26:G:22  27:C:23  28:G:24  29:G:25  30:C:26  31:C:27  32:G:28  33:C:29  34:C:30  35:C:31  36:T:32  37:T:33  38:G:34  39:C:35  40:C:36  41:C:37  42:T:38  43:T:39  44:C:40  45:C:41  46:T:42  47:C:43  48:C:44  49:C:45  
+read with positions
+00:_:01  01:_:02  02:_:03  03:_:04  04:_:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:G:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=5, padding_right=0
+gobyAlEntry_addSequenceVariation readIndex=20 refPosition=15 ref=A read=G hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=20 sv->position=15 from=A to=G
+gobyAlEntry_setNumberOfMismatches=1
+gobyAlEntry_setScore=44.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=15
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=2
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=2
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=48
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CtGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=SUB, paddingLeft=2, paddingRight=0
+:: ref =__GAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=__GAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=00123456789012345678901234567890123456789012345678
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:_:00  02:G:01  03:A:02  04:G:03  05:G:04  06:C:05  07:A:06  08:G:07  09:G:08  10:G:09  11:C:10  12:T:11  13:G:12  14:G:13  15:A:14  16:C:15  17:C:16  18:C:17  19:A:18  20:G:19  21:T:20  22:G:21  23:C:22  24:C:23  25:C:24  26:G:25  27:C:26  28:G:27  29:G:28  30:C:29  31:C:30  32:G:31  33:C:32  34:C:33  35:C:34  36:T:35  37:T:36  38:G:37  39:C:38  40:C:39  41:C:40  42:T:41  43:T:42  44:C:43  45:C:44  46:T:45  47:C:46  48:C:47  49:C:48  
+read with positions
+00:_:01  01:_:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=2, padding_right=0
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=48.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=16
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=3
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=3
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=47
+gobyAlEntry_setTargetAlignedLength=47
+gobyAlEntry_setQueryLength=50
+:: length=47 query_al_len=47 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CtgAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=CAAAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=TERMINAL, paddingLeft=3, paddingRight=0
+:: ref =___AGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=___AGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=00012345678901234567890123456789012345678901234567
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:_:00  02:_:00  03:A:01  04:G:02  05:G:03  06:C:04  07:A:05  08:G:06  09:G:07  10:G:08  11:C:09  12:T:10  13:G:11  14:G:12  15:A:13  16:C:14  17:C:15  18:C:16  19:A:17  20:G:18  21:T:19  22:G:20  23:C:21  24:C:22  25:C:23  26:G:24  27:C:25  28:G:26  29:G:27  30:C:28  31:C:29  32:G:30  33:C:31  34:C:32  35:C:33  36:T:34  37:T:35  38:G:36  39:C:37  40:C:38  41:C:39  42:T:40  43:T:41  44:C:42  45:C:43  46:T:44  47:C:45  48:C:46  49:C:47  
+read with positions
+00:_:01  01:_:02  02:_:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=3, padding_right=0
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=17
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=6
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=6
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=44
+gobyAlEntry_setTargetAlignedLength=44
+gobyAlEntry_setQueryLength=50
+:: length=44 query_al_len=44 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CtgAggCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=CAAAAACAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: type=TERMINAL, paddingLeft=6, paddingRight=0
+:: ref =______CAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+:: read=______CAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC
+::  pos=00000012345678901234567890123456789012345678901234
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:_:00  02:_:00  03:_:00  04:_:00  05:_:00  06:C:01  07:A:02  08:G:03  09:G:04  10:G:05  11:C:06  12:T:07  13:G:08  14:G:09  15:A:10  16:C:11  17:C:12  18:C:13  19:A:14  20:G:15  21:T:16  22:G:17  23:C:18  24:C:19  25:C:20  26:G:21  27:C:22  28:G:23  29:G:24  30:C:25  31:C:26  32:G:27  33:C:28  34:C:29  35:C:30  36:T:31  37:T:32  38:G:33  39:C:34  40:C:35  41:C:36  42:T:37  43:T:38  44:C:39  45:C:40  46:T:41  47:C:42  48:C:43  49:C:44  
+read with positions
+00:_:01  01:_:02  02:_:03  03:_:04  04:_:05  05:_:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:C:50  
+padding_left=6, padding_right=0
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=44.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=18
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=49
+gobyAlEntry_setTargetAlignedLength=49
+gobyAlEntry_setQueryLength=50
+:: length=49 query_al_len=49 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCc
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCA
+:: type=SUB, paddingLeft=0, paddingRight=1
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCC_
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCC_
+::  pos=12345678901234567890123456789012345678901234567899
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:_:49  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:C:49  49:_:50  
+padding_left=0, padding_right=1
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=49.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=19
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=48
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCcc
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCAA
+:: type=TERMINAL, paddingLeft=0, paddingRight=2
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTC__
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTC__
+::  pos=12345678901234567890123456789012345678901234567888
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:_:48  49:_:48  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:_:49  49:_:50  
+padding_left=0, padding_right=2
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=48.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=20
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=45
+gobyAlEntry_setTargetAlignedLength=45
+gobyAlEntry_setQueryLength=50
+:: length=45 query_al_len=45 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCctccc
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCAAAAA
+:: type=TERMINAL, paddingLeft=0, paddingRight=5
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTC_____
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTC_____
+::  pos=12345678901234567890123456789012345678901234555555
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:_:45  46:_:45  47:_:45  48:_:45  49:_:45  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:_:46  46:_:47  47:_:48  48:_:49  49:_:50  
+padding_left=0, padding_right=5
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=45.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=21
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=48
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=0
+:: type=SUB, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCcC
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCAC
+:: type=SUB, paddingLeft=0, paddingRight=2
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTC__
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTC__
+::  pos=12345678901234567890123456789012345678901234567888
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:_:48  49:_:48  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:C:48  48:_:49  49:_:50  
+padding_left=0, padding_right=2
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=48.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=22
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=47
+gobyAlEntry_setTargetAlignedLength=47
+gobyAlEntry_setQueryLength=50
+:: length=47 query_al_len=47 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTccC
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTAAC
+:: type=TERMINAL, paddingLeft=0, paddingRight=3
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCT___
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCT___
+::  pos=12345678901234567890123456789012345678901234567777
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:_:47  48:_:47  49:_:47  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:C:45  45:C:46  46:T:47  47:_:48  48:_:49  49:_:50  
+padding_left=0, padding_right=3
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=47.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=23
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=0
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=0
+gobyAlEntry_setScore=49.000000
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setNumberOfIndels=0
+gobyAlEntry_setQueryAlignedLength=44
+gobyAlEntry_setTargetAlignedLength=44
+gobyAlEntry_setQueryLength=50
+:: length=44 query_al_len=44 nindels=0
+:: type=TERMINAL, paddingLeft=0, paddingRight=0
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTcctccC
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTAAAAAC
+:: type=TERMINAL, paddingLeft=0, paddingRight=6
+:: ref =CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTT______
+:: read=CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTT______
+::  pos=12345678901234567890123456789012345678901234444444
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:_:44  45:_:44  46:_:44  47:_:44  48:_:44  49:_:44  
+read with positions
+00:C:01  01:T:02  02:G:03  03:A:04  04:G:05  05:G:06  06:C:07  07:A:08  08:G:09  09:G:10  10:G:11  11:C:12  12:T:13  13:G:14  14:G:15  15:A:16  16:C:17  17:C:18  18:C:19  19:A:20  20:G:21  21:T:22  22:G:23  23:C:24  24:C:25  25:C:26  26:G:27  27:C:28  28:G:29  29:G:30  30:C:31  31:C:32  32:G:33  33:C:34  34:C:35  35:C:36  36:T:37  37:T:38  38:G:39  39:C:40  40:C:41  41:C:42  42:T:43  43:T:44  44:_:45  45:_:46  46:_:47  47:_:48  48:_:49  49:_:50  
+padding_left=0, padding_right=6
+gobyAlEntry_setNumberOfMismatches=0
+gobyAlEntry_setScore=44.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=24
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=31
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=1
+gobyAlEntry_setScore=42.000000
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=45
+gobyAlEntry_setTargetAlignedLength=48
+gobyAlEntry_setQueryLength=47
+:: length=45 query_al_len=45 nindels=3
+:: type=DELETION, paddingLeft=0, paddingRight=0
+:: ref =cCGCCCTTGCccTTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGt
+:: read=ACGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGA
+:: type=DELETION, paddingLeft=1, paddingRight=1
+:: ref =_CGCCCTTGCccTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTG_
+:: read=_CGCCCTTGCAATTCCTCCCTTCCCTTTCGG---CCTGGCCCCACCCTG_
+::  pos=01234567890123456789012345678901234567890123456788
+::   ri=12345678901234567890123456789011112345678901234567
+ref with positions
+00:_:00  01:C:01  02:G:02  03:C:03  04:C:04  05:C:05  06:T:06  07:T:07  08:G:08  09:C:09  10:c:10  11:c:11  12:T:12  13:T:13  14:C:14  15:C:15  16:T:16  17:C:17  18:C:18  19:C:19  20:T:20  21:T:21  22:C:22  23:C:23  24:C:24  25:T:25  26:T:26  27:T:27  28:C:28  29:G:29  30:G:30  31:A:31  32:G:32  33:T:33  34:C:34  35:C:35  36:T:36  37:G:37  38:G:38  39:C:39  40:C:40  41:C:41  42:C:42  43:A:43  44:C:44  45:C:45  46:C:46  47:T:47  48:G:48  49:_:48  
+read with positions
+00:_:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:A:11  11:A:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:T:27  27:T:28  28:C:29  29:G:30  30:G:31  31:-:31  32:-:31  33:-:31  34:C:32  35:C:33  36:T:34  37:G:35  38:G:36  39:C:37  40:C:38  41:C:39  42:C:40  43:A:41  44:C:42  45:C:43  46:C:44  47:T:45  48:G:46  49:_:47  
+padding_left=1, padding_right=1
+gobyAlEntry_addSequenceVariation readIndex=11 refPosition=10 ref=C read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=11 sv->position=10 from=C to=A
+gobyAlEntry_addSequenceVariation readIndex=12 refPosition=11 ref=C read=A hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=11 sv->position=10 from=CC to=AA
+gobyAlEntry_addSequenceVariation readIndex=31 refPosition=31 ref=A read=- hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=31 sv->position=31 from=A to=-
+gobyAlEntry_addSequenceVariation readIndex=31 refPosition=32 ref=G read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=31 sv->position=31 from=AG to=--
+gobyAlEntry_addSequenceVariation readIndex=31 refPosition=33 ref=T read=- hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=31 sv->position=31 from=AGT to=---
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setScore=43.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=25
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=31
+gobyAlEntry_setMatchingReverseStrand=0
+gobyAlEntry_setQueryPosition=1
+gobyAlEntry_setScore=45.000000
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=45
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=3
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =cCGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCc
+:: read=ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA
+:: type=INSERTION, paddingLeft=1, paddingRight=1
+:: ref =_CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC_
+:: read=_CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC_
+::  pos=01234567890123456789012345555678901234567890123455
+::   ri=12345678901234567890123456789012345678901234567890
+ref with positions
+00:_:00  01:C:01  02:G:02  03:C:03  04:C:04  05:C:05  06:T:06  07:T:07  08:G:08  09:C:09  10:c:10  11:c:11  12:T:12  13:T:13  14:C:14  15:C:15  16:T:16  17:C:17  18:C:18  19:C:19  20:T:20  21:T:21  22:C:22  23:C:23  24:C:24  25:T:25  26:-:25  27:-:25  28:-:25  29:T:26  30:T:27  31:C:28  32:G:29  33:G:30  34:A:31  35:G:32  36:T:33  37:C:34  38:C:35  39:T:36  40:G:37  41:G:38  42:C:39  43:C:40  44:C:41  45:C:42  46:A:43  47:C:44  48:C:45  49:_:45  
+read with positions
+00:_:01  01:C:02  02:G:03  03:C:04  04:C:05  05:C:06  06:T:07  07:T:08  08:G:09  09:C:10  10:A:11  11:A:12  12:T:13  13:T:14  14:C:15  15:C:16  16:T:17  17:C:18  18:C:19  19:C:20  20:T:21  21:T:22  22:C:23  23:C:24  24:C:25  25:T:26  26:A:27  27:T:28  28:C:29  29:T:30  30:T:31  31:C:32  32:G:33  33:G:34  34:A:35  35:G:36  36:T:37  37:C:38  38:C:39  39:T:40  40:G:41  41:G:42  42:C:43  43:C:44  44:C:45  45:C:46  46:A:47  47:C:48  48:C:49  49:_:50  
+padding_left=1, padding_right=1
+gobyAlEntry_addSequenceVariation readIndex=11 refPosition=10 ref=C read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=11 sv->position=10 from=C to=A
+gobyAlEntry_addSequenceVariation readIndex=12 refPosition=11 ref=C read=A hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=11 sv->position=10 from=CC to=AA
+gobyAlEntry_addSequenceVariation readIndex=27 refPosition=25 ref=- read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=27 sv->position=25 from=- to=A
+gobyAlEntry_addSequenceVariation readIndex=28 refPosition=25 ref=- read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=25 from=-- to=AT
+gobyAlEntry_addSequenceVariation readIndex=29 refPosition=25 ref=- read=C hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=27 sv->position=25 from=--- to=ATC
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setScore=43.000000
+---------------------------------------
+gobyAlignments_appendEntry
+gobyAlEntry_setMultiplicity=1
+gobyAlEntry_setQueryIndex=26
+gobyAlEntry_setTargetIndex=0
+gobyAlEntry_setPosition=31
+gobyAlEntry_setMatchingReverseStrand=1
+gobyAlEntry_setQueryPosition=1
+gobyAlEntry_setScore=45.000000
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setNumberOfIndels=3
+gobyAlEntry_setQueryAlignedLength=48
+gobyAlEntry_setTargetAlignedLength=45
+gobyAlEntry_setQueryLength=50
+:: length=48 query_al_len=48 nindels=3
+:: type=INSERTION, paddingLeft=0, paddingRight=0
+:: ref =gGGTGGGGCCAGGACTCCGAA---AGGGAAGGGAGGAAggGCAAGGGCGg
+:: read=TGGTGGGGCCAGGACTCCGAAGATAGGGAAGGGAGGAATTGCAAGGGCGT
+:: type=INSERTION, paddingLeft=1, paddingRight=1
+:: ref =_GGTGGGGCCAGGACTCCGAA---AGGGAAGGGAGGAAggGCAAGGGCG_
+:: read=_GGTGGGGCCAGGACTCCGAAGATAGGGAAGGGAGGAATTGCAAGGGCG_
+:: Reverse complemented length=48.
+:: type=INSERTION, paddingLeft=1, paddingRight=1
+:: ref =_CGCCCTTGCccTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACC_
+:: read=_CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC_
+::  pos=01234567890123456789012345555678901234567890123455
+::   ri=09876543210987654321098765432109876543210987654321
+ref with positions
+00:_:00  01:C:01  02:G:02  03:C:03  04:C:04  05:C:05  06:T:06  07:T:07  08:G:08  09:C:09  10:c:10  11:c:11  12:T:12  13:T:13  14:C:14  15:C:15  16:T:16  17:C:17  18:C:18  19:C:19  20:T:20  21:T:21  22:C:22  23:C:23  24:C:24  25:T:25  26:-:25  27:-:25  28:-:25  29:T:26  30:T:27  31:C:28  32:G:29  33:G:30  34:A:31  35:G:32  36:T:33  37:C:34  38:C:35  39:T:36  40:G:37  41:G:38  42:C:39  43:C:40  44:C:41  45:C:42  46:A:43  47:C:44  48:C:45  49:_:45  
+read with positions
+00:_:50  01:C:49  02:G:48  03:C:47  04:C:46  05:C:45  06:T:44  07:T:43  08:G:42  09:C:41  10:A:40  11:A:39  12:T:38  13:T:37  14:C:36  15:C:35  16:T:34  17:C:33  18:C:32  19:C:31  20:T:30  21:T:29  22:C:28  23:C:27  24:C:26  25:T:25  26:A:24  27:T:23  28:C:22  29:T:21  30:T:20  31:C:19  32:G:18  33:G:17  34:A:16  35:G:15  36:T:14  37:C:13  38:C:12  39:T:11  40:G:10  41:G:09  42:C:08  43:C:07  44:C:06  45:C:05  46:A:04  47:C:03  48:C:02  49:_:01  
+padding_left=1, padding_right=1
+gobyAlEntry_addSequenceVariation readIndex=40 refPosition=10 ref=C read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=40 sv->position=10 from=C to=A
+gobyAlEntry_addSequenceVariation readIndex=39 refPosition=11 ref=C read=A hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=40 sv->position=10 from=CC to=AA
+gobyAlEntry_addSequenceVariation readIndex=24 refPosition=25 ref=- read=A hasQualChar=false
+... startNewSequenceVariation
+... sv->read_index=24 sv->position=25 from=- to=A
+gobyAlEntry_addSequenceVariation readIndex=23 refPosition=25 ref=- read=T hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=24 sv->position=25 from=-- to=AT
+gobyAlEntry_addSequenceVariation readIndex=22 refPosition=25 ref=- read=C hasQualChar=false
+... appending to previous seqVar
+... sv->read_index=24 sv->position=25 from=--- to=ATC
+gobyAlEntry_setNumberOfMismatches=2
+gobyAlEntry_setScore=43.000000
+Processed 27 queries in 0.01 seconds (2700.00 queries/sec)
+gobyAlignments_finished

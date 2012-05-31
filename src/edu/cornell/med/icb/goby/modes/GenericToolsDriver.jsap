@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>mode</id>
+            <longFlag>mode</longFlag>
+            <shortFlag>m</shortFlag>
+            <required>true</required>
+            <help>Specifies which goby mode to run. Must be one of:
+            [MODES_LIST] </help>
+        </flaggedOption>
+        <switch>
+            <id>help</id>
+            <shortFlag>h</shortFlag>
+            <longFlag>help</longFlag>
+            <help>Displays usage help information.</help>
+        </switch>
+        <switch>
+            <id>help-dynamic</id>
+            <shortFlag>H</shortFlag>
+            <longFlag>x-help</longFlag>
+            <help>Displays help for dynamic options.</help>
+        </switch>
+        <switch>
+            <id>htmlhelp</id>
+            <longFlag>htmlhelp</longFlag>
+            <help>Displays mode usage information in html table format.</help>
+        </switch>
+        <switch>
+            <id>wikihelp</id>
+            <longFlag>wikihelp</longFlag>
+            <help>Displays mode usage information in wikimedia table format.</help>
+        </switch>
+        <flaggedOption>
+            <id>dynamic-options</id>
+            <shortFlag>x</shortFlag>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (short class name without package), key identifies the option to change and value is the new value for the option. </help>
+        </flaggedOption>
+    </parameters>
+</jsap>
