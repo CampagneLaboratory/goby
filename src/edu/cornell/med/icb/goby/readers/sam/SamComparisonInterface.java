@@ -94,16 +94,16 @@ public interface SamComparisonInterface {
     public void setCanonicalMdzForComparison(final boolean canonicalMdzForComparison);
 
     /**
-     * Get if sam flags should be checked.
-     * @return if ...
+     * Get if read names were preserved and thus we can use them to aid with comparison.
+     * @return if...
      */
-    public boolean isCheckSamFlags();
+    public boolean isReadNamesPreserved();
 
     /**
-     * Set if sam flags should be checked.
-     * @param checkSamFlags if ...
+     * Set if read names were preserved and thus we can use them to aid with comparison.
+     * @param readNamesPreserved if...
      */
-    public void setCheckSamFlags(final boolean checkSamFlags);
+    public void setReadNamesPreserved(final boolean readNamesPreserved);
 
     /**
      * Return how many reads have been compared since reset() was last called.

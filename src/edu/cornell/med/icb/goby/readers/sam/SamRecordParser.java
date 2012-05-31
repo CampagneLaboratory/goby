@@ -136,7 +136,6 @@ public class SamRecordParser implements Resettable {
                 allReadQuals.add(qualityEncoding.asciiEncodingToPhredQualityScore(readQualsString.charAt(i)));
             }
         }
-
         if (debug && LOG.isDebugEnabled()) {
             debugMessage.length(0).append('\n');
             debugMessage.append("------------------------------------\n");
@@ -163,6 +162,7 @@ public class SamRecordParser implements Resettable {
         } else {
             gobySamRecord.hasMate = false;
         }
+        gobySamRecord.readName.append(samRecord.getReadName());
         gobySamRecord.pairFlags = samRecord.getFlags();
         gobySamRecord.readNum = numRecordsProcessed + numRecordsSkipped;
         gobySamRecord.reverseStrand = reverseStrand;

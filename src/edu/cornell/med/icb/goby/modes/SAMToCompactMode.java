@@ -91,6 +91,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     private boolean preserveAllTags;
     private boolean preserveAllMappedQuals;
     private boolean storeReadOrigin;
+    private boolean preserveReadName;
 
     @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(SAMToCompactMode.class,
@@ -150,6 +151,24 @@ public class SAMToCompactMode extends AbstractGobyMode {
     }
 
     /**
+     * Get if the SAM/BAM readName should be preserved into the compact-alignment file.
+     * Generally this is not recommended but for testing this can be useful.
+     * @return if..
+     */
+    public boolean isPreserveReadName() {
+        return preserveReadName;
+    }
+
+    /**
+     * Set if the SAM/BAM readName should be preserved into the compact-alignment file.
+     * Generally this is not recommended but for testing this can be useful.
+     * @param preserveReadName if..
+     */
+    public void setPreserveReadName(final boolean preserveReadName) {
+        this.preserveReadName = preserveReadName;
+    }
+
+    /**
      * Configure.
      *
      * @param args command line arguments
@@ -170,6 +189,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
         storeReadOrigin = !doc().getBoolean("ignore-read-origin");
+        preserveReadName = jsapResult.getBoolean("preserve-read-name");
         System.out.printf("Store read origin: %b%n", storeReadOrigin);
         final String genomeFilename = jsapResult.getString("input-genome");
         if (genomeFilename != null) {
@@ -400,6 +420,9 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 if (multiplicity > 1) {
                     currentEntry.setMultiplicity(multiplicity);
                 }
+                if (preserveReadName) {
+                    currentEntry.setReadName(gobySamRecord.getReadName().toString());
+                }
                 currentEntry.setQueryIndex(queryIndex);
                 currentEntry.setTargetIndex(targetIndex);
                 currentEntry.setPosition(gobySamSegment.getPosition());     // samhelper returns zero-based positions compatible with Goby.
@@ -431,22 +454,22 @@ public class SAMToCompactMode extends AbstractGobyMode {
                     }
                 }
 
-                if (preserveAllMappedQuals) {
-
+                if (preserveAllMappedQuals && segmentIndex == 0) {
                     final byte[] sourceQualAsBytes = gobySamRecord.getReadQualitiesAsBytes();
                     // we only store the full quality score on the first entry with a given query index:
-                    if (sourceQualAsBytes != null && segmentIndex == 0) {
+                    if (sourceQualAsBytes != null) {
                         currentEntry.setReadQualityScores(ByteString.copyFrom(sourceQualAsBytes));
                     }
                 }
                 addSamAttributes(samRecord, currentEntry);
 
+                // Always store the sam flags when converting from sam/bam
+                currentEntry.setPairFlags(samRecord.getFlags());
                 if (hasPaired) {
-                    currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
                     if (inferredInsertSize != 0) {   // SAM specification indicates that zero means no insert size.
-                    currentEntry.setInsertSize(inferredInsertSize);
-                }
+                        currentEntry.setInsertSize(inferredInsertSize);
+                    }
                 }
 
                 for (final GobyQuickSeqvar variation : gobySamSegment.getSequenceVariations()) {

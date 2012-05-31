@@ -587,17 +587,33 @@ public class TestSamRecordParser {
      *
      * @throws IOException error
      */
-   //  @Test @Test Disable for now.
+    @Test
     public void testRoundTripEJOYFirst500() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
         rtc.inputGenomeFilename = findHG19();
         rtc.sourceBamFilename = "test-data/splicedsamhelper/EJOYQAZ-first-500.sam";
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500.sam");
+        rtc.sortGoby = true;
+        rtc.compareWithGoby = false;
         testRoundTripAny(rtc);
+    }
+
+    /**
+     * The first 500 alignments of EJOY. Round trip test. Don't keep quality from source.
+     *
+     * @throws IOException error
+     */
+    @Test
+    public void testRoundTripEJOYFirst500NoKeepQual() throws IOException {
+        final RoundTripConfig rtc = new RoundTripConfig();
+        rtc.inputGenomeFilename = findHG19();
+        rtc.sourceBamFilename = "test-data/splicedsamhelper/EJOYQAZ-first-500.sam";
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500.sam");
+        rtc.sortGoby = true;
+        rtc.compareWithGoby = false;
         rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-        rtc.keepSoftClips = false;
         testRoundTripAny(rtc);
     }
 
@@ -606,7 +622,7 @@ public class TestSamRecordParser {
      *
      * @throws IOException error
      */
-  //   @Test @Test Disable for now.
+    @Test
     public void testRoundTripEJOYFirst1() throws IOException {
         final RoundTripConfig rtc = new RoundTripConfig();
         rtc.inputGenomeFilename = findHG19();
@@ -635,7 +651,6 @@ public class TestSamRecordParser {
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
         rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000.sam");
         rtc.keepQualityScores = false;
-        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -653,7 +668,6 @@ public class TestSamRecordParser {
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
         rtc.keepQualityScores = false;
-        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -671,7 +685,6 @@ public class TestSamRecordParser {
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
         rtc.keepQualityScores = false;
-        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -689,7 +702,6 @@ public class TestSamRecordParser {
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
         rtc.keepQualityScores = false;
-        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -707,7 +719,6 @@ public class TestSamRecordParser {
         rtc.convertBamToGoby = false;
         rtc.convertGobyToBam = false;
         rtc.keepQualityScores = false;
-        rtc.checkSamFlags = false;
         testRoundTripAny(rtc);
     }
 
@@ -763,8 +774,8 @@ public class TestSamRecordParser {
         rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
         rtc.destGobyBasename = "/tmp/HENGLIT-to-goby";
         rtc.destBamFilename = "/tmp/HENGLIT-from-goby.bam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
+        //rtc.convertBamToGoby = false;
+        //rtc.convertGobyToBam = false;
         rtc.canonicalMdzForComparison = false;
         testRoundTripAny(rtc);
     }
@@ -782,8 +793,8 @@ public class TestSamRecordParser {
         rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
         rtc.destGobyBasename = "/tmp/HENGLIT-to-goby-no-qual";
         rtc.destBamFilename = "/tmp/HENGLIT-from-goby-no-qual.bam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
+        //rtc.convertBamToGoby = false;
+        //rtc.convertGobyToBam = false;
         rtc.keepQualityScores = false;
         rtc.canonicalMdzForComparison = false;
         testRoundTripAny(rtc);
@@ -803,8 +814,16 @@ public class TestSamRecordParser {
         boolean keepSoftClips = true;
         boolean stopAtOneFailure = false;
         boolean canonicalMdzForComparison = true;
-        boolean checkSamFlags = true;
-        public boolean sortGoby = false;
+        /* If the compact-alignment should be sorted. */
+        boolean sortGoby = false;
+        /* If read names should be written to the compact-alignment file */
+        boolean preserveReadNames = true;
+        /* Perform the record comparisons. */
+        boolean compare = true;
+        /* To dump differences in read names, positions. */
+        boolean dumpReadNames = false;
+        /* For spliced reads, this should be set to false. */
+        boolean compareWithGoby = true;
     }
 
     public void testRoundTripAny(final RoundTripConfig rtc) throws IOException {
@@ -845,6 +864,7 @@ public class TestSamRecordParser {
         if (rtc.convertBamToGoby) {
             LOG.info("Converting bam to compact alignment");
             final SAMToCompactMode importer = new SAMToCompactMode();
+            importer.setPreserveReadName(rtc.preserveReadNames);
             importer.setInputFile(rtc.sourceBamFilename);
             importer.setPreserveSoftClips(rtc.keepSoftClips);
             importer.setPreserveAllTags(true);
@@ -852,15 +872,21 @@ public class TestSamRecordParser {
             importer.setGenome(genome);
             importer.setPreserveReadQualityScores(rtc.keepQualityScores);
             importer.execute();
-        }
-        if (rtc.sortGoby) {
-            LOG.info("Sorting Goby alignment");
-            SortMode sorter = new SortMode();
-            sorter.setInput(rtc.destGobyBasename);
-            sorter.setOutput(rtc.destGobyBasename + "-sorted");
-            sorter.execute();
+            if (rtc.sortGoby) {
+                LOG.info("Sorting Goby alignment");
+                SortMode sorter = new SortMode();
+                sorter.setInput(rtc.destGobyBasename);
+                sorter.setOutput(rtc.destGobyBasename + "-sorted");
+                sorter.execute();
 
-            rtc.destGobyBasename = rtc.destGobyBasename + "-sorted";
+                rtc.destGobyBasename += "-sorted";
+            }
+        } else {
+            // We didn't just create the goby file, it was created before
+            if (rtc.sortGoby) {
+                // But it was also sorted before, so change the basename
+                rtc.destGobyBasename += "-sorted";
+            }
         }
         if (rtc.convertGobyToBam) {
             LOG.info("Converting compact alignment to bam");
@@ -881,7 +907,7 @@ public class TestSamRecordParser {
         final SAMRecordIterator sourceIterator = sourceParser.iterator();
         final SAMRecordIterator destIterator = destParser.iterator();
         AlignmentReaderImpl gobyReader = null;
-        if (rtc.destGobyBasename != null) {
+        if (rtc.compareWithGoby && rtc.destGobyBasename != null) {
             gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
         }
         final ProgressLogger progress = new ProgressLogger(LOG);
@@ -890,25 +916,66 @@ public class TestSamRecordParser {
         progress.start();
         samComparison.setMappedQualitiesPreserved(rtc.keepQualityScores);
         samComparison.setSoftClipsPreserved(rtc.keepSoftClips);
+        samComparison.setReadNamesPreserved(rtc.preserveReadNames);
         samComparison.setCheckMate(false);
         samComparison.setCanonicalMdzForComparison(rtc.canonicalMdzForComparison);
-        samComparison.setCheckSamFlags(rtc.checkSamFlags);
         while (sourceIterator.hasNext()) {
             final SAMRecord expected = sourceIterator.next();
             if (expected.getReadUnmappedFlag()) {
                 // We don't store unmapped reads, so skip this source record
                 continue;
             }
-            assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
-            final SAMRecord actual = destIterator.next();
+
+            SAMRecord actual;
+            while (true) {
+                assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
+                actual = destIterator.next();
+                if (!actual.getReadUnmappedFlag()) {
+                    break;
+                }
+            }
+
             Alignments.AlignmentEntry gobyActual = null;
             if (gobyReader != null) {
                 assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
                 gobyActual = gobyReader.next();
             }
-            final int compared = samComparison.compare(expected, actual, gobyActual);
-            if (rtc.stopAtOneFailure && compared > 0) {
-                fail("Comparison failed");
+
+
+            if (rtc.compare) {
+                final int compared = samComparison.compare(expected, actual, gobyActual);
+                if (rtc.stopAtOneFailure && compared > 0) {
+                    fail("Comparison failed");
+                }
+            }
+            if (rtc.dumpReadNames) {
+                boolean dumpReadNames = true;
+                /*
+                if (!expected.getReadName().equals(actual.getReadName())) {
+                    dumpReadNames = true;
+                }
+                */
+                if (expected.getAlignmentStart() != actual.getAlignmentStart()) {
+                    dumpReadNames = true;
+                }
+                if (gobyActual != null) {
+                    /*
+                    if (!expected.getReadName().equals(gobyActual.getReadName())) {
+                        dumpReadNames = true;
+                    }
+                    */
+                    if (expected.getAlignmentStart() != gobyActual.getPosition() + 1) {
+                        dumpReadNames = true;
+                    }
+                }
+                if (dumpReadNames) {
+                    System.out.println("------------------------------");
+                    System.out.println("e=" + expected.getReadName() + " / " + expected.getAlignmentStart());
+                    System.out.println("a=" + actual.getReadName() + " / " + actual.getAlignmentStart());
+                    if (gobyActual != null) {
+                        System.out.println("g=" + gobyActual.getReadName() + " / " + (gobyActual.getPosition() + 1));
+                    }
+                }
             }
             progress.lightUpdate();
         }
