@@ -532,7 +532,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
                 return;
             }
             if (debug) {
-                LOG.debug("Wrote qi=" + toExport.getQueryIndex());
+                LOG.debug("Wrote qi=" + toExport.getQueryIndex() + " fragment Index=" + toExport.getAlignmentEntry().getFragmentIndex());
             }
             final SAMRecord samRecord = samRecordFactory.createSAMRecord(samHeader);
 

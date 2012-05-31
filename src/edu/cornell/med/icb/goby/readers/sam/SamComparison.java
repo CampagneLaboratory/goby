@@ -43,7 +43,9 @@ public class SamComparison implements SamComparisonInterface {
     private boolean softClipsPreserved;
     private boolean checkMate;
     private boolean canonicalMdzForComparison;
-    private boolean checkSamFlags;
+    private boolean readNamesPreserved;
+
+    private int currentComparisonScore;
 
     /**
      * Running totals, etc.
@@ -51,6 +53,7 @@ public class SamComparison implements SamComparisonInterface {
     protected int readNum;
     protected int comparisonFailureCount;
     protected boolean outputFailedComparisons;
+    protected boolean countComparisonFailures;
 
     /**
      * State.
@@ -71,7 +74,6 @@ public class SamComparison implements SamComparisonInterface {
         checkMate = false;
         canonicalMdzForComparison = true;
         outputFailedComparisons = true;
-        checkSamFlags = true;
     }
 
     /**
@@ -83,6 +85,7 @@ public class SamComparison implements SamComparisonInterface {
     public void reset() {
         readNum = 0;
         comparisonFailureCount = 0;
+        countComparisonFailures = true;
     }
 
     /**
@@ -174,22 +177,6 @@ public class SamComparison implements SamComparisonInterface {
     }
 
     /**
-     * Get if sam flags should be checked.
-     * @return if ...
-     */
-    public boolean isCheckSamFlags() {
-        return checkSamFlags;
-    }
-
-    /**
-     * Set if sam flags should be checked.
-     * @param checkSamFlags if ...
-     */
-    public void setCheckSamFlags(final boolean checkSamFlags) {
-        this.checkSamFlags = checkSamFlags;
-    }
-
-    /**
      * Return how many reads have been compared since reset() was last called.
      * @return how many...
      */
@@ -230,40 +217,84 @@ public class SamComparison implements SamComparisonInterface {
     }
 
     /**
+     * Get if a failure should be counted.
+     * @return if...
+     */
+    public boolean isCountComparisonFailures() {
+        return countComparisonFailures;
+    }
+
+    /**
+     * Set if a failure should be counted.
+     * @return if...
+     */
+    public void setCountComparisonFailures(final boolean countComparisonFailures) {
+        this.countComparisonFailures = countComparisonFailures;
+    }
+
+    /**
+     * The comparison failure score of the last comparison.
+     * @return comparison failure score of the last comparison
+     */
+    public int getCurrentComparisonScore() {
+        return currentComparisonScore;
+    }
+
+    /**
+     * Get if read names were preserved and thus we can use them to aid with comparison.
+     * @return if...
+     */
+    @Override
+    public boolean isReadNamesPreserved() {
+        return readNamesPreserved;
+    }
+
+    /**
+     * Set if read names were preserved and thus we can use them to aid with comparison.
+     * @param readNamesPreserved if...
+     */
+    @Override
+    public void setReadNamesPreserved(final boolean readNamesPreserved) {
+        this.readNamesPreserved = readNamesPreserved;
+    }
+
+    /**
      * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
      * @param expectedSamRecord the expected sam record
      * @param actualSamRecord the actual sam record
      * @param gobyAlignment the actual goby alignment record
-     * @return the number of comparison failures. 0 means the records were found to be effectively the same.
+     * @return the comparison score, 0 means perfect-ish comparison.
      */
     @Override
     public int compare(final SAMRecord expectedSamRecord, final SAMRecord actualSamRecord,
                        final Alignments.AlignmentEntry gobyAlignment) {
+        currentComparisonScore = 0;
         if (!initialized) {
             initialized = true;
             reset();
         }
         comparisonFailures.clear();
-        compareField("Positions don't match", expectedSamRecord.getAlignmentStart(), actualSamRecord.getAlignmentStart());
-        compareField("Ref Index don't match", expectedSamRecord.getReferenceName(), expectedSamRecord.getReferenceName());
-        if (checkSamFlags) {
-            compareField("Flags don't match", expectedSamRecord.getFlags(), actualSamRecord.getFlags());
+        compareField("Positions don't match", expectedSamRecord.getAlignmentStart(), actualSamRecord.getAlignmentStart(), 2);
+        compareField("Ref Index don't match", expectedSamRecord.getReferenceName(), expectedSamRecord.getReferenceName(), 2);
+        if (readNamesPreserved) {
+            compareField("Read name doesn't match", expectedSamRecord.getReadName(), actualSamRecord.getReadName(), 2);
         }
-        compareField("Mapping quality doesn't match", expectedSamRecord.getMappingQuality(), actualSamRecord.getMappingQuality());
-        compareField("Read paired flag doesn't match", expectedSamRecord.getReadPairedFlag(), actualSamRecord.getReadPairedFlag());
-        compareField("Read length doesn't match", expectedSamRecord.getReadLength(), actualSamRecord.getReadLength());
+        compareField("Flags don't match", expectedSamRecord.getFlags(), actualSamRecord.getFlags(), 1);
+        compareField("Mapping quality doesn't match", expectedSamRecord.getMappingQuality(), actualSamRecord.getMappingQuality(), 2);
+        compareField("Read paired flag doesn't match", expectedSamRecord.getReadPairedFlag(), actualSamRecord.getReadPairedFlag(), 1);
+        compareField("Read length doesn't match", expectedSamRecord.getReadLength(), actualSamRecord.getReadLength(), 2);
         if (checkMate) {
             if (expectedSamRecord.getReadPairedFlag()) {
-                compareField("Read mate unmapped doesn't match", expectedSamRecord.getMateUnmappedFlag(), actualSamRecord.getMateUnmappedFlag());
+                compareField("Read mate unmapped doesn't match", expectedSamRecord.getMateUnmappedFlag(), actualSamRecord.getMateUnmappedFlag(), 1);
                 if (!expectedSamRecord.getMateUnmappedFlag()) {
-                    compareField("Mate alignment start doesn't match", expectedSamRecord.getMateAlignmentStart(), actualSamRecord.getMateAlignmentStart());
-                    compareField("Mate alignment index doesn't match", expectedSamRecord.getMateReferenceIndex(), actualSamRecord.getMateReferenceIndex());
-                    compareField("Inferred insert size doesn't match", expectedSamRecord.getInferredInsertSize(), actualSamRecord.getInferredInsertSize());
+                    compareField("Mate alignment start doesn't match", expectedSamRecord.getMateAlignmentStart(), actualSamRecord.getMateAlignmentStart(), 2);
+                    compareField("Mate alignment index doesn't match", expectedSamRecord.getMateReferenceIndex(), actualSamRecord.getMateReferenceIndex(), 2);
+                    compareField("Inferred insert size doesn't match", expectedSamRecord.getInferredInsertSize(), actualSamRecord.getInferredInsertSize(), 2);
                 }
             }
         }
-        compareField("Positive/negative strand doesn't match", expectedSamRecord.getReadNegativeStrandFlag(), actualSamRecord.getReadNegativeStrandFlag());
-        compareField("Cigars don't match", expectedSamRecord.getCigarString(), actualSamRecord.getCigarString());
+        compareField("Positive/negative strand doesn't match", expectedSamRecord.getReadNegativeStrandFlag(), actualSamRecord.getReadNegativeStrandFlag(), 2);
+        compareField("Cigars don't match", expectedSamRecord.getCigarString(), actualSamRecord.getCigarString(), 2);
 
         final String eMdz;
         final String aMdz;
@@ -274,14 +305,14 @@ public class SamComparison implements SamComparisonInterface {
             eMdz = expectedSamRecord.getStringAttribute("MD");
             aMdz = actualSamRecord.getStringAttribute("MD");
         }
-        compareField("MD:Z doesn't match", eMdz, aMdz);
+        compareField("MD:Z doesn't match", eMdz, aMdz, 3);
 
         final String eRead = usableReadOf(expectedSamRecord);
         final String aRead = usableReadOf(actualSamRecord);
 
-        compareField("Reads didn't match", eRead, aRead);
+        compareField("Reads didn't match", eRead, aRead, 3);
         if (mappedQualitiesPreserved) {
-            compareField("Quality didn't match", expectedSamRecord.getBaseQualityString(), actualSamRecord.getBaseQualityString());
+            compareField("Quality didn't match", expectedSamRecord.getBaseQualityString(), actualSamRecord.getBaseQualityString(), 3);
         } else {
             if (gobyAlignment != null) {
                 final int readLength = expectedSamRecord.getReadLength();
@@ -304,7 +335,7 @@ public class SamComparison implements SamComparisonInterface {
                                         "e=" + eQual.substring(checkPosition, checkPosition + 1) + " " +
                                         "a=" + aQual.substring(checkPosition, checkPosition + 1),
                                         eQual.substring(checkPosition, checkPosition + 1),
-                                        aQual.substring(checkPosition, checkPosition + 1));
+                                        aQual.substring(checkPosition, checkPosition + 1), 2);
                             } catch (IndexOutOfBoundsException e) {
                                 comparisonFailures.add("Quality at " + checkPosition + " index out of bounds.");
                             }
@@ -319,9 +350,11 @@ public class SamComparison implements SamComparisonInterface {
             if (outputFailedComparisons) {
                 dumpComparison(expectedSamRecord, actualSamRecord, gobyAlignment);
             }
-            comparisonFailureCount++;
+            if (countComparisonFailures) {
+                comparisonFailureCount++;
+            }
         }
-        return comparisonFailures.size();
+        return currentComparisonScore;
     }
 
     @Override
@@ -354,6 +387,9 @@ public class SamComparison implements SamComparisonInterface {
         }
         comparisonErrorDump.append("     readName (S): ").append(expectedSamRecord.getReadName()).append('\n');
         comparisonErrorDump.append("     readName (D): ").append(actualSamRecord.getReadName()).append('\n');
+        if (gobyAlignment != null && gobyAlignment.hasReadName()) {
+            comparisonErrorDump.append("     readName (G): ").append(gobyAlignment.getReadName()).append('\n');
+        }
         comparisonErrorDump.append("     position (S): ").append(expectedSamRecord.getAlignmentStart()).append('\n');
         comparisonErrorDump.append("     position (D): ").append(actualSamRecord.getAlignmentStart()).append('\n');
         comparisonErrorDump.append("     refName  (S): ").append(expectedSamRecord.getReferenceName()).append('\n');
@@ -383,9 +419,10 @@ public class SamComparison implements SamComparisonInterface {
      * @param expected the expected value
      * @param actual the actual value
      */
-    private void compareField(final String error, final int expected, final int actual) {
+    private void compareField(final String error, final int expected, final int actual, final int failureScore) {
         if (expected != actual) {
             comparisonFailures.add(error);
+            currentComparisonScore += failureScore;
         }
     }
 
@@ -395,9 +432,10 @@ public class SamComparison implements SamComparisonInterface {
      * @param expected the expected value
      * @param actual the actual value
      */
-    private void compareField(final String error, final String expected, final String actual) {
+    private void compareField(final String error, final String expected, final String actual, final int failureScore) {
         if (!expected.equals(actual)) {
             comparisonFailures.add(error);
+            currentComparisonScore += failureScore;
         }
     }
 
@@ -407,9 +445,10 @@ public class SamComparison implements SamComparisonInterface {
      * @param expected the expected value
      * @param actual the actual value
      */
-    private void compareField(final String error, final boolean expected, final boolean actual) {
+    private void compareField(final String error, final boolean expected, final boolean actual, final int failureScore) {
         if (expected != actual) {
             comparisonFailures.add(error);
+            currentComparisonScore += failureScore;
         }
     }
 

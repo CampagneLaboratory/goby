@@ -226,7 +226,11 @@ public class ExportableAlignmentEntryData {
      * @return the read name.
      */
     public String getReadName() {
-        return String.valueOf(alignmentEntry.getQueryIndex());
+        if (alignmentEntry.hasReadName()) {
+            return alignmentEntry.getReadName();
+        } else {
+            return String.valueOf(alignmentEntry.getQueryIndex());
+        }
     }
 
     /**
@@ -564,7 +568,7 @@ public class ExportableAlignmentEntryData {
         for (int i = 0; i < endOfLoop; i++) {
             final int genomePosition = i + startPosition - startClip;
             final char base = genomePosition >= 0 && genomePosition < genomeLength ?
-                    genome.get(genomeTargetIndex, i + startPosition - startClip) : 'N';
+                    genome.get(genomeTargetIndex, genomePosition) : 'N';
 
             boolean qualAddedForClip = false;
             if (isClipPosition(endOfLoop, i)) {
@@ -823,6 +827,22 @@ public class ExportableAlignmentEntryData {
         final ExportableAlignmentEntryData merged = fragments.get(0);
         final Alignments.AlignmentEntry mergedAlignment = merged.alignmentEntry;
         final int size = fragments.size();
+
+        // If we are using predefined quals, they will be on ONE of the segments
+        // but we don't know which one. Find the segment and use those qualities.
+        boolean predefinedQuals = false;
+        for (int i = 0; i < size; i++) {
+            final Alignments.AlignmentEntry currentAlignment = fragments.get(i).alignmentEntry;
+            if (currentAlignment.hasReadQualityScores()) {
+                merged.qualities.clear();
+                predefinedQuals = true;
+                for (final byte qualByte : currentAlignment.getReadQualityScores().toByteArray()) {
+                    merged.qualities.add(qualByte);
+                }
+                break;
+            }
+        }
+
         for (int i = 1; i < size; i++) {
             final ExportableAlignmentEntryData fragment = fragments.get(i);
             final Alignments.AlignmentEntry fragmentAlignment = fragment.alignmentEntry;
@@ -838,19 +858,21 @@ public class ExportableAlignmentEntryData {
                 return merged;
             }
 
-            merged.mergeCigars(fragment);
+            merged.mergeCigars(fragment, predefinedQuals);
             if (merged.invalid) {
                 // Quit early, we've detected a problem.
                 return merged;
             }
             SamHelper.appendMismatches(merged.mismatchString, fragment.mismatchString);
             merged.readBasesOriginal.append(fragment.readBasesOriginal);
-            merged.qualities.addAll(fragment.qualities);
+            if (!predefinedQuals) {
+                merged.qualities.addAll(fragment.qualities);
+            }
         }
         return merged;
     }
 
-    private void mergeCigars(final ExportableAlignmentEntryData other) {
+    private void mergeCigars(final ExportableAlignmentEntryData other, final boolean predefinedQuals) {
         final int gap;
         final Alignments.AlignmentEntry otherAlignmentEntry = other.alignmentEntry;
         final boolean spliceInReverse;
@@ -869,8 +891,10 @@ public class ExportableAlignmentEntryData {
             // As expected
             readBasesOriginal.length(queryLength - thisLastCigar.size);
             other.readBasesOriginal.delete(0, otherFirstCigar.size);
-            qualities.size(queryLength - thisLastCigar.size);
-            other.qualities.removeElements(0, otherFirstCigar.size);
+            if (!predefinedQuals) {
+                qualities.size(queryLength - thisLastCigar.size);
+                other.qualities.removeElements(0, otherFirstCigar.size);
+            }
             cigarString.append(gap).append('N');
             cigarString.append(other.cigarString);
             endTargetPositionZeroBased = other.endTargetPositionZeroBased;

@@ -18,12 +18,12 @@
 
 package edu.cornell.med.icb.goby.readers.sam;
 
-import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.util.pool.QueueResettableObjectPool;
 import edu.cornell.med.icb.goby.util.pool.Resettable;
 import edu.cornell.med.icb.goby.util.pool.ResettableObjectPoolInterface;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.bytes.ByteList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ public class GobySamRecord implements Resettable {
     ByteList readQuals;
 
     int readNum;
+    MutableString readName;
     int targetIndex;
     boolean reverseStrand;
     boolean hasMate;
@@ -86,6 +87,7 @@ public class GobySamRecord implements Resettable {
         };
         allSequenceVariations = new ArrayList<GobyQuickSeqvar>();
         segments = new ArrayList<GobySamSegment>();
+        readName = new MutableString();
         reset();
     }
 
@@ -108,6 +110,7 @@ public class GobySamRecord implements Resettable {
         numDeletes = 0;
         queryAlignedLength = 0;
         targetAlignedLength = 0;
+        readName.length(0);
     }
 
     public int getQueryLength() {
@@ -134,6 +137,10 @@ public class GobySamRecord implements Resettable {
 
     public int getReadNum() {
         return readNum;
+    }
+
+    public MutableString getReadName() {
+        return readName;
     }
 
     public int getTargetIndex() {
@@ -207,6 +214,4 @@ public class GobySamRecord implements Resettable {
             queryAlignedLength += segment.queryAlignedLength;
         }
     }
-
-
 }

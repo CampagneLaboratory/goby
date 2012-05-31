@@ -19,8 +19,6 @@
 package edu.cornell.med.icb.goby.readers.sam;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.sf.samtools.SAMRecord;
 
 import java.util.ArrayList;
@@ -40,13 +38,11 @@ public class SamPerPositionComparison extends SamComparison {
     private final List<SAMRecord> sources;
     private final List<SAMRecord> dests;
     private final List<Alignments.AlignmentEntry> gobyDests;
-    private final Object2ObjectMap<String, LinkedList<Integer>> destclippedReadToIndexesMap;
 
     public SamPerPositionComparison() {
         sources = new ArrayList<SAMRecord>();
         dests = new ArrayList<SAMRecord>();
         gobyDests = new ArrayList<Alignments.AlignmentEntry>();
-        destclippedReadToIndexesMap = new Object2ObjectOpenHashMap<String, LinkedList<Integer>>();
         currentPosition = -1;
     }
 
@@ -66,13 +62,6 @@ public class SamPerPositionComparison extends SamComparison {
         if (source.getAlignmentStart() != currentPosition) {
             result = makeComparisons();
         }
-        final String destClippedRead = usableReadOf(dest);
-        LinkedList<Integer> indexesList = destclippedReadToIndexesMap.get(destClippedRead);
-        if (indexesList == null) {
-            indexesList = new LinkedList<Integer>();
-            destclippedReadToIndexesMap.put(destClippedRead, indexesList);
-        }
-        indexesList.add(dests.size());
         sources.add(source);
         dests.add(dest);
         if (gobyDest != null) {
@@ -91,84 +80,135 @@ public class SamPerPositionComparison extends SamComparison {
         sources.clear();
         dests.clear();
         gobyDests.clear();
-        destclippedReadToIndexesMap.clear();
     }
 
     /**
      * Make comparisons of every record at a specific alignment start position.
+     * This method REQUIRES readName() is preserved when making compact-reads file.
      * @return The total of the comparison failures for all of the records compared
      */
     private int makeComparisons() {
         int resultSum = 0;
         if (!sources.isEmpty()) {
             for (final SAMRecord source : sources) {
-                SAMRecord dest = null;
-                Alignments.AlignmentEntry gobyDest = null;
-
-                final String sourceClippedRead = usableReadOf(source);
-                final LinkedList<Integer> indexesList = destclippedReadToIndexesMap.get(sourceClippedRead);
-                int leastDiffIndex = -1;
-                int leastDiffValue = Integer.MAX_VALUE;
-                if (indexesList != null) {
-                    // Get the index of the first unused matching destination that contains the same
-                    // exact usable read as the source. Run a comparison with all diffs that match with
-                    // this same read. Keep the one with the fewest differences. If we find a perfect
-                    // match, stop and use that one. Unfortunately, without the read name stored in goby,
-                    // there isn't a faster way to do this that I can think of.
+                final List<SamAndGobyDestPair> toCompares = findDestPairsForSource(source);
+                if (toCompares.isEmpty()) {
+                    // Found no comparisons
+                    readNum++;
+                    comparisonFailureCount++;
+                    System.out.println("WARNING: Couldn't find any records to compare against source.readName=" +
+                            source.getReadName());
+                } else {
+                    countComparisonFailures = false;
                     final boolean tempOutputFailedComparisons = outputFailedComparisons;
-                    // Save comparisonFailureCount because we may do multiple comparisons
-                    // but only one failure or success will count.
-                    final int tempComparisonFailureCount = comparisonFailureCount;
-                    // Never output failed comparisons during this phase
                     outputFailedComparisons = false;
-                    for (final int currentDestIndex : indexesList) {
-                        dest = dests.get(currentDestIndex);
-                        if (!gobyDests.isEmpty()) {
-                            gobyDest = gobyDests.get(currentDestIndex);
-                        }
-                        final int currentDiffValue = super.compare(source, dest, gobyDest);
-                        if (currentDiffValue < leastDiffValue) {
-                            leastDiffValue = currentDiffValue;
+                    int leastDiffIndex = -1;
+                    int leastDiffScore = Integer.MAX_VALUE;
+                    int currentDestIndex = 0;
+                    for (final SamAndGobyDestPair toCompare : toCompares) {
+                        final int currentDiffScore = super.compare(source, toCompare.dest, toCompare.gobyDest);
+                        if (currentDiffScore < leastDiffScore) {
+                            leastDiffScore = currentDiffScore;
                             leastDiffIndex = currentDestIndex;
-                            if (currentDiffValue == 0) {
-                                // Stop if we get a diff of 0
+                            if (currentDiffScore == 0) {
+                                // Stop if we get a diff of 0, it won't get better
                                 break;
                             }
                         }
+                        currentDestIndex++;
                     }
                     outputFailedComparisons = tempOutputFailedComparisons;
-                    comparisonFailureCount = tempComparisonFailureCount;
-                    if (leastDiffIndex != -1) {
-                        // Found the best destination record
-                        indexesList.removeFirstOccurrence(leastDiffIndex);
-                        if (leastDiffValue > 0) {
-                            if (outputFailedComparisons) {
-                                // Output the failed but still best failure here.
-                                dest = dests.get(leastDiffIndex);
-                                if (!gobyDests.isEmpty()) {
-                                    gobyDest = gobyDests.get(leastDiffIndex);
-                                }
-                                // To have the correct comparison failure details, we need to re-compare or the
-                                // dump will have an incorrect comparison failure list.
-                                super.compare(source, dest, gobyDest);
-                                dumpComparison(source, dest, gobyDest);
-                            }
+                    countComparisonFailures = true;
+                    if (leastDiffScore > 0) {
+                        if (outputFailedComparisons) {
+                            // Output the failed but still best failure here.
+                            super.compare(source,
+                                    toCompares.get(leastDiffIndex).dest,
+                                    toCompares.get(leastDiffIndex).gobyDest);
                         }
                     }
-                }
-                if (leastDiffIndex == -1) {
-                    // Couldn't find anything to diff with AT ALL, nothing with the same clipped read bases
-                    readNum++;
-                    comparisonFailureCount++;
-                    System.out.println("ERROR: Couldn't find a dest record to compare against for readName=" + source.getReadName());
-                    // Consider: When this is done, pick the sources that didn't get compared with the dest's that
-                    // didn't get compared. Often there may just be 1 and 1??
-                } else {
-                    resultSum += leastDiffValue;
+                    dests.remove(toCompares.get(leastDiffIndex).dest);
+                    if (toCompares.get(leastDiffIndex).gobyDest != null) {
+                        gobyDests.remove(toCompares.get(leastDiffIndex).gobyDest);
+                    }
                 }
             }
         }
+        for (final SAMRecord dest : dests) {
+            System.out.println("WARNING: Remaining dest.readName=" + dest.getReadName());
+        }
+        for (final Alignments.AlignmentEntry gobyDest : gobyDests) {
+            System.out.println("WARNING: Remaining gobyDest.readName=" + gobyDest.getReadName());
+        }
         resetForPosition();
         return resultSum;
+    }
+
+    /**
+     * A sam destination and goby destination pair for comparison (gobyDest may be null).
+     */
+    private static class SamAndGobyDestPair {
+        SAMRecord dest;
+        Alignments.AlignmentEntry gobyDest;
+        SamAndGobyDestPair(final SAMRecord dest, final Alignments.AlignmentEntry gobyDest) {
+            this.dest = dest;
+            this.gobyDest = gobyDest;
+        }
+    }
+
+    /**
+     * Make a list of all the possible sam/goby destination comparisons that are possible to assist
+     * with finding the best combination of expected/actual/gobyActual for the
+     * given position.
+     * @param source the source to find comparison pairs for 
+     * @return the list of all actual/gobyActual combinations
+     */
+    private List<SamAndGobyDestPair> findDestPairsForSource(final SAMRecord source) {
+        final List<SAMRecord> localDests = findDestsForSource(source);
+        final List<Alignments.AlignmentEntry> localGobyDests = findGobyDestsForSource(source);
+        final List<SamAndGobyDestPair> result = new LinkedList<SamAndGobyDestPair>();
+        for (final SAMRecord dest : localDests) {
+            if (gobyDests.isEmpty()) {
+                result.add(new SamAndGobyDestPair(dest, null));
+            } else {
+                for (final Alignments.AlignmentEntry gobyDest : localGobyDests) {
+                    result.add(new SamAndGobyDestPair(dest, gobyDest));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Of of the destinations (actual) that have the same read name as source.
+     * @param source the source
+     * @return the list of actuals that have the same read name.
+     */
+    private List<SAMRecord> findDestsForSource(final SAMRecord source) {
+        final List<SAMRecord> result = new LinkedList<SAMRecord>();
+        for (final SAMRecord dest : dests) {
+            if (dest.getReadName().equals(source.getReadName())) {
+                result.add(dest);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Of of the goby destinations (gobyActual) that have the same read name as source.
+     * @param source the source
+     * @return the list of gobyActuals that have the same read name. if there are no gobyDests this will return
+     * and empty list.
+     */
+    private List<Alignments.AlignmentEntry> findGobyDestsForSource(final SAMRecord source) {
+        final List<Alignments.AlignmentEntry> result = new LinkedList<Alignments.AlignmentEntry>();
+        if (!gobyDests.isEmpty()) {
+            for (final Alignments.AlignmentEntry gobyDest : gobyDests) {
+                if (gobyDest.getReadName().equals(source.getReadName())) {
+                    result.add(gobyDest);
+                }
+            }
+        }
+        return result;
     }
 }

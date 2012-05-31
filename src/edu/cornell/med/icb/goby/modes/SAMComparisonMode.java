@@ -325,17 +325,30 @@ public class SAMComparisonMode extends AbstractGobyMode {
                 numRecordsSkipped++;
                 continue;
             }
-            if (!destIterator.hasNext()) {
-                LOG.error("Not enough records in --destination-bam SAM/BAM file");
-                return;
+
+            SAMRecord actual = null;
+            while (true) {
+                // SAM/BAM reads created from Goby will not have unmapped, but reads created
+                // from a CRAM file WILL have unmapped. Here we'll scan the dest for the next
+                // unmapped to compensate for this possibility.
+                if (!destIterator.hasNext()) {
+                    LOG.error("Not enough records in --destination-bam SAM/BAM file");
+                    return;
+                }
+                actual = destIterator.next();
+                if (!actual.getReadUnmappedFlag()) {
+                    // We found a mapped read
+                    break;
+                }
             }
-            final SAMRecord actual = destIterator.next();
+
             Alignments.AlignmentEntry gobyActual = null;
             if (gobyReader != null) {
                 if (!gobyReader.hasNext()) {
                     LOG.error("Not enough records in --destination-goby compact-alignment file");
                     return;
                 }
+                // Goby reads are ALWAYS mapped.
                 gobyActual = gobyReader.next();
             }
 

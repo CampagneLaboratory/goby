@@ -84,6 +84,12 @@
             </help>
         </switch>
         <switch>
+            <id>preserve-read-name</id>
+            <longFlag>preserve-read-name</longFlag>
+            <help>When this switch is provided, read names (QNAME) will be preserved.
+            </help>
+        </switch>
+        <switch>
             <id>sorted</id>
             <longFlag>sorted</longFlag>
             <help>Indicates that the input file is sorted. When true, the Goby alignment file is written sorted and
