@@ -650,7 +650,7 @@ public class TestSamRecordParser {
     public void testTestTargetIndexCreation() throws IOException {
         final RoundTripAlignment rtc = new RoundTripAlignment();
         rtc.inputGenomeFilename = TestGobyPaperTop5000s.findMM9();
-        rtc.sourceBamFilename = FilenameUtils.concat(BASE_TEST_INPUT_DIR, "JRODTYG-5000.sam.gz");
+        rtc.sourceBamFilename = FilenameUtils.concat("test-data/goby-paper-top-5000s", "JRODTYG-5000.sam.gz");
         rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_OUTPUT_DIR, "JRODTYG-5000");
         rtc.createCompactFromSam();
 
