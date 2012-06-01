@@ -116,4 +116,16 @@ public interface SamComparisonInterface {
      * @return how many...
      */
     public int getComparisonFailureCount();
+
+    /**
+     * Get if the source base can be and and thd destination base be a non-N.
+     * @return if...
+     */
+    public boolean isAllowSourceNs();
+
+    /**
+     * Set if the source base can be and and thd destination base be a non-N.
+     * @return if...
+     */
+    public void setAllowSourceNs(boolean allowSourceNs);
 }

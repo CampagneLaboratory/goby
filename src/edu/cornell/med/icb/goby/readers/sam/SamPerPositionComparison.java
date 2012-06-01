@@ -22,8 +22,10 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import net.sf.samtools.SAMRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class for comparing sam records. Similar to SamComparison but this class collects all of the records from
@@ -33,17 +35,47 @@ import java.util.List;
  */
 public class SamPerPositionComparison extends SamComparison {
 
+    private static final List<SAMRecord> EMPTY_SAM_LIST = new ArrayList<SAMRecord>(0);
+    private static final List<Alignments.AlignmentEntry> EMPTY_GOBY_LIST = new ArrayList<Alignments.AlignmentEntry>(0);
+
     private int currentPosition;
 
     private final List<SAMRecord> sources;
-    private final List<SAMRecord> dests;
-    private final List<Alignments.AlignmentEntry> gobyDests;
+    private final Map<String, List<SAMRecord>> destsMap;
+    private final Map<String, List<Alignments.AlignmentEntry>> gobyDestsMap;
+
+    /**
+     * The default (true) means when a new position is found in the source record, comparisons will be made
+     * with all the records that were found before.
+     * If false, comparisons will be made after ALL records have been read. This will take a lot more memory
+     * (enough to load two or three whole alignments in memory) as ALL records will need to be read into memory)
+     * BUT, this will be very tolerant of the sorting of the input files.
+     */
+    private boolean compareAtEachNewPosition = true;
 
     public SamPerPositionComparison() {
         sources = new ArrayList<SAMRecord>();
-        dests = new ArrayList<SAMRecord>();
-        gobyDests = new ArrayList<Alignments.AlignmentEntry>();
+        destsMap = new HashMap<String, List<SAMRecord>>();
+        gobyDestsMap = new HashMap<String, List<Alignments.AlignmentEntry>>();
         currentPosition = -1;
+    }
+
+    /**
+     * Get if a new comparison will be made at each new position. Setting this to false will require all alignments
+     * to be loaded into memory before comparisons will be made which could consume a LOT of memory.
+     * @return if ...
+     */
+    public boolean isCompareAtEachNewPosition() {
+        return compareAtEachNewPosition;
+    }
+
+    /**
+     * Set if a new comparison will be made at each new position. Setting this to false will require all alignments
+     * to be loaded into memory before comparisons will be made which could consume a LOT of memory.
+     * @param compareAtEachNewPosition if ...
+     */
+    public void setCompareAtEachNewPosition(final boolean compareAtEachNewPosition) {
+        this.compareAtEachNewPosition = compareAtEachNewPosition;
     }
 
     /**
@@ -59,16 +91,50 @@ public class SamPerPositionComparison extends SamComparison {
     @Override
     public int compare(final SAMRecord source, final SAMRecord dest, final Alignments.AlignmentEntry gobyDest) {
         int result = 0;
-        if (source.getAlignmentStart() != currentPosition) {
+        if (compareAtEachNewPosition && source.getAlignmentStart() != currentPosition) {
             result = makeComparisons();
         }
         sources.add(source);
-        dests.add(dest);
+        addToSamMap(dest);
         if (gobyDest != null) {
-            gobyDests.add(gobyDest);
+            addToGobyMap(gobyDest);
         }
         currentPosition = source.getAlignmentStart();
         return result;
+    }
+
+    private void addToSamMap(final SAMRecord dest) {
+        final String key = dest.getReadName();
+        List<SAMRecord> list = destsMap.get(key);
+        if (list == null) {
+            list = new LinkedList<SAMRecord>();
+            destsMap.put(key, list);
+        }
+        list.add(dest);
+    }
+
+    private void addToGobyMap(final Alignments.AlignmentEntry dest) {
+        final String key = dest.getReadName();
+        List<Alignments.AlignmentEntry> list = gobyDestsMap.get(key);
+        if (list == null) {
+            list = new LinkedList<Alignments.AlignmentEntry>();
+            gobyDestsMap.put(key, list);
+        }
+        list.add(dest);
+    }
+
+    private void removeFromSamMap(final SAMRecord dest) {
+        final String key = dest.getReadName();
+        final List<SAMRecord> list = destsMap.get(key);
+        list.remove(dest);
+    }
+
+    private void removeFromGobyMap(final Alignments.AlignmentEntry dest) {
+        if (dest != null) {
+            final String key = dest.getReadName();
+            final List<Alignments.AlignmentEntry> list = gobyDestsMap.get(key);
+            list.remove(dest);
+        }
     }
 
     @Override
@@ -78,8 +144,8 @@ public class SamPerPositionComparison extends SamComparison {
 
     private void resetForPosition() {
         sources.clear();
-        dests.clear();
-        gobyDests.clear();
+        destsMap.clear();
+        gobyDestsMap.clear();
     }
 
     /**
@@ -127,19 +193,25 @@ public class SamPerPositionComparison extends SamComparison {
                                     toCompares.get(leastDiffIndex).gobyDest);
                         }
                     }
-                    dests.remove(toCompares.get(leastDiffIndex).dest);
-                    if (toCompares.get(leastDiffIndex).gobyDest != null) {
-                        gobyDests.remove(toCompares.get(leastDiffIndex).gobyDest);
-                    }
+                    removeFromSamMap(toCompares.get(leastDiffIndex).dest);
+                    removeFromGobyMap(toCompares.get(leastDiffIndex).gobyDest);
                 }
             }
         }
-        for (final SAMRecord dest : dests) {
-            System.out.println("WARNING: Remaining dest.readName=" + dest.getReadName());
+        for (final Map.Entry<String, List<SAMRecord>> entry : destsMap.entrySet()) {
+            for (final SAMRecord dest : entry.getValue()) {
+                System.out.println("WARNING: Remaining dest.readName=" + dest.getReadName());
+            }
         }
-        for (final Alignments.AlignmentEntry gobyDest : gobyDests) {
-            System.out.println("WARNING: Remaining gobyDest.readName=" + gobyDest.getReadName());
+        /*
+        // For spliced alignments, there WILL BE remaining AlignmentEntries since a splice has 2 or more
+        // alignment entries. Don't report this.
+        for (final Map.Entry<String, List<Alignments.AlignmentEntry>> entry : gobyDestsMap.entrySet()) {
+            for (final Alignments.AlignmentEntry dest : entry.getValue()) {
+                System.out.println("WARNING: Remaining gobyDest.readName=" + dest.getReadName());
+            }
         }
+        */
         resetForPosition();
         return resultSum;
     }
@@ -168,7 +240,7 @@ public class SamPerPositionComparison extends SamComparison {
         final List<Alignments.AlignmentEntry> localGobyDests = findGobyDestsForSource(source);
         final List<SamAndGobyDestPair> result = new LinkedList<SamAndGobyDestPair>();
         for (final SAMRecord dest : localDests) {
-            if (gobyDests.isEmpty()) {
+            if (localGobyDests.isEmpty()) {
                 result.add(new SamAndGobyDestPair(dest, null));
             } else {
                 for (final Alignments.AlignmentEntry gobyDest : localGobyDests) {
@@ -185,13 +257,12 @@ public class SamPerPositionComparison extends SamComparison {
      * @return the list of actuals that have the same read name.
      */
     private List<SAMRecord> findDestsForSource(final SAMRecord source) {
-        final List<SAMRecord> result = new LinkedList<SAMRecord>();
-        for (final SAMRecord dest : dests) {
-            if (dest.getReadName().equals(source.getReadName())) {
-                result.add(dest);
-            }
+        final List<SAMRecord> result = destsMap.get(source.getReadName());
+        if (result == null) {
+            return EMPTY_SAM_LIST;
+        } else {
+            return result;
         }
-        return result;
     }
 
     /**
@@ -201,14 +272,11 @@ public class SamPerPositionComparison extends SamComparison {
      * and empty list.
      */
     private List<Alignments.AlignmentEntry> findGobyDestsForSource(final SAMRecord source) {
-        final List<Alignments.AlignmentEntry> result = new LinkedList<Alignments.AlignmentEntry>();
-        if (!gobyDests.isEmpty()) {
-            for (final Alignments.AlignmentEntry gobyDest : gobyDests) {
-                if (gobyDest.getReadName().equals(source.getReadName())) {
-                    result.add(gobyDest);
-                }
-            }
+        final List<Alignments.AlignmentEntry> result = gobyDestsMap.get(source.getReadName());
+        if (result == null) {
+            return EMPTY_GOBY_LIST;
+        } else {
+            return result;
         }
-        return result;
     }
 }

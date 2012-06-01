@@ -19,21 +19,15 @@
 package edu.cornell.med.icb.goby.readers.sam;
 
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.modes.CompactToSAMMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
-import edu.cornell.med.icb.goby.modes.SortMode;
-import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.logging.ProgressLogger;
 import junit.framework.Assert;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMRecordIterator;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
@@ -55,10 +49,8 @@ public class TestSamRecordParser {
 
     private static final Logger LOG = Logger.getLogger(TestSamRecordParser.class);
 
-    private static final String BASE_TEST_DIR = "test-results/splicedsamhelper";
-
-    // make true to quickly debug code (the read sequences will be made of Ns only)
-    private static final boolean FAST_GENOME = false;
+    private static final String BASE_TEST_INPUT_DIR = "test-data/splicedsamhelper";
+    private static final String BASE_TEST_OUTPUT_DIR = "test-results/splicedsamhelper";
 
     //
     //  testSamToCompactTrickCase1-3 fails because this the sam reference builder requires an MD:Z tag.
@@ -66,7 +58,7 @@ public class TestSamRecordParser {
 
     @BeforeClass
     public static void beforeClass() {
-        new File(BASE_TEST_DIR).mkdirs();
+        new File(BASE_TEST_OUTPUT_DIR).mkdirs();
     }
 
     @Test
@@ -278,35 +270,35 @@ public class TestSamRecordParser {
                 assertEquals("C", seqvar.getTo());
                 assertEquals(22, seqvar.getReadIndex());
                 assertEquals(9, seqvar.getPosition());
-                assertArrayEquals(byteArray(3), seqvar.getToQualitiesAsBytes());  // 8 returned in the old test, 3 is right
+                assertArrayEquals(RoundTripAlignment.byteArray(3), seqvar.getToQualitiesAsBytes());  // 8 returned in the old test, 3 is right
 
                 seqvar = segment.getSequenceVariations(1);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("G", seqvar.getTo());    // Original test said A
                 assertEquals(26, seqvar.getReadIndex());
                 assertEquals(13, seqvar.getPosition());
-                assertArrayEquals(byteArray(34), seqvar.getToQualitiesAsBytes());  // 24 in the old test, this is right
+                assertArrayEquals(RoundTripAlignment.byteArray(34), seqvar.getToQualitiesAsBytes());  // 24 in the old test, this is right
 
                 seqvar = segment.getSequenceVariations(2);
                 assertEquals("C", seqvar.getFrom());
                 assertEquals("A", seqvar.getTo());
                 assertEquals(33, seqvar.getReadIndex());
                 assertEquals(20, seqvar.getPosition());
-                assertArrayEquals(byteArray(28), seqvar.getToQualitiesAsBytes());  // 14 in the old test
+                assertArrayEquals(RoundTripAlignment.byteArray(28), seqvar.getToQualitiesAsBytes());  // 14 in the old test
 
                 seqvar = segment.getSequenceVariations(3);
                 assertEquals("-", seqvar.getFrom());
                 assertEquals("C", seqvar.getTo());   // Original test said CG
                 assertEquals(35, seqvar.getReadIndex());
                 assertEquals(21, seqvar.getPosition());
-                assertArrayEquals(byteArray(27), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
+                assertArrayEquals(RoundTripAlignment.byteArray(27), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
                 seqvar = segment.getSequenceVariations(4);
                 assertEquals("T", seqvar.getFrom());
                 assertEquals("A", seqvar.getTo());   // Original test said CG
                 assertEquals(36, seqvar.getReadIndex());
                 assertEquals(22, seqvar.getPosition());
-                assertArrayEquals(byteArray(35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
+                assertArrayEquals(RoundTripAlignment.byteArray(35), seqvar.getToQualitiesAsBytes());  // 3, 15 in the old test
 
             } else if (gobySamRecord.readNum == 1) {
                 //second's CIGAR is 20S48M
@@ -324,7 +316,7 @@ public class TestSamRecordParser {
                 assertEquals("C", seqvar.getTo());
                 assertEquals(18, seqvar.getReadIndex());
                 assertEquals(31, seqvar.getPosition());
-                assertArrayEquals(byteArray(35), seqvar.getToQualitiesAsBytes());
+                assertArrayEquals(RoundTripAlignment.byteArray(35), seqvar.getToQualitiesAsBytes());
             }
         }
     }
@@ -368,7 +360,7 @@ public class TestSamRecordParser {
             final GobyQuickSeqvar last = first.getSequenceVariations(12);
             assertEquals("T", last.getTo());
             assertEquals("C", last.getFrom());
-            assertArrayEquals(byteArray(36), last.getToQualitiesAsBytes());
+            assertArrayEquals(RoundTripAlignment.byteArray(36), last.getToQualitiesAsBytes());
         }
     }
 
@@ -381,7 +373,7 @@ public class TestSamRecordParser {
     public void testSamToCompactTrickCase17ViaWriter() throws IOException {
         final SAMToCompactMode importer = new SAMToCompactMode();
         importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-17.sam");
-        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-17");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_OUTPUT_DIR, "tricky-spliced-17");
         importer.setPreserveSoftClips(true);
         importer.setOutputFile(outputFilename);
         importer.execute();
@@ -404,143 +396,7 @@ public class TestSamRecordParser {
         final Alignments.SequenceVariation last = first.getSequenceVariations(12);
         assertEquals("T", last.getTo());
         assertEquals("C", last.getFrom());
-        assertArrayEquals(byteArray(36), last.getToQuality().toByteArray());
-    }
-
-    /**
-     * Find the local celegans random genome from an array of options.
-     *
-     * @return the local celegans random genome.
-     */
-    private String findCelegansGenome() {
-        // The following directories will be scanned in sequence to find a locatio where the genome is installed. Add new
-        // locations as needed to indicate where the genome is installed on your local machine.
-        final String[] dirs = {
-                "/tmp/celegans",
-                "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/cElegans",
-                "/home/ccontrol/goby-data/celegans",
-                "/data/cElegans"
-        };
-
-        for (final String dir : dirs) {
-            final String testRootFilename = dir + "/" + "random-access-genome";
-            final String testFilename = testRootFilename + ".names";
-            System.out.println("Looking for :" + testFilename);
-            final File testFile = new File(testFilename);
-            if (testFile.exists()) {
-                return testRootFilename;
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Find the local 1000g random genome from an array of options.
-     *
-     * @return the local random genome.
-     */
-    private String findThousandGenome() {
-        final String[] dirs = {
-                "/tmp/1000g",
-                "/scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference",
-                "/home/ccontrol/goby-data/1000g-random-access",
-                "/data/1000g"};
-        for (final String dir : dirs) {
-            final String testRootFilename = dir + "/" + "random-access-genome";
-            final String testFilename = testRootFilename + ".names";
-            System.out.println("Looking for :" + testFilename);
-            final File testFile = new File(testFilename);
-            if (testFile.exists()) {
-                return testRootFilename;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Find the local HG19 random genome from an array of options.
-     *
-     * @return the random genome.
-     */
-    private String findHG19() {
-        final String[] dirs = {
-                "/tmp/hg19",
-                "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/hg19",
-                "/home/ccontrol/goby-data/hg19-random-access",
-                "/data/hg19"};
-        for (final String dir : dirs) {
-            final String testRootFilename = dir + "/" + "random-access-genome";
-            final String testFilename = testRootFilename + ".names";
-            System.out.println("Looking for :" + testFilename);
-            final File testFile = new File(testFilename);
-            if (testFile.exists()) {
-                return testRootFilename;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Find the local mm9 random genome from an array of options.
-     *
-     * @return the local mm9  random genome.
-     */
-    private String findMM9() {
-        final String[] dirs = {
-                "/tmp/mm9",
-                "/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/mm9",
-                "/home/ccontrol/goby-data/mm9-random-access",
-                "/data/mm9"
-        };
-        for (final String dir : dirs) {
-            final String testRootFilename = dir + "/" + "random-access-genome";
-            final String testFilename = testRootFilename + ".names";
-            System.out.println("Looking for :" + testFilename);
-            final File testFile = new File(testFilename);
-            if (testFile.exists()) {
-                return testRootFilename;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Test that SHOULD fail, for local testing, not for server testing.
-     * This is designed to be run manually as the 1M doesn't exist on the testing server.
-     * Before running this test, run testRoundTrip1M().
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testRoundTripFail() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findThousandGenome();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/HZFWPTI-first-500.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * Full check of HZF. This dataset is NOT on the server so this test shouldn't be run on the server.
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testHzFullCompare() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findThousandGenome();
-        rtc.sourceBamFilename = "/tmp/HZ-bam-bam/HZFWPTI-source.bam";
-        rtc.destGobyBasename = "/tmp/HZ-bam-bam/HZFWPTI";
-        rtc.destBamFilename = "/tmp/HZ-bam-bam/HZFWPTI.bam";
-        rtc.keepQualityScores = true;
-        rtc.keepSoftClips = true;
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        testRoundTripAny(rtc);
+        assertArrayEquals(RoundTripAlignment.byteArray(36), last.getToQuality().toByteArray());
     }
 
     /**
@@ -551,466 +407,16 @@ public class TestSamRecordParser {
      */
     @Test
     public void testRoundTripTrickySpliced18() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findThousandGenome();
+        final RoundTripAlignment rtc = new RoundTripAlignment();
+        rtc.inputGenomeFilename = TestGobyPaperTop5000s.findThousandGenome();
         rtc.sourceBamFilename = "test-data/splicedsamhelper/tricky-spliced-18.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-18");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "tricky-spliced-18.sam");
-        testRoundTripAny(rtc);
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_OUTPUT_DIR, "tricky-spliced-18");
+        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_OUTPUT_DIR, "tricky-spliced-18.sam");
+        rtc.testRoundTripAny();
         rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
+        rtc.testRoundTripAny();
         rtc.keepSoftClips = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The first 500 alignments of HZ. Round trip test.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testRoundTripHZFirst500() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findThousandGenome();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/HZFWPTI-first-500.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "HZFWPTI-first-500");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "HZFWPTI-first-500.sam");
-        testRoundTripAny(rtc);
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-        rtc.keepSoftClips = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The first 500 alignments of EJOY. Round trip test.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testRoundTripEJOYFirst500() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findHG19();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/EJOYQAZ-first-500.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500.sam");
-        rtc.sortGoby = true;
-        rtc.compareWithGoby = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The first 500 alignments of EJOY. Round trip test. Don't keep quality from source.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testRoundTripEJOYFirst500NoKeepQual() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findHG19();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/EJOYQAZ-first-500.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-500.sam");
-        rtc.sortGoby = true;
-        rtc.compareWithGoby = false;
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The first alignment of EJOY. Round trip test.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testRoundTripEJOYFirst1() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findHG19();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/EJOYQAZ-first-1.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-1");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "EJOYQAZ-first-1.sam");
-        rtc.sortGoby = true;
-        rtc.convertBamToGoby = true;
-        testRoundTripAny(rtc);
-        rtc.keepQualityScores = true;
-        testRoundTripAny(rtc);
-        rtc.keepSoftClips = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The first 1000 alignments of JRO. Round trip test.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testRoundTripJROFirst1000() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findMM9();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/JRODTYG-source-1000-with-header.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000.sam");
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * NOT FOR SERVER
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testFirst5000_HENGLIT_SOURCE_GOBY() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.sourceBamFilename = "/tmp/HENGLIT-source-5000.sam";
-        rtc.destGobyBasename = "/tmp/HENGLIT-hybrid";
-        rtc.destBamFilename = "/tmp/HENGLIT-top-5000-goby.sam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * NOT FOR SERVER
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testFirst5000_HENGLIT_SOURCE_CRAM2() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.sourceBamFilename = "/tmp/HENGLIT-source-5000.sam";
-        rtc.destGobyBasename = "/tmp/HENGLIT-hybrid";
-        rtc.destBamFilename = "/tmp/HENGLIT-top-5000-cram2.sam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * NOT FOR SERVER
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testFirst5000_HZFWPTI_SOURCE_GOBY() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.sourceBamFilename = "/tmp/HZFWPTI-source-5000.sam";
-        rtc.destGobyBasename = "/tmp/HZFWPTI-hybrid";
-        rtc.destBamFilename = "/tmp/HZFWPTI-top-5000-goby.sam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * NOT FOR SERVER
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testFirst5000_HZFWPTI_SOURCE_CRAM2() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.sourceBamFilename = "/tmp/HZFWPTI-source-5000.sam";
-        rtc.destGobyBasename = "/tmp/HZFWPTI-hybrid";
-        rtc.destBamFilename = "/tmp/HZFWPTI-top-5000-cram2.sam";
-        rtc.convertBamToGoby = false;
-        rtc.convertGobyToBam = false;
-        rtc.keepQualityScores = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * We had a problem with the target indexes/lengths being written twice in SamToCompact. The second
-     * time was wrong. This checks that it is right.
-     *
-     * @throws IOException error
-     */
-    @Test
-    public void testTestTargetIndexCreation() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findMM9();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/JRODTYG-source-1000-with-header.sam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "JRODTYG-first-1000");
-        createCompactFromSam(rtc);
-
-        final AlignmentReaderImpl gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
-        gobyReader.readHeader();
-        final int[] targetsLengths = gobyReader.getTargetLength();
-        final IndexedIdentifier identifiers = gobyReader.getTargetIdentifiers();
-        final int chr1Index = identifiers.getInt(new MutableString("chr1"));
-        Assert.assertEquals("Incorrect sequence length", 197195432, targetsLengths[chr1Index]);
-    }
-
-    /**
-     * The first 1M alignments of UAN. This large dataset does not exist on the testing server.
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testRoundTrip1M() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findThousandGenome();
-        rtc.sourceBamFilename = "test-data/splicedsamhelper/1M.bam";
-        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_DIR, "1M");
-        rtc.destBamFilename = FilenameUtils.concat(BASE_TEST_DIR, "1M.bam");
-        rtc.canonicalMdzForComparison = false;
-        final long start = System.currentTimeMillis();
-        testRoundTripAny(rtc);
-        System.out.printf("Execution time in ms=%d%n", System.currentTimeMillis() - start);
-    }
-
-    /**
-     * The whole of HENGLIT. This large dataset does not exist on the testing server.
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testRoundTripHenglit() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findCelegansGenome();
-        rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
-        rtc.destGobyBasename = "/tmp/HENGLIT-to-goby";
-        rtc.destBamFilename = "/tmp/HENGLIT-from-goby.bam";
-        //rtc.convertBamToGoby = false;
-        //rtc.convertGobyToBam = false;
-        rtc.canonicalMdzForComparison = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * The whole of HENGLIT. This large dataset does not exist on the testing server.
-     * THIS version doesn't store read quals to better test the comparison when read quals aren't stored.
-     *
-     * @throws IOException error
-     */
-    // @Test
-    public void testRoundTripHenglitNoQuals() throws IOException {
-        final RoundTripConfig rtc = new RoundTripConfig();
-        rtc.inputGenomeFilename = findCelegansGenome();
-        rtc.sourceBamFilename = "/tmp/HENGLIT.bam";
-        rtc.destGobyBasename = "/tmp/HENGLIT-to-goby-no-qual";
-        rtc.destBamFilename = "/tmp/HENGLIT-from-goby-no-qual.bam";
-        //rtc.convertBamToGoby = false;
-        //rtc.convertGobyToBam = false;
-        rtc.keepQualityScores = false;
-        rtc.canonicalMdzForComparison = false;
-        testRoundTripAny(rtc);
-    }
-
-    /**
-     * Configuration for round trip comparison.
-     */
-    private static class RoundTripConfig {
-        String inputGenomeFilename;
-        String sourceBamFilename;
-        String destGobyBasename;
-        String destBamFilename;
-        boolean convertBamToGoby = true;
-        boolean convertGobyToBam = true;
-        boolean keepQualityScores = true;
-        boolean keepSoftClips = true;
-        boolean stopAtOneFailure = false;
-        boolean canonicalMdzForComparison = true;
-        /* If the compact-alignment should be sorted. */
-        boolean sortGoby = false;
-        /* If read names should be written to the compact-alignment file */
-        boolean preserveReadNames = true;
-        /* Perform the record comparisons. */
-        boolean compare = true;
-        /* To dump differences in read names, positions. */
-        boolean dumpReadNames = false;
-        /* For spliced reads, this should be set to false. */
-        boolean compareWithGoby = true;
-    }
-
-    public void testRoundTripAny(final RoundTripConfig rtc) throws IOException {
-
-        // IMPORTANT!!
-        // ** These two should always be set to true unless you are doing MANUAL testing and want to not do
-        // ** one or both of the conversions.
-
-        if (!new File(rtc.destGobyBasename + ".entries").exists()) {
-            rtc.convertBamToGoby = true;
-        }
-        if (!new File(rtc.destBamFilename).exists()) {
-            rtc.convertGobyToBam = true;
-        }
-
-        RandomAccessSequenceInterface genome = null;
-        if (rtc.convertGobyToBam || rtc.convertBamToGoby) {
-            assertNotNull("Could not locate random-access-genome in specified locations", rtc.inputGenomeFilename);
-            genome = new DualRandomAccessSequenceCache();
-            try {
-                System.out.print("Loading random access genome...");
-                if (FAST_GENOME) {
-                    genome = new RandomAccessSequenceTestSupport(new String[]{"NNNNN"}) {
-                        @Override
-                        public int getReferenceIndex(String referenceId) {
-                            return 0;
-                        }
-                    };
-                } else {
-                    ((DualRandomAccessSequenceCache) genome).load(rtc.inputGenomeFilename);
-                }
-                System.out.println(" done");
-            } catch (ClassNotFoundException e) {
-                throw new IOException("Could not load genome", e);
-            }
-        }
-
-        if (rtc.convertBamToGoby) {
-            LOG.info("Converting bam to compact alignment");
-            final SAMToCompactMode importer = new SAMToCompactMode();
-            importer.setPreserveReadName(rtc.preserveReadNames);
-            importer.setInputFile(rtc.sourceBamFilename);
-            importer.setPreserveSoftClips(rtc.keepSoftClips);
-            importer.setPreserveAllTags(true);
-            importer.setOutputFile(rtc.destGobyBasename);
-            importer.setGenome(genome);
-            importer.setPreserveReadQualityScores(rtc.keepQualityScores);
-            importer.execute();
-            if (rtc.sortGoby) {
-                LOG.info("Sorting Goby alignment");
-                SortMode sorter = new SortMode();
-                sorter.setInput(rtc.destGobyBasename);
-                sorter.setOutput(rtc.destGobyBasename + "-sorted");
-                sorter.execute();
-
-                rtc.destGobyBasename += "-sorted";
-            }
-        } else {
-            // We didn't just create the goby file, it was created before
-            if (rtc.sortGoby) {
-                // But it was also sorted before, so change the basename
-                rtc.destGobyBasename += "-sorted";
-            }
-        }
-        if (rtc.convertGobyToBam) {
-            LOG.info("Converting compact alignment to bam");
-            final CompactToSAMMode exporter = new CompactToSAMMode();
-            exporter.setGenome(genome);
-            exporter.setInputBasename(rtc.destGobyBasename);
-            exporter.setOutput(rtc.destBamFilename);
-            exporter.execute();
-        }
-
-        LOG.info("Comparing source bam and destination bam");
-        final SAMFileReader sourceParser = new SAMFileReader(new FileInputStream(rtc.sourceBamFilename));
-        final SAMFileReader destParser = new SAMFileReader(new FileInputStream(rtc.destBamFilename));
-        // We need to set the validation to silent because an incomplete file (if the source isn't the entire file)
-        // we can see errors that wouldn't exist in a real conversion.
-        sourceParser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        destParser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        final SAMRecordIterator sourceIterator = sourceParser.iterator();
-        final SAMRecordIterator destIterator = destParser.iterator();
-        AlignmentReaderImpl gobyReader = null;
-        if (rtc.compareWithGoby && rtc.destGobyBasename != null) {
-            gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
-        }
-        final ProgressLogger progress = new ProgressLogger(LOG);
-        progress.displayFreeMemory = true;
-        final SamComparisonInterface samComparison = new SamPerPositionComparison();
-        progress.start();
-        samComparison.setMappedQualitiesPreserved(rtc.keepQualityScores);
-        samComparison.setSoftClipsPreserved(rtc.keepSoftClips);
-        samComparison.setReadNamesPreserved(rtc.preserveReadNames);
-        samComparison.setCheckMate(false);
-        samComparison.setCanonicalMdzForComparison(rtc.canonicalMdzForComparison);
-        while (sourceIterator.hasNext()) {
-            final SAMRecord expected = sourceIterator.next();
-            if (expected.getReadUnmappedFlag()) {
-                // We don't store unmapped reads, so skip this source record
-                continue;
-            }
-
-            SAMRecord actual;
-            while (true) {
-                assertTrue("Not enough records in destination SAM/BAM file", destIterator.hasNext());
-                actual = destIterator.next();
-                if (!actual.getReadUnmappedFlag()) {
-                    break;
-                }
-            }
-
-            Alignments.AlignmentEntry gobyActual = null;
-            if (gobyReader != null) {
-                assertTrue("Not enough records in goby compact-alignment file", gobyReader.hasNext());
-                gobyActual = gobyReader.next();
-            }
-
-
-            if (rtc.compare) {
-                final int compared = samComparison.compare(expected, actual, gobyActual);
-                if (rtc.stopAtOneFailure && compared > 0) {
-                    fail("Comparison failed");
-                }
-            }
-            if (rtc.dumpReadNames) {
-                boolean dumpReadNames = true;
-                /*
-                if (!expected.getReadName().equals(actual.getReadName())) {
-                    dumpReadNames = true;
-                }
-                */
-                if (expected.getAlignmentStart() != actual.getAlignmentStart()) {
-                    dumpReadNames = true;
-                }
-                if (gobyActual != null) {
-                    /*
-                    if (!expected.getReadName().equals(gobyActual.getReadName())) {
-                        dumpReadNames = true;
-                    }
-                    */
-                    if (expected.getAlignmentStart() != gobyActual.getPosition() + 1) {
-                        dumpReadNames = true;
-                    }
-                }
-                if (dumpReadNames) {
-                    System.out.println("------------------------------");
-                    System.out.println("e=" + expected.getReadName() + " / " + expected.getAlignmentStart());
-                    System.out.println("a=" + actual.getReadName() + " / " + actual.getAlignmentStart());
-                    if (gobyActual != null) {
-                        System.out.println("g=" + gobyActual.getReadName() + " / " + (gobyActual.getPosition() + 1));
-                    }
-                }
-            }
-            progress.lightUpdate();
-        }
-        samComparison.finished();
-        progress.stop();
-        if (!rtc.stopAtOneFailure && samComparison.getComparisonFailureCount() > 0) {
-            System.out.println("Number of records processed: " + samComparison.getReadNum());
-            fail("Number of comparison failures: " + samComparison.getComparisonFailureCount());
-        } else {
-            System.out.println("Number of records processed: " + samComparison.getReadNum());
-            System.out.println("Number of comparison failures: " + samComparison.getComparisonFailureCount());
-        }
-    }
-
-    private void createCompactFromSam(final RoundTripConfig rtc) throws IOException {
-
-        assertNotNull("Could not locate random-access-genome in specified locations", rtc.inputGenomeFilename);
-        final RandomAccessSequenceInterface genome = new DualRandomAccessSequenceCache();
-        try {
-            System.out.print("Loading random access genome...");
-            ((DualRandomAccessSequenceCache) genome).load(rtc.inputGenomeFilename);
-            System.out.println(" done");
-        } catch (ClassNotFoundException e) {
-            throw new IOException("Could not load genome", e);
-        }
-
-        LOG.info("Converting bam to compact alignment");
-        final SAMToCompactMode importer = new SAMToCompactMode();
-        importer.setInputFile(rtc.sourceBamFilename);
-        importer.setPreserveSoftClips(rtc.keepSoftClips);
-        importer.setPreserveAllTags(true);
-        importer.setOutputFile(rtc.destGobyBasename);
-        importer.setGenome(genome);
-        importer.setPreserveReadQualityScores(rtc.keepQualityScores);
-        importer.execute();
+        rtc.testRoundTripAny();
     }
 
     @Test
@@ -1071,7 +477,7 @@ public class TestSamRecordParser {
                 assertEquals(20, seqvar.getReadIndex());
                 assertEquals(15, seqvar.getPosition());
                 assertEquals(1, seqvar.getToQualitiesAsBytes().length);
-                assertArrayEquals(byteArray(20), seqvar.getToQualitiesAsBytes());
+                assertArrayEquals(RoundTripAlignment.byteArray(20), seqvar.getToQualitiesAsBytes());
             }
         }
     }
@@ -1143,22 +549,7 @@ public class TestSamRecordParser {
         final int[] samSeqvarQueryIndexes = samSeqvarDataMap.keySet().toIntArray();
         Arrays.sort(samSeqvarQueryIndexes);
 
-        /*
-        System.out.println("Sequence variations from .tsv file");
-        dumpSeqVars(seqvarQueryIndexes, seqvarDataMap);
-        System.out.println();
-        System.out.println("Sequence variations from .sam file");
-        dumpSeqVars(seqvarQueryIndexes, samSeqvarDataMap);
-        */
         verifySequenceVariationsMatch(seqvarQueryIndexes, samSeqvarQueryIndexes, seqvarDataMap, samSeqvarDataMap);
-    }
-
-    public static void dumpSeqVars(final int[] seqvarQueryIndexes, final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap) {
-        for (final int queryIndex : seqvarQueryIndexes) {
-            final PerQueryAlignmentData align = seqvarDataMap.get(queryIndex);
-            System.out.println("queryIndex=" + queryIndex);
-            System.out.println(align.toString());
-        }
     }
 
     /**
@@ -1199,15 +590,6 @@ public class TestSamRecordParser {
             }
         }
     }
-
-    private byte[] byteArray(final int... bytes) {
-        final byte[] result = new byte[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            result[i] = (byte) bytes[i];
-        }
-        return result;
-    }
-
 
     /**
      * Test SamToCompact convertBases() can handle requesting
@@ -1258,5 +640,26 @@ public class TestSamRecordParser {
         assertEquals("GG========TT", convertBases);
     }
 
+    /**
+     * We had a problem with the target indexes/lengths being written twice in SamToCompact. The second
+     * time was wrong. This checks that it is right.
+     *
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testTestTargetIndexCreation() throws IOException {
+        final RoundTripAlignment rtc = new RoundTripAlignment();
+        rtc.inputGenomeFilename = TestGobyPaperTop5000s.findMM9();
+        rtc.sourceBamFilename = FilenameUtils.concat(BASE_TEST_INPUT_DIR, "JRODTYG-5000.sam.gz");
+        rtc.destGobyBasename = FilenameUtils.concat(BASE_TEST_OUTPUT_DIR, "JRODTYG-5000");
+        rtc.createCompactFromSam();
+
+        final AlignmentReaderImpl gobyReader = new AlignmentReaderImpl(rtc.destGobyBasename);
+        gobyReader.readHeader();
+        final int[] targetsLengths = gobyReader.getTargetLength();
+        final IndexedIdentifier identifiers = gobyReader.getTargetIdentifiers();
+        final int chr1Index = identifiers.getInt(new MutableString("chr1"));
+        Assert.assertEquals("Incorrect sequence length", 197195432, targetsLengths[chr1Index]);
+    }
 
 }

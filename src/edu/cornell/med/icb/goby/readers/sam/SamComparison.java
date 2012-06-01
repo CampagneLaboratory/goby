@@ -44,6 +44,8 @@ public class SamComparison implements SamComparisonInterface {
     private boolean checkMate;
     private boolean canonicalMdzForComparison;
     private boolean readNamesPreserved;
+    /** If the source can contain an N but the destination be something else. */
+    private boolean allowSourceNs;
 
     private int currentComparisonScore;
 
@@ -259,6 +261,22 @@ public class SamComparison implements SamComparisonInterface {
     }
 
     /**
+     * Get if the source base can be and and thd destination base be a non-N.
+     * @return if...
+     */
+    public boolean isAllowSourceNs() {
+        return allowSourceNs;
+    }
+
+    /**
+     * Set if the source base can be and and thd destination base be a non-N.
+     * @return if...
+     */
+    public void setAllowSourceNs(boolean allowSourceNs) {
+        this.allowSourceNs = allowSourceNs;
+    }
+
+    /**
      * Compare expectedSamRecord vs actualSamRecord. Output details if differences are found.
      * @param expectedSamRecord the expected sam record
      * @param actualSamRecord the actual sam record
@@ -310,7 +328,7 @@ public class SamComparison implements SamComparisonInterface {
         final String eRead = usableReadOf(expectedSamRecord);
         final String aRead = usableReadOf(actualSamRecord);
 
-        compareField("Reads didn't match", eRead, aRead, 3);
+        compareBasesField("Reads didn't match", eRead, aRead, 3);
         if (mappedQualitiesPreserved) {
             compareField("Quality didn't match", expectedSamRecord.getBaseQualityString(), actualSamRecord.getBaseQualityString(), 3);
         } else {
@@ -423,6 +441,33 @@ public class SamComparison implements SamComparisonInterface {
         if (expected != actual) {
             comparisonFailures.add(error);
             currentComparisonScore += failureScore;
+        }
+    }
+
+    /**
+     * Compare an field of bases.
+     * @param error the error message if the comparison failes
+     * @param expected the expected value
+     * @param actual the actual value
+     */
+    private void compareBasesField(final String error, final String expected, final String actual, final int failureScore) {
+        if (!allowSourceNs || expected.length() != actual.length()) {
+            compareField(error, expected, actual, failureScore);
+        } else {
+            final int length = expected.length();
+            boolean same = true;
+            for (int i = 0; i < length; i++) {
+                final char ebase = expected.charAt(i);
+                final char abase = actual.charAt(i);
+                if (ebase != 'N' && ebase != abase) {
+                    same = false;
+                    break;
+                }
+            }
+            if (!same) {
+                comparisonFailures.add(error);
+                currentComparisonScore += failureScore;
+            }
         }
     }
 
