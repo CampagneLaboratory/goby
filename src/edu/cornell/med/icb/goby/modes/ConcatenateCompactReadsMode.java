@@ -254,7 +254,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     // Compact-reads files end with a delimiter (8 x 0xff)
                     // followed by a 4 byte int 0 (4 x 0x00). Strip
                     // these on all but the last file.
-                    bytesToCopy -= (MessageChunksWriter.DELIMITER_LENGTH + MessageChunksWriter.SIZE_OF_MESSAGE_LENGTH);
+                    bytesToCopy -= (MessageChunksWriter.DELIMITER_LENGTH + 1+ MessageChunksWriter.SIZE_OF_MESSAGE_LENGTH);
                 }
 
                 // Copy the file about 10 megabytes at a time. It would probably
