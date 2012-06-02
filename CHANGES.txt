@@ -38,8 +38,7 @@ Towards Goby 2.0
  - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
    one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
    distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is
-   used to estimate the p-value of observing the between group differences. Such empirical p-values can control FWER
-   in the strong sense.
+   used to estimate the p-value of observing the between group differences. 
  - Support empirical p-value for individual bases (VCF output). Write a DMR INFO field that stores how many significant
    sites were found in a moving window that ends at the site (significance is judged according to a configurable
    threshold on the empirical p-value).
