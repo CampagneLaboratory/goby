@@ -45,12 +45,4 @@ public class GroupComparison {
     public String toString() {
         return String.format("[group-comparison index=%d group1=%s/%d group2=%s/%d]",index,nameGroup1,indexGroup1, nameGroup2, indexGroup2);
     }
-
-    /**
-     * Return the comparison in the format String[] {nameGroup1,nameGroup2}.
-     * @return
-     */
-    public String[] format() {
-        return new String[]{nameGroup1,nameGroup2};
-    }
 }

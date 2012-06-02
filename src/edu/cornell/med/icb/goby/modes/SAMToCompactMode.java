@@ -49,6 +49,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Converts alignments in the SAM or BAM format to the compact alignment format.

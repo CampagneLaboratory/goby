@@ -110,10 +110,10 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     private int numberOfReadEntriesToProcess = 10000;
 
     /**
-     * If quality scores were found in the current input file.
+     * If quality scores were found in the current input files.
      */
     boolean qualityScoresFound;
-
+    
     /**
      * Returns the mode name defined by subclasses.
      *

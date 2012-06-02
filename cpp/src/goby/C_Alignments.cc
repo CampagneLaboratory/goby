@@ -344,7 +344,7 @@ extern "C" {
             writerHelper->smallestQueryIndex = min(value, writerHelper->smallestQueryIndex);
             writerHelper->largestQueryIndex = max(value, writerHelper->largestQueryIndex);
         }
-    }
+        }
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%u\n", value));
         gobyAlignments_observeQueryIndex(writerHelper, value);

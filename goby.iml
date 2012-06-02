@@ -212,7 +212,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" scope="RUNTIME">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
@@ -308,7 +308,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/fastutil-6.3.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/reflections-0.9.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -317,7 +317,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/protobuf-java-2.4.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/guava-r08.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -344,7 +344,16 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/guava-r08.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/slf4j-nop-1.6.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/slf4j-api-1.6.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -362,7 +371,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/reflections-0.9.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/protobuf-java-2.4.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -371,16 +380,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/slf4j-nop-1.6.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/slf4j-api-1.6.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/fastutil-6.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
