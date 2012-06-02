@@ -1,0 +1,6 @@
+[submodule "testsupport"]
+	path = testsupport
+	url = git@github.com:CampagneLaboratory/testsupport.git
+[submodule "buildsupport"]
+	path = buildsupport
+	url = git@github.com:CampagneLaboratory/buildsupport.git
