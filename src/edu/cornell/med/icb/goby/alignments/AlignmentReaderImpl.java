@@ -565,7 +565,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         readIndex();
         this.alignmentEntryReader.flush();
         repositionInternal(targetIndex, position, true);
-    }
+            }
 
     /**
      * Reposition to a genomic position. The goBack flag, when true, allows to reposition to positions that

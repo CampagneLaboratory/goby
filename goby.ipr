@@ -1006,7 +1006,7 @@
     </dictionary>
   </component>
   <component name="ProjectKey">
-    <option name="state" value="https://pbtech-vc.med.cornell.edu/public/svn/icb/trunk/goby" />
+    <option name="state" value="https://pbtech-vc.med.cornell.edu/public/svn/icb/branches/goby2RCs" />
   </component>
   <component name="ProjectModuleManager">
     <modules>
@@ -1050,8 +1050,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1085,7 +1083,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1141,9 +1138,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="JavaRebel" />
       <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-      </method>
+      <method />
     </configuration>
     <configuration default="false" name="FisherExact" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" runner="emma" />
@@ -1175,7 +1170,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1209,7 +1203,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1260,7 +1253,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1294,7 +1286,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1328,7 +1319,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1362,7 +1352,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1397,7 +1386,6 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1432,7 +1420,6 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1466,7 +1453,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1500,7 +1486,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1534,7 +1519,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1703,7 +1687,7 @@
       <option name="MAIN_CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="package" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx3g  -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/library/rJava/jri&quot; " />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g  -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/library/rJava/jri&quot; " />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />

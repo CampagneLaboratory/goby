@@ -1,8 +1,4 @@
-Towards 2.1
- - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
-   depths independently of fragments.
-2.0 RC1
-  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
+Towards Goby 2.0
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
    compact-to-sam.
  - Refactor AlignmentWriter to introduce an interface and make it easier to create facades that modify the behaviour
@@ -42,8 +38,7 @@ Towards 2.1
  - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
    one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
    distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is
-   used to estimate the p-value of observing the between group differences. Such empirical p-values can control FWER
-   in the strong sense.
+   used to estimate the p-value of observing the between group differences. 
  - Support empirical p-value for individual bases (VCF output). Write a DMR INFO field that stores how many significant
    sites were found in a moving window that ends at the site (significance is judged according to a configurable
    threshold on the empirical p-value).
@@ -77,7 +72,7 @@ Towards 2.1
    2,080,948 which can stored with about 230 MB).
  - AlignmentEntry field insertSize is now stored in protobuf with sint32 rather than uint32 since negative values can be
    stored in this field.
-
+ - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3

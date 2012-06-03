@@ -223,7 +223,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
         genome = new DualRandomAccessSequenceCache();
         try {
-            ((DualRandomAccessSequenceCache)genome).load(inputGenome);
+            ((DualRandomAccessSequenceCache) genome).load(inputGenome);
         } catch (ClassNotFoundException e) {
             throw new IOException("Could not load genome", e);
         }
@@ -462,12 +462,12 @@ public class CompactToSAMMode extends AbstractGobyMode {
                         fragIndexToAlignmentsMap.remove(fragIndex);
                     }
                     if (needFragmentIndexes.isEmpty()) {
-                    // since we have a complete list, we can now forget the queryIndex and its fragments:
-                    queryIndexToFragmentsMap.remove(queryIndex);
-                    break;
+                        // since we have a complete list, we can now forget the queryIndex and its fragments:
+                        queryIndexToFragmentsMap.remove(queryIndex);
+                        break;
+                    }
                 }
             }
-        }
         }
 
         // return true if found  foundFragmentIndexes is a subset of needFragmentIndexes
@@ -564,6 +564,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             }
             try {
                 outputSam.addAlignment(samRecord);
+
             } catch (RuntimeException e) {
                 System.out.println("entry: \n" + toExport.getAlignmentEntry().toString());
                 System.out.println(toExport.toString());
@@ -583,7 +584,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             return Integer.parseInt(tokens[2]);
         }
         if ("A".equals(type)) {
-            return  tokens[2].charAt(0);
+            return tokens[2].charAt(0);
         }
         LOG.warn("Attribute type %c is currently not supported, storing as string type");
         return tokens[2];
@@ -594,8 +595,9 @@ public class CompactToSAMMode extends AbstractGobyMode {
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
-        this.genome=genome;
+        this.genome = genome;
     }
+
     /**
      * Main method.
      *

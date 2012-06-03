@@ -34,8 +34,8 @@ import java.util.ServiceLoader;
  * statistical testing.
  *
  * @author Nyasha Chambwe
- *         Date: Mar 24, 2010
- *         Time: 3:29:26 PM
+ * Date: Mar 24, 2010
+ * Time: 3:29:26 PM
  */
 public class DifferentialExpressionAnalysis {
     /**
@@ -261,45 +261,45 @@ public class DifferentialExpressionAnalysis {
                 }
                 for (final GroupComparison groupComparison : groupComparisons) {
 
-                    // evaluate differences between groups:
-                    if (eval("fold-change")) {
-                        results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
-                    }
-                    //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
-                    if (eval("fold-change-magnitude")) {
-                        results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
-                    }
-                    if (eval("log2-fold-change")) {
-                        results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
-                    }
-
-                    ttestflag = checkTtest();
-                    if (ttestflag) {
-                        if (eval("t-test")) {
-                            results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
-                        }
-                    }
-                    if (eval("fisher")) {
-                        results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
-                    }
-                    if (eval("fisher-r")) {
-                        results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);
-                    }
-                    if (eval("chi-square")) {
-                        results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
-                    }
+                // evaluate differences between groups:
+                if (eval("fold-change")) {
+                    results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
                 }
-                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-
-                if (eval("Bonferroni")) {
-                    results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
+                if (eval("fold-change-magnitude")) {
+                    results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
                 }
-                if (eval("BH")) {
-                    results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                if (eval("log2-fold-change")) {
+                    results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
                 }
 
+                ttestflag = checkTtest();
+                if (ttestflag) {
+                    if (eval("t-test")) {
+                        results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
+                    }
+                }
+                if (eval("fisher")) {
+                    results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
+                }
+                if (eval("fisher-r")) {
+                    results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);
+                }
+                if (eval("chi-square")) {
+                    results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
+                }
             }
+            final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+            final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
+
+            if (eval("Bonferroni")) {
+                results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+            }
+            if (eval("BH")) {
+                results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+            }
+
+        }
         }
         return results;
     }
