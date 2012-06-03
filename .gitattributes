@@ -6,16 +6,16 @@
 *.c text
 *.h text
 *.java text
-*.properties
-*.xml
-*.jsap
-*.tsv
-*.txt
-*.proto
-*.fa
-*.fasta
-*.fq
-*.fastq
+*.properties text
+*.xml text
+*.jsap text
+*.tsv text
+*.txt text
+*.proto text
+*.fa text
+*.fasta text
+*.fq text
+*.fastq text
 
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf
