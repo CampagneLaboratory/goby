@@ -1438,7 +1438,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
         sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
         readOriginIndices.add(source.hasReadOriginIndex() && storeReadOrigins ? source.getReadOriginIndex() : MISSING_VALUE);
-        pairFlags.add(source.hasPairFlags() ? source.getPairFlags() : MISSING_VALUE);
+        pairFlags.add(source.hasPairFlags() ? reduceSamFlags(source) : MISSING_VALUE);
         scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
 
@@ -1488,10 +1488,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-        //   System.out.println(alignmentEntry);
+    //       System.out.println(alignmentEntry);
         return alignmentEntry;
     }
-
+    // mask the strand bit from pair flag (we store it separately anyway)
+    private int reduceSamFlags(Alignments.AlignmentEntry source) {
+        return source.getPairFlags() & (~16);
+    }
+    // reconstitute the sam Flag with strand information:
+    private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
+        return samFlag | (matchesReverseStrand?16:0);
+    }
     private boolean isEmpty(final Alignments.SequenceVariation varBuilder) {
         return useTemplateBasedCompression && fastEqualsInternal( varBuilder);
     }
@@ -1714,7 +1721,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         anInt = pairFlags.getInt(index);
         if (anInt != MISSING_VALUE) {
-            result.setPairFlags(anInt);
+            result.setPairFlags(restoreSamFlags(anInt,result.getMatchingReverseStrand()));
         }
         anInt = scores.getInt(index);
         if (anInt != MISSING_VALUE) {
