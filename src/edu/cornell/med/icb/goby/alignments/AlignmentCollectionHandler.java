@@ -62,7 +62,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
-            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
+            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true",
+            "rewrite-mate-reverse-strand:boolean, When this flag is true and domain optimizations are enabled, we do not store the mate strand explicitly in samFlags, but instead write it back from the strand of the mate entry. In general the two should agree, but this is not garanteed as some aligners may produce incorrect BAM files. Disable this if you need to preserve exactly the sam flags from the input.:true"
 
     );
     private String statsFilename;
@@ -129,7 +130,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         enableDomainOptimizations = doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
-
+        rewriteMateReverseStrand = doc().getBoolean("rewrite-mate-reverse-strand");
         if (debug(1)) {
             try {
                 final boolean appending = new File(statsFilename).exists();
@@ -163,7 +164,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 10;
+    public static final int VERSION = 11;
     private int streamVersion;
 
     @Override
@@ -474,7 +475,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         linkBuilder.setPosition(otherEntry.getPosition());
         linkBuilder.setFragmentIndex(otherEntry.getFragmentIndex());
         linkBuilder.clearOptimizedIndex();
+        if (rewriteMateReverseStrand) {
+            if (otherEntry.getMatchingReverseStrand()) {
+                // note that this ignores the initial value of mateReverseStrand. We just set it again from the orientation
+                // of the mate in the alignment.
+                entry.setPairFlags(entry.getPairFlags() | 32 /* mate reverse strand */);
+            }
+        }
     }
+
+    private boolean rewriteMateReverseStrand = true;
 
     int findIndex(IntSortedSet list, int position) {
         int index = 0;
@@ -1311,6 +1321,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private Alignments.AlignmentEntry previousPartial;
     private int countAggregatedWithMultiplicity;
 
+    public void setRewriteMateReverseStrand(boolean rewriteMateReverseStrand) {
+        this.rewriteMateReverseStrand = rewriteMateReverseStrand;
+    }
+
     private Alignments.AlignmentEntry transform(final int index, int indexInReducedCollection, final Alignments.AlignmentEntry source) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(source);
         final int position = source.getPosition();
@@ -1343,12 +1357,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         result.clearQueryIndex();
 
         recordVariationQualitiesAndClear(source, result, result.getSequenceVariationsList());
-
+        int samFlags = 0;
         final boolean entryMatchingReverseStrand = source.getMatchingReverseStrand();
         Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), source,
                 source.getPairAlignmentLink());
+        samFlags = source.getPairFlags();
         if (link == null) {
             result.clearPairAlignmentLink();
+            // erase mate reverse strand flag, we will recover it when we re-establish the link:
+            if (isEnableDomainOptimizations() && rewriteMateReverseStrand) {
+                samFlags &= ~32 /* mate reverse strand */;
+            }
         } else {
             result.setPairAlignmentLink(link);
         }
@@ -1438,7 +1457,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
         sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
         readOriginIndices.add(source.hasReadOriginIndex() && storeReadOrigins ? source.getReadOriginIndex() : MISSING_VALUE);
-        pairFlags.add(source.hasPairFlags() ? reduceSamFlags(source) : MISSING_VALUE);
+        pairFlags.add(source.hasPairFlags() ? reduceSamFlags(samFlags) : MISSING_VALUE);
         scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
 
@@ -1488,26 +1507,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-    //       System.out.println(alignmentEntry);
+        //       System.out.println(alignmentEntry);
         return alignmentEntry;
     }
+
     // mask the strand bit from pair flag (we store it separately anyway)
-    private int reduceSamFlags(Alignments.AlignmentEntry source) {
-        return source.getPairFlags() & (~16);
+    private int reduceSamFlags(int samFlags) {
+        return samFlags & (~16);
     }
+
     // reconstitute the sam Flag with strand information:
     private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
-        return samFlag | (matchesReverseStrand?16:0);
+        return samFlag | (matchesReverseStrand ? 16 : 0);
     }
+
     private boolean isEmpty(final Alignments.SequenceVariation varBuilder) {
-        return useTemplateBasedCompression && fastEqualsInternal( varBuilder);
+        return useTemplateBasedCompression && fastEqualsInternal(varBuilder);
     }
 
     final ByteArrayOutputStream byteBufferSVO1 = new ByteArrayOutputStream();
     final ByteArrayOutputStream byteBufferSVO2 = new ByteArrayOutputStream();
     private byte[] EMPTY_SEQ_VAR_SERIALIZED;
 
-    private boolean fastEqualsInternal( Alignments.SequenceVariation o2) {
+    private boolean fastEqualsInternal(Alignments.SequenceVariation o2) {
         // The protobuf message.equals method is a performance  bottleneck when performing template compression. See
         //http://www.mail-archive.com/protobuf@googlegroups.com/msg02534.html
         // This method  first serializes the two messages to bytes, then compare the byte arrays. This
@@ -1721,7 +1743,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         anInt = pairFlags.getInt(index);
         if (anInt != MISSING_VALUE) {
-            result.setPairFlags(restoreSamFlags(anInt,result.getMatchingReverseStrand()));
+            result.setPairFlags(restoreSamFlags(anInt, result.getMatchingReverseStrand()));
         }
         anInt = scores.getInt(index);
         if (anInt != MISSING_VALUE) {

@@ -347,8 +347,9 @@ public class TestAlignmentChunkCodec1 {
 
         final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
         alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        alignmentCollectionHandler.setRewriteMateReverseStrand(false);
         codec.setHandler(alignmentCollectionHandler);
-        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 100000);
+        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 10000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
@@ -397,6 +398,7 @@ public class TestAlignmentChunkCodec1 {
 
         final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
         alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        alignmentCollectionHandler.setRewriteMateReverseStrand(false);
         codec.setHandler(alignmentCollectionHandler);
         final Alignments.AlignmentCollection.Builder collection = loadCollectionNoPerm("test-data/alignment-hybrid-codec/EJOYQAZ-small.entries", 0, 1000);
 
