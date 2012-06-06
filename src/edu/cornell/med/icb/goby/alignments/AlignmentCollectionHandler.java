@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
@@ -156,7 +157,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public GeneratedMessage parse(final InputStream uncompressedStream) throws IOException {
-        return Alignments.AlignmentCollection.parseFrom(uncompressedStream);
+         final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
+         codedInput.setSizeLimit(Integer.MAX_VALUE);
+
+        return Alignments.AlignmentCollection.parseFrom(codedInput);
     }
 
     int numChunksProcessed = 0;
@@ -803,10 +807,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
         float ratioListSizes = ((float) encodedLengths.size() + encodedValues.size()) / (float) list.size();
         final boolean result = encodedLengths.size() > 10 && ratioListSizes < 1;
-
+        /*
         if (result) {
-            //      System.out.println("Using run-length encoding for "+label);
-        }
+                  System.out.println("Using run-length encoding for "+label + " encodedLengths.size() "+encodedLengths.size() );
+        } */
         return result;
     }
 
