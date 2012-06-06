@@ -85,7 +85,7 @@
         </switch>
         <switch>
             <id>preserve-read-name</id>
-            <longFlag>preserve-read-name</longFlag>
+            <longFlag>preserve-read-names</longFlag>
             <help>When this switch is provided, read names (QNAME) will be preserved.
             </help>
         </switch>
