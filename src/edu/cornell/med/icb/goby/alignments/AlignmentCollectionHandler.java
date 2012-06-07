@@ -167,7 +167,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-    public static final int VERSION = 10;
+
+    public static final int VERSION = 12;
     private int streamVersion;
 
     @Override
@@ -742,8 +743,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             useRunLength = bitInput.readBit() == 1;
         }
         if (useRunLength) {
-            final IntArrayList encodedLengths = new IntArrayList();
-            final IntArrayList encodedValues = new IntArrayList();
+            encodedLengths.clear();
+            encodedValues.clear();
             decodeArithmeticInternal(bitInput, encodedLengths);
             decodeArithmeticInternal(bitInput, encodedValues);
 
@@ -754,21 +755,34 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     }
-
+    final IntArrayList encodedLengths = new IntArrayList();
+    final IntArrayList encodedValues = new IntArrayList();
     private void decodeArithmeticInternal(InputBitStream bitInput, IntList list) throws IOException {
         final int size = bitInput.readNibble();
         if (size == 0) {
             return;
         }
+        final boolean directEncoding = streamVersion >= 12 ? bitInput.readBit() == 1 : false;
         final boolean hasNegatives = bitInput.readBit() == 1;
-        final int numTokens = bitInput.readNibble();
 
+        final int numTokens = bitInput.readNibble();
         final int[] distinctvalue = new int[numTokens];
-        for (int i = 0; i < numTokens; i++) {
-            // -1 makes 0 symbol -1 (missing value) again
+        if (!directEncoding) {
+
+            for (int i = 0; i < numTokens; i++) {
+                // -1 makes 0 symbol -1 (missing value) again
+                final int token = bitInput.readNibble();
+                final int anInt = hasNegatives ? Fast.nat2int(token) : token - 1;
+                distinctvalue[i] = anInt;
+            }
+        } else {
+            // read the first token and reconstruct the others in sequence:
             final int token = bitInput.readNibble();
             final int anInt = hasNegatives ? Fast.nat2int(token) : token - 1;
-            distinctvalue[i] = anInt;
+            distinctvalue[0] = anInt;
+            for (int i = 1; i < numTokens; i++) {
+                distinctvalue[i] = distinctvalue[i - 1] + 1;
+            }
         }
         if (hasNegatives) {
             // we must sort the symbol values again since the bijection has permuted them
@@ -785,8 +799,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         final long writtenStart = out.writtenBits();
-        IntArrayList encodedLengths = new IntArrayList();
-        IntArrayList encodedValues = new IntArrayList();
+        encodedLengths.clear();
+        encodedValues.clear();
         encodeRunLengths(list, encodedLengths, encodedValues);
         if (runLengthEncoding(label, list, encodedLengths, encodedValues)) {
             out.writeBit(1);
@@ -820,23 +834,47 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             // no list to write.
             return true;
         }
-        final IntSet distinctSymbols = getTokens(list);
+        final IntSortedSet distinctSymbols = getTokens(list);
+        int minSymbol = distinctSymbols.firstInt();
+        int maxSymbol = distinctSymbols.lastInt();
+        int symbolRange = maxSymbol - minSymbol;
+        int numDistinctSymbols = distinctSymbols.size();
+        final boolean hasNegativeValues = minSymbol < 0;
+        if (symbolRange + 1 > numDistinctSymbols) {
+            final int[] symbolValues = distinctSymbols.toIntArray();
+            // new in version 12:
+            out.writeBit(false);
+            out.writeBit(hasNegativeValues);
+            out.writeNibble(distinctSymbols.size());    //LIST.distinct-values.size()
+            for (final int token : distinctSymbols) {
+                // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
 
-        final int[] symbolValues = distinctSymbols.toIntArray();
-        final boolean hasNegativeValues = hasNegatives(symbolValues);
-        out.writeBit(hasNegativeValues);
-        out.writeNibble(distinctSymbols.size());    //LIST.distinct-values.size()
-        for (final int token : distinctSymbols) {
+                final int anInt = token;
+                final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt + 1;
+
+                out.writeNibble(nat);
+            }
+
+            encode(label, list, out, distinctSymbols, symbolValues);
+            return false;
+        } else {
+          //  System.out.printf("%s symbolRange=%d symbolSize=%d%n", label, symbolRange, numDistinctSymbols);
+
+            // in this branch, we know the symbols are consecutive in values, so we write the min symbol, and the number of symbols.
+            out.writeBit(true);
+            out.writeBit(hasNegativeValues);
+            out.writeNibble(distinctSymbols.size());    //LIST.distinct-values.size()
+
             // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
 
-            final int anInt = token;
+            final int anInt = minSymbol;
             final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt + 1;
 
             out.writeNibble(nat);
-        }
 
-        encode(label, list, out, distinctSymbols, symbolValues);
-        return false;
+            encodeDirect(label, list, out, minSymbol, numDistinctSymbols);
+            return false;
+        }
     }
 
     private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
@@ -857,6 +895,40 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
             for (final int dp : list) {
                 final int symbolCode = Arrays.binarySearch(symbolValues, dp);
+                assert symbolCode >= 0 : "symbol code must exist.";
+                coder.encode(symbolCode, out);
+            }
+            coder.flush(out);
+        }
+    }
+
+    /**
+     * Here, we know that symbol values are consecutive, so we don't need to use binarySearch to code list values into symbols.
+     * We use direct access instead.
+     *
+     * @param label
+     * @param list
+     * @param out
+     * @throws IOException
+     */
+    private void encodeDirect(String label, final IntList list, final OutputBitStream out, int minSymbol, int numSymbols) throws IOException {
+        if (useArithmeticCoding) {
+            final FastArithmeticCoder coder = new FastArithmeticCoder(numSymbols);
+            for (final int dp : list) {
+                final int symbolCode = dp - minSymbol;
+                assert symbolCode >= 0 : "symbol code must exist.";
+                coder.encode(symbolCode, out);
+            }
+            coder.flush(out);
+        } else if (useHuffmanCoding) {
+            final int[] frequencies = frequenciesDirect(list, minSymbol, numSymbols);
+            final HuffmanCodec codec = new HuffmanCodec(frequencies);
+            final CodeWordCoder coder = codec.coder();
+            for (int freq : frequencies) {
+                out.writeNibble(freq);
+            }
+            for (final int dp : list) {
+                final int symbolCode = dp - minSymbol;
                 assert symbolCode >= 0 : "symbol code must exist.";
                 coder.encode(symbolCode, out);
             }
@@ -892,6 +964,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int[] freqs = new int[symbolValues.length];
         for (final int value : list) {
             final int index = Arrays.binarySearch(symbolValues, value);
+            freqs[index] += 1;
+        }
+        return freqs;
+    }
+
+    // return the frequencies of symbols in the list
+    private int[] frequenciesDirect(IntList list, int minSymbol, int numSymbols) {
+        final int[] freqs = new int[numSymbols];
+        for (final int value : list) {
+            final int index = value - minSymbol;
             freqs[index] += 1;
         }
         return freqs;
