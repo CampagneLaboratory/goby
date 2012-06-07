@@ -193,7 +193,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
      */
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
-        return Math.max(numberOfQueries, 0);
+        return Math.max(0,Math.max(numberOfQueries, largestQueryIndex-smallestQueryIndex));
     }
 
     /**
