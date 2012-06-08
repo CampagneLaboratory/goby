@@ -78,7 +78,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Concatenate compact reads files, count the "
             + "number of reads, and track the min and max sequence length of all of the reads.";
 
-    private long numberOfReads;
+    private int numberOfReads;
     private int minReadLength = Integer.MAX_VALUE;
     private int maxReadLength = Integer.MIN_VALUE;
     private String optionalFilterExtension;
@@ -174,33 +174,15 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     for (final Reads.ReadEntry readEntry : readsReader) {
                         // only concatenate if (1) there is no filter or (2) the read index is in the filter.
                         if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
-
-                            numberOfReads++;
-                            if (readEntry.hasDescription()) {
-                                writer.setDescription(readEntry.getDescription());
-                            }
-                            if (readEntry.hasReadIdentifier()) {
-                                writer.setIdentifier(readEntry.getReadIdentifier());
-                            }
-                            if (readEntry.hasQualityScores()) {
-                                final byte[] scores = ReadsReader.decodeQualityScores(readEntry);
-                                if (scores != null) {
-                                    writer.setQualityScores(scores);
-                                }
-                            }
+                            final Reads.ReadEntry.Builder readEntryBuilder = Reads.ReadEntry.newBuilder(readEntry);
+                            readEntryBuilder.setReadIndex(numberOfReads);
+                            writer.appendEntry(readEntryBuilder);
                             minReadLength = Math.min(minReadLength, readEntry.getReadLength());
                             maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
-                            if (readEntry.hasSequence()) {
-                                ReadsReader.decodeSequence(readEntry, sequence);
-                                writer.setSequence(sequence);
-                            } else {
-                                writer.setSequence("");
-                            }
-                            writer.appendEntry();
+                            numberOfReads++;
                         } else {
                             removedByFilterCount++;
                         }
-
                     }
                     readsReader.close();
                     readsReader = null;
