@@ -23,7 +23,6 @@ import com.google.protobuf.Message;
 import java.io.*;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * The original Goby Gzip Chunk codec. Simply GZips the protocol buffer collection.
@@ -73,7 +72,7 @@ public class GZipChunkCodec implements ChunkCodec {
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream(10000);
 
-        final OutputStream gzipOutputStream = new GzipOutputStreamWithCustomLevel(Deflater.BEST_COMPRESSION,
+        final OutputStream gzipOutputStream = new GzipOutputStreamWithCustomLevel(Deflater.BEST_SPEED,
                 byteBuffer);
         readCollection.writeTo(gzipOutputStream);
         gzipOutputStream.flush();
