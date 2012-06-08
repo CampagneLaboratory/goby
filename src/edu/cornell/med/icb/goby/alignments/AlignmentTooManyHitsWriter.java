@@ -20,6 +20,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,7 +29,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * This class write the too many hit datastructure Protocol Buffer format.
+ * Writes the too many hit data structure Protocol Buffer format.
  * See Alignements.proto for the specification of this format.
  *
  * @author Fabien Campagne
@@ -39,6 +41,11 @@ public class AlignmentTooManyHitsWriter implements Closeable {
     private final OutputStream tooManyHitsOutput;
     private final Alignments.AlignmentTooManyHits.Builder tooManyHits;
     private Alignments.AmbiguousLocation.Builder newAmbiguousLocation;
+    /**
+       * A collection where the append  AmbiguousLocation until it is time to write the PB messages. We use a fastutil collection
+       * for performance upon add when the list becomes large.
+       */
+      private ObjectArrayList<Alignments.AmbiguousLocation>localCachedCollection=new ObjectArrayList<Alignments.AmbiguousLocation>();
 
 
     public AlignmentTooManyHitsWriter(final String outputBasename, final int alignerThreshold) throws IOException {
@@ -60,7 +67,12 @@ public class AlignmentTooManyHitsWriter implements Closeable {
      * {@inheritDoc}
      */
     public void close() throws IOException {
+        if (!localCachedCollection.isEmpty()) {
+             tooManyHits.addAllHits(localCachedCollection);
+             localCachedCollection.clear();
+        }
         write();
+
     }
 
     public void write() throws IOException {
@@ -68,6 +80,8 @@ public class AlignmentTooManyHitsWriter implements Closeable {
             tooManyHits.build().writeTo(tooManyHitsOutput);
             tooManyHitsOutput.close();
             tooManyHitsWritten = true;
+            //recover the memory:
+            tooManyHits.clear();
         }
     }
 
@@ -93,7 +107,9 @@ public class AlignmentTooManyHitsWriter implements Closeable {
         assert tooManyHits.hasAlignerThreshold() : "append> writer missing aligner threshold";
         assert newAmbiguousLocation.hasAtLeastNumberOfHits() : "append> new record missing atLeastNumberOfHits";
         if (newAmbiguousLocation.getAtLeastNumberOfHits() > tooManyHits.getAlignerThreshold()) {
-            tooManyHits.addHits(newAmbiguousLocation.build());
+            final Alignments.AmbiguousLocation builder = newAmbiguousLocation.build();
+            localCachedCollection.add(builder);
+
         }
         //tooManyHits.addHits(newAmbiguousLocation.build());
         // whether or not the hit was added, reset/create a new one
