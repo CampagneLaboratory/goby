@@ -390,10 +390,13 @@ public class Merge {
             System.out.println("Warning: could not find depth/max-length-of-match in too many hits information.");
         }
         final AlignmentTooManyHitsWriter mergedTmhWriter = new AlignmentTooManyHitsWriter(outputFile, consensusAlignerThreshold);
-        final IntSet intSet = tmhMap.keySet();
-        pg.expectedUpdates = intSet.size();
-        for (final int queryIndex : intSet) {
-            mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth.get(queryIndex));
+
+        pg.expectedUpdates = tmhMap.size();
+        pg.displayFreeMemory=true;
+        for (final Int2IntMap.Entry entry : tmhMap.int2IntEntrySet()) {
+            final int queryIndex=entry.getIntKey();
+            final int value=entry.getIntValue();
+            mergedTmhWriter.append(queryIndex, value, queryIndex2MaxDepth.get(queryIndex));
             pg.lightUpdate();
         }
         mergedTmhWriter.close();
