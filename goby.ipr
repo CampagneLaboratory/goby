@@ -1714,6 +1714,8 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
+        <option name="AntTarget" enabled="true" antfile="file://$PROJECT_DIR$/build.xml" target="compile-tests" />
+        <option name="Make" enabled="false" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>

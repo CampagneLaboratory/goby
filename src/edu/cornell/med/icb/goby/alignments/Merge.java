@@ -61,10 +61,6 @@ import java.util.List;
  *         Date: May 5, 2009
  */
 public class Merge {
-    /*
-     * TODO: extensive documentation
-     * TODO: what data structures are used and how they are updated
-     */
 
     /**
      * Used to log debug and informational messages.

@@ -270,7 +270,7 @@ public class RoundTripAlignment {
         final String fullPath = FilenameUtils.getFullPath(filename);
         final String basename = FilenameUtils.getBaseName(filename);
         final String ext = FilenameUtils.getExtension(filename);
-        return fullPath + basename + toAdd + ext;
+        return fullPath + basename + toAdd + "." + ext;
     }
 
     public void createCompactFromSam() throws IOException {

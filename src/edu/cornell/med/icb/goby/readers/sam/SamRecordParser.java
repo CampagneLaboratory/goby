@@ -268,7 +268,8 @@ public class SamRecordParser implements Resettable {
         return gobySamRecord;
     }
 
-    private void copyQuality(boolean hasReadQuals, ByteList source, ByteArrayList destination, int readStringPosition, int readStringEnd) {
+    private void copyQuality(final boolean hasReadQuals, final ByteList source, final ByteList destination,
+                             final int readStringPosition, final int readStringEnd) {
         if (hasReadQuals) {
             destination.size(0);
             for (int i = readStringPosition; i < readStringEnd; i++) {

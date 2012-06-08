@@ -36,7 +36,8 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Report differences between two alignment files.
+ * Report differences between two alignment files.  Note that this mode cannot handle pair alignments because it does
+ * not take fragment indices into account when comparing entries. On such alignments, comparisons will be unreliable.
  *
  * @author Fabien Campagne
  *         Date: Apr 28, 2009
@@ -52,7 +53,9 @@ public class DiffAlignmentMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Report differences between two alignment files.";
+            "Report differences between two alignment files. Note that this mode cannot handle paired alignments " +
+                    "because it does not take fragment indices into account when comparing entries. " +
+                    "On such alignments, comparisons will be unreliable.";
 
     private String[] inputFilenames;
 

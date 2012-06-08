@@ -66,8 +66,31 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("HZFWPTI-5000.sam.gz");
         rtc.inputGenomeFilename = findThousandGenome();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of HZFWPTI. Round trip test.
+     *
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000HZFWPTINoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("HZFWPTI-5000.sam.gz");
+        rtc.inputGenomeFilename = findThousandGenome();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of HZFWPTI. Round trip test.
+     *
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000HZFWPTINoScoresNoClips() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("HZFWPTI-5000.sam.gz");
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.keepQualityScores = false;
         rtc.keepSoftClips = false;
         rtc.testRoundTripAny();
     }
@@ -82,6 +105,17 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("UANMNXR-5000.sam.gz");
         rtc.inputGenomeFilename = findThousandGenome();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of UANMNXR. Round trip test.
+     *
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000UANMNXRNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("UANMNXR-5000.sam.gz");
+        rtc.inputGenomeFilename = findThousandGenome();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -102,6 +136,23 @@ public class TestGobyPaperTop5000s {
         rtc.compareAtEachNewPosition = false;
         rtc.allowSourceNs = true;
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of MYHZZJH. Round trip test.
+     * Spliced.
+     *
+     * NOTE: There are 11 reads where the source read has an N and the destination read as a non-N base.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000MYHZZJHNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("MYHZZJH-5000.sam.gz");
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sortGoby = true;
+        rtc.sortSam = true;
+        rtc.compareAtEachNewPosition = false;
+        rtc.allowSourceNs = true;
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -122,6 +173,23 @@ public class TestGobyPaperTop5000s {
         rtc.compareAtEachNewPosition = false;
         rtc.allowSourceNs = true;
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of ZHUUJKS. Round trip test.
+     * Spliced.
+     *
+     * NOTE: There are 60 reads where the source read has an N and the destination read as a non-N base.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000ZHUUJKSNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("ZHUUJKS-5000.sam.gz");
+        rtc.inputGenomeFilename = findThousandGenome();
+        rtc.sortGoby = true;
+        rtc.sortSam = true;
+        rtc.compareAtEachNewPosition = false;
+        rtc.allowSourceNs = true;
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -139,6 +207,20 @@ public class TestGobyPaperTop5000s {
         rtc.sortSam = true;
         rtc.compareAtEachNewPosition = false;
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of EJOYQAZ. Round trip test.
+     * Spliced with tophat.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000EJOYQAZNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("EJOYQAZ-5000.sam.gz");
+        rtc.inputGenomeFilename = findHG19();
+        rtc.sortGoby = true;
+        rtc.sortSam = true;
+        rtc.compareAtEachNewPosition = false;
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -152,6 +234,16 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("JRODTYG-5000.sam.gz");
         rtc.inputGenomeFilename = findMM9();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of JRO. Round trip test.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000JRODTYGNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("JRODTYG-5000.sam.gz");
+        rtc.inputGenomeFilename = findMM9();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -165,6 +257,16 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("ZVLRRJH-5000.sam.gz");
         rtc.inputGenomeFilename = findHG18();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of ZVLRRJH. Round trip test.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000ZVLRRJHNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("ZVLRRJH-5000.sam.gz");
+        rtc.inputGenomeFilename = findHG18();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -178,6 +280,16 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("XAAOBVT-5000.sam.gz");
         rtc.inputGenomeFilename = findHG18();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of XAAOBVT. Round trip test.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000XAAOBVTNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("XAAOBVT-5000.sam.gz");
+        rtc.inputGenomeFilename = findHG18();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -191,6 +303,16 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("UCCWRUX-5000.sam.gz");
         rtc.inputGenomeFilename = findHG18();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of UCCWRUX. Round trip test.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000UCCWRUXNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("UCCWRUX-5000.sam.gz");
+        rtc.inputGenomeFilename = findHG18();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }
@@ -204,6 +326,16 @@ public class TestGobyPaperTop5000s {
         final RoundTripAlignment rtc = setupRoundTrip("HENGLIT-5000.sam.gz");
         rtc.inputGenomeFilename = findCelegansGenome();
         rtc.testRoundTripAny();
+    }
+
+    /**
+     * The first 5000 alignments of HENGLIT. Round trip test.
+     * @throws java.io.IOException error
+     */
+    @Test
+    public void testRoundTripFirst5000HENGLITNoScores() throws IOException {
+        final RoundTripAlignment rtc = setupRoundTrip("HENGLIT-5000.sam.gz");
+        rtc.inputGenomeFilename = findCelegansGenome();
         rtc.keepQualityScores = false;
         rtc.testRoundTripAny();
     }

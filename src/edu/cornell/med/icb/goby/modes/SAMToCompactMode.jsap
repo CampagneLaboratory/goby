@@ -133,19 +133,7 @@
             <required>false</required>
             <help>Maximum number of locations that a read can match to be included in the alignment entries.</help>
         </flaggedOption>
-        <flaggedOption>
-            <id>quality-filter-parameters</id>
-            <shortFlag>p</shortFlag>
-            <defaults>
-                <string>threshold=1</string>
-            </defaults>
-            <longFlag>quality-filter-parameters</longFlag>
-            <required>false</required>
-            <help>Parameters to configure the quality filter. Use threshold=0.05 to filter out alignments with more than
-                5% bases that differ from the reference. Please note that the default value has changed in Goby 2.0 to
-                not filter any hits (Goby 1.9 had the fitler on by default at 5%).
-            </help>
-        </flaggedOption>
+
         <flaggedOption>
             <id>number-of-reads</id>
             <defaults>
@@ -163,17 +151,7 @@
                 were more reads in the input than provided in the file to import.
             </help>
         </flaggedOption>
-        <flaggedOption>
-            <id>third-party-input</id>
-            <longFlag>third-party-input</longFlag>
-            <defaults>
-                <string>true</string>
-            </defaults>
-            <stringParser>
-                <classname>BooleanStringParser</classname>
-            </stringParser>
-            <help>Use to import files not produced by Goby.</help>
-        </flaggedOption>
+
         <flaggedOption>
             <id>quality-encoding</id>
             <longFlag>quality-encoding</longFlag>
