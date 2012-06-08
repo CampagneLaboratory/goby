@@ -229,7 +229,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
             System.err.println(
                     "\n!!\n"
                             + "!! An out of memory exception was thrown."
-                            + "!! Try running with more memory such as -Xmx1200m -XX:PermSize=384m\n"
+                            + "!! Try running with more memory such as -Xmx4g -XX:PermSize=384m\n"
                             + "!!\n");
             throw e;
         }

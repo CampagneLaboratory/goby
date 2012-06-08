@@ -311,6 +311,7 @@ public class Merge {
      * @param numberOfReads the number of reads
      * @param minQueryIndex the minimum query index, in the case where we are working with a split read situation
      * @param basenames     Input alignment basenames
+     * @return number of reads
      * @throws IOException error processing
      */
     public static int prepareMergedTooManyHits(
@@ -357,10 +358,10 @@ public class Merge {
             tmhReader.close();
         }
         boolean foundDepth = false;
-        LOG.debug("TMH third pass");
-        ProgressLogger pg=new ProgressLogger(LOG);
-        pg.priority= Level.DEBUG;
-        pg.expectedUpdates=numberOfReads;
+
+        ProgressLogger pg = new ProgressLogger(LOG);
+        pg.priority = Level.DEBUG;
+        pg.expectedUpdates = basenames.length;
         pg.start("TMH third pass");
 
         for (final String basename : basenames) {
@@ -369,7 +370,7 @@ public class Merge {
             final IntSet queryIndices = tmhReader.getQueryIndices();
             for (final int queryIndex : queryIndices) {
                 final int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
-                pg.lightUpdate();
+
                 if (depthForBasename == queryIndex2MaxDepth.get(queryIndex)) {
                     if (depthForBasename != 1) {
                         final int newValue = tmhMap.get(queryIndex) + tmhReader.getNumberOfHits(queryIndex);
@@ -379,18 +380,24 @@ public class Merge {
                 }
             }
             tmhReader.close();
+            pg.update();
+
         }
         pg.done();
-        LOG.debug("TMH fourth pass");
+        pg.start("TMH fourth pass");
+
         if (!foundDepth) {
             System.out.println("Warning: could not find depth/max-length-of-match in too many hits information.");
         }
         final AlignmentTooManyHitsWriter mergedTmhWriter = new AlignmentTooManyHitsWriter(outputFile, consensusAlignerThreshold);
         final IntSet intSet = tmhMap.keySet();
+        pg.expectedUpdates = intSet.size();
         for (final int queryIndex : intSet) {
             mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth.get(queryIndex));
+            pg.lightUpdate();
         }
         mergedTmhWriter.close();
+        pg.done();
         return numberOfReads;
     }
 
