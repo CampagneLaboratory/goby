@@ -1,8 +1,10 @@
 Towards 2.1
  - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
-   depths independently of fragments.
-2.0 RC1
-  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
+   depths independently of fragments.   
+ - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
+   the quality scores contained in the file.
+2.0 RC2
+ - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
    compact-to-sam.
  - Refactor AlignmentWriter to introduce an interface and make it easier to create facades that modify the behaviour

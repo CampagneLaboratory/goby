@@ -22,16 +22,21 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
+import edu.cornell.med.icb.goby.readers.sam.SAMRecordIterable;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecord;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,10 +65,10 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Read the first n (defaults to 10,000) entries of a compact-reads or FASTQ file and report the minimum, " +
-            "maximum, and average quality score value and provide a guess at the quality encoding scheme " +
-            "(Phred, Sanger, Illumina/Solexa). It's worth noting that compact-reads files, if created correctly, " +
-            "should always report Phred. ";
+            "Read the first n (defaults to 10,000) entries of a compact-reads, fastq, bam, sam, or sam.gz file " +
+            "and report the minimum, maximum, and average quality score value and provide a guess at the quality " +
+            "encoding scheme (Phred, Sanger, Illumina/Solexa). It's worth noting that compact-reads files, if " +
+            "created correctly, should always report Phred. ";
 
     /**
      * The reads files to process.
@@ -222,8 +227,11 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
             for (final String inputFilename : inputFilenames) {
                 processingStart(inputFilename);
                 final int numEntriesSampled;
-                if (inputFilename.endsWith(".compact-reads")) {
+                final String compareName = inputFilename.toLowerCase();
+                if (compareName.endsWith(".compact-reads")) {
                     numEntriesSampled = processCompactReadsFile(inputFilename);
+                } else if (compareName.endsWith(".bam") || compareName.endsWith(".sam") || compareName.endsWith(".sam.gz")) {
+                    numEntriesSampled = processSamReadsFile(inputFilename);
                 } else {
                     numEntriesSampled = processFastqFile(inputFilename);
                 }
@@ -320,6 +328,36 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
             if (quality.length() != 0) {
                 qualityScoresFound = true;
                 for (final int qualScore : quality.array()) {
+                    minQualScore = Math.min(qualScore, minQualScore);
+                    maxQualScore = Math.max(qualScore, maxQualScore);
+                    numQualScoresSampled++;
+                    sumQualScores += Math.abs(qualScore);
+                }
+                if (++i == numberOfReadEntriesToProcess) {
+                    break;
+                }
+            }
+        }
+        return i;
+    }
+
+    /**
+     * Process ONE sam, sam.gz, or bam file.
+     * @param inputFilename the filename to process
+     * @return the number of read entries processed
+     * @throws IOException error reading file
+     */
+    private int processSamReadsFile(final String inputFilename) throws IOException {
+        // Create directory for output file if it doesn't already exist
+        int i = 0;
+        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFilename));
+        for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
+            final String quality = samRecord.getBaseQualityString();
+            if (quality != null && quality.length() != 0) {
+                qualityScoresFound = true;
+                for (final int qualScore : quality.toCharArray()) {
+                //for (final int qualScore : samRecord.getBaseQualities()) {
                     minQualScore = Math.min(qualScore, minQualScore);
                     maxQualScore = Math.max(qualScore, maxQualScore);
                     numQualScoresSampled++;

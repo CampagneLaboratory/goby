@@ -60,8 +60,8 @@ public class GobySamSegment implements Resettable {
     boolean reverseStrand;
 
     private MutableString debugMessage;
-    ByteArrayList softClippedQualityLeft;
-    ByteArrayList softClippedQualityRight;
+    ByteList softClippedQualityLeft;
+    ByteList softClippedQualityRight;
 
     /**
      * Not for use.

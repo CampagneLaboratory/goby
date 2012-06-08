@@ -98,8 +98,8 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
         }*/
 
         final int maxOccurence = calculateQueryIndexOccurrences(entry);
-        /*if (queryIndex == 26396) {
-            System.out.println("queryIndex=26396 qio=" + maxOccurence);
+        /*if (queryIndex == 127177) {
+            System.out.println("queryIndex=413876 qio=" + maxOccurence);
         } */
 
         final int smallIndex = getSmallIndex(queryIndex, maxOccurence);

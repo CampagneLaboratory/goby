@@ -208,7 +208,18 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             }
 
             final int startPosition = alignmentEntry.getPosition();
-            final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+            final int queryAlignmentLength = alignmentEntry.getQueryAlignedLength();
+            final int targetAlignmentLength = alignmentEntry.getTargetAlignedLength();
+
+            final String leftClipBases = alignmentEntry.getSoftClippedBasesLeft();
+            final String leftClipQuals =
+                    ArrayUtils.toString(alignmentEntry.getSoftClippedQualityLeft().toByteArray());
+            final String rightClipBases = alignmentEntry.getSoftClippedBasesRight();
+            final String rightClipQuals =
+                    ArrayUtils.toString(alignmentEntry.getSoftClippedQualityRight().toByteArray());
+            final String placedUnmappedBases = alignmentEntry.getPlacedUnmappedSequence();
+            final String placedUnmappedQuals =
+                    ArrayUtils.toString(alignmentEntry.getPlacedUnmappedQuality().toByteArray());
 
             if (!headerWritten && outputFormat == OutputFormat.PLAIN || outputFormat == OutputFormat.HTML) {
                 printHeader(outputStream);
@@ -235,7 +246,14 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 startPosition,
                                 alignmentEntry.getQueryLength(),
-                                alignmentLength,
+                                queryAlignmentLength,
+                                targetAlignmentLength,
+                                leftClipBases,
+                                leftClipQuals,
+                                rightClipBases,
+                                rightClipQuals,
+                                placedUnmappedBases,
+                                placedUnmappedQuals,
                                 alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
                                 alignmentEntry.getScore(),
                                 alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255,
@@ -266,7 +284,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                     "%s\t%s\t%s\t%s\t" +   // PairFlags...
                                     "%s\t%s\t%s\t%s\t" +   // Splice Forward
                                     "%s\t%s\t%s\t" +   // Splice Backward
-                                    "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
+                                    "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%d\t%s\t%d%n",
                                     hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                     alignmentEntry.hasAmbiguity() ? alignmentEntry.getAmbiguity() : 0,
                                     alignmentEntry.hasQueryIndexOccurrences() ? alignmentEntry.getQueryIndexOccurrences() : 0,
@@ -281,14 +299,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                     alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
                                     alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getFragmentIndex() : "",
                                     alignmentEntry.hasSplicedBackwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedBackwardAlignmentLink().getTargetIndex()) : "",
-                                    alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",
+                                    alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",                                                    
                                     getReferenceId(alignmentEntry.getTargetIndex()),
                                     referenceLength,
                                     alignmentEntry.getNumberOfIndels(),
                                     alignmentEntry.getNumberOfMismatches(),
                                     alignmentEntry.getScore(),
                                     startPosition,
-                                    alignmentLength,
+                                    queryAlignmentLength,
+                                    targetAlignmentLength,
                                     alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
                                     alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
                             numWritten++;
@@ -489,7 +508,14 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "targetIdentifier", "type:string",
                             "position", "type:int,align:right,renderFunction:formatNumber",
                             "queryLength", "type:int,align:right,renderFunction:formatNumber",
-                            "alignmentLength", "type:int,align:right,renderFunction:formatNumber",
+                            "queryAlignmentLength", "type:int,align:right,renderFunction:formatNumber",
+                            "targetAlignmentLength", "type:int,align:right,renderFunction:formatNumber",
+                            "leftClipBases", "type:string",
+                            "leftClipQuals", "type:string",
+                            "rightClipBases", "type:string",
+                            "rightClipQuals", "type:string",
+                            "placedUnmappedBases", "type:string",
+                            "placedUnmappedQuals", "type:string",
                             "strand", "type:string",
                             "score", "type:int,align:right,renderFunction:formatNumber",
                             "mappingQuality", "type:int,align:right,renderFunction:formatNumber",
@@ -510,7 +536,6 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "referenceLength", "type:int,align:right,renderFunction:formatNumber",
                             "numIndels", "type:int,align:right,renderFunction:formatNumber",
                             "numMismatches", "type:int,align:right,renderFunction:formatNumber"
-
                     );
                     break;
                 case PLAIN:
@@ -536,7 +561,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "numMismatches",
                             "score",
                             "position",
-                            "alignmentLength",
+                            "queryAlignmentLength",
+                            "targetAlignmentLength",
                             "strand",
                             "mappingQuality"));
                     break;

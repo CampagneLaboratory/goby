@@ -696,9 +696,9 @@ public final class Alignments {
     boolean hasSoftClippedQualityRight();
     com.google.protobuf.ByteString getSoftClippedQualityRight();
     
-    // optional bytes placedUnmappedSequence = 40;
+    // optional string placedUnmappedSequence = 40;
     boolean hasPlacedUnmappedSequence();
-    com.google.protobuf.ByteString getPlacedUnmappedSequence();
+    String getPlacedUnmappedSequence();
     
     // optional bytes placedUnmappedQuality = 41;
     boolean hasPlacedUnmappedQuality();
@@ -1115,14 +1115,36 @@ public final class Alignments {
       return softClippedQualityRight_;
     }
     
-    // optional bytes placedUnmappedSequence = 40;
+    // optional string placedUnmappedSequence = 40;
     public static final int PLACEDUNMAPPEDSEQUENCE_FIELD_NUMBER = 40;
-    private com.google.protobuf.ByteString placedUnmappedSequence_;
+    private java.lang.Object placedUnmappedSequence_;
     public boolean hasPlacedUnmappedSequence() {
       return ((bitField0_ & 0x20000000) == 0x20000000);
     }
-    public com.google.protobuf.ByteString getPlacedUnmappedSequence() {
-      return placedUnmappedSequence_;
+    public String getPlacedUnmappedSequence() {
+      java.lang.Object ref = placedUnmappedSequence_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          placedUnmappedSequence_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getPlacedUnmappedSequenceBytes() {
+      java.lang.Object ref = placedUnmappedSequence_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        placedUnmappedSequence_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
     
     // optional bytes placedUnmappedQuality = 41;
@@ -1199,7 +1221,7 @@ public final class Alignments {
       softClippedBasesRight_ = "";
       softClippedQualityLeft_ = com.google.protobuf.ByteString.EMPTY;
       softClippedQualityRight_ = com.google.protobuf.ByteString.EMPTY;
-      placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+      placedUnmappedSequence_ = "";
       placedUnmappedQuality_ = com.google.protobuf.ByteString.EMPTY;
       readName_ = "";
     }
@@ -1303,7 +1325,7 @@ public final class Alignments {
         output.writeBytes(33, softClippedQualityRight_);
       }
       if (((bitField0_ & 0x20000000) == 0x20000000)) {
-        output.writeBytes(40, placedUnmappedSequence_);
+        output.writeBytes(40, getPlacedUnmappedSequenceBytes());
       }
       if (((bitField0_ & 0x40000000) == 0x40000000)) {
         output.writeBytes(41, placedUnmappedQuality_);
@@ -1444,7 +1466,7 @@ public final class Alignments {
       }
       if (((bitField0_ & 0x20000000) == 0x20000000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(40, placedUnmappedSequence_);
+          .computeBytesSize(40, getPlacedUnmappedSequenceBytes());
       }
       if (((bitField0_ & 0x40000000) == 0x40000000)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1673,7 +1695,7 @@ public final class Alignments {
         bitField0_ = (bitField0_ & ~0x20000000);
         softClippedQualityRight_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x40000000);
-        placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+        placedUnmappedSequence_ = "";
         bitField0_ = (bitField0_ & ~0x80000000);
         placedUnmappedQuality_ = com.google.protobuf.ByteString.EMPTY;
         bitField1_ = (bitField1_ & ~0x00000001);
@@ -3339,15 +3361,22 @@ public final class Alignments {
         return this;
       }
       
-      // optional bytes placedUnmappedSequence = 40;
-      private com.google.protobuf.ByteString placedUnmappedSequence_ = com.google.protobuf.ByteString.EMPTY;
+      // optional string placedUnmappedSequence = 40;
+      private java.lang.Object placedUnmappedSequence_ = "";
       public boolean hasPlacedUnmappedSequence() {
         return ((bitField0_ & 0x80000000) == 0x80000000);
       }
-      public com.google.protobuf.ByteString getPlacedUnmappedSequence() {
-        return placedUnmappedSequence_;
+      public String getPlacedUnmappedSequence() {
+        java.lang.Object ref = placedUnmappedSequence_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          placedUnmappedSequence_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
       }
-      public Builder setPlacedUnmappedSequence(com.google.protobuf.ByteString value) {
+      public Builder setPlacedUnmappedSequence(String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3361,6 +3390,11 @@ public final class Alignments {
         placedUnmappedSequence_ = getDefaultInstance().getPlacedUnmappedSequence();
         onChanged();
         return this;
+      }
+      void setPlacedUnmappedSequence(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x80000000;
+        placedUnmappedSequence_ = value;
+        onChanged();
       }
       
       // optional bytes placedUnmappedQuality = 41;
@@ -10563,7 +10597,7 @@ public final class Alignments {
       "\025softClippedBasesRight\030\037 \001(\t\022\036\n\026softClip" +
       "pedQualityLeft\030  \001(\014\022\037\n\027softClippedQuali" +
       "tyRight\030! \001(\014\022\036\n\026placedUnmappedSequence\030" +
-      "( \001(\014\022\035\n\025placedUnmappedQuality\030) \001(\014\022\020\n\010" +
+      "( \001(\t\022\035\n\025placedUnmappedQuality\030) \001(\014\022\020\n\010" +
       "readName\030* \001(\t\"p\n\025RelatedAlignmentEntry\022" +
       "\024\n\014target_index\030\001 \001(\r\022\020\n\010position\030\002 \001(\r\022",
       "\026\n\016fragment_index\030\003 \001(\r\022\027\n\017optimized_ind" +
