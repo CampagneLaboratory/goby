@@ -23,7 +23,6 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountIterateAlignments;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.xml.AnnotationLength;
@@ -53,7 +52,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -122,10 +120,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
     private String infoOutputFilename;
     private boolean removeSharedSegments;
-    /**
-     * List of comparisons to perform.
-     */
-    private ArrayList<GroupComparison> groupComparisonsList;
 
 
     @Override
@@ -173,7 +167,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             doComparison = true;
         }
         if (doComparison) {
-              groupComparisonsList = deAnalyzer.parseCompare(compare);
+            deAnalyzer.parseCompare(compare);
         }
         deAnalyzer.setRunInParallel(parallel);
         includeReferenceNameCommas = jsapResult.getString("include-reference-names");

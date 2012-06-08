@@ -71,7 +71,6 @@ public class GZipChunkCodec implements ChunkCodec {
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream(10000);
-
         final OutputStream gzipOutputStream = new GzipOutputStreamWithCustomLevel(Deflater.DEFAULT_COMPRESSION,
                 byteBuffer);
         readCollection.writeTo(gzipOutputStream);

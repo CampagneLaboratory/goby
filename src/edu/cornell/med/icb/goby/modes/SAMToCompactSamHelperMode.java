@@ -466,7 +466,7 @@ public class SAMToCompactSamHelperMode extends AbstractGobyMode {
                 if (hasPaired) {
                     currentEntry.setPairFlags(samRecord.getFlags());
                     final int inferredInsertSize = samRecord.getInferredInsertSize();
-                        currentEntry.setInsertSize(inferredInsertSize);
+                    currentEntry.setInsertSize(inferredInsertSize);
 
                 }
 

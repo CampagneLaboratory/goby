@@ -102,7 +102,6 @@ public class TestExportableAlignmentEntryData {
             }
             System.out.printf("Processing queryIndex=%d with description '%s'%n", alignmentEntry.getQueryIndex(),
                     actualReadsEntry.readName);
-
             exportData.buildFrom(alignmentEntry, actualReadsEntry.readBases, actualReadsEntry.readQuals);
             assertFalse(exportData.getInvalidMessage(), exportData.isInvalid());
             validateEntry(exportData, samDetailsMap.get(exportData.getQueryIndex()));

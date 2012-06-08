@@ -305,7 +305,7 @@ public class TestAlignmentChunkCodec1 {
 
     }
 
-    // @Test
+    //@Test
     // will not run on server.
     public void roundTripLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -317,7 +317,7 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection, false);
     }
 
- //   @Test
+  //  @Test
     // will not run on server.
     public void roundTripLarge2() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -328,7 +328,7 @@ public class TestAlignmentChunkCodec1 {
 
         assertRoundTripMatchExpected(codec, collection, false);
     }
-     //    @Test
+    //     @Test
     // will not run on server.
     public void roundTripLargeHZ() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -347,13 +347,14 @@ public class TestAlignmentChunkCodec1 {
 
         final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
         alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        alignmentCollectionHandler.setRewriteMateReverseStrand(false);
         codec.setHandler(alignmentCollectionHandler);
-        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 100000);
+        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries", 0, 10000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
 
-  //  @Test
+   // @Test
     // this test will not run on the server.
     public void roundTripUANMNXR() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -397,6 +398,7 @@ public class TestAlignmentChunkCodec1 {
 
         final AlignmentCollectionHandler alignmentCollectionHandler = new AlignmentCollectionHandler();
         alignmentCollectionHandler.setEnableDomainOptimizations(true);
+        alignmentCollectionHandler.setRewriteMateReverseStrand(false);
         codec.setHandler(alignmentCollectionHandler);
         final Alignments.AlignmentCollection.Builder collection = loadCollectionNoPerm("test-data/alignment-hybrid-codec/EJOYQAZ-small.entries", 0, 1000);
 

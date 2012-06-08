@@ -1,4 +1,23 @@
 <?xml version="1.0"?>
+<!--
+  ~ Copyright (C) 2009-2012 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+
 <project name="goby-release" basedir="." default="release">
     <import file="${basedir}/buildsupport/build.xml"/>
 
@@ -21,8 +40,8 @@
 	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
 	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
         <property name="gobyfile" value="${releasedir}/${tag}-goby.zip"/>
-        <property name="srcUrl" value="https://${svnhost}/public/svn/icb/trunk/goby"/>
-        <property name="tagUrl" value="https://${svnhost}/public/svn/icb/tags/${tag}"/>
+        <property name="srcUrl" value="https://${svnhost}/public/svn/campagnelab/goby/branches/2.0RC2"/>
+        <property name="tagUrl" value="https://${svnhost}/public/svn/campagnelab/goby/tags/${tag}"/>
 	</target>
 
     <target name="getrevision" unless="revision" description="Get the SVN revision to use for the release">

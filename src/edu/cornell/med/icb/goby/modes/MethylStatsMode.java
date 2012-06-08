@@ -26,9 +26,7 @@ import edu.cornell.med.icb.goby.xml.MethylStats;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -37,7 +35,6 @@ import javax.xml.bind.Marshaller;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 
 
 /**
@@ -70,7 +67,7 @@ public class MethylStatsMode extends AbstractGobyMode {
     private RandomAccessSequenceCache genome;
     private int[] fragmentLengthBins = new int[]{1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350, 400, 450, 500};
     private static final Logger LOG = Logger.getLogger(MethylStatsMode.class);
-    private String[] inputFilenames;
+    private String inputFilename;
     private static final boolean QUICK = false;
 
     private boolean doFragments = true;
@@ -78,12 +75,6 @@ public class MethylStatsMode extends AbstractGobyMode {
 
     private int[] convertedCystosineGlobalFieldIndex;
     private int[] unconvertedCystosineGlobalFieldIndex;
-    private int numSamples;
-    private int minCoverageThreshold = 10;
-    private String depthOutputFilename;
-    private String conversionRateOutputFilename;
-    private String cytosineFrequenciesOutputFilename;
-    private String nonConversionPerContextOutputFilename;
 
 
     @Override
@@ -109,15 +100,10 @@ public class MethylStatsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFilenames = jsapResult.getStringArray("input");
+        inputFilename = jsapResult.getString("input");
         statsOuputFilename = jsapResult.getString("output");
-        minCoverageThreshold = jsapResult.getInt("min-coverage-threshold");
-        final String genomeBasename = jsapResult.getString("genome");
-        depthOutputFilename = jsapResult.getString("depths-output");
-        conversionRateOutputFilename = jsapResult.getString("conversion-rates-output");
-        cytosineFrequenciesOutputFilename = jsapResult.getString("cytosine-frequencies-output");
-        nonConversionPerContextOutputFilename = jsapResult.getString("non-conversion-per-context-output");
 
+        final String genomeBasename = jsapResult.getString("genome");
         if (genomeBasename != null) {
             genome = new RandomAccessSequenceCache();
             try {
@@ -176,137 +162,108 @@ public class MethylStatsMode extends AbstractGobyMode {
             } else {
                 System.out.println("Fragment analysis is not activated (activate with --fragments/-f).");
             }
+            String VcfFilename = inputFilename;
+            VCFParser vcfParser = new VCFParser(VcfFilename);
+            try {
+                vcfParser.readHeader();
 
-            final String[] samples = getSampleIds();
-            MethylStats[] methylStats = new MethylStats[samples.length];
-            for (int i = 0; i < samples.length; i++) {
-                methylStats[i] = backgroundStats.copy();
-                methylStats[i].sampleId = samples[i];
-            }
-            ProgressLogger fileProgress = new ProgressLogger(LOG);
-            fileProgress.itemsName = "files";
-            fileProgress.displayFreeMemory = false;
-            fileProgress.count = inputFilenames.length;
-            fileProgress.priority = Level.INFO;
-            fileProgress.start("Starting to scan input files..");
-            for (String vcfFilename : inputFilenames) {
+                String samples[] = vcfParser.getColumnNamesUsingFormat();
+                sampleDepthGlobalFieldIndex = new int[samples.length];
+                methylationRateGlobalFieldIndex = new int[samples.length];
+                convertedCystosineGlobalFieldIndex = new int[samples.length];
+                unconvertedCystosineGlobalFieldIndex = new int[samples.length];
+                baseCallGlobalFieldIndex = new int[samples.length];
 
+                int i = 0;
+                MethylStats[] methylStats = new MethylStats[samples.length];
 
-                try {
-                    final VCFParser vcfParser = new VCFParser(vcfFilename);
-                    vcfParser.readHeader();
-
-                    final String[] newSamples = vcfParser.getColumnNamesUsingFormat();
-                    if (!Arrays.equals(samples, newSamples)) {
-                        System.err.printf("Error: samples must match across all input files. Samples from first file were %s and from %s were %s ",
-                                ObjectArrayList.wrap(samples),
-                                vcfFilename,
-                                ObjectArrayList.wrap(newSamples));
-
+                for (String sample : samples) {
+                    sampleDepthGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "GB");
+                    methylationRateGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "MR");
+                    convertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "C");
+                    unconvertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "Cm");
+                    if (convertedCystosineGlobalFieldIndex[i] == -1 || unconvertedCystosineGlobalFieldIndex[i] == -1) {
+                        System.err.println("Fatal: the vcf file must contain the FORMAT fields Cm and C.");
                         System.exit(1);
                     }
-                    sampleDepthGlobalFieldIndex = new int[samples.length];
-                    methylationRateGlobalFieldIndex = new int[samples.length];
-                    convertedCystosineGlobalFieldIndex = new int[samples.length];
-                    unconvertedCystosineGlobalFieldIndex = new int[samples.length];
-                    baseCallGlobalFieldIndex = new int[samples.length];
+                    baseCallGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "BC");
 
-                    int i = 0;
+                    methylStats[i] = backgroundStats.copy();
+                    methylStats[i].sampleId = sample;
+                    i++;
+                }
+                int positionGlobalFieldIndex = vcfParser.getGlobalFieldIndex("POS", "VALUE");
+                int chromosomeGlobalFieldIndex = vcfParser.getGlobalFieldIndex("CHROM", "VALUE");
+                int strandGlobalFieldIndex = vcfParser.getGlobalFieldIndex("INFO", "Strand");
 
 
-                    for (final String sample : samples) {
-                        sampleDepthGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "GB");
-                        methylationRateGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "MR");
-                        convertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "C");
-                        unconvertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "Cm");
-                        if (convertedCystosineGlobalFieldIndex[i] == -1 || unconvertedCystosineGlobalFieldIndex[i] == -1) {
-                            System.err.println("Fatal: the vcf file must contain the FORMAT fields Cm and C.");
+                MethylStats stats = backgroundStats.copy();
+                ProgressLogger pg = new ProgressLogger(LOG);
+                pg.priority = org.apache.log4j.Level.INFO;
+                pg.itemsName = "sites";
+                pg.displayFreeMemory = true;
+                pg.start();
+                final int numSamples = samples.length;
+
+
+                while (vcfParser.hasNextDataLine()) {
+                    pg.lightUpdate();
+                    String reference = vcfParser.getFieldValue(chromosomeGlobalFieldIndex).toString();
+                    if (ignoreRef(reference)) {
+                        vcfParser.next();
+                        continue;
+                    }
+                    int referenceIndex = genome.getReferenceIndex(reference);
+
+                    if (referenceIndex != refIndexOfNextCpG) {
+                        // we have change reference sequence or are past the next site.
+                        // need to update next CpG position
+                        if (referenceIndex > genome.numberOfSequences()) {
+                            System.out.printf("alignment reference %s does not exist in genome.", reference);
                             System.exit(1);
                         }
-                        baseCallGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "BC");
-
-                        i++;
+                        referenceSequenceSize = genome.getSequenceSize(referenceIndex);
+                        refIndexOfNextCpG = referenceIndex;
                     }
-                    int positionGlobalFieldIndex = vcfParser.getGlobalFieldIndex("POS", "VALUE");
-                    int chromosomeGlobalFieldIndex = vcfParser.getGlobalFieldIndex("CHROM", "VALUE");
-                    int strandGlobalFieldIndex = vcfParser.getGlobalFieldIndex("INFO", "Strand");
+                    // VCF positions are 1-based, but Goby genome positions are 0-based, adjust here:
+                    int sitePosition = Integer.parseInt(vcfParser.getFieldValue(positionGlobalFieldIndex).toString()) - 1;
+                    char strand = vcfParser.getFieldValue(strandGlobalFieldIndex).charAt(0);
+                    if (doFragments) {
+                        if (isCpG(referenceIndex, sitePosition, strand)) {
 
-
-                    MethylStats stats = backgroundStats.copy();
-                    ProgressLogger pg = new ProgressLogger(LOG);
-                    pg.priority = org.apache.log4j.Level.INFO;
-                    pg.itemsName = "sites";
-                    pg.displayFreeMemory = true;
-                    pg.start("Scanning sites in file " + vcfFilename);
-                    final int numSamples = samples.length;
-
-
-                    while (vcfParser.hasNextDataLine()) {
-                        pg.lightUpdate();
-                        String reference = vcfParser.getFieldValue(chromosomeGlobalFieldIndex).toString();
-                        if (ignoreRef(reference)) {
-                            vcfParser.next();
-                            continue;
-                        }
-                        int referenceIndex = genome.getReferenceIndex(reference);
-
-                        if (referenceIndex != refIndexOfNextCpG) {
-                            // we have change reference sequence or are past the next site.
-                            // need to update next CpG position
-                            if (referenceIndex > genome.numberOfSequences()) {
-                                System.out.printf("alignment reference %s does not exist in genome.", reference);
-                                System.exit(1);
-                            }
-                            referenceSequenceSize = genome.getSequenceSize(referenceIndex);
-                            refIndexOfNextCpG = referenceIndex;
-                        }
-                        // VCF positions are 1-based, but Goby genome positions are 0-based, adjust here:
-                        int sitePosition = Integer.parseInt(vcfParser.getFieldValue(positionGlobalFieldIndex).toString()) - 1;
-                        char strand = vcfParser.getFieldValue(strandGlobalFieldIndex).charAt(0);
-                        if (doFragments) {
-                            if (isCpG(referenceIndex, sitePosition, strand)) {
-
-                                final int fragmentLength = calculateFragmentLength(reference, sitePosition, strand);
-                                if (fragmentLength > 0) {
-                                    for (i = 0; i < numSamples; i++) {
-                                        final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
-                                        if (depthInSample > 10) {
-                                            methylStats[i].observedInSample(depthInSample, fragmentLength);
-                                        }
+                            final int fragmentLength = calculateFragmentLength(reference, sitePosition, strand);
+                            if (fragmentLength > 0) {
+                                for (i = 0; i < numSamples; i++) {
+                                    final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
+                                    if (depthInSample > 10) {
+                                        methylStats[i].observedInSample(depthInSample, fragmentLength);
                                     }
                                 }
                             }
                         }
-                        for (i = 0; i < numSamples; i++) {
-                            final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
-                            methylStats[i].observedDepth(depthInSample);
-                        }
-                        updateCpXs(reference, referenceIndex, sitePosition, strand, methylStats, vcfParser, numSamples);
-
-                        vcfParser.next();
                     }
-                    pg.stop();
-                    pg.done();
 
+                    updateCpXs(reference, referenceIndex, sitePosition, strand, methylStats, vcfParser, numSamples);
 
-                    output.flush();
-                } catch (VCFParser.SyntaxException e) {
-                    System.err.println("exception reading VCF file: " + e);
-                    e.printStackTrace();
+                    vcfParser.next();
                 }
-                fileProgress.update();
+                pg.stop();
+                pg.done();
+//                writeXml(output, samples, methylStats);
+                writeTab(output, samples, methylStats);
+                output.flush();
+            } catch (VCFParser.SyntaxException e) {
+                System.err.println("exception reading VCF file: " + e);
+                e.printStackTrace();
             }
-            fileProgress.done();
-            writeTab(output, samples, methylStats);
-            output.close();
+
         } catch (IOException e) {
-            System.err.println("An error occurred opening the output file. ");
+            System.err.println("An error occured opening the output file. ");
             System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     private void updateCpXs(String reference, int referenceIndex, int sitePosition, char strand,
                             MethylStats[] methylStats, VCFParser vcfParser, int numSamples) {
@@ -339,34 +296,30 @@ public class MethylStatsMode extends AbstractGobyMode {
              depthInSample,
              firstBase, secondBase);      */
                 }
-                if (depthInSample < minCoverageThreshold || mr < 10) {
+                if (depthInSample < 10 || mr < 10) {
                     // discard positions if less than 10 bases observed methylated or less than 10% methylation. We do this to try to avoid
                     // sequencing errors.
                     continue;
                 }
 
                 long[] mCpXfreqs = stats.getMethylCpXFreqs();
-                long[] cPXFreqs = stats.getObservedCpXFreqs();
+
                 switch (base(secondBase, strand)) {
                     case 'C':
                         mCpXfreqs[MethylStats.CPC] += numCm;
-                        cPXFreqs[MethylStats.CPC] += numCm + numCConverted;
                         // final CharSequence baseCalls = vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
                         //   System.out.printf("ref: %s position: %d strand %c %c %c baseCalls=%s %n", reference, sitePosition+1, strand, firstBase, secondBase,baseCalls);
                         break;
                     case 'A':
                         mCpXfreqs[MethylStats.CPA] += numCm;
-                        cPXFreqs[MethylStats.CPA] += numCm + numCConverted;
 
                         break;
                     case 'T':
                         mCpXfreqs[MethylStats.CPT] += numCm;
-                        cPXFreqs[MethylStats.CPT] += numCm + numCConverted;
                         break;
                     case 'G':
                         stats.numCTpG += depthInSample;
                         mCpXfreqs[MethylStats.CPG] += numCm;
-                        cPXFreqs[MethylStats.CPG] += numCm + numCConverted;
                         break;
                 }
             }
@@ -475,69 +428,24 @@ public class MethylStatsMode extends AbstractGobyMode {
                     );
                     fragBinIndex++;
                 }
+                double sum = 0;
+                int depthIndex = 0;
+                for (final int depth : depths) {
+                    sum += methylStat.getNumberCpGsPerDepth()[depthIndex];
+                    depthIndex++;
+                }
+                depthIndex = 0;
+                for (final int depth : depths) {
+                    output.printf("%s\tnormalizedDepth\t%s\t%3.3g%n", sample,
+                            getRange(methylStat.getDepths(), depthIndex),
+                            divide(methylStat.getNumberCpGsPerDepth()[depthIndex],
+                                    sum)
+                    );
+                    depthIndex++;
+                }
             }
         }
-
-        writeDepths(output, samples, methylStats);
-        writeConversionRates(output, samples, methylStats);
-        writeNonCpGMethylationInContext(output, samples, methylStats);
-        writeCytosineFrequencyInContext(output, samples, methylStats);
-    }
-
-    private void writeConversionRates(PrintWriter output, String[] samples, MethylStats[] methylStats) {
-        String outputFilename = conversionRateOutputFilename;
-        if (outputFilename == null) {
-            return;
-        }
-        try {
-            output = new PrintWriter(new FileWriter(outputFilename));
-            output.println("strand\tsample\tnum-converted-not-in-CpG-context\tnum-not-in-CpG-context\tpercent-converted-in-non-CpG-context");
-        } catch (IOException e) {
-            LOG.error(String.format("Cannot open filename for writing %s ", outputFilename), e);
-        }
-        int sampleIndex = 0;
         for (String sample : samples) {
-            char strand = getStrand(sample);
-            String shortSampleId = getSample(sample);
-            MethylStats methylStat = methylStats[sampleIndex];
-
-            output.printf("%c\t%s\t%d\t%d\t%3.5g%n",
-                    strand,
-                    shortSampleId,
-                    methylStat.numConvertedNotCpGContext,
-                    methylStat.numNotCpGContext,
-                    100.0 * divide(methylStat.numConvertedNotCpGContext,
-                            methylStat.numNotCpGContext)
-            );
-
-            sampleIndex++;
-        }
-        output.close();
-    }
-
-    /**
-     * Output a table that breaks down non CpG methylation in the contexts in which it occurs.
-     *
-     * @param output
-     * @param samples
-     * @param methylStats
-     */
-    private void writeNonCpGMethylationInContext(PrintWriter output, String[] samples, MethylStats[] methylStats) {
-        String outputFilename = nonConversionPerContextOutputFilename;
-        if (outputFilename == null) {
-            return;
-        }
-        try {
-            output = new PrintWriter(new FileWriter(outputFilename));
-            output.println("strand\tsample\tcontext\tpercent-of-context-among-not-converted");
-        } catch (IOException e) {
-            LOG.error(String.format("Cannot open filename for writing %s ", outputFilename), e);
-        }
-        int sampleIndex = 0;
-        for (String sample : samples) {
-
-            char strand = getStrand(sample);
-            String shortSampleId = getSample(sample);
             MethylStats methylStat = methylStats[sampleIndex];
             double sumCmpX = 0;
             for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
@@ -545,117 +453,23 @@ public class MethylStatsMode extends AbstractGobyMode {
             }
             for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
 
-                output.printf("%c\t%s\t%s\t%.3g%n",
-                        strand,
-                        shortSampleId,
+                output.printf("%s\tCPX\t%s\t%3.4g%n", sample,
+
                         getCpString(j),
-                        100.0 * divide(methylStat.getMethylCpXFreqs()[j], sumCmpX)
+                        100.0 * divide(methylStat.getMethylCpXFreqs()[j],
+                                sumCmpX)
                 );
             }
 
+            output.printf("%s\tconversionRateNonCpGContext\t%d\t%d\t%3.5g%n",
+                    sample,
+                    methylStat.numConvertedNotCpGContext, methylStat.numNotCpGContext,
+                    100.0 * divide(methylStat.numConvertedNotCpGContext,
+                            methylStat.numNotCpGContext)
+            );
+
             sampleIndex++;
         }
-        output.close();
-    }
-
-    private String getSample(String sample) {
-        if (sample.charAt(1) == '|') {
-            return sample.substring(2);
-        }
-        return sample;
-    }
-
-    private char getStrand(String sample) {
-        return sample.charAt(0);
-    }
-
-    /**
-     * Write the breakdown in context for cytosines that are not converted.
-     *
-     * @param output
-     * @param samples
-     * @param methylStats
-     */
-    private void writeCytosineFrequencyInContext(PrintWriter output, String[] samples, MethylStats methylStats[]) {
-
-        String outputFilename = cytosineFrequenciesOutputFilename;
-        if (outputFilename == null) {
-            return;
-        }
-        try {
-            output = new PrintWriter(new FileWriter(outputFilename));
-            output.println("strand\tsample\tdescription\tcontext\tnumber\tfraction-in-context");
-        } catch (IOException e) {
-            LOG.error(String.format("Cannot open filename for writing %s ", outputFilename), e);
-        }
-        int sampleIndex = 0;
-        for (String sample : samples) {
-            char strand = getStrand(sample);
-            String shortSampleId = getSample(sample);
-            MethylStats methylStat = methylStats[sampleIndex];
-            double sum = 0;
-            for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
-                sum += methylStat.getObservedCpXFreqs()[j];
-            }
-            for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
-
-                output.printf("%c\t%s\tunconverted-cytosine-frequency-in-context\t%s\t%d\t%.2g%n",
-                        strand,
-                        shortSampleId,
-                        getCpString(j),
-                        methylStat.getObservedCpXFreqs()[j],
-                        divide(methylStat.getObservedCpXFreqs()[j], sum)
-                );
-            }
-            sampleIndex++;
-        }
-        output.close();
-    }
-
-
-    private void writeDepths(PrintWriter output, String[] samples, MethylStats[] methylStats) {
-        String outputFilename = depthOutputFilename;
-        if (outputFilename == null) {
-            return;
-        }
-        try {
-            output = new PrintWriter(new FileWriter(outputFilename));
-            output.println("strand\tsample\tdepth-bin\tdepth-mid-point\tlog2-of-depth-midpoint\tdensity\tnum-observed-in-bin");
-        } catch (IOException e) {
-            LOG.error(String.format("Cannot open filename for writing %s ", outputFilename), e);
-        }
-        int sampleIndex = 0;
-        for (String sample : samples) {
-            char strand = getStrand(sample);
-            String shortSampleId = getSample(sample);
-            MethylStats methylStat = methylStats[sampleIndex];
-
-            double sum = 0;
-            long longSum = 0;
-            int depthIndex = 0;
-            for (final int depth : depths) {
-                final long value = methylStat.getNumberCpGsPerDepth()[depthIndex];
-                sum += value;
-                longSum += value;
-                depthIndex++;
-            }
-            depthIndex = 0;
-            for (final int depth : depths) {
-                final int midpoint = getMidpoint(methylStat.getDepths(), depthIndex);
-                output.printf("%c\t%s\t%s\t%d\t%3.3g\t%.2g\t%d%n",
-                        strand,
-                        shortSampleId,
-                        getRange(methylStat.getDepths(), depthIndex),
-                        midpoint,
-                        StrictMath.log(midpoint) / StrictMath.log(2),
-                        divide(methylStat.getNumberCpGsPerDepth()[depthIndex], sum),
-                        methylStat.getNumberCpGsPerDepth()[depthIndex]
-                );
-                depthIndex++;
-            }
-            sampleIndex++;
-        }
-        output.close();
     }
 
 
@@ -679,14 +493,6 @@ public class MethylStatsMode extends AbstractGobyMode {
                 index + 1 < array.length ?
                         Integer.toString(array[index + 1]) :
                         "inf");
-
-    }
-
-    private int getMidpoint(final int[] array, final int index) {
-        if (index >= array.length - 1) {
-            return array[array.length - 1];
-        }
-        return (array[index] + array[index + 1]) / 2;
 
     }
 
@@ -763,11 +569,16 @@ public class MethylStatsMode extends AbstractGobyMode {
         return sum;
     }
 
-    private double divide(double v1, double v2) {
+    private double divide
+            (
+                    double v1,
+                    double v2) {
         return v1 / v2;
     }
 
-    private double sum(LongArrayList array, int offset) {
+    private double sum
+            (LongArrayList
+                     array, int offset) {
         double sum = 0;
         int o = 0;
         for (long value : array) {
@@ -792,29 +603,5 @@ public class MethylStatsMode extends AbstractGobyMode {
     (
             final String[] args) throws JSAPException, IOException {
         new MethylStatsMode().configure(args).execute();
-    }
-
-    /**
-     * Read the first input file header to determine the set of samples in the input.
-     *
-     * @return
-     */
-    public String[] getSampleIds() {
-        final String inputFilename = inputFilenames[0];
-        try {
-
-            VCFParser vcfParser = new VCFParser(inputFilename);
-            vcfParser.readHeader();
-            String samples[] = vcfParser.getColumnNamesUsingFormat();
-            vcfParser.close();
-            return samples;
-        } catch (IOException e) {
-
-        } catch (VCFParser.SyntaxException e) {
-            LOG.error("cannot open input file " + inputFilename, e);
-        }
-        System.err.println("Cannot determine number of samples from first input file");
-        System.exit(1);
-        return new String[0];
     }
 }

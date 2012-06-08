@@ -248,8 +248,9 @@ public class GobySamSegment implements Resettable {
                 final char prevReadChar = seqvar.to.charAt(toLength - 1);
                 final char prevRefChar = seqvar.from.charAt(toLength - 1);
                 // Don't group mutations and indels
-                if ((prevReadChar == '-' && readChar != '-') || (readChar == '-' && prevReadChar != '-') ||
+                if ( (prevReadChar == '-' && readChar != '-') || (readChar == '-' && prevReadChar != '-') ||
                      (prevRefChar == '-' && refChar != '-') || (refChar == '-' && prevRefChar != '-')) {
+
                     makeNewSeqvar = true;
                 }
             }
@@ -274,7 +275,8 @@ public class GobySamSegment implements Resettable {
     public ByteString getSoftClippedQualityRight() {
         return ByteString.copyFrom(softClippedQualityRight.toByteArray());
     }
-     public ByteString getSoftClippedQualityLeft() {
+
+    public ByteString getSoftClippedQualityLeft() {
         return ByteString.copyFrom(softClippedQualityLeft.toByteArray());
     }
 }
