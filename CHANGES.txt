@@ -79,6 +79,14 @@ Towards 2.1
    2,080,948 which can stored with about 230 MB).
  - AlignmentEntry field insertSize is now stored in protobuf with sint32 rather than uint32 since negative values can be
    stored in this field.
+ - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
+ - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
+    the quality scores contained in the file.
+ - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
+   compact-to-sam.
+ - Fixed a problem with concatenate-compact-reads that previously transferred only specific fields of a read to the
+   output file. concatenate-compact-reads now transfers all fields (including pair sequence and quality score).
+ - version mode now prints an official version number if the jar constains a VERSION.txt file.
 
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)

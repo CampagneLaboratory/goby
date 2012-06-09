@@ -70,7 +70,7 @@ public class VersionMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         String versionPrefix = "development";
-        InputStream versionFileStream = this.getClass().getClassLoader().getResourceAsStream("Version.txt");
+        InputStream versionFileStream = this.getClass().getClassLoader().getResourceAsStream("VERSION.txt");
         if (versionFileStream != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(versionFileStream));
             versionPrefix = reader.readLine();  // e.g., 2.0 for instance
