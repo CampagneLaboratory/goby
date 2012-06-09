@@ -21,7 +21,10 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.util.VersionUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Output the goby.jar version number to stdout.
@@ -56,7 +59,7 @@ public class VersionMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -66,7 +69,13 @@ public class VersionMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
+        String versionPrefix = "development";
+        InputStream versionFileStream = this.getClass().getClassLoader().getResourceAsStream("Version.txt");
+        if (versionFileStream != null) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(versionFileStream));
+            versionPrefix = reader.readLine();  // e.g., 2.0 for instance
+        }
         final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
-        System.out.printf("Goby Version: %s%n", version);
+        System.out.printf("Goby Version: %s %s%n", versionPrefix, version.replace("development ", ""));
     }
 }
