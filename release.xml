@@ -47,7 +47,8 @@
 
         <property name="srcUrl" value="https://${svnhost}/public/svn/campagnelab/goby/branches/2.0RC2"/>
         <property name="tagUrl" value="https://${svnhost}/public/svn/campagnelab/goby/tags/${tag}"/>
-    </target>
+
+     </target>
 
     <target name="getrevision" unless="revision" description="Get the SVN revision/Git branch to use for the release">
 
