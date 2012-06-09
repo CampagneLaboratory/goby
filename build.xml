@@ -103,7 +103,7 @@
         <copy file="${config}/log4j-sample.properties" tofile="${classes}/log4j.properties" overwrite="true"
               failonerror="true"/>
         <jar jarfile="${goby-jarfile}">
-
+            <fileset file="Version.txt"/>
             <fileset dir="${classes}"/>
             <zipgroupfileset dir="${lib}">
                 <include name="bdval-api.jar"/>
