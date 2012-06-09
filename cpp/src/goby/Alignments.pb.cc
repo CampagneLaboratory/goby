@@ -395,7 +395,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\025softClippedBasesRight\030\037 \001(\t\022\036\n\026softClip"
     "pedQualityLeft\030  \001(\014\022\037\n\027softClippedQuali"
     "tyRight\030! \001(\014\022\036\n\026placedUnmappedSequence\030"
-    "( \001(\014\022\035\n\025placedUnmappedQuality\030) \001(\014\022\020\n\010"
+    "( \001(\t\022\035\n\025placedUnmappedQuality\030) \001(\014\022\020\n\010"
     "readName\030* \001(\t\"p\n\025RelatedAlignmentEntry\022"
     "\024\n\014target_index\030\001 \001(\r\022\020\n\010position\030\002 \001(\r\022"
     "\026\n\016fragment_index\030\003 \001(\r\022\027\n\017optimized_ind"
@@ -1368,13 +1368,16 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // optional bytes placedUnmappedSequence = 40;
+      // optional string placedUnmappedSequence = 40;
       case 40: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_placedUnmappedSequence:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_placedunmappedsequence()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->placedunmappedsequence().data(), this->placedunmappedsequence().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -1622,9 +1625,12 @@ void AlignmentEntry::SerializeWithCachedSizes(
       33, this->softclippedqualityright(), output);
   }
   
-  // optional bytes placedUnmappedSequence = 40;
+  // optional string placedUnmappedSequence = 40;
   if (has_placedunmappedsequence()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->placedunmappedsequence().data(), this->placedunmappedsequence().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
       40, this->placedunmappedsequence(), output);
   }
   
@@ -1833,10 +1839,13 @@ void AlignmentEntry::SerializeWithCachedSizes(
         33, this->softclippedqualityright(), target);
   }
   
-  // optional bytes placedUnmappedSequence = 40;
+  // optional string placedUnmappedSequence = 40;
   if (has_placedunmappedsequence()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->placedunmappedsequence().data(), this->placedunmappedsequence().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         40, this->placedunmappedsequence(), target);
   }
   
@@ -2089,10 +2098,10 @@ int AlignmentEntry::ByteSize() const {
           this->softclippedqualityright());
     }
     
-    // optional bytes placedUnmappedSequence = 40;
+    // optional string placedUnmappedSequence = 40;
     if (has_placedunmappedsequence()) {
       total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
+        ::google::protobuf::internal::WireFormatLite::StringSize(
           this->placedunmappedsequence());
     }
     

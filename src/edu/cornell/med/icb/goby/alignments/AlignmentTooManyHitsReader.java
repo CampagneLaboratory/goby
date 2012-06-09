@@ -87,9 +87,6 @@ public class AlignmentTooManyHitsReader {
 
                 final Alignments.AlignmentTooManyHits tmh = Alignments.AlignmentTooManyHits.parseFrom(codedInput);
 
-                int capacity = tmh.getHitsCount();
-                queryIndex2NumHits = new Int2IntOpenHashMap(capacity);
-                queryIndex2Depth = new Int2IntOpenHashMap(capacity);
                 queryIndex2NumHits.defaultReturnValue(-1);
                 queryIndex2Depth.defaultReturnValue(-1);
                 final List<Alignments.AmbiguousLocation> hitsList = tmh.getHitsList();

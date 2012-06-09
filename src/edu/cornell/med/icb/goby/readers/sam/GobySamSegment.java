@@ -60,8 +60,8 @@ public class GobySamSegment implements Resettable {
     boolean reverseStrand;
 
     private MutableString debugMessage;
-    ByteArrayList softClippedQualityLeft;
-    ByteArrayList softClippedQualityRight;
+    ByteList softClippedQualityLeft;
+    ByteList softClippedQualityRight;
 
     /**
      * Not for use.
@@ -248,8 +248,9 @@ public class GobySamSegment implements Resettable {
                 final char prevReadChar = seqvar.to.charAt(toLength - 1);
                 final char prevRefChar = seqvar.from.charAt(toLength - 1);
                 // Don't group mutations and indels
-                if ((prevReadChar == '-' && readChar != '-') || (readChar == '-' && prevReadChar != '-') ||
-                        (prevRefChar == '-' && refChar != '-') || (refChar == '-' && prevRefChar != '-')) {
+                if ( (prevReadChar == '-' && readChar != '-') || (readChar == '-' && prevReadChar != '-') ||
+                     (prevRefChar == '-' && refChar != '-') || (refChar == '-' && prevRefChar != '-')) {
+
                     makeNewSeqvar = true;
                 }
             }

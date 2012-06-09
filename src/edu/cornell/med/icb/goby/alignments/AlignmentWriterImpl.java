@@ -503,8 +503,8 @@ public class AlignmentWriterImpl implements AlignmentWriter {
     private synchronized void writeStats() throws IOException {
         if (!statsWritten) {
             stats.put("basename", FilenameUtils.getName(basename));
-            stats.put("min.query.index", Integer.toString(permutator.getBiggestSmallIndex()));
-            stats.put("max.query.index", Integer.toString(permutator.getSmallestIndex()));
+            stats.put("min.query.index", Integer.toString(permutator.getSmallestIndex()));
+            stats.put("max.query.index", Integer.toString(permutator.getBiggestSmallIndex()));
             stats.put("number.of.queries", Integer.toString(getNumQueries()));
 
             stats.put("basename.full", basename);
@@ -574,8 +574,8 @@ public class AlignmentWriterImpl implements AlignmentWriter {
 
     public void printStats(final PrintStream out) {
         this.entriesChunkWriter.printStats(out);
-        out.println("Min query index: " + minQueryIndex);
-        out.println("Max query index: " + maxQueryIndex);
+        out.println("Min query index: " + permutator.getSmallestIndex());
+        out.println("Max query index: " + permutator.getBiggestSmallIndex());
         out.println("Number of queries: " + getNumQueries());
         out.println("Number of targets: " + (maxTargetIndex + 1));
     }

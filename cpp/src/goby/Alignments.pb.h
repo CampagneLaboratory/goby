@@ -439,14 +439,14 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_softclippedqualityright();
   inline ::std::string* release_softclippedqualityright();
   
-  // optional bytes placedUnmappedSequence = 40;
+  // optional string placedUnmappedSequence = 40;
   inline bool has_placedunmappedsequence() const;
   inline void clear_placedunmappedsequence();
   static const int kPlacedUnmappedSequenceFieldNumber = 40;
   inline const ::std::string& placedunmappedsequence() const;
   inline void set_placedunmappedsequence(const ::std::string& value);
   inline void set_placedunmappedsequence(const char* value);
-  inline void set_placedunmappedsequence(const void* value, size_t size);
+  inline void set_placedunmappedsequence(const char* value, size_t size);
   inline ::std::string* mutable_placedunmappedsequence();
   inline ::std::string* release_placedunmappedsequence();
   
@@ -2756,7 +2756,7 @@ inline ::std::string* AlignmentEntry::release_softclippedqualityright() {
   }
 }
 
-// optional bytes placedUnmappedSequence = 40;
+// optional string placedUnmappedSequence = 40;
 inline bool AlignmentEntry::has_placedunmappedsequence() const {
   return (_has_bits_[0] & 0x80000000u) != 0;
 }
@@ -2789,7 +2789,7 @@ inline void AlignmentEntry::set_placedunmappedsequence(const char* value) {
   }
   placedunmappedsequence_->assign(value);
 }
-inline void AlignmentEntry::set_placedunmappedsequence(const void* value, size_t size) {
+inline void AlignmentEntry::set_placedunmappedsequence(const char* value, size_t size) {
   set_has_placedunmappedsequence();
   if (placedunmappedsequence_ == &::google::protobuf::internal::kEmptyString) {
     placedunmappedsequence_ = new ::std::string;

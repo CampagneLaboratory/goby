@@ -100,7 +100,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
         final int maxOccurence = calculateQueryIndexOccurrences(entry);
         /*if (queryIndex == 127177) {
             System.out.println("queryIndex=413876 qio=" + maxOccurence);
-        }*/
+        } */
 
         final int smallIndex = getSmallIndex(queryIndex, maxOccurence);
         entry.setQueryIndex(smallIndex);

@@ -243,11 +243,12 @@ message AlignmentEntry {
      (it is placed) but are unable to map it to a specific genomic position. The sequence is always given as obtained
      from the reads file.
     */
-    optional bytes placedUnmappedSequence=40;
+    optional string placedUnmappedSequence=40;
     /*
     Quality scores for a read placed near this entry.  Phred units.
     */
     optional bytes placedUnmappedQuality=41;
+
     /*
     Read name. In SAM/BAM this is referred to as QNAME. Paired and segmented reads will have the same Read name.
     */
