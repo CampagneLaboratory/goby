@@ -168,10 +168,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * The version of the stream that this class reads and writes.
      */
-<<<<<<< HEAD
 
-=======
->>>>>>> 14953751e71fc976a9ecf35d7cc9bd2c0f7cb870
     public static final int VERSION = 12;
     private int streamVersion;
 
@@ -1546,11 +1543,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
         sampleIndices.add(source.hasSampleIndex() ? source.getSampleIndex() : MISSING_VALUE);
         readOriginIndices.add(source.hasReadOriginIndex() && storeReadOrigins ? source.getReadOriginIndex() : MISSING_VALUE);
-<<<<<<< HEAD
         pairFlags.add(source.hasPairFlags() ? reduceSamFlags(source) : MISSING_VALUE);
-=======
-        pairFlags.add(source.hasPairFlags() ? reduceSamFlags(samFlags) : MISSING_VALUE);
->>>>>>> 14953751e71fc976a9ecf35d7cc9bd2c0f7cb870
         scores.add(source.hasScore() ? Float.floatToIntBits(source.getScore()) : MISSING_VALUE);
 
 
@@ -1600,7 +1593,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-<<<<<<< HEAD
     //       System.out.println(alignmentEntry);
         return alignmentEntry;
     }
@@ -1612,22 +1604,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
         return samFlag | (matchesReverseStrand?16:0);
     }
-=======
-        //       System.out.println(alignmentEntry);
-        return alignmentEntry;
-    }
 
-    // mask the strand bit from pair flag (we store it separately anyway)
-    private int reduceSamFlags(int samFlags) {
-        return samFlags & (~16);
-    }
-
-    // reconstitute the sam Flag with strand information:
-    private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
-        return samFlag | (matchesReverseStrand ? 16 : 0);
-    }
-
->>>>>>> 14953751e71fc976a9ecf35d7cc9bd2c0f7cb870
     private boolean isEmpty(final Alignments.SequenceVariation varBuilder) {
         return useTemplateBasedCompression && fastEqualsInternal(varBuilder);
     }
@@ -1850,11 +1827,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         anInt = pairFlags.getInt(index);
         if (anInt != MISSING_VALUE) {
-<<<<<<< HEAD
-            result.setPairFlags(restoreSamFlags(anInt,result.getMatchingReverseStrand()));
-=======
             result.setPairFlags(restoreSamFlags(anInt, result.getMatchingReverseStrand()));
->>>>>>> 14953751e71fc976a9ecf35d7cc9bd2c0f7cb870
         }
         anInt = scores.getInt(index);
         if (anInt != MISSING_VALUE) {
