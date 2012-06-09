@@ -13,8 +13,21 @@ Goby provides efficient algorithms for most computational tasks required when an
 Goby is currently being developed by the members of the [Campagne laboratory](http://campagnelab.org).
 
 ### Source code
-Goby source code is now on GitHub.
-
+Goby source code is now on GitHub.  You can obtain and build the project as follows:
+   ```
+   git clone git://github.com/CampagneLaboratory/goby.git
+   cd goby
+   git checkout 2.0 (adjust the version number as needed, or use master for the development branch)
+   git submodule update --init   (this will make sure the submodules are fetched in a new repository)
+   ```
+#### Compilation:
+   ```
+   ant -f build.xml jar
+   ```
+#### Testing:
+   ```
+   ant -f build.xml test
+   ```
 ### Documentation and forums
 You will find extensive documentation at [goby.campagnelab.org](http://goby.campagnelab.org).
 Questions and feedback should be addressed to the [Goby user forum](https://groups.google.com/forum/?fromgroups#!forum/goby-framework).
