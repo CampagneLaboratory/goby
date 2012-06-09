@@ -167,7 +167,7 @@
                 </tar>
         -->
         <shellscript shell="bash" dir="${basedir}">
-            tar zcvf release-${tag}.tgz ${releasedir}
+            tar zcvf release-goby_${tag}.tgz ${releasedir}
         </shellscript>
 
         <!-- copy the zip to the web folder -->
