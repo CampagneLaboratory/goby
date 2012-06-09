@@ -1,14 +1,21 @@
-Towards Goby 2.0
- - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
-   compact-to-sam.
+2.0
+ - Introduce chunk codecs for protocol buffer encoded collection messages (supports both reads and alignments).
  - Refactor AlignmentWriter to introduce an interface and make it easier to create facades that modify the behaviour
    of the default writer. For instance, such a facade is BufferedSortingAlignmentWriter, which keeps a number of entries
    in memory to re-sort these entries by genomic position. This feature is used when importing already sorted SAM/BAM
    files to create sorted Goby alignments and the files contain spliced alignments that would cause mis-ordering during
    conversion.
+ - Fixes to sam-to-compact mode. Previous versions could fail for a variety of reasons. We have stress tested this mode
+   throwing at it various input BAM files, sorted or not and fixed the bugs we found. For instance, the --sorted option
+   would not work in some 1.9 versions of Goby after samtools/picard changed the semantic of the record comparator Goby
+   relied upon to verify the input was indeed sorted by position. This made it impossible to convert already sorted BAM
+   files as sorted Goby alignments).
+ - Added SortLargeMode which can sort compact alignments of any size, multithreaded. -m sort now invokes LargeSortMode.
  - Make default chunk-size dependent on the type of chunk codec used. This is useful because hybrid compression does
    better with larger chunk sizes (default chunk size for hybrid is 30000, 20000 for bzip2 and 10000 for gzip). The
-   default chunk size can be overriden with -x MessageChunksWriter:chunk-size=int
+   default chunk size can be overriden with -x MessageChunksWriter:chunk-size=int Smaller chunk sizes reduce the time
+   needed to seek at specific positions of sorted alignments. We do not recommend using values larger than 100,000
+   because interactive visualization of the alignments in IGV could become unresponsive.
  - Add ability to preserve SAM/BAM read groups. Read groups are automatically preserved if present in the input BAM file.
    The concatenate mode automatically reassigns read_origin indices (see field read_origin_index) to prevent conflicts
    when Goby files from different origins are concatenated. The approach we use is to keep the most specific read origin
@@ -21,12 +28,6 @@ Towards Goby 2.0
  - Supports bzip2 compression in fasta-to-compact mode and sam-extract-reads (use the -x MessageChunksWriter:codec=bzip2
    dynamic option).
  - Renamed SortMode to Sort1Mode. Renamed SortLargeMode to SortMode.
- - Added SortLargeMode which can sort compact alignments of any size, multithreaded.
- - Fixes to sam-to-compact mode. Previous versions could fail for a variety of reasons. We have stress tested this mode
-   throwing at it various input BAM files, sorted or not and fixed the bugs we found. For instance, the --sorted option
-   would not work in some 1.9 versions of Goby after samtools/picard changed the semantic of the record comparator Goby
-   relied upon to verify the input was indeed sorted by position. This made it impossible to convert already sorted BAM
-   files as sorted Goby alignments).
  - Moved error messages produced when parsing the command line of a mode to after usage. This is a simple change that
    will make it easier to diagnose problems on a command line without having to scroll back up the console.
  - Prevent logging when the log4j system has not been configured. For some reason, LOG.isDebugEnabled can return true
@@ -50,7 +51,6 @@ Towards Goby 2.0
  - Fix issues with the barcode-decode mode. Add support for processing fasta/fastq files.
  - vcf methylation format: removed space in name of C and Cm group INFO fields.
  - Add a draft implementation of random access sequence interface that can read a fasta file indexed with faidx.
- - Introduce chunk codecs for protocol buffer encoded collection messages (supports both reads and alignments).
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).
  - The RandomAccessSequenceCache had problems with bases that weren't G/A/T/C/N. Such bases would be skipped silently,
@@ -73,6 +73,12 @@ Towards Goby 2.0
  - AlignmentEntry field insertSize is now stored in protobuf with sint32 rather than uint32 since negative values can be
    stored in this field.
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
+ - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
+    the quality scores contained in the file.
+ - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
+   compact-to-sam.
+ - Fixed a problem with concatenate-compact-reads that previously transferred only specific fields of a read to the
+   output file. concatenate-compact-reads now transfers all fields (including pair sequence and quality score).
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3
