@@ -143,12 +143,12 @@
     <target name="release" description="Tag and release build"
             depends="tag-git, source, cpp-source, jar, data, dependencies, javadocs, goby">
         <!-- make links to the release files to match what the web server expects -->
-        <symlink link="${releasedir}/goby-cpp.zip" resource="${tag}-cpp.zip"/>
-        <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
-        <symlink link="${releasedir}/goby-deps.zip" resource="${tag}-deps.zip"/>
-        <symlink link="${releasedir}/goby-apidoc.zip" resource="${tag}-apidoc.zip"/>
-        <symlink link="${releasedir}/goby-data.zip" resource="${tag}-data.zip"/>
-        <symlink link="${releasedir}/goby.zip" resource="${tag}-goby.zip"/>
+        <symlink link="${releasedir}/goby-cpp.zip" resource="goby_${tag}-cpp.zip"/>
+        <symlink link="${releasedir}/goby-src.zip" resource="goby_${tag}-src.zip"/>
+        <symlink link="${releasedir}/goby-deps.zip" resource="goby_${tag}-deps.zip"/>
+        <symlink link="${releasedir}/goby-apidoc.zip" resource="goby_${tag}-apidoc.zip"/>
+        <symlink link="${releasedir}/goby-data.zip" resource="goby_${tag}-data.zip"/>
+        <symlink link="${releasedir}/goby.zip" resource="goby_${tag}-goby.zip"/>
 
         <!-- copy the changes and version info files to the release directory -->
         <copy todir="${releasedir}">
