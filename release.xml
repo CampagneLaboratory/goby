@@ -3,31 +3,33 @@
     <import file="${basedir}/buildsupport/build.xml"/>
 
     <property file="${config}/release.properties"/>
+    <property name="use-git" value="true"/>
+
+    <!-- the default revision uses the current date and time -->
+    <property name="defaultrevision" value="2.0RC2"/>
 
     <tstamp>
         <format property="exportdate" pattern="yyyyMMddHHmmss"/>
     </tstamp>
 
-	<target name="init" depends="getrevision, gettag">
-	    <property name="exportdir" value="tmp-${tag}"/>
-		<property name="releasedir" value="release-${tag}"/>
+    <target name="init" depends="getrevision, gettag">
+        <property name="exportdir" value="tmp-${tag}"/>
+        <property name="releasedir" value="release-${tag}"/>
         <property name="label" value="${tag}"/>
 
-    	<mkdir dir="${releasedir}"/>
+        <mkdir dir="${releasedir}"/>
 
-	    <property name="srcfile" value="${releasedir}/${tag}-src.zip"/>
+        <property name="srcfile" value="${releasedir}/${tag}-src.zip"/>
         <property name="cpp-srcfile" value="${releasedir}/${tag}-cpp.zip"/>
         <property name="depsfile" value="${releasedir}/${tag}-deps.zip"/>
-	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
-	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
+        <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
+        <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
         <property name="gobyfile" value="${releasedir}/${tag}-goby.zip"/>
         <property name="srcUrl" value="https://${svnhost}/public/svn/icb/trunk/goby"/>
         <property name="tagUrl" value="https://${svnhost}/public/svn/icb/tags/${tag}"/>
-	</target>
+    </target>
 
-    <target name="getrevision" unless="revision" description="Get the SVN revision to use for the release">
-        <!-- the default revision uses the current date and time -->
-        <property name="defaultrevision" value="HEAD"/>
+    <target name="getrevision" unless="revision" description="Get the SVN revision/Git branch to use for the release">
 
         <input message="Enter a revision for the build:"
                addproperty="revision"
@@ -35,34 +37,72 @@
         <echo level="debug" message="revision is ${revision}"/>
     </target>
 
-	<target name="gettag" unless="tag" description="Get the tag to use for the release">
-	    <!-- the default tag uses the current date and time -->
-	    <property name="defaulttag" value="goby_${exportdate}"/>
+    <target name="gettag" unless="tag" description="Get the tag to use for the release">
+        <!-- the default tag uses the current date and time -->
+        <property name="defaulttag" value="goby_${exportdate}"/>
 
         <input message="Enter a tag for the build:"
                addproperty="tag"
                defaultvalue="${defaulttag}"/>
         <echo level="debug" message="tag is ${tag}"/>
     </target>
+    <target name="tag" depends="tag-git,tag-svn" description="Tag the current trunk release in SVN"/>
 
-	<target name="tag" depends="init" unless="nocopy" description="Tag the current trunk release in SVN">
+    <target name="tag-git" if="use-git" depends="init" unless="nocopy"
+            description="Tag the current trunk release in SVN">
         <echo level="info" message="Tagging current directory with ${tag}"/>
-    	<svn>
-    		<copy message="${tag}" srcUrl="${srcUrl}"
-    			  destUrl="${tagUrl}" revision="${revision}"/>
-    	</svn>
+        <git command="tag">
+            <args>
+                <arg value="${tag}"/>
+            </args>
+        </git>
+
     </target>
 
-    <target name="export" depends="init" unless="noexport" description="Export a tagged version of the source code">
+    <target name="tag-svn" depends="init" unless="nocopy" description="Tag the current trunk release in SVN"
+            if="use-svn">
+        <echo level="info" message="Tagging current directory with ${tag}"/>
+
+        <svn>
+            <copy message="${tag}" srcUrl="${srcUrl}"
+                  destUrl="${tagUrl}" revision="${revision}"/>
+        </svn>
+    </target>
+    <target name="export" depends="export-git,export-svn" unless="noexport"
+            description="Export a tagged version of the source code"/>
+    <target name="export-git" if="use-git" depends="init" unless="noexport"
+            description="Export a tagged version of the source code">
         <available property="exportdirexists" file="${exportdir}" type="dir"/>
         <fail if="exportdirexists" message="${basedir}/${exportdir} already exists."/>
 
-    	<mkdir dir="${exportdir}"/>
+        <mkdir dir="${exportdir}/${tag}"/>
+        <echo level="info" message="Exporting using tag: ${tag}"/>
+        <!-- Now copy the modules -->
+        <copy todir="${exportdir}/${tag}/buildsupport">
+            <fileset dir="buildsupport" includes="**/*"/>
+
+        </copy>
+        <copy todir="${exportdir}/${tag}/testsupport">
+            <fileset dir="testsupport" includes="**/*"/>
+        </copy>
+        <!-- get the tagged version from git -->
+        <git-export revision="${revision}" destinationDirectory="${exportdir}/${tag}"/>
+
+        <!-- Create a "version" file which contains the release number -->
+        <writeln file="${exportdir}/${tag}/VERSION.txt" message="${tag}" append="false"/>
+    </target>
+
+    <target name="export-svn" if="use-svn" depends="init" unless="noexport"
+            description="Export a tagged version of the source code">
+        <available property="exportdirexists" file="${exportdir}" type="dir"/>
+        <fail if="exportdirexists" message="${basedir}/${exportdir} already exists."/>
+
+        <mkdir dir="${exportdir}"/>
         <echo level="info" message="Exporting using tag: ${tag}"/>
 
         <!-- get the tagged version from svn -->
-    	<svn>
-    		<export srcUrl="${tagUrl}" destPath="${exportdir}/${tag}"/>
+        <svn>
+            <export srcUrl="${tagUrl}" destPath="${exportdir}/${tag}"/>
         </svn>
 
         <!-- Remove any files that should not be included in the formal release -->
@@ -74,36 +114,36 @@
             <include name="src/edu/cornell/med/icb/goby/modes/CountsArchiveToUnionPeaksAnnotationMode*"/>
         </delete>
 
-         <!-- Create a "version" file which contains the release number -->
-     	<writeln file="${exportdir}/${tag}/VERSION.txt" message="${tag}" append="false"/>
+        <!-- Create a "version" file which contains the release number -->
+        <writeln file="${exportdir}/${tag}/VERSION.txt" message="${tag}" append="false"/>
     </target>
 
     <target name="release" description="Tag and release build"
-	    	depends="tag, source, cpp-source, jar, data, dependencies, javadocs, goby">
+            depends="tag-git, source, cpp-source, jar, data, dependencies, javadocs, goby">
         <!-- make links to the release files to match what the web server expects -->
         <symlink link="${releasedir}/goby-cpp.zip" resource="${tag}-cpp.zip"/>
-	    <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
+        <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
         <symlink link="${releasedir}/goby-deps.zip" resource="${tag}-deps.zip"/>
-	    <symlink link="${releasedir}/goby-apidoc.zip" resource="${tag}-apidoc.zip"/>
-	    <symlink link="${releasedir}/goby-data.zip" resource="${tag}-data.zip"/>
+        <symlink link="${releasedir}/goby-apidoc.zip" resource="${tag}-apidoc.zip"/>
+        <symlink link="${releasedir}/goby-data.zip" resource="${tag}-data.zip"/>
         <symlink link="${releasedir}/goby.zip" resource="${tag}-goby.zip"/>
 
         <!-- copy the changes and version info files to the release directory -->
-     	<copy todir="${releasedir}">
-         	<fileset dir="${exportdir}/${tag}">
-             	<include name="CHANGES.txt"/>
-         	    <include name="VERSION.txt"/>
-         	</fileset>
-     	</copy>
+        <copy todir="${releasedir}">
+            <fileset dir="${exportdir}/${tag}">
+                <include name="CHANGES.txt"/>
+                <include name="VERSION.txt"/>
+            </fileset>
+        </copy>
 
         <!-- bundle everything up so it can be easily transferred to the release site -->
-<!-- Ant tar task doesn't seem to handle softlinks properly but just makes duplicate copies :-(
-        <tar destfile="release-${tag}.tgz" compression="gzip">
-            <tarfileset dir="">
-                <include name="${releasedir}/**"/>
-            </tarfileset>
-        </tar>
--->
+        <!-- Ant tar task doesn't seem to handle softlinks properly but just makes duplicate copies :-(
+                <tar destfile="release-${tag}.tgz" compression="gzip">
+                    <tarfileset dir="">
+                        <include name="${releasedir}/**"/>
+                    </tarfileset>
+                </tar>
+        -->
         <shellscript shell="bash" dir="${basedir}">
             tar zcvf release-${tag}.tgz ${releasedir}
         </shellscript>
@@ -117,19 +157,19 @@
         <!--<delete dir="${exportdir}"/>-->
     </target>
 
-	<target name="source" depends="export" description="Assemble a source code release">
+    <target name="source" depends="export" description="Assemble a source code release">
         <zip destfile="${srcfile}" comment="Goby version: ${tag}">
             <!-- don't include all the libraries and data -->
-        	<fileset dir="${exportdir}">
+            <fileset dir="${exportdir}">
                 <exclude name="${tag}/lib/**"/>
                 <exclude name="${tag}/data/**"/>
                 <exclude name="${tag}/scripts/pbs/**"/>
                 <exclude name="${tag}/scripts/sge/**"/>
                 <exclude name="${tag}/scripts/swift/**"/>
                 <exclude name="${tag}/scripts/util/**"/>
-			</fileset>
-       	</zip>
-	</target>
+            </fileset>
+        </zip>
+    </target>
 
     <target name="cpp-source" depends="export" description="Assemble a cpp source code release">
         <zip destfile="${cpp-srcfile}" comment="Goby version: ${tag}">
@@ -150,13 +190,13 @@
 
     <target name="dependencies" depends="export" description="Assemble dependency release">
         <zip destfile="${depsfile}" comment="Goby version: ${tag}">
-        	<fileset dir="${exportdir}">
-        		<include name="${tag}/lib/**"/>
-        	</fileset>
+            <fileset dir="${exportdir}">
+                <include name="${tag}/lib/**"/>
+            </fileset>
         </zip>
     </target>
 
-	<target name="javadocs">
+    <target name="javadocs">
         <!-- run the java docs -->
         <ant target="javadocs" dir="${exportdir}/${tag}">
             <property name="classes" location="${exportdir}/${tag}/classes"/>
@@ -168,28 +208,29 @@
         </ant>
 
         <!-- zip the api documentation for the website -->
-        <zip destfile="${apidocfile}" basedir="${exportdir}" includes="${tag}/javadocs/**" comment="Goby version: ${tag}"/>
-	</target>
+        <zip destfile="${apidocfile}" basedir="${exportdir}" includes="${tag}/javadocs/**"
+             comment="Goby version: ${tag}"/>
+    </target>
 
-	<target name="jar" depends="export" description="create and package the jar files">
-        <ant target="jar" dir="${exportdir}/${tag}">
-        	<property name="buildstamp" value="${exportdate}"/>
+    <target name="jar" depends="export" description="create and package the jar files">
+        <ant target="jar" dir="${exportdir}/${tag}" inheritall="false" usenativebasedir="true" antfile="build.xml">
+            <property name="buildstamp" value="${exportdate}"/>
             <property name="classes" location="${exportdir}/${tag}/classes"/>
             <property name="config" location="${exportdir}/${tag}/config"/>
             <property name="lib" location="${exportdir}/${tag}/lib"/>
             <property name="logs" location="${exportdir}/${tag}/logs"/>
             <property name="src" location="${exportdir}/${tag}/src"/>
-       	</ant>
+        </ant>
 
-         <!-- note: the copy is important, the bdval target will look for it -->
+        <!-- note: the copy is important, the bdval target will look for it -->
         <copy file="${exportdir}/${tag}/goby.jar" todir="${releasedir}"/>
         <move file="${exportdir}/${tag}/goby-api.jar" todir="${releasedir}"/>
-	</target>
+    </target>
 
     <target name="goby" description="Create the binary distribtion for Goby">
         <chmod file="${exportdir}/${tag}/goby" perm="+x"/>
         <zip destfile="${gobyfile}" comment="Goby version: ${tag}">
-        	<fileset dir="${exportdir}">
+            <fileset dir="${exportdir}">
                 <include name="${tag}/README-Goby.txt"/>
                 <include name="${tag}/CHANGES.txt"/>
                 <include name="${tag}/VERSION.txt"/>
