@@ -79,6 +79,7 @@
    compact-to-sam.
  - Fixed a problem with concatenate-compact-reads that previously transferred only specific fields of a read to the
    output file. concatenate-compact-reads now transfers all fields (including pair sequence and quality score).
+ - version mode now prints an official version number if the jar constains a VERSION.txt file.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3
