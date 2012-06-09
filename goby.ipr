@@ -1050,10 +1050,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-<<<<<<< HEAD
         <option name="Make" enabled="false" />
-=======
->>>>>>> 14953751e71fc976a9ecf35d7cc9bd2c0f7cb870
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
