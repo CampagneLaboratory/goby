@@ -76,50 +76,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
-          <cTool>
-            <incDir>
-              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp/src</pElem>
-              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp</pElem>
-              <pElem>../../local-lib/include</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>HAVE_CONFIG_H</Elem>
-            </preprocessorList>
-          </cTool>
-          <ccTool>
-            <incDir>
-              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp/src</pElem>
-              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp</pElem>
-              <pElem>../../local-lib/include</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>HAVE_CONFIG_H</Elem>
-            </preprocessorList>
-          </ccTool>
-        </makeTool>
-      </makefileType>
-      <folder path="goby-cpp/src/goby">
-        <ccTool>
-          <preprocessorList>
-            <Elem>PIC</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <item path="src/TestReadCompactReads.c" ex="true" tool="0" flavor="0">
-      </item>
-    </conf>
-    <conf name="GsnapParseTest1" type="0">
-      <toolsSet>
-        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
-        <compilerSet>GNU|GNU</compilerSet>
-      </toolsSet>
-      <makefileType>
-        <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile install</buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>src/.libs/GsnapParseTest1</executablePath>
           <cTool>
             <incDir>
               <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp/src</pElem>
@@ -153,39 +110,50 @@
       </folder>
       <item path="src/TestReadCompactReads.c" ex="true" tool="0" flavor="0">
       </item>
-      <item path="src/goby/Alignments.h" ex="true" tool="3" flavor="0">
+    </conf>
+    <conf name="GsnapParseTest1" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>GNU|GNU</compilerSet>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile install</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>src/.libs/GsnapParseTest1</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp/src</pElem>
+              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp</pElem>
+              <pElem>../../local-lib/include</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>HAVE_CONFIG_H</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp/src</pElem>
+              <pElem>/pbtech_mounts/fclab_store003/gobywebtest/GMAP-GSNAP-GOBY/goby-cpp</pElem>
+              <pElem>../../local-lib/include</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>HAVE_CONFIG_H</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+      </makefileType>
+      <item path="config.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="src/goby/Alignments.pb.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/C_Alignments.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/C_CompactHelpers.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/C_Gsnap.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/C_Gsnap_structs.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/C_Reads.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/ICBFileInputStream.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/MessageChunks.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/Reads.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/Reads.pb.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/SamFlags.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/TooManyHits.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/common.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/hash.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/goby/timestamp.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="src/kseq.h" ex="true" tool="3" flavor="0">
+      <folder path="goby-cpp/src/goby">
+        <ccTool>
+          <preprocessorList>
+            <Elem>PIC</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <item path="src/TestReadCompactReads.c" ex="true" tool="0" flavor="0">
       </item>
     </conf>
   </confs>

@@ -120,6 +120,18 @@ void testPairedEnd2(CAlignmentsWriterHelper *writerHelper) {
 	free(test1);
 }
 
+void testUnpaired1(CAlignmentsWriterHelper *writerHelper) {
+	char *test1	= read_file("test-data/unpaired-keep-left.gsnap");
+	gobyGsnap_parse(writerHelper, test1);
+	free(test1);
+}
+
+void testUnpaired2(CAlignmentsWriterHelper *writerHelper) {
+	char *test1	= read_file("test-data/unpaired-keep-right.gsnap");
+	gobyGsnap_parse(writerHelper, test1);
+	free(test1);
+}
+
 
 void testSingleEndNoQual(CAlignmentsWriterHelper *writerHelper)	{
 	char *test1	= read_file("test-data/gsnap-output-nonpair-noqual-test-1.gnap");
@@ -144,6 +156,7 @@ void testSeqvarX(CAlignmentsWriterHelper *writerHelper,	int	which) {
 void testSeqvar() {
 	CAlignmentsWriterHelper	*writerHelper;
 	gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme-seqvar", &writerHelper);
+    gobyAlignments_setQualityAdjustment(writerHelper, -33);
 
 	char *test1	= read_file("test-data/synth.chromosome.list.txt");
 	gobyGsnap_test_registerTargets(writerHelper, test1);
@@ -224,7 +237,10 @@ void spliceTests(CAlignmentsWriterHelper *writerHelper)	{
 void sequenceTests() {
 	CAlignmentsWriterHelper	*writerHelper;
 	gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme-seq", &writerHelper);
+    gobyAlignments_setQualityAdjustment(writerHelper, -33);
 	registerChromosomes(writerHelper);
+    testUnpaired1(writerHelper);
+    testUnpaired2(writerHelper);
     testPairedEndSpliced(writerHelper);
 	testPairedEnd1(writerHelper);
     testPairedEnd2(writerHelper);

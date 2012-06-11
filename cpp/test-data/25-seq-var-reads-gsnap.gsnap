@@ -1,3 +1,3 @@
->ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	25 25 padding left & right, mutation, insertion
+>ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCAGTA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	25 25 padding left & right, mutation, insertion
  cCGCCCTTGCccTTCCTCCCTTCCCT------------------------	2..26	+synth1:32..56	start:1..ins:3,matches:23,sub:2	segs:2,align_score:6,mapq:26
-,-----------------------------TTCGGAGTCCTGGCCCCACCc	30..49	+synth1:57..76	ins:3..end:1,matches:20,sub:0
+,-----------------------------TTCGGAGTCCTGGCCCCAccc	30..47	+synth1:57..76	ins:3..end:3,matches:20,sub:0
