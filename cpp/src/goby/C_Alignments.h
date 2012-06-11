@@ -45,6 +45,8 @@
         RESULT = goby_copy_string(RESULT, -1);     \
 }
 
+#define GOBY_COMPLEMENT_CODE "???????????????????????????????? ??#$%&')(*+,-./0123456789:;>=<??TVGHEFCDIJMLKNOPQYSAABWXRZ]?[^_`tvghefcdijmlknopqysaabwxrz}|{~?"
+
 #ifdef __cplusplus
 
 extern "C" {
@@ -102,6 +104,13 @@ extern "C" {
     void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSoftClippedLeft(CAlignmentsWriterHelper *writerHelper,
+            int start, int size, const char *query, const char *quality);
+    void gobyAlEntry_setSoftClippedRight(CAlignmentsWriterHelper *writerHelper,
+            int start, int size, const char *query, const char *quality);
+    void gobyAlEntry_setPlacedUnmapped(CAlignmentsWriterHelper *writerHelper,
+            int length, int translateQuery /*bool*/, int reverseStrand /*bool*/,
+            const char *query, const char *quality);
     void gobyAlEntry_setFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setInsertSize(CAlignmentsWriterHelper *writerHelper, unsigned int value);
 
@@ -125,7 +134,7 @@ extern "C" {
 
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
-    void gobyAlignments_outputSequenceVariations(CAlignmentsWriterHelper *writerHelper, const char *reference, const char *query, const char *quality, int queryStart, int queryEnd, int reverseStrand, int qualityShift, int *outMatches, int *outSubs, int *outInserts, int *outDeletes);
+    void gobyAlignments_outputSequenceVariations(CAlignmentsWriterHelper *writerHelper, const char *reference, const char *query, const char *quality, int queryStart, int queryEnd, int reverseStrand, int *outMatches, int *outSubs, int *outInserts, int *outDeletes);
 
     /**
      * Methods to assist reconstructing query and reference for SAM data.

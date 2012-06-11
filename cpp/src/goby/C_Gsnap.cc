@@ -60,8 +60,6 @@ using pcrecpp::RE_Options;
  */
 extern "C" {
 
-    static char *complCode = "???????????????????????????????? ??#$%&')(*+,-./0123456789:;>=<??TVGHEFCDIJMLKNOPQYSAABWXRZ]?[^_`tvghefcdijmlknopqysaabwxrz}|{~?";
-
     /**
      * Take a string and a set of one or more delimiters and split the string
      * into a vector of strings (char*'s). This method allocates no new
@@ -202,8 +200,12 @@ extern "C" {
         alignment->lineNum = 0;
         alignment->pairedEnd = false;
         alignment->pairType = PAIRTYPE_NONE;
-        alignment->querySequence->resize(0);
-        alignment->queryQuality->resize(0);
+        alignment->lastQuerySequence->resize(0);
+        alignment->lastQueryQuality->resize(0);
+        alignment->primaryQuerySequence->resize(0);
+        alignment->primaryQueryQuality->resize(0);
+        alignment->mateQuerySequence->resize(0);
+        alignment->mateQueryQuality->resize(0);
         alignment->queryIndex = 0;
         alignment->numAlignmentEntries = 0;
         clearAlignmentEntries(alignment->alignmentEntries);
@@ -229,8 +231,12 @@ extern "C" {
         alignment->alignmentEntries = new vector<GsnapAlignmentEntry*>;
         
         alignment->alignmentEntriesPair = new vector<GsnapAlignmentEntry*>;
-        alignment->querySequence = new string("");
-        alignment->queryQuality = new string("");
+        alignment->lastQuerySequence = new string("");
+        alignment->lastQueryQuality = new string("");
+        alignment->primaryQuerySequence = new string("");
+        alignment->primaryQueryQuality = new string("");
+        alignment->mateQuerySequence = new string("");
+        alignment->mateQueryQuality = new string("");
         alignment->pairSubType = NULL;
         resetAlignment(alignment);
     }
@@ -247,8 +253,12 @@ extern "C" {
             resetAlignment(alignment);
             delete alignment->alignmentEntries;
             delete alignment->alignmentEntriesPair;
-            delete alignment->querySequence;
-            delete alignment->queryQuality;
+            delete alignment->lastQuerySequence;
+            delete alignment->lastQueryQuality;
+            delete alignment->primaryQuerySequence;
+            delete alignment->primaryQueryQuality;
+            delete alignment->mateQuerySequence;
+            delete alignment->mateQueryQuality;
             delete alignment;
             writerHelper->gsnapAlignment = NULL;
         }
@@ -454,7 +464,7 @@ extern "C" {
         string *result = new string("");
         for (int i = size - 1; i >= 0; i--) {
             const char current = toReverse[i];
-            result->append(1, complement ? complCode[current] : current);
+            result->append(1, complement ? GOBY_COMPLEMENT_CODE[current] : current);
         }
         return result;
     }
@@ -501,15 +511,15 @@ extern "C" {
         string *queryQuality = NULL;
         if (reverseStrand) {
             segmentSeq = reverseCharArray(segmentSeqBuf, strlen(segmentSeqBuf), true);
-            querySequence = reverseString(alignment->querySequence, true);
-            if (alignment->queryQuality->size() > 0) {
-                queryQuality = reverseString(alignment->queryQuality, false);
+            querySequence = reverseString(alignment->lastQuerySequence, true);
+            if (alignment->lastQueryQuality->size() > 0) {
+                queryQuality = reverseString(alignment->lastQueryQuality, false);
             }
         } else {
             segmentSeq = new string(segmentSeqBuf);
-            querySequence = new string(*(alignment->querySequence));
-            if (alignment->queryQuality->size() > 0) {
-                queryQuality = new string(*(alignment->queryQuality));
+            querySequence = new string(*(alignment->lastQuerySequence));
+            if (alignment->lastQueryQuality->size() > 0) {
+                queryQuality = new string(*(alignment->lastQueryQuality));
             }
         }
         int queryLength = segmentSeq->size();
@@ -760,17 +770,18 @@ extern "C" {
 
         alignment->pairedEnd = pairType != NULL;
         alignment->pairType = pairTypeFromString(pairType);
-        alignment->querySequence->resize(0);
-        alignment->querySequence->append(querySeq);
-        alignment->queryQuality->resize(0);
+        alignment->lastQuerySequence->resize(0);
+        alignment->lastQuerySequence->append(querySeq);
+        alignment->lastQueryQuality->resize(0);
         if (qual != NULL) {
             int qualSize = strlen(qual);
             char convertedChar;
             for (int qualPos = 0; qualPos < qualSize; qualPos++) {
                 // Convert from Gsnap's SANGER to Phred
-                alignment->queryQuality->append(1, qual[qualPos]);
+                alignment->lastQueryQuality->append(1, qual[qualPos]);
             }
         }
+        
         alignment->queryIndex = (unsigned) strtoul(queryIndexStr, NULL, 10);
         if (isPair) {
             alignment->numAlignmentEntriesPair = atoi(numEntriesStr);
@@ -837,6 +848,11 @@ extern "C" {
             // Cannot process this, no header line
             return false;
         }
+
+        alignment->primaryQuerySequence->resize(0);
+        alignment->primaryQueryQuality->resize(0);
+        alignment->primaryQuerySequence->append(*(alignment->lastQuerySequence));
+        alignment->primaryQueryQuality->append(*(alignment->lastQueryQuality));
         int numEntries = 0;
         while (true) {
             if (!parseOneSetOfSegments(writerHelper, lines, false)) {
@@ -850,6 +866,10 @@ extern "C" {
             if (!parseEntryHeader(writerHelper, lines, true)) {
                 return false;
             }
+            alignment->mateQuerySequence->resize(0);
+            alignment->mateQueryQuality->resize(0);
+            alignment->mateQuerySequence->append(*(alignment->lastQuerySequence));
+            alignment->mateQueryQuality->append(*(alignment->lastQueryQuality));
             numEntries = 0;
             while(true) {
                 if (!parseOneSetOfSegments(writerHelper, lines, true)) {
@@ -1052,7 +1072,7 @@ extern "C" {
                 merged->segmentSequence->c_str(),
                 merged->queryQuality == NULL ? NULL : merged->queryQuality->c_str(),
                 merged->queryStart, merged->queryEnd,
-                merged->reverseStrand, -33 /*qualityShift*/,
+                merged->reverseStrand,
                 &(merged->matches), &(merged->subs),
                 &(merged->inserts), &(merged->deletes));
 
@@ -1095,12 +1115,30 @@ extern "C" {
                 mergedSeg->startClip - mergedSeg->endClip - 
                 mergedSeg->inserts);
         gobyAlEntry_setQueryLength(writerHelper,
-                alignment->querySequence->size());
+                alignment->lastQuerySequence->size());
         gobyAlEntry_setFragmentIndex(writerHelper, fragmentIndex);
         gobyAlEntry_setMappingQuality(writerHelper, alignment->mapq);
         gobyAlEntry_setInsertSize(writerHelper, alignment->insertLength);
         gobyAlEntry_setAmbiguity(writerHelper, ambiguity);
         gobyAlEntry_setQueryIndexOccurrences(writerHelper, alignment->nextFragmentIndex);
+        
+        // Output the softclip bases + qualities
+        int querySize = mergedSeg->querySequence->size();
+        int qualitySize = mergedSeg->queryQuality != NULL ? mergedSeg->queryQuality->size() : 0;
+        if (mergedSeg->startClip > 0) {
+            gobyAlEntry_setSoftClippedLeft(writerHelper,
+                    0,
+                    mergedSeg->startClip,
+                    mergedSeg->querySequence->c_str(),
+                    qualitySize > 0 ? mergedSeg->queryQuality->c_str() : NULL);
+        }
+        if (mergedSeg->endClip > 0) {
+            gobyAlEntry_setSoftClippedRight(writerHelper,
+                    querySize - mergedSeg->endClip,
+                    mergedSeg->endClip,
+                    mergedSeg->querySequence->c_str(),
+                    qualitySize > 0 ? mergedSeg->queryQuality->c_str() : NULL);
+        }
     }
     
     int calculatePairFlags(GsnapAlignment *alignment,
@@ -1112,20 +1150,19 @@ extern "C" {
         int sizePair = alignmentEntriesPair == NULL ? 0 : alignmentEntriesPair->size();
         
         int flags = 0;
-        if (alignmentEntriesPair != NULL) {
+        if (alignment->pairedEnd) {
             flags |= PAIRFLAG_PAIRED;
         }
 
         if (firstInPair) {
-            if (alignmentEntriesPair != NULL) {
+            if (alignment->pairedEnd) {
                 flags |= PAIRFLAG_FIRST_IN_PAIR;
             }
         } else {
             flags |= PAIRFLAG_SECOND_IN_PAIR;
         }
         
-        if (alignment->pairType == PAIRTYPE_CONCORDANT || 
-                alignment->pairType == PAIRTYPE_PAIRED) {
+        if (alignment->pairType == PAIRTYPE_CONCORDANT || alignment->pairType == PAIRTYPE_PAIRED) {
             flags |= PAIRFLAG_PROPERLY_PAIRED;
         }
         
@@ -1137,7 +1174,7 @@ extern "C" {
             }
         }
         if (sizePair == 0) {
-            if (alignmentEntriesPair != NULL) {
+            if (alignment->pairedEnd) {
                 flags |= PAIRFLAG_MATE_UNMAPPED;
             }
         } else {
@@ -1154,14 +1191,10 @@ extern "C" {
             bool firstInPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         int size = alignmentEntries->size();
-        int pairSize = 0;
-        if (alignmentEntriesPair != NULL && alignmentEntriesPair->size() > 0) {
-            pairSize = alignmentEntriesPair->at(0)->alignmentSegments->size();
-        }
-        int pairFlags = 0;
+        int pairSize = alignmentEntriesPair == NULL ? 0 : alignmentEntriesPair->size();
         GsnapAlignmentSegment *pairSegment = NULL;
-        pairFlags = calculatePairFlags(alignment,
-                alignmentEntries, alignmentEntriesPair, firstInPair);
+        int pairFlags = calculatePairFlags(alignment, alignmentEntries,
+                alignmentEntriesPair, firstInPair);
         int ambiguity = alignment->numAlignmentEntries;
         if (alignment->pairedEnd) {
             vector<GsnapAlignmentSegment*> *segments = size > 0 ? alignmentEntries->at(0)->alignmentSegments : NULL;
@@ -1293,10 +1326,36 @@ extern "C" {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         if (alignment->pairedEnd) {
             if (alignment->pairType == PAIRTYPE_UNPAIRED) {
+                // Only one of this will actually write data, the one with alignmen entries
                 writeAlignment(writerHelper,
                         alignment->alignmentEntries, NULL, false /*firstInPair*/);
                 writeAlignment(writerHelper,
                         alignment->alignmentEntriesPair, NULL, false /*firstInPair*/);
+                
+                // Write placed unampped
+                if (alignment->alignmentEntries->size() == 0) {
+                    // Write primary query sequence and quality of primary to alignment
+                    const char *query = alignment->primaryQuerySequence->c_str();
+                    const char *quality = alignment->primaryQueryQuality->c_str();
+                    int length = alignment->primaryQuerySequence->size();
+                    // Determine reverseStrand from the first mate alignment entry
+                    int reverseStrand = alignment->alignmentEntriesPair->at(0)->
+                        alignmentSegments->at(0)->reverseStrand ? 1 : 0;
+                    gobyAlEntry_setPlacedUnmapped(writerHelper, 
+                            length, 0 /*translateQuery*/, reverseStrand,
+                            query, quality);
+                } else if (alignment->alignmentEntriesPair->size() == 0) {
+                    // Write mate query sequence and quality of mate to alignment
+                    const char *query = alignment->mateQuerySequence->c_str();
+                    const char *quality = alignment->mateQueryQuality->c_str();
+                    int length = alignment->mateQuerySequence->size();
+                    // Determine reverseStrand from the first primary alignment entry
+                    int reverseStrand = alignment->alignmentEntries->at(0)->
+                        alignmentSegments->at(0)->reverseStrand ? 1 : 0;
+                    gobyAlEntry_setPlacedUnmapped(writerHelper, 
+                            length, 0 /*translateQuery*/, reverseStrand,
+                            query, quality);
+                }
             } else {
                 
                 int size = alignment->alignmentEntries->size();
