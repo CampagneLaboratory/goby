@@ -344,7 +344,7 @@ extern "C" {
             writerHelper->smallestQueryIndex = min(value, writerHelper->smallestQueryIndex);
             writerHelper->largestQueryIndex = max(value, writerHelper->largestQueryIndex);
         }
-        }
+    }
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%u\n", value));
         gobyAlignments_observeQueryIndex(writerHelper, value);
@@ -407,9 +407,105 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlEntry_setQueryLength=%u\n", value));
         writerHelper->alignmentEntry->set_query_length(value);
     }
+
     void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         debug(fprintf(stderr,"gobyAlEntry_setMappingQuality=%u\n", value));
         writerHelper->alignmentEntry->set_mapping_quality(value);
+    }
+
+    /**
+     * Define left soft clipped details.
+     * @param writerHelper writerHelper
+     * @param start the position in query/quality where soft clips start (0-based)
+     * @param size the size of the soft clip
+     * @param query the query bases
+     * @param quality the quality scores, will be adjusted by qualityAdjustment
+     */
+    void gobyAlEntry_setSoftClippedLeft(CAlignmentsWriterHelper *writerHelper,
+            int start, int size, const char *query, const char *quality) {
+        if (size > 0) {
+            string *basesStr = writerHelper->alignmentEntry->mutable_softclippedbasesleft();
+            string *qualityStr;
+            if (quality != NULL) {
+                qualityStr = writerHelper->alignmentEntry->mutable_softclippedqualityleft();
+            }
+            int i;
+            for (i = start; i < start+size; i++) {
+                (*basesStr) += query[i];
+                if (quality != NULL) {
+                    (*qualityStr) += (quality[i] + writerHelper->qualityAdjustment);
+                }
+            }
+        }
+    }
+
+    /**
+     * Define right soft clipped details.
+     * @param writerHelper writerHelper
+     * @param start the position in query/quality where soft clips start (0-based)
+     * @param size the size of the soft clip
+     * @param query the query bases
+     * @param quality the quality scores, will be adjusted by qualityAdjustment
+     */
+    void gobyAlEntry_setSoftClippedRight(CAlignmentsWriterHelper *writerHelper,
+            int start, int size, const char *query, const char *quality) {
+        if (size > 0) {
+            string *basesStr = writerHelper->alignmentEntry->mutable_softclippedbasesright();
+            string *qualityStr;
+            if (quality != NULL) {
+                qualityStr = writerHelper->alignmentEntry->mutable_softclippedqualityright();
+            }
+            int i;
+            for (i = start; i < start+size; i++) {
+                (*basesStr) += query[i];
+                if (quality != NULL) {
+                    (*qualityStr) += (quality[i] + writerHelper->qualityAdjustment);
+                }
+            }
+        }
+    }
+
+    /**
+     * Output details about an alignment entries placed unmapped mate.
+     * @param writerHelper writerHelper
+     * @param length length of the query (and quality if it exists)
+     * @param translateQuery if the query needs to be translated for BWA to bases (0-4 to ACGTN).
+     * @param reverseStrand if unamped mate is thought to be reverse strand
+     * @param query the query bases for the placed unmapped mate
+     * @param quality the quality scores for the placed unmapped mate, will be adjusted by qualityAdjustment
+     */
+    void gobyAlEntry_setPlacedUnmapped(CAlignmentsWriterHelper *writerHelper,
+            int length, int translateQuery /*bool*/, int reverseStrand /*bool*/,
+            const char *query, const char *quality) {
+        if (length > 0) {
+            string *basesStr = writerHelper->alignmentEntry->mutable_placedunmappedsequence();
+            string *qualityStr;
+            if (quality) {
+                qualityStr = writerHelper->alignmentEntry->mutable_placedunmappedquality();
+            }
+            int i;
+            for (i = 0; i < length; i++) {
+                if (reverseStrand) {
+                    if (translateQuery) {
+                        (*basesStr) += "TGCAN"[(int)(query[length - 1 - i])];
+                    } else {
+                        (*basesStr) += GOBY_COMPLEMENT_CODE[query[length - 1 - i]];
+                    }
+                    if (quality) {
+                        (*qualityStr) += (quality[length - 1 - i] + writerHelper->qualityAdjustment);
+                    }
+                } else {
+                    if (translateQuery) {
+                        (*basesStr) += "ACGTN"[(int)(query[i])];
+                    } else {
+                        (*basesStr) += query[i];
+                    }
+                    if (quality) {
+                        (*qualityStr) += (quality[i] + writerHelper->qualityAdjustment);
+                    }
+                }
+            }
+        }
     }
 
     void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition) {
@@ -468,8 +564,8 @@ extern "C" {
         }
     }
 
-        /**
-     * !! Before calling thisgoby Alignments_appendEntry(writerHelper) should
+    /**
+     * !! Before calling this alignments_appendEntry(writerHelper) should
      * !! have already been called to start a new alignment entry.
      * This will output the sequence variations given reference, query,
      * and optional quality string. Upon completion, the sequence variations
@@ -501,10 +597,6 @@ extern "C" {
      * for sequence variations. This is also known as the right clip value.
      * @param reverseStrand set to 1 of this query was matched on the
      * reverse strand
-     * @param qualityShift the quality shift value to be ADDED TO all quality
-     * values that have sequence variations (that aren't 0). If you are
-     * starting with SANGER values, this should be set to -33 as Goby stores
-     * all quality values as Phred scores.
      * @param outMatches output value, the nubmer of matches found
      * @param outSubs output value, the number of substitutions found
      * @param outInserts output value, the number of insert bases found
@@ -514,7 +606,7 @@ extern "C" {
             CAlignmentsWriterHelper *writerHelper,
             const char *reference, const char *query, const char *quality,
             int queryStart, int queryEnd,
-            int reverseStrand, int qualityShift,
+            int reverseStrand,
             int *outMatches, int *outSubs, int *outInserts, int *outDeletes) {
 
         int refPosition = 0;
@@ -566,7 +658,7 @@ extern "C" {
             if (quality != NULL) {
                 qualChar = quality[i];
                 if (qualChar > GOBY_NO_QUAL) {
-                    qualChar += qualityShift;
+                    qualChar += writerHelper->qualityAdjustment;
                 }
             } else {
                 qualChar = GOBY_NO_QUAL;
@@ -723,6 +815,7 @@ extern "C" {
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
         samHelper->numLeftClipped = 0;
+        samHelper->numRightClipped = 0;
         return samHelper;
     }
 
@@ -801,6 +894,8 @@ extern "C" {
                     }
                     if (startOfCigar) {
                         samHelper->numLeftClipped = length;
+                    } else {
+                        samHelper->numRightClipped = length;
                     }
                     posInReads += length;
                     break;

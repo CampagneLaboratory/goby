@@ -100,6 +100,7 @@
         int numMisMatches;
         int score;
         int numLeftClipped;
+        int numRightClipped;
     };
     struct CAlignmentsWriterHelper {
         goby::AlignmentWriter *alignmentWriter;
@@ -141,6 +142,7 @@
 	    int numMisMatches;
 	    int score;
         int numLeftClipped;
+        int numRightClipped;
 	} CSamHelper;
 	typedef struct {
 	    void *alignmentWriter;

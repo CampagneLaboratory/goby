@@ -127,8 +127,16 @@
         int lineNum;
         bool pairedEnd;
         PairType pairType;
-        string *querySequence;    // ONLY for parsing, use the version in Segment during output
-        string *queryQuality;     // ONLY for parsing, use the version in Segment during output
+        // Only for parsing, this is the last query sequence & quality parsed
+        string *lastQuerySequence;
+        string *lastQueryQuality;
+        // Query sequence and quality for the primary alignment and mate
+        // even if there were no alignments for the query
+        string *primaryQuerySequence;
+        string *primaryQueryQuality;
+        string *mateQuerySequence;
+        string *mateQueryQuality;
+
         unsigned queryIndex;
         int numAlignmentEntries;
         std::vector<GsnapAlignmentEntry*> *alignmentEntries;
