@@ -212,8 +212,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         Alignments.AlignmentEntry entry;
         int counter = 0;
         while ((entry = processor.nextRealignedEntry(0, 0)) != null) {
-            if (counter++ > maxEntriesToProcess) break;
-            // query lengths are now always stored in the entry..
+            if (counter++ > maxEntriesToProcess) {
+                break;
+            }
             writer.appendEntry(entry);
 
             numLogicalEntries += entry.getMultiplicity();
@@ -241,7 +242,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         writer.putStatistic("overall.matched.percent",
                 String.format("%3.3g", divide(numLogicalEntries, numQueries) * 100d));
         writer.close();
-
+        alignmentReader.getConcatPerm().concatenate(outputFilename);
         writer.printStats(System.out);
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
         System.out.printf("Number of alignment entries realigned in the proximity of indels: %d (%3.3g %% of total)%n",

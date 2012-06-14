@@ -57,6 +57,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private final Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
     private static final int MAX_OFFLINE_CAPACITY = 100000;
     private boolean isSafeMode;
+    private boolean closed;
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -215,6 +216,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private void pushToPreStorage(int queryIndex, int smallIndex) {
         //      System.out.printf("pushing to pre-storage queryIndex=%d smallIndex=%d %n",queryIndex, smallIndex);
 
+
         moveIndexToPreOffline(queryIndex, smallIndex);
         if (offlinePermutation.size() > MAX_OFFLINE_CAPACITY) {
             save();
@@ -276,16 +278,19 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     @Override
     public void close() {
-        // move everything left to pre-offline state:
-        for (int queryIndex : queryIndexPermutation.keySet()) {
+        if (!closed) {
+            // move everything left to pre-offline state:
+            for (final int queryIndex : queryIndexPermutation.keySet()) {
 
-            moveIndexToPreOffline(queryIndex, queryIndexPermutation.get(queryIndex));
+                moveIndexToPreOffline(queryIndex, queryIndexPermutation.get(queryIndex));
+            }
+
+            queryIndexPermutation.clear();
+            // now save it:
+            save();
+            permutationWriter.close();
+            closed = true;
         }
-
-        queryIndexPermutation.clear();
-        // now save it:
-        save();
-        permutationWriter.close();
     }
 
     /**

@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.alignments.perms.ConcatenatePermutations;
 import it.unimi.dsi.fastutil.AbstractPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
@@ -140,7 +141,6 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
     }
 
-
     /**
      * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
      * to skip directly to the closest chunk start before the entry identified by targetIndex and position.
@@ -206,7 +206,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         //             System.out.println("Setting activeIndex to "+activeIndex + " "+ readersWithMoreEntries);
 
 
-        final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
+        final int newQueryIndex = mergedQueryIndex(activeIndex, alignmentEntry.getQueryIndex());
         final int queryIndex = alignmentEntry.getQueryIndex();
         Alignments.AlignmentEntry.Builder builder = alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry);
         if (adjustQueryIndices && newQueryIndex != queryIndex) {
@@ -221,6 +221,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
 
 
     }
+
 
     class Bucket {
         Alignments.AlignmentEntry entry;
@@ -290,7 +291,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
      * @return the alignment read entry from the input stream.
      */
     @Override
-    public Alignments.AlignmentEntry next() {
+    public Alignments.AlignmentEntry next()  {
         if (!hasNext()) {
             throw new NoSuchElementException();
         } else {
@@ -302,7 +303,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
             hasNext = false;
             final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
 
-            final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
+            final int newQueryIndex = mergedQueryIndex(bucket.readerIndex, alignmentEntry.getQueryIndex());
             final int queryIndex = alignmentEntry.getQueryIndex();
             Alignments.AlignmentEntry.Builder builder = alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry);
             if (adjustQueryIndices && newQueryIndex != queryIndex) {

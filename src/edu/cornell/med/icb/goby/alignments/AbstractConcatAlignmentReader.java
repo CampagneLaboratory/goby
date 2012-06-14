@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.alignments;
 
 
+import edu.cornell.med.icb.goby.alignments.perms.ConcatenatePermutations;
+
 /**
  * @author Fabien Campagne
  *         Date: 6/15/11
@@ -26,7 +28,7 @@ package edu.cornell.med.icb.goby.alignments;
  */
 public abstract class AbstractConcatAlignmentReader extends AbstractAlignmentReader {
     /**
-     * Wether this concat reader should record or modify the sampleIndex field of each entry according to the reader of
+     * Whether this concat reader should record or modify the sampleIndex field of each entry according to the reader of
      * origin.
      */
     protected boolean adjustSampleIndices;
