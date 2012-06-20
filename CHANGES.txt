@@ -3,6 +3,8 @@ Towards 2.1
    depths independently of fragments.   
  - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
    the quality scores contained in the file.
+ - mode sam-to-compact now supports option --read-names-are-query-indices to indicate that the read names are integers
+   (typically produced by compact-to-fasta from a chunk of a large file).
 2.0 RC2
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then

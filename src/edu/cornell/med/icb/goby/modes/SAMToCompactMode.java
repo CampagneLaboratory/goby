@@ -106,6 +106,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     private boolean thirdPartyInput = true;
     private int mParameter = 1;
     private String outputFile;
+    private boolean readNamesAreQueryIndices;
 
 
     public static DynamicOptionClient doc() {
@@ -153,6 +154,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Get if the SAM/BAM readName should be preserved into the compact-alignment file.
      * Generally this is not recommended but for testing this can be useful.
+     *
      * @return if..
      */
     public boolean isPreserveReadName() {
@@ -162,6 +164,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
     /**
      * Set if the SAM/BAM readName should be preserved into the compact-alignment file.
      * Generally this is not recommended but for testing this can be useful.
+     *
      * @param preserveReadName if..
      */
     public void setPreserveReadName(final boolean preserveReadName) {
@@ -185,6 +188,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         inputFile = jsapResult.getString("input");
         outputFile = jsapResult.getString("output");
 
+        readNamesAreQueryIndices = jsapResult.getBoolean("read-names-are-query-indices");
         preserveSoftClips = jsapResult.getBoolean("preserve-soft-clips");
         preserveAllTags = jsapResult.getBoolean("preserve-all-tags");
         preserveAllMappedQuals = jsapResult.getBoolean("preserve-all-mapped-qualities");
@@ -396,9 +400,15 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 readMaxOccurence = numTotalHits;
             }
             readMaxOccurence *= readIsSpliced ? 2 : 1;
+            final Integer nh = samRecord.getIntegerAttribute("NH");
+            // NH:i indicates: NH i Number of reported alignments that contains the query in the current record
+            if (nh != null) {
+                // used by STAR, for instance, to encode readMaxOccurence
+                readMaxOccurence = nh;
+            }
             final String readName = samRecord.getReadName();
 
-            final int queryIndex = nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
+            final int queryIndex = getQueryIndex(readMaxOccurence, readName);
             assert queryIndex >= 0 : " Query index must never be negative.";
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
@@ -545,8 +555,8 @@ public class SAMToCompactMode extends AbstractGobyMode {
                                 relatedBuilder.setTargetIndex(mateTargetIndex);
                                 builder.setPairAlignmentLink(relatedBuilder);
                             }
-                        } else  {
-                           // mate is unmapped.
+                        } else {
+                            // mate is unmapped.
 
                         }
                     }
@@ -562,7 +572,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                         LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
                     }
                     // remove the query name from memory since we are not writing these entries anyway
-                    while (queryIndex == nameToQueryIndices.getQueryIndex(samRecord.getReadName(), 0)) {
+                    while (queryIndex == getQueryIndex(0, samRecord.getReadName())) {
                         //do nothing
                     }
                 }
@@ -586,6 +596,11 @@ public class SAMToCompactMode extends AbstractGobyMode {
         progress.stop();
         writer.close();
         return numAligns;
+    }
+
+    private int getQueryIndex(final int readMaxOccurence, final String readName) {
+        return readNamesAreQueryIndices ? Integer.parseInt(readName) :
+                nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
     }
 
     private int getTargetIndex(final IndexedIdentifier targetIds, final String sequenceName, final boolean thirdPartyInput) {
@@ -685,6 +700,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 }
             }
         }
+
     }
 
 
