@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -459,7 +460,7 @@ public class TestLastToCompact {
         writer3.write(getMafInput3Variations());
         writer3.close();
 
-        final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
+        final ReadsWriter referenceWriter = new ReadsWriterImpl(FileUtils.openOutputStream(
                 new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
         referenceWriter.setIdentifier("0");
         referenceWriter.appendEntry();

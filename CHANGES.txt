@@ -4,6 +4,9 @@
    Java APIs are already licensed under the LGPL (anything packaged under the Goby-io.jar file).
  - Fix problem when using a genome backed by a samtools/picard faidx file. In some cases, read bases would be returned
    shifted by one position. Thanks to James Bonfield for reporting this problem.
+ - Introduce interface for ReadsWriter. Introduce mock implementation to write reads to text. This is useful to write
+   more intelligible JUnit tests.
+ - fix a bug in reformat-compact-reads which did not trim quality scores for paired end reads correctly.
 
 2.0
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).

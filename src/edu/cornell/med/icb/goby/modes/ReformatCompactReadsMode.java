@@ -20,12 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.*;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
-import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounterBitSet;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -113,7 +110,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     /**
      * The number of bases to trim at the start of the sequence.
      */
-    private int trimReadStartLength=-1;
+    private int trimReadStartLength = -1;
+    /**
+     * The writer to use to output the reformatted output, or null to create one on the fly.
+     */
+    private ReadsWriter writer;
 
     @Override
     public String getModeName() {
@@ -235,7 +236,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     ++numProcessed, numToProcess, inputFilename, outputFilename);
 
             outputFilenames.add(outputFilename);
-            ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+            // if the instance already has a writer, we write there:
+            ReadsWriter writer = this.writer != null ? this.writer : new ReadsWriterImpl(new FileOutputStream(outputFilename));
             writer.setNumEntriesPerChunk(sequencePerChunk);
 
             final ReadsReader readsReader;
@@ -261,7 +263,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     }
                     //transfer meta-data:
                     for (int i = 0; i < entry.getMetaDataCount(); i++) {
-                        Reads.MetaData metaData = entry.getMetaData(i);
+                        final Reads.MetaData metaData = entry.getMetaData(i);
                         writer.appendMetaData(metaData.getKey(), metaData.getValue());
                     }
                     if (pushDescription && entry.hasDescription()) {
@@ -271,10 +273,31 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     if (pushIdentifier && entry.hasReadIdentifier()) {
                         writer.setIdentifier(entry.getReadIdentifier());
                     }
+                    if (entry.hasSequence()) {
+                        ReadsReader.decodeSequence(entry, sequence);
+                    }
+                    if (entry.hasSequencePair()) {
+                        ReadsReader.decodeSequence(entry, sequencePair, true);
+                    }
+                    final ByteArrayList qualScores = ByteArrayList.wrap(entry.getQualityScores().toByteArray());
+                    processSequenceAndQualityScores(sequence, qualScores);
+                    if (entry.hasSequence() && !excludeSequences) {
+                        writer.setSequence(sequence);
+                    }
+                    if (entry.hasQualityScores()) {
+                        writer.setQualityScores(qualScores.toByteArray());
+                    }
+                    if (entry.hasSequencePair()) {
+                        final ByteArrayList pairQualScores = ByteArrayList.wrap(entry.getQualityScores().toByteArray());
+                        processSequenceAndQualityScores(sequencePair, pairQualScores);
 
-                    processSequenceAndQualityScores(entry, sequence, sequencePair, writer, false);
-                    processSequenceAndQualityScores(entry, sequence, sequencePair, writer, true);
-
+                        if (entry.hasSequencePair() && !excludeSequences) {
+                            writer.setPairSequence(sequencePair);
+                        }
+                        if (entry.hasQualityScoresPair()) {
+                            writer.setQualityScoresPair(pairQualScores.toByteArray());
+                        }
+                    }
                     // Important: preserve the read index in the input entry:
                     writer.appendEntry(entry.getReadIndex());
                     numReadsKept++;
@@ -287,7 +310,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                         final String newOutputFilename = getOutputFilename(outputBasename, ++splitIndex);
                         outputFilenames.add(newOutputFilename);
                         System.out.printf("Splitting into %s%n", newOutputFilename);
-                        writer = new ReadsWriter(new FileOutputStream(newOutputFilename));
+                        writer = new ReadsWriterImpl(new FileOutputStream(newOutputFilename));
                         writer.setNumEntriesPerChunk(sequencePerChunk);
                         entriesInOutputFile = 0;
                     }
@@ -303,86 +326,33 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         }
     }
 
-    private void processSequenceAndQualityScores(Reads.ReadEntry entry,
-                                                 MutableString sequence, MutableString sequencePair,
-                                                 ReadsWriter writer, boolean processPair) {
-        byte[] qualityScores = null;
-        if (!processPair && entry.hasQualityScores()) {
-            qualityScores = entry.getQualityScores().toByteArray();
+    private void processSequenceAndQualityScores(final MutableString sequence, final ByteArrayList qualityScores) {
+
+        assert qualityScores.size() == 0 || sequence.length() == qualityScores.size() : " sequence and quality score length must match";
+        final int length = sequence.length();
+        final int qualScoreSize = qualityScores.size();
+        if (trimReadStartLength < 0) {
+            trimReadStartLength = 0;
         }
-        if (processPair && entry.hasQualityScoresPair()) {
-            qualityScores = entry.getQualityScoresPair().toByteArray();
+        final int newLength = Math.min(length, trimReadLength) - trimReadStartLength;
+        if (length == newLength) {
+            // no trimming needed.
+            return;
         }
-
-        final int readLength = processPair ? entry.getReadLengthPair() : entry.getReadLength();
-        byte[] trimmedScores = null;
-        if (qualityScores != null && qualityScores.length > 0) {
-            trimmedScores = trimQualityScores(qualityScores, trimReadStartLength, trimReadLength, readLength);
-        }
-
-        if (!excludeSequences) {
-
-            final MutableString tmpSeq = processPair ? sequencePair : sequence;
-            ReadsReader.decodeSequence(entry, tmpSeq, processPair);
-
-
-            // trim the read length down to size
-            if (tmpSeq.length() > trimReadLength) {
-                tmpSeq.length(trimReadLength);
+        int j = 0;
+        if (trimReadStartLength > 0) {
+            for (int i = trimReadStartLength; i < length; i++) {
+                sequence.charAt(j, sequence.charAt(i));
+                if (qualScoreSize != 0) {
+                    qualityScores.set(j, qualityScores.get(i));
+                }
+                j += 1;
             }
-            if (trimReadStartLength > 0) {
-                tmpSeq.delete(0, trimReadStartLength);
-            }
-            if (mutateSequences) {
-                mutate(tmpSeq, numberOfMismatches);
-            }
-            if (processPair && entry.hasSequencePair()) {
-
-                writer.setPairSequence(tmpSeq);
-
-            } else if (!processPair && entry.hasSequence()) {
-
-                writer.setSequence(tmpSeq);
-            }
-        } else {
-            if (processPair && entry.hasSequencePair()) {
-
-                // writer.setPairSequence("");
-
-            } else if (!processPair && entry.hasSequence()) {
-
-                //  writer.setSequence("");
-            }
-
         }
-        if (!processPair && entry.hasQualityScores()) {
-
-            writer.setQualityScores(trimmedScores);
+        sequence.setLength(newLength);
+        if (qualScoreSize != 0) {
+            qualityScores.size(newLength);
         }
-        if (processPair && entry.hasQualityScoresPair()) {
-
-            writer.setQualityScoresPair(trimmedScores);
-        }
-
-    }
-
-    private byte[] trimQualityScores(byte[] qualityScores, int trimReadStartLength, int trimReadLength, int initialLength) {
-        if (qualityScores == null) return null;
-        int offset=trimReadStartLength;
-        if (offset<0) offset=0;
-        byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - offset];
-        int trimmedIndex = 0;
-        for (int i = 0; i < Math.min(initialLength, trimReadLength); i++) {
-            if (i >= trimReadStartLength) {
-                trimmedScores[trimmedIndex] = qualityScores[i];
-            } else {
-                if (i > trimReadLength) return trimmedScores;
-            }
-            trimmedIndex++;
-
-        }
-        return trimmedScores;
-
     }
 
     /**
@@ -393,7 +363,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      */
 
     private void mutate(final MutableString sequence, final int numberOfMismatches) {
-        int sequenceLength = sequence.length();
+        final int sequenceLength = sequence.length();
         if (sequenceLength == 0) {
             // When there is no sequence, there is nothing to mutate. This is most notably true for
             // when there is no PAIR sequence.
@@ -432,9 +402,9 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * @return a random integer in the range <STRONG>lo</STRONG>,
      *         <STRONG>lo</STRONG>+1, ... ,<STRONG>hi</STRONG>
      */
-    private int chooseRandom(Random random, final int lo, final int hi) {
+    private int chooseRandom(final Random random, final int lo, final int hi) {
         final double r = random.nextDouble();
-        int result = (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * r));
+        final int result = (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * r));
         assert result >= lo && result <= hi;
         return result;
     }
@@ -580,5 +550,13 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
     public static void main(final String[] args) throws IOException, JSAPException {
         new ReformatCompactReadsMode().configure(args).execute();
+    }
+
+    public void setWriter(final ReadsWriter writer) {
+        this.writer = writer;
+    }
+
+    public void setTrimStart(final int startTrim) {
+        this.trimReadStartLength = startTrim;
     }
 }

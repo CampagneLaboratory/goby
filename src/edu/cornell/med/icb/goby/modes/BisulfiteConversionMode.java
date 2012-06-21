@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 
@@ -115,7 +115,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
         ReadsReader reader = null;
         try {
 
-            writer = new ReadsWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+            writer = new ReadsWriterImpl(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
             writer.setNumEntriesPerChunk(sequencePerChunk);
 
             final MutableString sequence = new MutableString();
@@ -130,7 +130,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
                     byteBuffer = new byte[sequence.length()];
                 }
                 convert(sequence);
-                builder.setSequence(ReadsWriter.encodeSequence(sequence, byteBuffer));
+                builder.setSequence(ReadsWriterImpl.encodeSequence(sequence, byteBuffer));
 
                 if (readEntry.hasSequencePair()) {
                     ReadsReader.decodeSequence(readEntry, sequencePair, true);
@@ -138,7 +138,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
                         byteBuffer = new byte[sequencePair.length()];
                     }
                     convert(sequencePair);
-                    builder.setSequencePair(ReadsWriter.encodeSequence(sequencePair, byteBuffer));
+                    builder.setSequencePair(ReadsWriterImpl.encodeSequence(sequencePair, byteBuffer));
 
                 }
                 writer.appendEntry(builder);

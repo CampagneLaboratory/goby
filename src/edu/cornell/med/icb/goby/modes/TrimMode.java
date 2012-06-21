@@ -24,6 +24,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
@@ -137,7 +138,7 @@ public class TrimMode extends AbstractGobyMode {
                 adapters = adapterList.toArray(new MutableString[adapterList.size()]);
             }
             progress.start();
-            writer = new ReadsWriter(new FileOutputStream(outputFilename));
+            writer = new ReadsWriterImpl(new FileOutputStream(outputFilename));
 
             ByteArrayList newQualScores = new ByteArrayList();
             ByteArrayList newPairQualScores = new ByteArrayList();
@@ -166,7 +167,7 @@ public class TrimMode extends AbstractGobyMode {
 
                 //    System.out.printf(">seq%n%s%n", c);
                 Reads.ReadEntry.Builder builder = Reads.ReadEntry.newBuilder();
-                builder = builder.mergeFrom(entry).setSequence(ReadsWriter.encodeSequence(seq1, buffer)).setReadLength(seq1.length());
+                builder = builder.mergeFrom(entry).setSequence(ReadsWriterImpl.encodeSequence(seq1, buffer)).setReadLength(seq1.length());
                 if (sequence.length() != seq1.length()) {
                     numTrimmed++;
                     final byte[] bytes1 = newQualScores.toByteArray();
@@ -176,7 +177,7 @@ public class TrimMode extends AbstractGobyMode {
 
                 if (entry.hasSequencePair()) {
                     builder = builder.mergeFrom(entry)
-                            .setSequencePair(ReadsWriter.encodeSequence(pairSeq, buffer))
+                            .setSequencePair(ReadsWriterImpl.encodeSequence(pairSeq, buffer))
                             .setReadLength(pairSeq.length());
 
                     if (sequencePair.length() != pairSeq.length()) {

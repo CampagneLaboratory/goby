@@ -91,7 +91,7 @@ public class TestReadCodecImpl {
     }
 
     private ByteString convertSequence(String sequence) {
-        return ReadsWriter.encodeSequence(sequence, new byte[sequence.length()]);
+        return ReadsWriterImpl.encodeSequence(sequence, new byte[sequence.length()]);
     }
 
     @Test

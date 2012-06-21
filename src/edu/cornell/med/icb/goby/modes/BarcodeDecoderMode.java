@@ -22,10 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
-import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.*;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcherResult;
 import edu.cornell.med.icb.goby.util.barcode.PostBarcodeMatcher;
@@ -167,13 +164,13 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
 
 
         ReadsWriter singleWriter = null;
-        final ReadsWriter[] writers = new ReadsWriter[barcodeIndexToSampleId.size()];
+        final ReadsWriterImpl[] writers = new ReadsWriterImpl[barcodeIndexToSampleId.size()];
         if (outputFilename == null) {
             for (int i = 0; i < writers.length; i++) {
-                writers[i] = new ReadsWriter(new FileOutputStream(barcodeIndexToSampleId.get(i).trim() + ".compact-reads"));
+                writers[i] = new ReadsWriterImpl(new FileOutputStream(barcodeIndexToSampleId.get(i).trim() + ".compact-reads"));
             }
         } else {
-            singleWriter = new ReadsWriter(new FileOutputStream(outputFilename));
+            singleWriter = new ReadsWriterImpl(new FileOutputStream(outputFilename));
         }
 
         final BarcodeMatcher matcher = is3Prime ? new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches) :
