@@ -5,6 +5,7 @@ Towards 2.1
    the quality scores contained in the file.
  - mode sam-to-compact now supports option --read-names-are-query-indices to indicate that the read names are integers
    (typically produced by compact-to-fasta from a chunk of a large file).
+ - fix a bug in reformat-compact-reads which did not trim quality scores for paired end reads correctly.
 2.0 RC2
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then

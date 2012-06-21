@@ -159,7 +159,7 @@
             <defaults>
                 <string>-1</string>
             </defaults>
-            <help>When this option is present read lengths will be start trimmed by the specified number of characters.</help>
+            <help>When this option is present reads will be start trimmed by the specified number of bases.</help>
         </flaggedOption>
         <flaggedOption>
             <id>read-index-filter</id>

@@ -113,7 +113,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     /**
      * The number of bases to trim at the start of the sequence.
      */
-    private int trimReadStartLength=-1;
+    private int trimReadStartLength = -1;
 
     @Override
     public String getModeName() {
@@ -155,8 +155,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
-            if (startPosition==0 && endPosition==0) {
-                endPosition= Long.MAX_VALUE;
+            if (startPosition == 0 && endPosition == 0) {
+                endPosition = Long.MAX_VALUE;
             }
         }
 
@@ -252,7 +252,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             //DistinctIntValueCounterBitSet allEntries = new DistinctIntValueCounterBitSet();
             int numReadsKept = 0;
             for (final Reads.ReadEntry entry : readsReader) {
-            //    allEntries.observe(entry.getReadIndex());
+                //    allEntries.observe(entry.getReadIndex());
                 if (readIndexFilter == null || readIndexFilter.contains(entry.getReadIndex())) {
 
                     final int readLength = entry.getReadLength();
@@ -293,7 +293,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     }
                 }
             }
-          /*  float rate = allEntries.count();
+            /*  float rate = allEntries.count();
             rate -= numReadsKept;
             rate /= allEntries.count();
             if (readIndexFilter != null) System.out.printf("Percent reads redundant= %f3.2%% %n", rate);
@@ -310,8 +310,9 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         if (!processPair && entry.hasQualityScores()) {
             qualityScores = entry.getQualityScores().toByteArray();
         }
+        byte[] qualityScoresPair = null;
         if (processPair && entry.hasQualityScoresPair()) {
-            qualityScores = entry.getQualityScoresPair().toByteArray();
+            qualityScoresPair = entry.getQualityScoresPair().toByteArray();
         }
 
         final int readLength = processPair ? entry.getReadLengthPair() : entry.getReadLength();
@@ -319,7 +320,10 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         if (qualityScores != null && qualityScores.length > 0) {
             trimmedScores = trimQualityScores(qualityScores, trimReadStartLength, trimReadLength, readLength);
         }
-
+        byte[] trimmedScoresPair = null;
+        if (qualityScoresPair != null && qualityScoresPair.length > 0) {
+            trimmedScoresPair = trimQualityScores(qualityScoresPair, trimReadStartLength, trimReadLength, readLength);
+        }
         if (!excludeSequences) {
 
             final MutableString tmpSeq = processPair ? sequencePair : sequence;
@@ -339,48 +343,35 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             if (processPair && entry.hasSequencePair()) {
 
                 writer.setPairSequence(tmpSeq);
-
             } else if (!processPair && entry.hasSequence()) {
 
                 writer.setSequence(tmpSeq);
             }
-        } else {
-            if (processPair && entry.hasSequencePair()) {
-
-                // writer.setPairSequence("");
-
-            } else if (!processPair && entry.hasSequence()) {
-
-                //  writer.setSequence("");
-            }
-
         }
         if (!processPair && entry.hasQualityScores()) {
-
             writer.setQualityScores(trimmedScores);
         }
         if (processPair && entry.hasQualityScoresPair()) {
-
-            writer.setQualityScoresPair(trimmedScores);
+            writer.setQualityScoresPair(trimmedScoresPair);
         }
 
     }
 
     private byte[] trimQualityScores(byte[] qualityScores, int trimReadStartLength, int trimReadLength, int initialLength) {
-        if (qualityScores == null) return null;
-        int offset=trimReadStartLength;
-        if (offset<0) offset=0;
-        byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - offset];
-        int trimmedIndex = 0;
-        for (int i = 0; i < Math.min(initialLength, trimReadLength); i++) {
-            if (i >= trimReadStartLength) {
-                trimmedScores[trimmedIndex] = qualityScores[i];
-            } else {
-                if (i > trimReadLength) return trimmedScores;
-            }
-            trimmedIndex++;
-
+        if (trimReadStartLength < 0) {
+            trimReadStartLength = 0;
         }
+        final int newLength = Math.min(initialLength, trimReadLength) - trimReadStartLength;
+        if (initialLength == newLength) {
+            // no trimming needed.
+            return qualityScores;
+        }
+        if (qualityScores == null) {
+            return null;
+        }
+
+        final byte[] trimmedScores = new byte[newLength];
+        System.arraycopy(qualityScores, trimReadStartLength + trimReadStartLength, trimmedScores, trimReadStartLength, newLength - trimReadStartLength);
         return trimmedScores;
 
     }
