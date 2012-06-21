@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadCodec;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
@@ -547,7 +548,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         if (StringUtils.isNotBlank(outputPath)) {
             FileUtils.forceMkdir(new File(outputPath));
         }
-        final ReadsWriter writer = new ReadsWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+        final ReadsWriter writer = new ReadsWriterImpl(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
         if (codec != null) {
             writer.setCodec(codec);
         }

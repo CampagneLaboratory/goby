@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.ReadsToTextWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -464,4 +466,87 @@ public class TestReformatCompactReadsMode {
         assertEquals(12, entry.getQualityScores().size());
 
     }
+
+    @Test
+    public void reformatPairedEndToText() throws IOException {
+        final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+        final String inputFilename =
+                "test-data/compact-reads/with-meta-data-input.compact-reads";
+        reformat.setInputFilenames(inputFilename);
+        reformat.setOutputFile("will-not-write-here");
+        final ReadsToTextWriter writer = new ReadsToTextWriter();
+        reformat.setWriter(writer);
+        reformat.execute();
+        assertEquals("numEntriesPerChunk: 10000\n" +
+                "appendMetaData: key2=value2\n" +
+                "appendMetaData: key1=value1\n" +
+                "sequence: GATACCACATCA\n" +
+                "setQualityScores: [-15, -14, -13, -12, -11, -10, -9, -8, -7, -16, -15, -14]\n" +
+                "append: readIndex: 0\n" +
+                "\n" +
+                "sequence: TAGACCATAGG\n" +
+                "setQualityScores: [-15, -14, -13, -12, -11, -10, -9, -8, -7, -16, -14]\n" +
+                "append: readIndex: 1\n" +
+                "\n" +
+                "close()\n" +
+                "printStats\n",
+                writer.getTextOutput());
+    }
+
+    @Test
+    public void reformatTrimStartBy2() throws IOException {
+            final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+            final String inputFilename =
+                    "test-data/compact-reads/with-meta-data-input.compact-reads";
+            reformat.setInputFilenames(inputFilename);
+            reformat.setOutputFile("will-not-write-here");
+            final ReadsToTextWriter writer = new ReadsToTextWriter();
+            reformat.setWriter(writer);
+        reformat.setTrimStart(2);
+            reformat.execute();
+            assertEquals("numEntriesPerChunk: 10000\n" +
+                    "appendMetaData: key2=value2\n" +
+                    "appendMetaData: key1=value1\n" +
+                    "sequence: TACCACATCA\n" +
+                    "setQualityScores: [-13, -12, -11, -10, -9, -8, -7, -16, -15, -14]\n" +
+                    "append: readIndex: 0\n" +
+                    "\n" +
+                    "sequence: GACCATAGG\n" +
+                    "setQualityScores: [-13, -12, -11, -10, -9, -8, -7, -16, -14]\n" +
+                    "append: readIndex: 1\n" +
+                    "\n" +
+                    "close()\n" +
+                    "printStats\n",
+                    writer.getTextOutput());
+        }
+
+    @Test
+        public void reformatTrimLengthBy2() throws IOException {
+                final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+                final String inputFilename =
+                        "test-data/compact-reads/with-meta-data-input.compact-reads";
+                reformat.setInputFilenames(inputFilename);
+                reformat.setOutputFile("will-not-write-here");
+                final ReadsToTextWriter writer = new ReadsToTextWriter();
+                reformat.setWriter(writer);
+            reformat.setTrimReadLength(10);
+                reformat.execute();
+                assertEquals("numEntriesPerChunk: 10000\n" +
+                                "appendMetaData: key2=value2\n" +
+                                "appendMetaData: key1=value1\n" +
+                                "sequence: GATACCACAT\n" +
+                                "setQualityScores: [-15, -14, -13, -12, -11, -10, -9, -8, -7, -16]\n" +
+                                "append: readIndex: 0\n" +
+                                "\n" +
+                                "sequence: TAGACCATAG\n" +
+                                "setQualityScores: [-15, -14, -13, -12, -11, -10, -9, -8, -7, -16]\n" +
+                                "append: readIndex: 1\n" +
+                                "\n" +
+                                "close()\n" +
+                                "printStats\n",
+                        writer.getTextOutput());
+            }
 }

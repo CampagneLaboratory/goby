@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.StringUtils;
 
@@ -134,7 +135,7 @@ public class SplitCompactReadsMode extends AbstractGobyMode {
                     "--end-position cannot be less than or the same as --start-position");
         }
 
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        final ReadsWriter writer = new ReadsWriterImpl(new FileOutputStream(outputFilename));
         writer.setNumEntriesPerChunk(sequencePerChunk);
         final MutableString sequence = new MutableString();
         final ReadsReader readsReader = new ReadsReader(startPosition, endPosition, inputFilename);

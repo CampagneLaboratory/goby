@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.readers.sam.SAMRecordIterable;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.lang.MutableString;
@@ -131,7 +132,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         debug = Util.log4JIsConfigured();
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        final ReadsWriter writer = new ReadsWriterImpl(new FileOutputStream(outputFilename));
         boolean finishEarly = false;
 
         numReadsTotal = 0;

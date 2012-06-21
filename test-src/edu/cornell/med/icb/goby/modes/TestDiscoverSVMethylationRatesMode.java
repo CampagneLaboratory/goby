@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -489,7 +490,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         dir.mkdirs();
 
          genome = new RandomAccessSequenceTestSupport(sequences);
-        final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
+        final ReadsWriter referenceWriter = new ReadsWriterImpl(FileUtils.openOutputStream(
                 new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
         referenceWriter.setIdentifier("0");
         referenceWriter.appendEntry();

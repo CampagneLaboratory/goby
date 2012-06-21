@@ -61,7 +61,7 @@ public class TestReadsWriter {
                 "description 3"
         };
 
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(new File("test-results/reads/written-101.bin")));
+        final ReadsWriter writer = new ReadsWriterImpl(new FileOutputStream(new File("test-results/reads/written-101.bin")));
 
         int expectedCount = 0;
         writer.setNumEntriesPerChunk(9);
@@ -114,7 +114,7 @@ public class TestReadsWriter {
         };
         final String filename = "test-results/reads/written-101.bin";
 
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(new File(filename)));
+        final ReadsWriter writer = new ReadsWriterImpl(new FileOutputStream(new File(filename)));
         ReadsReader reader;
 
         int expectedCount = 0;
@@ -172,7 +172,7 @@ public class TestReadsWriter {
                 "description 3"
         };
         final String filename = "test-results/reads/written-101.bin";
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(new File(filename)));
+        final ReadsWriter writer = new ReadsWriterImpl(new FileOutputStream(new File(filename)));
 
         int expectedCount = 0;
         writer.setNumEntriesPerChunk(9);
