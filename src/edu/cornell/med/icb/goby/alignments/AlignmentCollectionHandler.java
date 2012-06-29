@@ -88,6 +88,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * execution run.
      */
     private long timeStamp;
+
+    /**
+     * Specify the order (0 or 1) for modeling symbol dependencies.
+     * @param order 1 (probability of a symbol depends on the previous symbol and the current symbol) 0 (only current symbol considered)
+     */
+    public void setSymbolDependencyOrder(int order) {
+        this.encodeSymbolDependencyOrder = order;
+    }
+
     /**
      * The number of previous symbols to consider when estimating a model probability.
      */

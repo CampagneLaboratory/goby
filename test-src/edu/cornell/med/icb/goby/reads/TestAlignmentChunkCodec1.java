@@ -559,13 +559,16 @@ public class TestAlignmentChunkCodec1 {
     // will not run on server.
     public void testLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
-        codec.setHandler(new AlignmentCollectionHandler());
+
+        final AlignmentCollectionHandler handler = new AlignmentCollectionHandler();
+        handler.setSymbolDependencyOrder(1);
+        codec.setHandler(handler);
         final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/EMNWFIL.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         int i = 0;
         for (Alignments.AlignmentEntry entry : reader) {
             collectionBuilder.addAlignmentEntries(entry);
-            if (i++ > 10000) {
+            if (i++ > 100000) {
                 break;
             }
         }
