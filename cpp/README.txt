@@ -1,3 +1,6 @@
+The Goby C/C++ APIs are released under the terms of the GNU LESSER GENERAL PUBLIC LICENSE version 3
+(see COPYING.LESSER for terms and conditions).
+
 1. On UNIX/Linux (and possibly Mac) systems (not necessary for Cygiwn), assuming you are
     using the BASH shell,  Edit the .bash_profile file so that pkgconfig
     will find libs/includes installed "locally"
