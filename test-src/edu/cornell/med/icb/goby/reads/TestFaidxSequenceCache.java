@@ -74,6 +74,8 @@ public class TestFaidxSequenceCache {
             fail();
         } catch (AssertionError e) {
             // OK, an assertion was triggered.
+        } catch (StringIndexOutOfBoundsException e) {
+            // OK, an exception was triggered.
         }
     }
 
@@ -120,6 +122,24 @@ public class TestFaidxSequenceCache {
         do {
             i = testPattern(cache, i);
         } while (i < cache.getLength(0));
+    }
+
+    @Test
+    public void testBug16() throws IOException {
+
+
+        final RandomAccessSequenceInterface cache = new PicardFastaIndexedSequence("test-data/faidx/file3.fasta");
+        int i = 0;
+        char a,b,c,d;
+        a= cache.get(0, 2);
+        b= cache.get(0, 0);
+        c= cache.get(0, 1);
+        d= cache.get(0, 1);
+        assertEquals('C', a);
+        assertEquals('A', b);
+        assertEquals('G', c);
+        assertEquals('G', d);
+
     }
 
     private int j = 0;

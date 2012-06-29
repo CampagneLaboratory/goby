@@ -48,7 +48,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     private long[] basesPerLine;
 
 
-    public PicardFastaIndexedSequence(String filename) throws FileNotFoundException {
+    public PicardFastaIndexedSequence(final String filename) throws FileNotFoundException {
         delegate = new IndexedFastaSequenceFile(new File(filename));
         indexDelegate = new FastaSequenceIndex(new File(filename + ".fai"));
         final int numContigs = indexDelegate.size();
@@ -67,8 +67,8 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         // contig name is the parameter expected to get data from the sequences!
         int index = 0;
         while (lineIt.hasNext()) {
-            String line = lineIt.nextLine();
-            String[] tokens = line.split("[\\s]");
+            final String line = lineIt.nextLine();
+            final String[] tokens = line.split("[\\s]");
             names[index] = tokens[0];
             namesToIndices.put(tokens[0], index);
             lengths[index] = Integer.parseInt(tokens[1]);
@@ -91,7 +91,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     }
 
     @Override
-    public int getLength(int targetIndex) {
+    public int getLength(final int targetIndex) {
         return (int) lengths[targetIndex];
     }
 
@@ -100,14 +100,15 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     int cachedStop = -1;
 
     @Override
-    public void getRange(int referenceIndex, int position, int length, MutableString bases) {
+    public void getRange(final int referenceIndex, final int position, final int length, final MutableString bases) {
         bases.setLength(0);
         final int stop = Math.max(position + length, lengths[referenceIndex] - position);
-        ReferenceSequence seq = delegate.getSubsequenceAt(names[referenceIndex], position, stop);
+        final int oneBasedPosition = position + 1;
+        final ReferenceSequence seq = delegate.getSubsequenceAt(names[referenceIndex], oneBasedPosition, stop);
         assert seq.getContigIndex() == referenceIndex : " contig index and reference index must match.";
-        int i=0;
+        final int i=0;
         for (final byte b : seq.getBases()) {
-            char c = (char) b;
+            final char c = (char) b;
 
             if (c != '\n') {
                 bases.append((char) b);
@@ -117,16 +118,16 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         cachedStop = stop;
         cachedSeq = seq;
         cachedReferenceIndex = referenceIndex;
-        //System.out.println("got: " + bases);
+     //   System.out.println("got: " + bases);
     }
 
     @Override
-    public int getReferenceIndex(String referenceId) {
+    public int getReferenceIndex(final String referenceId) {
         return (int) namesToIndices.getInt(referenceId);
     }
 
     @Override
-    public String getReferenceName(int index) {
+    public String getReferenceName(final int index) {
         return names[index];
     }
 
@@ -135,7 +136,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         return names.length;
     }
 
-    public void print(int referenceIndex) {
+    public void print(final int referenceIndex) {
         for (int i=0;i<getLength(referenceIndex);i++ ){
            if (i % basesPerLine[referenceIndex]==0) {
                 System.out.println(" "+i+ " ");

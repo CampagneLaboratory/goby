@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.reads.PicardFastaIndexedSequence;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.util.TestFiles;
@@ -52,6 +53,7 @@ import static org.junit.Assert.assertFalse;
  * SamToCompact() which no longer uses SplicedSamHelper (the mode that uses that was renamed, pre-elimiation,
  * to SamToCompactSamHelperMode).
  * TODO: Merge this with TestSamRecordParser.
+ *
  * @author Fabien Campagne
  */
 public class TestSplicedSamHelper {
@@ -603,7 +605,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-15");
         importer.setOutputFile(outputFilename);
         importer.setPreserveSoftClips(true);
-      //  importer.setPropagateTargetIds(true);
+        //  importer.setPropagateTargetIds(true);
         importer.execute();
 
         AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
@@ -662,7 +664,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-16");
         importer.setOutputFile(outputFilename);
         importer.setPreserveSoftClips(true);
-      //  importer.setPropagateTargetIds(true);
+        //  importer.setPropagateTargetIds(true);
         importer.execute();
         // cigar is  13S21M1I29M4S   13 21 -1 29 4
         AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
@@ -754,7 +756,7 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
             boolean preserveSoftClips = true;
             boolean preserveAllReadQuals = true;
             String importedBasename = importFile(filename, preserveSoftClips, preserveAllReadQuals);
-            String exportedSamFilename = exportFile(importedBasename);
+            String exportedSamFilename = exportFile(importedBasename, null);
 
             TestFiles tester = new TestFiles();
             tester.assertEquals(inputFile, new File(exportedSamFilename));
@@ -762,48 +764,81 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
 
     }
 
-    private String exportFile(String importedBasename) throws IOException {
+    @Test
+    // We cannot really test without a genome corresponding to each sam file.
+    public void testGenomeRoundTrip() throws IOException {
+        File dir = new File("test-data/sam/");
+        File[] files = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                if (s.startsWith("test") && s.endsWith(".sam")) return true;
+                else return false;
+            }
+        });
+
+        for (File inputFile : files) {
+            String filename = inputFile.getAbsolutePath();
+            boolean preserveSoftClips = true;
+            boolean preserveAllReadQuals = false;
+            String importedBasename = importFile(filename, preserveSoftClips, preserveAllReadQuals);
+            String exportedSamFilename = exportFile(importedBasename, "test-data/faidx/file3.fasta");
+
+            TestFiles tester = new TestFiles();
+            tester.assertEquals(inputFile, new File(exportedSamFilename));
+        }
+
+    }
+
+    private String exportFile(String importedBasename, String genomePath) throws IOException {
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "round-trip-output" + counterSam++ + ".sam");
 
         CompactToSAMMode exporter = new CompactToSAMMode();
         exporter.setInputBasename(importedBasename);
         exporter.setOutput(outputFilename);
-        RandomAccessSequenceInterface genomeTestSupport = new RandomAccessSequenceInterface() {
+        if (genomePath != null) {
+            exporter.setGenome(new PicardFastaIndexedSequence(genomePath));
 
-            @Override
-            public char get(int referenceIndex, int position) {
-                return 'A';
-            }
+        } else {
 
-            @Override
-            public int getLength(int targetIndex) {
-                return Integer.MAX_VALUE;
-            }
 
-            @Override
-            public void getRange(int referenceIndex, int position, int length, MutableString bases) {
-                bases.setLength(0);
-                for (int i=0;i<length; i++) {
-                    bases.append('A');
+            RandomAccessSequenceInterface genomeTestSupport = new RandomAccessSequenceInterface() {
+
+                @Override
+                public char get(int referenceIndex, int position) {
+                    return 'A';
                 }
-            }
 
-            @Override
-            public int getReferenceIndex(String referenceId) {
-                return 0;
-            }
+                @Override
+                public int getLength(int targetIndex) {
+                    return Integer.MAX_VALUE;
+                }
 
-            @Override
-            public String getReferenceName(int index) {
-                return "ref-id";
-            }
+                @Override
+                public void getRange(int referenceIndex, int position, int length, MutableString bases) {
+                    bases.setLength(0);
+                    for (int i = 0; i < length; i++) {
+                        bases.append('A');
+                    }
+                }
 
-            @Override
-            public int size() {
-                return 5;
-            }
-        };
-        exporter.setGenome(genomeTestSupport);
+                @Override
+                public int getReferenceIndex(String referenceId) {
+                    return 0;
+                }
+
+                @Override
+                public String getReferenceName(int index) {
+                    return "ref-id";
+                }
+
+                @Override
+                public int size() {
+                    return 5;
+                }
+            };
+
+            exporter.setGenome(genomeTestSupport);
+        }
         exporter.execute();
         return outputFilename;
     }
@@ -816,8 +851,9 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         importer.setInputFile(filename);
         final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "round-trip-input-alignment-" + counterGoby++);
         importer.setOutputFile(outputFilename);
+        importer.setPreserveReadName(true);
         importer.setPreserveSoftClips(preserveSoftClips);
-      //  importer.setPropagateTargetIds(true);
+        //  importer.setPropagateTargetIds(true);
         importer.setPreserveReadQualityScores(true);
         importer.setPreserveAllTags(true);
 
