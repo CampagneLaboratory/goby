@@ -63,6 +63,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
+            "symbol-dependency-order:integer, The number of past symbols to consider when estimating compression models (0 or 1):0",
             "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
@@ -87,6 +88,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * execution run.
      */
     private long timeStamp;
+    /**
+     * The number of previous symbols to consider when estimating a model probability.
+     */
+    private int encodeSymbolDependencyOrder = 0;
+    private int decodeSymbolDependencyOrder;
 
     public boolean isEnableDomainOptimizations() {
         return enableDomainOptimizations;
@@ -130,6 +136,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         enableDomainOptimizations = doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
+        encodeSymbolDependencyOrder = doc().getInteger("symbol-dependency-order");
 
         if (debug(1)) {
             try {
@@ -157,8 +164,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public GeneratedMessage parse(final InputStream uncompressedStream) throws IOException {
-         final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
-         codedInput.setSizeLimit(Integer.MAX_VALUE);
+        final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
+        codedInput.setSizeLimit(Integer.MAX_VALUE);
 
         return Alignments.AlignmentCollection.parseFrom(codedInput);
     }
@@ -168,7 +175,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * The version of the stream that this class reads and writes.
      */
 
-    public static final int VERSION = 12;
+    public static final int VERSION = 13;
     private int streamVersion;
 
     @Override
@@ -755,8 +762,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     }
+
     final IntArrayList encodedLengths = new IntArrayList();
     final IntArrayList encodedValues = new IntArrayList();
+
     private void decodeArithmeticInternal(InputBitStream bitInput, IntList list) throws IOException {
         final int size = bitInput.readNibble();
         if (size == 0) {
@@ -855,10 +864,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 out.writeNibble(nat);
             }
 
-            encode(label, list, out, distinctSymbols, symbolValues);
+            encode(label, list, out, distinctSymbols, symbolValues,true,-1);
             return false;
         } else {
-          //  System.out.printf("%s symbolRange=%d symbolSize=%d%n", label, symbolRange, numDistinctSymbols);
+            //  System.out.printf("%s symbolRange=%d symbolSize=%d%n", label, symbolRange, numDistinctSymbols);
 
             // in this branch, we know the symbols are consecutive in values, so we write the min symbol, and the number of symbols.
             out.writeBit(true);
@@ -871,21 +880,44 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt + 1;
 
             out.writeNibble(nat);
-
-            encodeDirect(label, list, out, minSymbol, numDistinctSymbols);
+            final int[] symbolValues = distinctSymbols.toIntArray();
+            encode(label, list, out, distinctSymbols, symbolValues, false, minSymbol);
             return false;
         }
     }
 
-    private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
+    private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues,final boolean useBinarySearch, final int minSymbol) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
-            for (final int dp : list) {
-                final int symbolCode = Arrays.binarySearch(symbolValues, dp);
-                assert symbolCode >= 0 : "symbol code must exist.";
-                coder.encode(symbolCode, out);
+            final int numSymbols = distinctSymbols.size();
+            int thisSymbolDependencyOrder= encodeSymbolDependencyOrder;
+            switch (thisSymbolDependencyOrder) {
+                case 0:
+                    final FastArithmeticCoder coder = new FastArithmeticCoder(numSymbols);
+                    for (final int dp : list) {
+                        final int symbolCode =useBinarySearch? Arrays.binarySearch(symbolValues, dp) : dp-minSymbol;
+                        assert symbolCode >= 0 : "symbol code must exist.";
+                        coder.encode(symbolCode, out);
+                    }
+                    coder.flush(out);
+                    break;
+                case 1:
+                    final FastArithmeticCoder[] coders = new FastArithmeticCoder[numSymbols];
+                    for (int i = 0; i < numSymbols; i++) {
+                        coders[i] = new FastArithmeticCoder(numSymbols);
+                    }
+                    int last = 0;
+                    for (final int dp : list) {
+
+                        final int symbolCode = useBinarySearch? Arrays.binarySearch(symbolValues, dp) : dp-minSymbol;
+                        assert symbolCode >= 0 : "symbol code must exist.";
+
+                        coders[last].encode(symbolCode, out);
+                        last = symbolCode;
+                    }
+                    for (int i = 0; i < numSymbols; i++) {
+                        coders[i].flush(out);
+                    }
             }
-            coder.flush(out);
         } else if (useHuffmanCoding) {
             final int[] frequencies = frequencies(list, symbolValues);
             final HuffmanCodec codec = new HuffmanCodec(frequencies);
@@ -894,7 +926,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 out.writeNibble(freq);
             }
             for (final int dp : list) {
-                final int symbolCode = Arrays.binarySearch(symbolValues, dp);
+                final int symbolCode = useBinarySearch? Arrays.binarySearch(symbolValues, dp) : dp-minSymbol;
                 assert symbolCode >= 0 : "symbol code must exist.";
                 coder.encode(symbolCode, out);
             }
@@ -912,6 +944,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * @throws IOException
      */
     private void encodeDirect(String label, final IntList list, final OutputBitStream out, int minSymbol, int numSymbols) throws IOException {
+     //TODO add symbolDependencyOrder
         if (useArithmeticCoding) {
             final FastArithmeticCoder coder = new FastArithmeticCoder(numSymbols);
             for (final int dp : list) {
@@ -938,12 +971,31 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void decode(final InputBitStream bitInput, final IntList list, final int size, final int numTokens, int[] distinctvalue) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
-            for (int i = 0; i < size; i++) {
-                final int tokenValue = distinctvalue[decoder.decode(bitInput)];
-                list.add(tokenValue);
+            switch (decodeSymbolDependencyOrder) {
+                case 0:
+                    final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
+                    for (int i = 0; i < size; i++) {
+                        final int tokenValue = distinctvalue[decoder.decode(bitInput)];
+                        list.add(tokenValue);
+                    }
+                    decoder.reposition(bitInput);
+                    break;
+                case 1:
+                    final FastArithmeticDecoder decoders[] = new FastArithmeticDecoder[numTokens];
+                    for (int i = 0; i < numTokens; i++) {
+                        decoders[i] = new FastArithmeticDecoder(numTokens);
+                    }
+                    int last = 0;
+                    for (int i = 0; i < size; i++) {
+                        final int tokenValue = distinctvalue[decoders[last].decode(bitInput)];
+                        list.add(tokenValue);
+                        last = tokenValue;
+                    }
+                    for (int i = 0; i < numTokens; i++) {
+                        decoders[i].reposition(bitInput);
+                    }
+
             }
-            decoder.reposition(bitInput);
         } else if (useHuffmanCoding) {
             final int[] frequencies = new int[distinctvalue.length];
             for (int i = 0; i < frequencies.length; i++) {
@@ -1053,7 +1105,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
         streamVersion = bitInput.readDelta();
-
+        if (streamVersion<=12) {
+            decodeSymbolDependencyOrder=0;
+        } else {
+            decodeSymbolDependencyOrder= bitInput.readDelta();
+        }
         assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
         if (streamVersion >= 8) {
             enableDomainOptimizations = bitInput.readBit() == 1;
@@ -1171,6 +1227,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
         out.writeDelta(VERSION);
+        out.writeDelta(encodeSymbolDependencyOrder);
         out.writeBit(enableDomainOptimizations);
         out.writeBit(multiplicityFieldsAllMissing);
 
@@ -1574,26 +1631,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-    //       System.out.println(alignmentEntry);
+        //       System.out.println(alignmentEntry);
         return alignmentEntry;
     }
+
     // mask the strand bit from pair flag (we store it separately anyway)
     private int reduceSamFlags(Alignments.AlignmentEntry source) {
         return source.getPairFlags() & (~16);
     }
+
     // reconstitute the sam Flag with strand information:
     private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
-        return samFlag | (matchesReverseStrand?16:0);
+        return samFlag | (matchesReverseStrand ? 16 : 0);
     }
+
     private boolean isEmpty(final Alignments.SequenceVariation varBuilder) {
-        return useTemplateBasedCompression && fastEqualsInternal( varBuilder);
+        return useTemplateBasedCompression && fastEqualsInternal(varBuilder);
     }
 
     final ByteArrayOutputStream byteBufferSVO1 = new ByteArrayOutputStream();
     final ByteArrayOutputStream byteBufferSVO2 = new ByteArrayOutputStream();
     private byte[] EMPTY_SEQ_VAR_SERIALIZED;
 
-    private boolean fastEqualsInternal( Alignments.SequenceVariation o2) {
+    private boolean fastEqualsInternal(Alignments.SequenceVariation o2) {
         // The protobuf message.equals method is a performance  bottleneck when performing template compression. See
         //http://www.mail-archive.com/protobuf@googlegroups.com/msg02534.html
         // This method  first serializes the two messages to bytes, then compare the byte arrays. This
@@ -1807,7 +1867,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         anInt = pairFlags.getInt(index);
         if (anInt != MISSING_VALUE) {
-            result.setPairFlags(restoreSamFlags(anInt,result.getMatchingReverseStrand()));
+            result.setPairFlags(restoreSamFlags(anInt, result.getMatchingReverseStrand()));
         }
         anInt = scores.getInt(index);
         if (anInt != MISSING_VALUE) {
