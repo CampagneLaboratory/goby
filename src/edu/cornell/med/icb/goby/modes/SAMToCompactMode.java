@@ -676,7 +676,7 @@ public class SAMToCompactMode extends AbstractGobyMode {
         if (preserveAllTags) {
             final String[] tokens = samRecord.getSAMString().split("\t");
             final int size = tokens.length;
-            for (int i = 12; i < size; i++) {
+            for (int i = 11; i < size; i++) {
                 final String token = tokens[i];
                 if (!token.startsWith("MD:Z") && !token.startsWith("RG:Z")) {
                     // ignore MD and RG since we store them natively..
