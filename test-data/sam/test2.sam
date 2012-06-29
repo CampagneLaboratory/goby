@@ -1,0 +1,4 @@
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:genome	LN:100
+@PG	ID:Goby	VN:UNKNOWN
+test_seq2	0	genome	2	255	75M	*	0	0	GCTTATAGGAGCGATCGTGCATGTATGAGCGGCCCGCGAGAGATTCGAGTAGAGAGCGCGCATGCTCGAGAGCGT	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	X0:i:1	MD:Z:75
