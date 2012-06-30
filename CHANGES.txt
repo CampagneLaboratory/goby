@@ -1,9 +1,9 @@
-Towards 2.1
- - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
-   depths independently of fragments.   
- - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
-   the quality scores contained in the file.
-2.0 RC2
+2.0.1
+ - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
+   for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
+   Java APIs are already licensed under the LGPL (anything packaged under the Goby-io.jar file).
+
+2.0
  - Support multiple group comparisons for RNA-Seq diff exp (mode compact-alignment-to-annotation-counts).
  - Added a mode sam-comparison to compare a source SAM/BAM file with one that generated after sam-to-compact then
    compact-to-sam.
