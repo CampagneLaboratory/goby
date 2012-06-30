@@ -96,6 +96,12 @@
                 indexed.
             </help>
         </switch>
+        <switch>
+                    <id>read-names-are-query-indices</id>
+                    <longFlag>read-names-are-query-indices</longFlag>
+                    <help>Indicates that read names are in fact integers that should be used directly as query indices.
+                    </help>
+                </switch>
         <flaggedOption>
             <id>propagate-target-ids</id>
             <longFlag>propagate-target-ids</longFlag>
