@@ -3,11 +3,7 @@ Towards 2.1
    depths independently of fragments.   
  - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
    the quality scores contained in the file.
- - mode sam-to-compact now supports option --read-names-are-query-indices to indicate that the read names are integers
-   (typically produced by compact-to-fasta from a chunk of a large file).
- - Introduce interface for ReadsWriter. Introduce mock implementation to write reads to text. This is useful to write
-   more intelligible JUnit tests.
- - fix a bug in reformat-compact-reads which did not trim quality scores for paired end reads correctly.
+ - Improve compression in hybrid mode by about 10%.
 2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby

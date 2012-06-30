@@ -57,7 +57,7 @@ import java.io.IOException;
  * @since 0.1
  */
 
-final public class FastArithmeticCoder {
+final public class FastArithmeticCoder implements FastArithmeticCoderI {
 	/** Number of bits used by the coder. */
 	public final static int BITS = 63;
 
@@ -88,6 +88,7 @@ final public class FastArithmeticCoder {
 	/** The first bit is always 0, so we do not output it. */
 	private boolean firstBit = true;
 
+    @Override
     public void reset() {
         range=  HALF;
         outstandingBits=0;
@@ -126,7 +127,7 @@ final public class FastArithmeticCoder {
 		}
 	}
 
-	private int getCount( int x ) {
+	protected int getCount(int x) {
 		int c = 0;
 
 		while ( x != 0 ) {
@@ -172,7 +173,8 @@ final public class FastArithmeticCoder {
 	 * @throws IOException if <code>obs</code> does.
 	 */
 
-	public int encode( int x, OutputBitStream obs ) throws IOException {
+	@Override
+    public int encode(int x, OutputBitStream obs) throws IOException {
 		if ( x < 0 )
 			throw new IllegalArgumentException( "You cannot encode a negative symbol." );
 		if ( x >= n )
@@ -223,7 +225,8 @@ final public class FastArithmeticCoder {
 	 * @throws IOException if <code>obs</code> does.
 	 */
 
-	public int flush( final OutputBitStream obs ) throws IOException {
+	@Override
+    public int flush(final OutputBitStream obs) throws IOException {
 		int nbits, i, l = 0;
 		long roundup, bits = 0, value;
 

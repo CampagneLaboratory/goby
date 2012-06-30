@@ -22,8 +22,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
-import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
+import edu.cornell.med.icb.goby.algorithmic.compression.*;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
@@ -63,6 +62,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
+            "symbol-modeling:string, a string which indicates which arithmetic coding scheme to use. order_zero will " +
+                    "select a zero-order arithmetic coder. order_one will select an arithmetic order that models pairs of symbols. " +
+                    "plus will select an experimental coder.:order_zero",
             "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
@@ -87,6 +89,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * execution run.
      */
     private long timeStamp;
+    /**
+     * The number of previous symbols to consider when estimating a model probability.
+     */
+    private int encodeSymbolDependencyOrder = 0;
+    private int decodeSymbolDependencyOrder;
+
+    private CoderType coderType;
 
     public boolean isEnableDomainOptimizations() {
         return enableDomainOptimizations;
@@ -121,6 +130,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
+    enum CoderType {
+        ORDER_ZERO,
+        ORDER_ONE,
+        PLUS
+    }
+
     public AlignmentCollectionHandler() {
         for (int length = 0; length < qualArrays.length; length++) {
             qualArrays[length] = new byte[length];
@@ -130,6 +145,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         enableDomainOptimizations = doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
+        encodeSymbolDependencyOrder = doc().getInteger("symbol-dependency-order");
 
         if (debug(1)) {
             try {
@@ -879,7 +895,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
+            final FastArithmeticCoderI coder = getCoder(distinctSymbols.size(),list.size());
             for (final int dp : list) {
                 final int symbolCode = Arrays.binarySearch(symbolValues, dp);
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -902,6 +918,32 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
+    private FastArithmeticCoderI getCoder(int numSymbols, int listSize) {
+        switch (coderType) {
+
+            case ORDER_ONE:
+                return new FastArithmeticCoderOrder1(numSymbols,listSize);
+            case PLUS:
+                return new FastArithmeticCoderPlus(numSymbols,listSize);
+            default:
+            case ORDER_ZERO:
+                return new FastArithmeticCoder(numSymbols);
+        }
+
+    }
+    private FastArithmeticDecoderI getDecoder(int numSymbols, int listSize) {
+        switch (coderType) {
+
+                   case ORDER_ONE:
+                       return new FastArithmeticDecoderOrder1(numSymbols,listSize);
+                   case PLUS:
+                       return new FastArithmeticDecoderPlus(numSymbols,listSize);
+                   default:
+                   case ORDER_ZERO:
+                       return new FastArithmeticDecoder(numSymbols);
+               }
+
+       }
     /**
      * Here, we know that symbol values are consecutive, so we don't need to use binarySearch to code list values into symbols.
      * We use direct access instead.
@@ -913,7 +955,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      */
     private void encodeDirect(String label, final IntList list, final OutputBitStream out, int minSymbol, int numSymbols) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoder coder = new FastArithmeticCoder(numSymbols);
+            final FastArithmeticCoderI coder = getCoder(numSymbols,list.size());
             for (final int dp : list) {
                 final int symbolCode = dp - minSymbol;
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -938,7 +980,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void decode(final InputBitStream bitInput, final IntList list, final int size, final int numTokens, int[] distinctvalue) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
+            final FastArithmeticDecoderI decoder = getDecoder(numTokens,list.size());
             for (int i = 0; i < size; i++) {
                 final int tokenValue = distinctvalue[decoder.decode(bitInput)];
                 list.add(tokenValue);
@@ -958,6 +1000,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             // decoder.reposition(bitInput);
         }
     }
+
+
 
     // return the frequencies of symbols in the list
     private int[] frequencies(IntList list, int[] symbolValues) {
@@ -1053,8 +1097,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
         streamVersion = bitInput.readDelta();
-
-        assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
+        assert streamVersion <= VERSION : String.format("FATAL: The stream version (found=%d) cannot have been written " +
+                "with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of" +
+                " the compressed stream). This implementation has VERSION=%d",streamVersion,VERSION);
+        if (streamVersion <= 12) {
+                    coderType = CoderType.ORDER_ZERO;
+                } else {
+                    coderType = CoderType.values()[bitInput.readDelta()];
+                }
         if (streamVersion >= 8) {
             enableDomainOptimizations = bitInput.readBit() == 1;
         }
@@ -1171,6 +1221,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
         out.writeDelta(VERSION);
+        out.writeDelta(coderType.ordinal());
         out.writeBit(enableDomainOptimizations);
         out.writeBit(multiplicityFieldsAllMissing);
 
