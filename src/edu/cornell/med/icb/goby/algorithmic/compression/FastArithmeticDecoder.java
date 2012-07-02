@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.compression;
 
+import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.io.InputBitStream;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ import java.io.IOException;
  *      Date: 1/15/12
  *      Time: 11:02 AM
  */
-public final class FastArithmeticDecoder {
+public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
     /**
      * Number of bits used by the decoder.
      */
@@ -87,6 +88,7 @@ public final class FastArithmeticDecoder {
      * Resets the decoder before decoding a new message. The method prepares the coder for the first call
      * to encode. Frequencies of symbols are unchanged after calling this method.
      */
+    @Override
     public void reset() {
         window = 0;
         buffer = -1;
@@ -122,7 +124,7 @@ public final class FastArithmeticDecoder {
         }
     }
 
-    private int getCount(int x) {
+    protected int getCount(int x) {
         int c = 0;
 
         while (x != 0) {
@@ -159,6 +161,7 @@ public final class FastArithmeticDecoder {
      * @throws IOException if <code>ibs</code> does.
      */
 
+    @Override
     public int decode(final InputBitStream ibs) throws IOException {
 
         if (buffer == -1) {
@@ -230,6 +233,7 @@ public final class FastArithmeticDecoder {
      * @throws IOException if <code>ibs</code> does.
      */
 
+    @Override
     public void flush(final InputBitStream ibs) throws IOException {
         int nbits, i;
         long roundup, bits, value, low;
@@ -251,6 +255,8 @@ public final class FastArithmeticDecoder {
             window |= ibs.readBit();
         }
 
+       // System.out.println("flushed nbits:"+nbits);
+
 
     }
 
@@ -260,18 +266,20 @@ public final class FastArithmeticDecoder {
      * @return the current bit stream window in the lower {@link #BITS} bits.
      */
 
+    @Override
     public long getWindow() {
         return window & ((HALF << 1) - 1);
     }
 
     /**
      * Reposition the input stream. Repositioning is needed after decoding to make it possible to read from the
-     * stream with with another encoder. Calling this method flushes the decoder and repositions the input stream
+     * stream with with decoder. Calling this method flushes the decoder and repositions the input stream
      * at the exact end of the flush bits.
      *
      * @param input
      * @throws IOException
      */
+    @Override
     public void reposition(InputBitStream input) throws IOException {
         flush(input);
         final long position = input.readBits() - FastArithmeticDecoder.BITS;
