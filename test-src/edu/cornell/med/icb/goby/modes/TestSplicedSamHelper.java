@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
+import junitx.framework.FileAssert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -41,9 +42,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * Test creation of CompactAlignment from SAM.
@@ -652,6 +651,35 @@ PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	A
         Alignments.AlignmentEntry first = reader.next();
         assertFalse(reader.hasNext());
         assertEquals("seqVar.position must be zero", 0, first.getSequenceVariations(0).getPosition());
+    }
+
+    @Test
+    // Failed on server when converting back to BAM because seqVar.position would be set to zero:
+
+    public void testSamToCompactTrickCase20() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/sam/test.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "test-sam-1");
+        importer.setOutputFile(outputFilename);
+
+        importer.setPreserveAllTags(true);
+        importer.setPreserveReadName(true);
+        //  importer.setPropagateTargetIds(true);
+        importer.execute();
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        CompactToSAMMode exporter = new CompactToSAMMode();
+        final String samOutputFilename = FilenameUtils.concat(BASE_TEST_DIR, "test-sam-out.sam");
+
+        exporter.setInputBasename(outputFilename);
+        exporter.setOutput(samOutputFilename);
+        exporter.setGenome("test-data/sam/test.fa");
+        exporter.execute();
+        FileAssert.assertEquals(new File("test-data/sam/test.sam"),
+                new File(samOutputFilename));
     }
 
     @Test

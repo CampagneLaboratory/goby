@@ -223,7 +223,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
         genome = new DualRandomAccessSequenceCache();
         try {
-            ((DualRandomAccessSequenceCache)genome).load(inputGenome);
+            ((DualRandomAccessSequenceCache) genome).load(inputGenome);
         } catch (ClassNotFoundException e) {
             throw new IOException("Could not load genome", e);
         }
@@ -338,11 +338,11 @@ public class CompactToSAMMode extends AbstractGobyMode {
             final SAMProgramRecord gobyVersionProgRec = new SAMProgramRecord("Goby");
             gobyVersionProgRec.setProgramVersion(VersionUtils.getImplementationVersion(GobyDriver.class));
             samHeader.addProgramRecord(gobyVersionProgRec);
-            final SAMFileWriter samBamWriter=new SAMFileWriterFactory().
+            final SAMFileWriter samBamWriter = new SAMFileWriterFactory().
                     makeSAMOrBAMWriter(samHeader, outputIsSorted, new File(output));
             // install a facade in front of the Sam/Bam writer to do a local sort. This is needed for spliced alignments
             // whose segments are stored in a different order for Goby and BMA:
-            outputSam = outputIsSorted? new BufferedSortingSamBamWriter(samBamWriter):samBamWriter;
+            outputSam = outputIsSorted ? new BufferedSortingSamBamWriter(samBamWriter) : samBamWriter;
             samRecordFactory = new DefaultSAMRecordFactory();
         }
 
@@ -462,12 +462,12 @@ public class CompactToSAMMode extends AbstractGobyMode {
                         fragIndexToAlignmentsMap.remove(fragIndex);
                     }
                     if (needFragmentIndexes.isEmpty()) {
-                    // since we have a complete list, we can now forget the queryIndex and its fragments:
-                    queryIndexToFragmentsMap.remove(queryIndex);
-                    break;
+                        // since we have a complete list, we can now forget the queryIndex and its fragments:
+                        queryIndexToFragmentsMap.remove(queryIndex);
+                        break;
+                    }
                 }
             }
-        }
         }
 
         // return true if found  foundFragmentIndexes is a subset of needFragmentIndexes
@@ -574,7 +574,18 @@ public class CompactToSAMMode extends AbstractGobyMode {
         }
     }
 
-    private Object getValue(final String[] tokens) {
+    private Object getValue( String[] tokens) {
+        if (tokens.length>3) {
+            String[] mergedTokens=new String[3];
+            mergedTokens[0]=tokens[0];
+            mergedTokens[1]=tokens[1];
+            mergedTokens[2]=tokens[2];
+            for (int i=3;i<tokens.length;i++) {
+                mergedTokens[2]+=":";
+                mergedTokens[2]+=tokens[i];
+            }
+            tokens=mergedTokens;
+        }
         final String type = tokens[1];
         if ("Z".equals(type)) {
             return tokens[2];
@@ -583,7 +594,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
             return Integer.parseInt(tokens[2]);
         }
         if ("A".equals(type)) {
-            return  tokens[2].charAt(0);
+            return tokens[2].charAt(0);
         }
         LOG.warn("Attribute type %c is currently not supported, storing as string type");
         return tokens[2];
@@ -594,8 +605,18 @@ public class CompactToSAMMode extends AbstractGobyMode {
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
-        this.genome=genome;
+        this.genome = genome;
     }
+
+    public void setGenome(String filename) throws IOException {
+        genome = new DualRandomAccessSequenceCache();
+        try {
+            ((DualRandomAccessSequenceCache) genome).load(filename);
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Could not load genome", e);
+        }
+    }
+
     /**
      * Main method.
      *
