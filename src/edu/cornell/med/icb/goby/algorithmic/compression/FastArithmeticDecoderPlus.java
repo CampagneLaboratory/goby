@@ -31,21 +31,19 @@ import java.io.IOException;
  *      Time: 11:02 AM
  */
 public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
-    FastArithmeticDecoder delegates[];
-    private int numSymbols;
+    private final FastArithmeticDecoder delegates[];
     private int previousSymbol;
-    IntArrayList[] decodedLists;
+    private final IntArrayList[] decodedLists;
     private boolean decoded = false;
-    private int listSize;
-    private int[] currentIndex;
+    private final int[] currentIndex;
     private int symbolRetrievalCount;
-    private int[] lengths;
-    private int numCoders;
+    private final int[] lengths;
+    private final int numCoders;
     private int mostAbundantCount;
     private int mostAbundantSymbol = -1;
-    private int[] counts;
+    private final int[] counts;
 
-    public FastArithmeticDecoderPlus(int numSymbols, int listSize) {
+    public FastArithmeticDecoderPlus(final int numSymbols) {
         numCoders = 2;
         delegates = new FastArithmeticDecoder[numCoders];
         decodedLists = new IntArrayList[numCoders];
@@ -54,10 +52,9 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
             delegates[i] = new FastArithmeticDecoder(numSymbols);
             decodedLists[i] = new IntArrayList();
         }
-        counts=new int[numSymbols];
+        counts = new int[numSymbols];
         currentIndex = new int[numCoders];
-        this.numSymbols = numSymbols;
-        this.listSize = listSize;
+
     }
 
     @Override
@@ -65,7 +62,7 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
         previousSymbol = 0;
         decoded = false;
         int i = 0;
-        for (FastArithmeticDecoderI delegate : delegates) {
+        for (final FastArithmeticDecoderI delegate : delegates) {
             delegate.reset();
             decodedLists[i].clear();
             i += 1;
@@ -73,41 +70,41 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
     }
 
     @Override
-    public int decode(InputBitStream ibs) throws IOException {
+    public int decode(final InputBitStream ibs) throws IOException {
         if (!decoded) {
             for (int delegateIndex = 0; delegateIndex < numCoders; delegateIndex++) {
-                final int size = lengths[delegateIndex] = ibs.readNibble();
-                if (size>0) {
-                //      System.out.printf("Reading %d symbols for predecessor=%d %n", size, delegateIndex);
-                for (int i = 0; i < size; i++) {
-                    int x = delegates[delegateIndex].decode(ibs);
-                    decodedLists[delegateIndex].add(x);
-                }
-                //        System.out.printf("%n1. delegate %d is now positioned at %d %n", delegateIndex, ibs.readBits());
-                reposition(ibs, delegateIndex);
+                final int size = ibs.readNibble();
+                final FastArithmeticDecoder delegate = delegates[delegateIndex];
+                final IntArrayList decodedList = decodedLists[delegateIndex];
+                if (size > 0) {
+                    //      System.out.printf("Reading %d symbols for predecessor=%d %n", size, delegateIndex);
+                    for (int i = 0; i < size; i++) {
+                        final int x = delegate.decode(ibs);
+                        decodedList.add(x);
+                    }
+                    //        System.out.printf("%n1. delegate %d is now positioned at %d %n", delegateIndex, ibs.readBits());
+                    reposition(ibs, delegateIndex);
                 }
                 //  System.out.printf("2. delegate %d is now positioned at %d %n", delegateIndex, ibs.readBits());
             }
             decoded = true;
         }
-      //  assert symbolRetrievalCount <= listSize : "You cannot retrieve more than listSize symbols";
-        int delegateIndex = previousSymbol == mostAbundantSymbol ? 0 : 1;
-        final int symbol = decodedLists[delegateIndex].get(currentIndex[delegateIndex]++);
+        //  assert symbolRetrievalCount <= listSize : "You cannot retrieve more than listSize symbols";
+        final int delegateIndex = previousSymbol == mostAbundantSymbol ? 0 : 1;
+        final int symbol = decodedLists[delegateIndex].getInt(currentIndex[delegateIndex]++);
         previousSymbol = symbol;
-        counts[previousSymbol]++;
+        counts[previousSymbol] += 1;
 
         final int previousCount = counts[previousSymbol];
-        if (previousCount > mostAbundantCount || mostAbundantSymbol == previousSymbol) {
-
+        if (mostAbundantSymbol == previousSymbol || previousCount > mostAbundantCount) {
             mostAbundantSymbol = previousSymbol;
             mostAbundantCount = previousCount;
         }
-        symbolRetrievalCount += 1;
         return symbol;
     }
 
     @Override
-    public void flush(InputBitStream ibs) throws IOException {
+    public void flush(final InputBitStream ibs) throws IOException {
         throw new UnsupportedOperationException("flush is not supported by this implementation.");
 
         /*    for (FastArithmeticDecoderI delegate : delegates) {
@@ -117,7 +114,7 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
     }
 
 
-    public void flush(InputBitStream input, int delegateIndex) throws IOException {
+    public void flush(final InputBitStream input, final int delegateIndex) throws IOException {
         delegates[delegateIndex].flush(input);
     }
 
@@ -127,11 +124,11 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
     }
 
     @Override
-    public void reposition(InputBitStream input) throws IOException {
-       // we have already repositioned.
+    public void reposition(final InputBitStream input) throws IOException {
+        // we have already repositioned.
     }
 
-    public void reposition(InputBitStream input, int delegateIndex) throws IOException {
+    public void reposition(final InputBitStream input, final int delegateIndex) throws IOException {
         flush(input, delegateIndex);
         final long readBits = input.readBits();
 

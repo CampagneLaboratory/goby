@@ -83,6 +83,8 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
     private long window = 0;
     private boolean useBinarySearch = true;
     private int maxIndexNonZeroFrequency = Integer.MIN_VALUE;
+    private int lastCount;
+    private int lastIndex=-1;
 
     /**
      * Resets the decoder before decoding a new message. The method prepares the coder for the first call
@@ -117,16 +119,23 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
     /* The following methods implement a Fenwick tree. */
 
     private void incrementCount(int x) {
+
         x++;
         while (x <= n) {
             count[x]++;
             x += x & -x; // By chance, this gives the right next index 8^).
         }
+
     }
 
-    protected int getCount(int x) {
-        int c = 0;
 
+    private int getCount(int x) {
+        if (x == lastIndex) {
+            // used the last cached count for x, as calculated previously in findXBinary
+            return lastCount;
+        }
+        int c = 0;
+        final int xArg = x;
         while (x != 0) {
             c += count[x];
             x = x & x - 1; // This cancels out the least nonzero bit.
@@ -137,11 +146,12 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
 
     private int findXBinary(final int x, final int start, final int end) {
         if (end == start) {
+       //     System.out.printf("Returning from findX with x=%d %n", start - 1);
             return start - 1;
         }
         final int middle = (start + end) / 2;
         final int count = getCount(middle);
-        //    System.out.printf("start=%d middle=%d end=%d count=%d %n",start, middle,end, count);
+       // System.out.printf("start=%d middle=%d end=%d count=%d %n", start, middle, end, count);
         if (x < count) {
 
             return findXBinary(x, start, middle);
@@ -149,6 +159,9 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
         if (x > count) {
             return findXBinary(x, middle + 1, end);
         }
+     //   System.out.printf("Returning from findX with x=%d %n", middle);
+        lastCount = count;
+        lastIndex = middle;
         return middle;
     }
 
@@ -173,35 +186,22 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
             x = total - 1;
         }
         final int v = x;
-        int xVal;
-        /* the following code, from MG4J'ArithmeticDecoder, does not scale with large numbers of symbols.    */
-        /*
-           for (int i = 1; i <= n; i++) {
-               int count = getCount(i);
-               if (x < count) {
-                   x = i - 1;
-                   break;
-               }
-           }
-           xVal = x;
-       } */
 
         // We replace the above code with a binary search algorithm (O(log N) for alphabets of size N).
 
-        final int xBinary = findXBinary(v, 1, n);
-        xVal = xBinary;
+        x = findXBinary(v, 1, n);
 
-        //assert x== xBinary :String.format("binary x %d must match original value %d", xBinary, x);
-        x = xVal;
-
-        final int lowCount = getCount(x), highCount = getCount(x + 1);
-
-        buffer -= r * lowCount;
+        final int lowCount = getCount(x);
+        final int highCount = getCount(x + 1);
+        // invalidate the last count cache:
+        lastIndex=-1;
+        final long l = r * lowCount;
+        buffer -= l;
 
         if (x != n - 1) {
             range = r * (highCount - lowCount);
         } else {
-            range -= r * lowCount;
+            range -= l;
         }
         incrementCount(x);
         total++;
@@ -211,10 +211,9 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
             range <<= 1;
             window <<= 1;
             if (ibs.readBit() != 0) {
-                buffer++;
-                window++;
+                buffer += 1;
+                window += 1;
             }
-            //     System.out.println("x="+x);
         }
 
         return x;
@@ -255,7 +254,7 @@ public final class FastArithmeticDecoder implements FastArithmeticDecoderI {
             window |= ibs.readBit();
         }
 
-       // System.out.println("flushed nbits:"+nbits);
+        // System.out.println("flushed nbits:"+nbits);
 
 
     }

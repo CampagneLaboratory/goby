@@ -37,10 +37,6 @@ final public class FastArithmeticCoderPlus implements FastArithmeticCoderI {
     private int numSymbols;
     private int previousSymbol;
 
-    /**
-     * The exact number of symbols that will be encoded with this coder, before the next call to reset().
-     */
-    private int listSize;
     private OutputBitStream[] outs;
     private FastByteArrayOutputStream[] arrays;
     /**
@@ -51,8 +47,10 @@ final public class FastArithmeticCoderPlus implements FastArithmeticCoderI {
     private int mostAbundantSymbol = -1;
     private static final int MOST_ABUNDANT_INDEX = 0;
     private int[] counts;
+    private FastArithmeticCoder mostAbundantDelegate;
+    private OutputBitStream mostAbundantOut;
 
-    public FastArithmeticCoderPlus(final int numSymbols, final int listSize) {
+    public FastArithmeticCoderPlus(final int numSymbols) {
         final int numCoders = 2;
         delegates = new FastArithmeticCoder[numCoders];
         outs = new OutputBitStream[numCoders];
@@ -64,8 +62,10 @@ final public class FastArithmeticCoderPlus implements FastArithmeticCoderI {
             arrays[i] = new FastByteArrayOutputStream();
             outs[i] = new OutputBitStream(arrays[i]);
         }
+        mostAbundantDelegate=delegates[0];
+        mostAbundantOut=outs[0];
         this.numSymbols = numSymbols;
-        this.listSize = listSize;
+
     }
 
 
@@ -87,7 +87,7 @@ final public class FastArithmeticCoderPlus implements FastArithmeticCoderI {
             mostAbundantCount = previousCount;
             // x is the single most abundant symbol encountered so far in the input. Switch to order 1 modeling:
             lengths[MOST_ABUNDANT_INDEX]++;
-            result = delegates[MOST_ABUNDANT_INDEX].encode(x, outs[MOST_ABUNDANT_INDEX]);
+            result = mostAbundantDelegate.encode(x, mostAbundantOut);
 
         } else {
             result = delegates[zeroOrderIndex].encode(x, outs[zeroOrderIndex]);

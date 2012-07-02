@@ -35,8 +35,8 @@ import java.io.IOException;
  *         Time: 3:02 PM
  */
 public class TestFastArithmeticCoderOrder1 extends TestCase {
-  //  final int[] list1 = {0,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,1, 2, 3, 4, 3, 1, 2, 1, 2,3, 1, 2, 1, 2, 1};
-   final int[] list1 = {0,1,2,3,4};
+    final int[] list1 = {0,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,1, 2, 3, 4, 3, 1, 2, 1, 2,3, 1, 2, 1, 2, 1};
+  // final int[] list1 = {0,1,2,3,4};
    // final int[] list1 = {0,1,0,12};
 
     @Test
@@ -55,8 +55,8 @@ public class TestFastArithmeticCoderOrder1 extends TestCase {
     public void testOrder1() throws IOException {
         IntArrayList list = new IntArrayList(list1);
         int numSymbols = 5;
-        FastArithmeticCoderI order1 = new FastArithmeticCoderOrder1(numSymbols,list.size());
-        FastArithmeticDecoderI decoder = new FastArithmeticDecoderOrder1(numSymbols,list.size());
+        FastArithmeticCoderI order1 = new FastArithmeticCoderOrder1(numSymbols);
+        FastArithmeticDecoderI decoder = new FastArithmeticDecoderOrder1(numSymbols);
 
         roundTripEncoding(list, order1, decoder);
 
@@ -66,8 +66,8 @@ public class TestFastArithmeticCoderOrder1 extends TestCase {
        public void testPlus() throws IOException {
            IntArrayList list = new IntArrayList(list1);
            int numSymbols = 5;
-           FastArithmeticCoderI order1 = new FastArithmeticCoderPlus(numSymbols,list.size());
-           FastArithmeticDecoderI decoder = new FastArithmeticDecoderPlus(numSymbols, list.size());
+           FastArithmeticCoderI order1 = new FastArithmeticCoderPlus(numSymbols);
+           FastArithmeticDecoderI decoder = new FastArithmeticDecoderPlus(numSymbols);
 
            roundTripEncoding(list, order1, decoder);
 

@@ -40,10 +40,6 @@ final public class FastArithmeticCoderOrder1 implements FastArithmeticCoderI {
     private int numSymbols;
     private int previousSymbol;
 
-    /**
-     * The exact number of symbols that will be encoded with this coder, before the next call to reset().
-     */
-    private int listSize;
     private OutputBitStream[] outs;
        private FastByteArrayOutputStream[] arrays;
     /** Number of symbols written that follow previousSymbol:
@@ -51,7 +47,7 @@ final public class FastArithmeticCoderOrder1 implements FastArithmeticCoderI {
      */
     private int[] lengths;
 
-    public FastArithmeticCoderOrder1(final int numSymbols, final int listSize) {
+    public FastArithmeticCoderOrder1(final int numSymbols) {
         delegates = new FastArithmeticCoderI[numSymbols];
         outs=new OutputBitStream[numSymbols];
         arrays=new FastByteArrayOutputStream[numSymbols];
@@ -62,7 +58,7 @@ final public class FastArithmeticCoderOrder1 implements FastArithmeticCoderI {
             outs[i]=new OutputBitStream(arrays[i]);
         }
         this.numSymbols = numSymbols;
-        this.listSize=listSize;
+
     }
 
 
