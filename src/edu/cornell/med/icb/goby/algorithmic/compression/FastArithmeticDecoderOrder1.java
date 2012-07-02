@@ -36,12 +36,11 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
     private int previousSymbol;
     IntArrayList[] decodedLists;
     private boolean decoded = false;
-    private int listSize;
     private int[] currentIndex;
     private int symbolRetrievalCount;
     private int[] lengths;
 
-    public FastArithmeticDecoderOrder1(int numSymbols, int listSize) {
+    public FastArithmeticDecoderOrder1(final int numSymbols) {
         delegates = new FastArithmeticDecoderI[numSymbols];
         decodedLists = new IntArrayList[numSymbols];
         lengths = new int[numSymbols];
@@ -51,7 +50,6 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
         }
         currentIndex = new int[numSymbols];
         this.numSymbols = numSymbols;
-        this.listSize = listSize;
     }
 
     @Override
@@ -59,7 +57,7 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
         previousSymbol = 0;
         decoded = false;
         int i = 0;
-        for (FastArithmeticDecoderI delegate : delegates) {
+        for (final FastArithmeticDecoderI delegate : delegates) {
             delegate.reset();
             decodedLists[i].clear();
             i += 1;
@@ -67,13 +65,13 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
     }
 
     @Override
-    public int decode(InputBitStream ibs) throws IOException {
+    public int decode(final InputBitStream ibs) throws IOException {
         if (!decoded) {
             for (int delegateIndex = 0; delegateIndex < numSymbols; delegateIndex++) {
                 final int size = lengths[delegateIndex] = ibs.readNibble();
           //      System.out.printf("Reading %d symbols for predecessor=%d %n", size, delegateIndex);
                 for (int i = 0; i < size; i++) {
-                    int x = delegates[delegateIndex].decode(ibs);
+                    final int x = delegates[delegateIndex].decode(ibs);
                     decodedLists[delegateIndex].add(x);
                 }
                 //        System.out.printf("%n1. delegate %d is now positioned at %d %n", delegateIndex, ibs.readBits());
@@ -83,15 +81,14 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
             }
             decoded = true;
         }
-        assert symbolRetrievalCount < listSize : "You cannot retrieve more than listSize symbols";
-        final int symbol = decodedLists[previousSymbol].get(currentIndex[previousSymbol]++);
+        final int symbol = decodedLists[previousSymbol].getInt(currentIndex[previousSymbol]++);
         previousSymbol = symbol;
         symbolRetrievalCount += 1;
         return symbol;
     }
 
     @Override
-    public void flush(InputBitStream ibs) throws IOException {
+    public void flush(final InputBitStream ibs) throws IOException {
         throw new UnsupportedOperationException("flush is not supported by this implementation.");
 
         /*    for (FastArithmeticDecoderI delegate : delegates) {
@@ -101,7 +98,7 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
     }
 
 
-    public void flush(InputBitStream input, int delegateIndex) throws IOException {
+    public void flush(final InputBitStream input, final int delegateIndex) throws IOException {
         delegates[delegateIndex].flush(input);
     }
 
@@ -111,7 +108,7 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
     }
 
     @Override
-    public void reposition(InputBitStream input) throws IOException {
+    public void reposition(final InputBitStream input) throws IOException {
         throw new UnsupportedOperationException("reposition is not supported by this implementation.");
 
         /*for (FastArithmeticDecoderI delegate : delegates) {
@@ -119,7 +116,7 @@ public final class FastArithmeticDecoderOrder1 implements FastArithmeticDecoderI
         } */
     }
 
-    public void reposition(InputBitStream input, int delegateIndex) throws IOException {
+    public void reposition(final InputBitStream input, final int delegateIndex) throws IOException {
         flush(input, delegateIndex);
         final long readBits = input.readBits();
 
