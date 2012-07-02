@@ -561,7 +561,6 @@ public class TestAlignmentChunkCodec1 {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
 
         final AlignmentCollectionHandler handler = new AlignmentCollectionHandler();
-        handler.setSymbolDependencyOrder(1);
         codec.setHandler(handler);
         final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/EMNWFIL.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
