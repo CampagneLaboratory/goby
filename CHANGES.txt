@@ -1,10 +1,12 @@
 Towards 2.1
  - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
    depths independently of fragments.
+ - Add group "indexed" to CpG context for methylation output.
  - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
    the quality scores contained in the file.
- - Improve compression of hybrid-1 codec by about 10% on average. You can disable this improvement with option
-   -x AlignmentCollectionHandler:symbol-modeling=zero_order (this will yield the Goby 2-2.0.1 hybrid-1 codec behavior).
+ - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can disable this improvement with
+   option -x AlignmentCollectionHandler:symbol-modeling=zero_order (this will yield the Goby 2-2.0.1 hybrid-1 codec
+   behavior).
  - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
     colon. Thanks to Vadim Zalunin for reporting this problem.
 2.0.1
