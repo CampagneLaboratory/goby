@@ -36,15 +36,15 @@ public class GroupAssociations {
     private Object2ObjectMap<String, ObjectArraySet<String>> groupToColumns = new Object2ObjectOpenHashMap<String, ObjectArraySet<String>>();
 
     public GroupAssociations(String associationsAsText, ColumnInfo formatColumn, String[] sampleIds) {
-       // parse associations stored in text in the header:
+        // parse associations stored in text in the header:
         associations = parse(associationsAsText);
         if (formatColumn != null) {
-        // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
-        for (String sample : sampleIds) {
-            for (final ColumnField formatField : formatColumn.fields) {
-                associate(String.format("%s[%s]", sample, formatField.id), sample);
+            // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
+            for (String sample : sampleIds) {
+                for (final ColumnField formatField : formatColumn.fields) {
+                    associate(String.format("%s[%s]", sample, formatField.id), sample);
+                }
             }
-        }
         }
     }
 
@@ -109,6 +109,11 @@ public class GroupAssociations {
             if (association.startsWith(columnName)) {
 
                 result.add(association.replaceFirst(columnName + "=", ""));
+            }
+            final String infoColumn = "INFO/" + columnName + "=";
+            if (association.startsWith(infoColumn)) {
+
+                result.add(association.replaceFirst(infoColumn, ""));
             }
         }
         return result;

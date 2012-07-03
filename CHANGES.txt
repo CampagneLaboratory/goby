@@ -9,6 +9,7 @@ Towards 2.1
    behavior).
  - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
     colon. Thanks to Vadim Zalunin for reporting this problem.
+ - VCFParser group associations: Make it possible to lookup an INFO column by either INFO/colname or colname.
 2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby

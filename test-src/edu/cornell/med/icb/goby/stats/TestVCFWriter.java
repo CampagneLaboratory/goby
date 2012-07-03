@@ -95,6 +95,7 @@ public class TestVCFWriter {
         assertTrue(textContent.contains("CHROM=cross-sample-field"));
         assertTrue(textContent.contains("POS=genomic-coordinate"));
         assertTrue(textContent.contains("INFO/p-value1=p-value"));
+        assertTrue(textContent.contains("INFO/p-value1=p-value"));
         assertTrue(textContent.contains("INFO/p-value2=p-value"));
         assertTrue(textContent.contains("FORMAT/Zygosity=sample-data"));
         assertTrue(textContent.contains("FORMAT/Zygosity=zygozity"));
@@ -106,6 +107,10 @@ public class TestVCFWriter {
         try {
             parser.readHeader();
             final GroupAssociations associations = parser.getGroupAssociations();
+
+            // check that an INFO/column is associated with its groups:
+            Assert.assertTrue(associations.listGroups("p-value1").contains("p-value"));
+            Assert.assertTrue(associations.listGroups("INFO/p-value1").contains("p-value"));
             final ObjectArraySet<String> columnsWithGroup = associations.getColumnsWithGroup("p-value");
             assertNotNull(columnsWithGroup);
             Assert.assertTrue(columnsWithGroup.contains("INFO/p-value1"));
