@@ -183,7 +183,9 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         statWriter.setWriteFieldGroupAssociations(writeFieldGroupAssociations);
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.","biomart");
         strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.", "genomic-coordinate");
-        genomicContextIndex = statWriter.defineField("INFO", "Context", 1, ColumnType.String, "Site genomic context");
+
+        genomicContextIndex = statWriter.defineField("INFO", "Context", 1, ColumnType.String, "Site genomic context",
+                /*  mark CpG context for indexing: */ "indexed");
 
         for (GroupComparison comparison : groupComparisons) {
             log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
@@ -208,11 +210,11 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             if (estimateEmpiricalP) {
                 empiricalPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("empiricalP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                         1, ColumnType.Float,
-                        String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2),"p-value","statistic");
+                        String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2),"p-value","statistic","indexed");
 
                 lastOfDMRIndex[comparison.index] = statWriter.defineField("INFO", String.format("DMR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                         1, ColumnType.Integer, String.format("Number of significant sites observed in a fixed window of length %d before this significant site (inclusive). Comparing group %s and group %s.",
-                        windowLength, comparison.nameGroup1, comparison.nameGroup2),"DMR");
+                        windowLength, comparison.nameGroup1, comparison.nameGroup2),"DMR", "indexed");
             }
 
         }
