@@ -110,6 +110,9 @@ public class GroupAssociations {
     }
 
     private boolean isMatchingColumnName(String columnName, String association) {
+        if (association==null || columnName==null) {
+            return false;
+        }
         final String infoColumn = "INFO/" + columnName + "=";
 
         if (association.startsWith(columnName) || association.startsWith(infoColumn)) return true;
