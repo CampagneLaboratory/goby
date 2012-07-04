@@ -27,9 +27,11 @@ public class FenwickTree implements Serializable {
     private static final long serialVersionUID = -7830133715336861385L;
     private int n;
     private long totalCount;
+
     public int size() {
         return n;
     }
+
     public FenwickTree(int n) {
         this.cumCount = new long[n + 1];
         this.n = n;
@@ -60,7 +62,7 @@ public class FenwickTree implements Serializable {
      * @return count for element at index.
      */
     public long getCumulativeCount(int index) {
-        if (index>=cumCount.length-1) {
+        if (index >= cumCount.length - 1) {
             // past the capacity of the array is all the counts we have seen:
             return totalCount;
         }
@@ -77,9 +79,97 @@ public class FenwickTree implements Serializable {
     /**
      * Get the cumulative count over all the elements. This is exactly the number of times increment count has
      * been called.
+     *
      * @return
      */
     public long getTotalCount() {
         return totalCount;
+    }
+
+
+    /**
+     * Retrieve the symbol index that has cumulative count equal to the countQueried argument.
+     *
+     * @param cumulativeCountQueried count for symbol that we are looking for.
+     * @return the countQueried, or -1 if the count does not appear in the tree.
+     */
+    public int find(final int cumulativeCountQueried, final answer result) {
+        int start = 0;
+        int end = n;
+        int middle = start + end >> 1;
+        result.cumulativeCount = -1;
+
+        while (middle >= 0 && middle < end) {
+            if (end == start) {
+                //     System.out.printf("Returning from findX with countQueried=%d %n", start - 1);
+                result.symbolIndex = start - 1;
+            }
+            //   result.cumulativeCount = getCumulativeCount(middle);
+            long count;
+            long countIndexPlus1 = 0;
+            int index = middle;
+
+            if (middle >= cumCount.length - 1) {
+                // past the capacity of the array is all the counts we have seen:
+                count = totalCount;
+                countIndexPlus1 = totalCount;
+            } else {
+                count = 0;
+                index++;
+                int indexPlusZero = index;
+                int indexPlus1 = index + 1;
+                final int mask = index & indexPlus1;
+                int commonIndex = mask;
+                while (commonIndex != 0) {
+                    final long ccount = cumCount[index];
+                    count += ccount;
+                    countIndexPlus1 += ccount;
+                    commonIndex = commonIndex & commonIndex - 1; // This cancels out the least nonzero bit.
+                }
+                index = indexPlusZero & ~mask; // the part of indexPlusZero that is not common with indexPlus1
+                while (index!=0) {
+                    count += cumCount[index];
+                    index = index & index - 1; // This cancels out the least nonzero bit.
+                }
+                index = indexPlus1;
+                while (index >indexPlusZero && index <cumCount.length) {
+                    countIndexPlus1 += cumCount[index];
+                    index = index & index - 1; // This cancels out the least nonzero bit.
+                }
+            }
+            result.cumulativeCount = count;
+            result.nextLargerCumulativeCount = countIndexPlus1;
+            // System.out.printf("start=%d middle=%d end=%d count=%d %n", start, middle, end, count);
+            if (cumulativeCountQueried < result.cumulativeCount) {
+                end = middle;
+                middle = start + end >> 1;
+            } else if (cumulativeCountQueried > result.cumulativeCount) {
+                start = middle + 1;
+                middle = start + end >> 1;
+
+            } else {
+                // lastCount = count;
+                // lastIndex = middle;
+                result.symbolIndex = middle;
+                break;
+            }
+        }
+        if (result.cumulativeCount == cumulativeCountQueried) {
+            return result.symbolIndex;
+        } else {
+            // the queried count does not exist in this tree.
+            return -1;
+        }
+
+    }
+
+    public answer createAnswer() {
+        return new answer();
+    }
+
+    public class answer {
+        int symbolIndex = -1;
+        long cumulativeCount = -1;
+        long nextLargerCumulativeCount = -1;
     }
 }
