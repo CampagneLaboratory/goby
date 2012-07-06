@@ -52,9 +52,9 @@
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
-            <help>When provided, only write counts for reference identifiers listed in this comma
-                separated list. To process only counts for chromosome 19 and 1, if sequences are
-                identified by 1 and 19, use: --include-reference-names 1,19
+            <help>When provided, only process reference identifiers listed in this comma separated list. 
+                  To process only chromosome 19 and 1, if sequences are identified by 1 and 19, 
+                  use: --include-reference-names 1,19
             </help>
         </flaggedOption>
         <flaggedOption>

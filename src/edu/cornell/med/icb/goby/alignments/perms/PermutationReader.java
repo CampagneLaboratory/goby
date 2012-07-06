@@ -24,10 +24,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,17 +53,21 @@ public class PermutationReader implements PermutationReaderInterface {
         this.basename = AlignmentReaderImpl.getBasename(basename);
         FastBufferedInputStream inputStream = null;
         final String filename = basename + ".perm";
+
         try {
 
             inputStream = new FastBufferedInputStream(new FileInputStream(filename));
             dataInput = new DataInputStream(inputStream);
+            input = inputStream;
+            makeIndex(inputStream);
         } catch (FileNotFoundException e) {
-            LOG.error(String.format("A permutation file called %s could not be found, but is required to reconstruct original query indices to complete this task.",
-                    filename), e);
+            final String error = String.format("A permutation file called %s could not be found, but is required to reconstruct original query indices to complete this task.",
+                    filename);
+            LOG.error(error, e);
             inputStream = null;
+            assert inputStream!=null:error;
         }
-        input = inputStream;
-        makeIndex(inputStream);
+
     }
 
     private void makeIndex(FastBufferedInputStream inputStream) throws IOException {
@@ -132,9 +133,13 @@ public class PermutationReader implements PermutationReaderInterface {
             final int queryIndex = dataInput.readInt();
             return queryIndex;
         } else {
-            int index = -(ip + 1);
-            block = indexBlocks[index - 1];
-            int soffset = smallIndex - block.firstSmallIndex;
+            final int index = -(ip + 1);
+            final int off = index - 1;
+            if (off < 0) {
+                return -1;
+            }
+            block = indexBlocks[off];
+            final int soffset = smallIndex - block.firstSmallIndex;
             if (soffset < 0 || block.firstSmallIndex + block.n < smallIndex) {
                 // not in the block
                 return -1;

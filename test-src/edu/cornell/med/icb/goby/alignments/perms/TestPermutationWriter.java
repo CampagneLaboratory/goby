@@ -120,6 +120,7 @@ public class TestPermutationWriter {
 
         assertEquals("got wrong answer", -1, reader.getQueryIndex(200));
         assertEquals("got wrong answer", -1, reader.getQueryIndex(250));
+        assertEquals("got wrong answer", -1, reader.getQueryIndex(0));
 
     }
 }

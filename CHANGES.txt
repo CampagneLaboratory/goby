@@ -1,3 +1,5 @@
+Towards 2.1
+ - Improve speed of decoding for GZIP and hybrid codecs.
  - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
    colon. Thanks to Vadim Zalunin for reporting this problem.
 2.0.1

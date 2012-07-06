@@ -42,7 +42,8 @@ import it.unimi.dsi.io.OutputBitStream;
 
 import java.io.IOException;
 
-/** An arithmetic coder adapted from MG4J's implementation. This implementation adds
+/**
+ * An arithmetic coder adapted from MG4J's implementation. This implementation adds
  * methods to reset the coder to support encoding multiple messages interleaved with
  * other streams. This makes it possible to continually refine the symbol frequencies
  * over multiple messages (which would not happen if we created a new instance of the
@@ -50,197 +51,223 @@ import java.io.IOException;
  * called FastArithmeticCoder for symmetry with the FastArithmeticDecoder, but is not
  * faster than the MG4J class.
  *
- *
- * @see it.unimi.dsi.mg4j.io.ArithmeticDecoder (MG4J).
  * @author Sebastiano Vigna
  * @author Fabien Campagne
+ * @see it.unimi.dsi.mg4j.io.ArithmeticDecoder (MG4J).
  * @since 0.1
  */
 
-final public class FastArithmeticCoder {
-	/** Number of bits used by the coder. */
-	public final static int BITS = 63;
+final public class FastArithmeticCoder implements FastArithmeticCoderI {
+    /**
+     * Number of bits used by the coder.
+     */
+    public final static int BITS = 63;
 
-	/** Bit-level representation of 1/2. */
-	private final static long HALF = 1L << ( BITS - 1 );
+    /**
+     * Bit-level representation of 1/2.
+     */
+    private final static long HALF = 1L << (BITS - 1);
 
-	/** Bit-level representation of 1/4. */
-	private final static long QUARTER = 1L << ( BITS - 2 );
+    /**
+     * Bit-level representation of 1/4.
+     */
+    private final static long QUARTER = 1L << (BITS - 2);
 
-	/** Cumulative counts for all symbols. */
-	private int[] cumCount;
+    /**
+     * Cumulative counts for all symbols.
+     */
+    private int[] cumCount;
 
-	/** Total count. */
-	private int total;
+    /**
+     * Total count.
+     */
+    private int total;
 
-	/** Number of symbols. */
-	private int n;
+    /**
+     * Number of symbols.
+     */
+    private int n;
 
-	/** Current base of the range. */
-	private long low = 0;
+    /**
+     * Current base of the range.
+     */
+    private long low = 0;
 
-	/** Current width of the range. */
-	private long range = HALF;
+    /**
+     * Current width of the range.
+     */
+    private long range = HALF;
 
-	/** Bits held from output. */
-	private long outstandingBits = 0;
+    /**
+     * Bits held from output.
+     */
+    private long outstandingBits = 0;
 
-	/** The first bit is always 0, so we do not output it. */
-	private boolean firstBit = true;
+    /**
+     * The first bit is always 0, so we do not output it.
+     */
+    private boolean firstBit = true;
 
+    @Override
     public void reset() {
-        range=  HALF;
-        outstandingBits=0;
-        low=0;
-        firstBit=true;
-       /* cumCount = new int[ n + 1 ];
-		for ( int i = 0; i < n; i++ )
-			incrementCount( i ); // Initially, everything is equiprobable.
-		total = n;*/
+        range = HALF;
+        outstandingBits = 0;
+        low = 0;
+        firstBit = true;
+        /* cumCount = new int[ n + 1 ];
+          for ( int i = 0; i < n; i++ )
+              incrementCount( i ); // Initially, everything is equiprobable.
+          total = n;*/
     }
 
-	/** Creates a new coder.
-	 *
-	 * @param n number of symbols used by the coder.
-	 */
+    /**
+     * Creates a new coder.
+     *
+     * @param n number of symbols used by the coder.
+     */
 
-	public FastArithmeticCoder( final int n ) {
-		if ( n < 1 )
-			throw new IllegalArgumentException( "You cannot use " + n + " symbols." );
-		this.n = n;
-		cumCount = new int[ n + 1 ];
-		for ( int i = 0; i < n; i++ )
-			incrementCount( i ); // Initially, everything is equiprobable.
-		total = n;
-	}
-
-
-	/* The following methods implement a Fenwick tree. */
-
-	private void incrementCount( int x ) {
-		x++;
-
-		while ( x <= n ) {
-			cumCount[ x ]++;
-			x += x & -x; // By chance, this gives the right next index 8^).
-		}
-	}
-
-	private int getCount( int x ) {
-		int c = 0;
-
-		while ( x != 0 ) {
-			c += cumCount[ x ];
-			x = x & x - 1; // This cancels out the least nonzero bit.
-		}
-
-		return c;
-	}
+    public FastArithmeticCoder(final int n) {
+        if (n < 1)
+            throw new IllegalArgumentException("You cannot use " + n + " symbols.");
+        this.n = n;
+        cumCount = new int[n + 1];
+        for (int i = 0; i < n; i++)
+            incrementCount(i); // Initially, everything is equiprobable.
+        total = n;
+    }
 
 
+    /* The following methods implement a Fenwick tree. */
 
-	/** Writes a bit and all outstanding bits.
-	 *
-	 *  <P>First the given bit is output. Then, {@link #outstandingBits} opposite bits are output.
-	 *  The first overall bit (which is always 0) is never output.
-	 *
-	 * @param bit a bit.
-	 * @param obs the output stream.
-	 * @return the number of bits written.
-	 */
+    private void incrementCount(final int xArg) {
+        int x=xArg;
+        x++;
 
-	private int emit( final int bit, final OutputBitStream obs ) throws IOException {
+        while (x <= n) {
+            cumCount[x]++;
+            x += x & -x; // By chance, this gives the right next index 8^).
+        }
+    }
 
-		if ( firstBit ) {
-			firstBit = false;
-			return 0;
-		}
+    private int getCount(final int xArg) {
 
-		int l = obs.writeBit( bit );
-		while ( outstandingBits-- != 0 )
-			l += obs.writeBit( 1 - bit );
-		outstandingBits = 0;
-		return l;
-	}
+        int x = xArg;
+        int c = 0;
+        while (x != 0) {
+            c += cumCount[x];
+            x = x & x - 1; // This cancels out the least nonzero bit.
+        }
 
-	/** Encodes a symbol.
-	 *
-	 * @param x a bit.
-	 * @param obs the output stream.
-	 * @return the number of bits written (note that it can be 0, as arithmetic compression can
-	 * encode a symbol in a fraction of a bit).
-	 * @throws IOException if <code>obs</code> does.
-	 */
+        return c;
+    }
 
-	public int encode( int x, OutputBitStream obs ) throws IOException {
-		if ( x < 0 )
-			throw new IllegalArgumentException( "You cannot encode a negative symbol." );
-		if ( x >= n )
-			throw new IllegalArgumentException( "You cannot encode " + x + ": you have only " + n + " symbols." );
 
-		final long r = range / total;
-		final int lowCount = getCount( x ), highCount = getCount( x + 1 );
+    /**
+     * Writes a bit and all outstanding bits.
+     * <p/>
+     * <P>First the given bit is output. Then, {@link #outstandingBits} opposite bits are output.
+     * The first overall bit (which is always 0) is never output.
+     *
+     * @param bit a bit.
+     * @param obs the output stream.
+     * @return the number of bits written.
+     */
 
-		low += r * lowCount;
+    private int emit(final int bit, final OutputBitStream obs) throws IOException {
 
-		if ( x != n - 1 )
-			range = r * ( highCount - lowCount );
-		else
-			range -= r * lowCount;
+        if (firstBit) {
+            firstBit = false;
+            return 0;
+        }
 
-		incrementCount( x );
-		total++;
+        int l = obs.writeBit(bit);
+        while (outstandingBits-- != 0)
+            l += obs.writeBit(1 - bit);
+        outstandingBits = 0;
+        return l;
+    }
 
-		int l = 0;
+    /**
+     * Encodes a symbol.
+     *
+     * @param x   a bit.
+     * @param obs the output stream.
+     * @return the number of bits written (note that it can be 0, as arithmetic compression can
+     *         encode a symbol in a fraction of a bit).
+     * @throws IOException if <code>obs</code> does.
+     */
 
-		while ( range <= QUARTER ) {
-			if ( low >= HALF ) {
-				l += emit( 1, obs );
-				low -= HALF;
-			}
-			else if ( range + low <= HALF ) {
-				l += emit( 0, obs );
-			}
-			else {
-				low -= QUARTER;
-				outstandingBits++;
-			}
-			range <<= 1;
-			low <<= 1;
-		}
+    @Override
+    public int encode(final int x, final OutputBitStream obs) throws IOException {
+        if (x < 0)
+            throw new IllegalArgumentException("You cannot encode a negative symbol.");
+        if (x >= n)
+            throw new IllegalArgumentException("You cannot encode " + x + ": you have only " + n + " symbols.");
 
-		return l;
-	}
+        final long r = range / total;
+        final int lowCount = getCount(x);
+        final int highCount = getCount(x + 1);
 
-	/** Flushes the last bits.
-	 *
-	 * <P>This method must be called when coding is over. It guarantees that enough
-	 * bits are output to make the decoding of the last symbol nonambiguous, whichever
-	 * bits follow in the stream.
-	 *
-	 * @param obs the output stream.
-	 * @return the number of bits written.
-	 * @throws IOException if <code>obs</code> does.
-	 */
+        low += r * lowCount;
 
-	public int flush( final OutputBitStream obs ) throws IOException {
-		int nbits, i, l = 0;
-		long roundup, bits = 0, value;
+        if (x != n - 1)
+            range = r * (highCount - lowCount);
+        else
+            range -= r * lowCount;
 
-		for ( nbits = 1; nbits <= BITS; nbits++ ) {
-			roundup = ( 1L << ( BITS - nbits ) ) - 1;
-			bits = ( low + roundup ) >>> ( BITS - nbits );
-			value = bits << ( BITS - nbits );
+        incrementCount(x);
+        total++;
 
-			if ( low <= value && ( value + roundup <= low + ( range - 1 ) || value + roundup >= 0 && low + ( range - 1 ) < 0 ) // This handles overflows onto the most significant bit.
-			)
-				break;
-		}
+        int l = 0;
 
-		for ( i = 1; i <= nbits; i++ )
-			l += emit( (int)( ( bits >>> ( nbits - i ) ) & 1 ), obs );
+        while (range <= QUARTER) {
+            if (low >= HALF) {
+                l += emit(1, obs);
+                low -= HALF;
+            } else if (range + low <= HALF) {
+                l += emit(0, obs);
+            } else {
+                low -= QUARTER;
+                outstandingBits++;
+            }
+            range <<= 1;
+            low <<= 1;
+        }
 
-		return l;
-	}
+        return l;
+    }
+
+    /**
+     * Flushes the last bits.
+     * <p/>
+     * <P>This method must be called when coding is over. It guarantees that enough
+     * bits are output to make the decoding of the last symbol nonambiguous, whichever
+     * bits follow in the stream.
+     *
+     * @param obs the output stream.
+     * @return the number of bits written.
+     * @throws IOException if <code>obs</code> does.
+     */
+
+    @Override
+    public int flush(final OutputBitStream obs) throws IOException {
+        int nbits, i, l = 0;
+        long roundup, bits = 0, value;
+
+        for (nbits = 1; nbits <= BITS; nbits++) {
+            roundup = (1L << (BITS - nbits)) - 1;
+            bits = (low + roundup) >>> (BITS - nbits);
+            value = bits << (BITS - nbits);
+
+            if (low <= value && (value + roundup <= low + (range - 1) || value + roundup >= 0 && low + (range - 1) < 0) // This handles overflows onto the most significant bit.
+                    )
+                break;
+        }
+
+        for (i = 1; i <= nbits; i++)
+            l += emit((int) ((bits >>> (nbits - i)) & 1), obs);
+
+        return l;
+    }
 
 }

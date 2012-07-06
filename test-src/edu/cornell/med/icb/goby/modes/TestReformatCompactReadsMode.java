@@ -264,8 +264,7 @@ public class TestReformatCompactReadsMode {
 
 
     /**
-     * Validates that setting a maximum read length will propertly exclude reads from
-     * being written to the output.
+     * Validate read trimming
      *
      * @throws IOException if there is a problem reading or writing to the files
      */

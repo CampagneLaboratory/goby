@@ -22,8 +22,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
-import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
+import edu.cornell.med.icb.goby.algorithmic.compression.*;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
@@ -63,6 +62,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "debug-level:integer, a number between zero and 2. Numbers larger than zero activate debugging. 1 writes stats to stats-filename.:0",
             "basename:string, a basename for the file being converted.:",
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
+            "symbol-modeling:string, a string which indicates which arithmetic coding scheme to use. order_zero will " +
+                    "select a zero-order arithmetic coder. order_one will select an arithmetic order that models pairs of symbols. " +
+                    "plus will select an experimental coder.:order_zero",
             "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
@@ -88,11 +90,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      */
     private long timeStamp;
 
+    private CoderType coderType;
+
     public boolean isEnableDomainOptimizations() {
         return enableDomainOptimizations;
     }
 
-    public void setEnableDomainOptimizations(boolean enableDomainOptimizations) {
+    public void setEnableDomainOptimizations(final boolean enableDomainOptimizations) {
         this.enableDomainOptimizations = enableDomainOptimizations;
     }
 
@@ -121,6 +125,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private static final int LOG2_8 = Fast.mostSignificantBit(8);
 
+    enum CoderType {
+        ORDER_ZERO,
+        ORDER_ONE,
+        PLUS
+    }
+
     public AlignmentCollectionHandler() {
         for (int length = 0; length < qualArrays.length; length++) {
             qualArrays[length] = new byte[length];
@@ -130,6 +140,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         enableDomainOptimizations = doc().getBoolean("enable-domain-optimizations");
         statsFilename = doc().getString("stats-filename");
         basename = doc().getString("basename");
+        coderType = CoderType.valueOf(doc().getString("symbol-modeling").toUpperCase());
 
         if (debug(1)) {
             try {
@@ -157,8 +168,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public GeneratedMessage parse(final InputStream uncompressedStream) throws IOException {
-         final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
-         codedInput.setSizeLimit(Integer.MAX_VALUE);
+        final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
+        codedInput.setSizeLimit(Integer.MAX_VALUE);
 
         return Alignments.AlignmentCollection.parseFrom(codedInput);
     }
@@ -168,7 +179,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * The version of the stream that this class reads and writes.
      */
 
-    public static final int VERSION = 12;
+    public static final int VERSION = 13;
     private int streamVersion;
 
     @Override
@@ -208,7 +219,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Int2ObjectMap<IntArrayList> queryIndex2EntryIndices = new Int2ObjectOpenHashMap<IntArrayList>();
     Int2ObjectMap<IntArrayList> queryIndex2FragmentIndices = new Int2ObjectOpenHashMap<IntArrayList>();
 
-    private void collectLinkLists(Alignments.AlignmentCollectionOrBuilder alignmentCollection) {
+    private void collectLinkLists(final Alignments.AlignmentCollectionOrBuilder alignmentCollection) {
         int entryIndex = 0;
         // collect positions for each query index:
         for (final Alignments.AlignmentEntry entry : alignmentCollection.getAlignmentEntriesList()) {
@@ -238,7 +249,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
 
-    private void collectStrings(int size, Alignments.AlignmentCollection alignmentCollection) {
+    private void collectStrings(final int size, final Alignments.AlignmentCollection alignmentCollection) {
 
         int indexInStrings = 0;
         for (int index = 0; index < size; index++) {
@@ -284,7 +295,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         // must clear the attributes we have collected, but cannot do this on the read-only PB entries.
     }
 
-    private void restoreStrings(Alignments.AlignmentCollection.Builder alignmentCollection) {
+    private void restoreStrings(final Alignments.AlignmentCollection.Builder alignmentCollection) {
         final int size = alignmentCollection.getAlignmentEntriesCount();
         int indexInStrings = 0;
         boolean finished1 = false;
@@ -365,7 +376,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         for (int index = 0; index < size; index++) {
-            Alignments.AlignmentEntry.Builder builder = alignmentCollection.getAlignmentEntriesBuilder(index);
+            final Alignments.AlignmentEntry.Builder builder = alignmentCollection.getAlignmentEntriesBuilder(index);
             {
                 final MutableString mutableString = softClipsLeft.get(index);
                 if (mutableString != null) {
@@ -390,10 +401,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     @Override
-    public Message decompressCollection(Message reducedCollection, byte[] compressedBytes) throws IOException {
+    public Message decompressCollection(final Message reducedCollection, final byte[] compressedBytes) throws IOException {
         reset();
         //TODO optimize away the copy:
-        byte[] moreRoom = new byte[compressedBytes.length + 100];
+        final byte[] moreRoom = new byte[compressedBytes.length + 100];
         System.arraycopy(compressedBytes, 0, moreRoom, 0, compressedBytes.length);
 
         final Alignments.AlignmentCollection alignmentCollection = (Alignments.AlignmentCollection) reducedCollection;
@@ -424,7 +435,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return result.build();
     }
 
-    private void restoreLinks(Alignments.AlignmentCollection.Builder alignmentCollection) {
+    private void restoreLinks(final Alignments.AlignmentCollection.Builder alignmentCollection) {
         queryIndexToPositionList.clear();
         collectLinkLists(alignmentCollection);
 
@@ -481,9 +492,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         linkBuilder.clearOptimizedIndex();
     }
 
-    int findIndex(IntSortedSet list, int position) {
+    int findIndex(final IntSortedSet list, final int position) {
         int index = 0;
-        for (int value : list.toIntArray()) {
+        for (final int value : list.toIntArray()) {
             if (value == position) return index;
             index += 1;
         }
@@ -505,17 +516,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             double totalBpb = overallBpb;
             long sumN = 0;
             long sumWritten = 0;
-            for (String label : typeToNumEntries.keySet()) {
-                int n = typeToNumEntries.getInt(label);
-                long written = typeToWrittenBits.getLong(label);
+            for (final String label : typeToNumEntries.keySet()) {
+                final int n = typeToNumEntries.getInt(label);
+                final long written = typeToWrittenBits.getLong(label);
                 sumWritten += written;
                 sumN += n;
             }
-            for (String label : typeToNumEntries.keySet()) {
-                int n = typeToNumEntries.getInt(label);
-                long written = typeToWrittenBits.getLong(label);
-                double average = (double) written / (double) n;
-                double averageBitPerBase = (double) written / (double) writtenBases;
+            for (final String label : typeToNumEntries.keySet()) {
+                final int n = typeToNumEntries.getInt(label);
+                final long written = typeToWrittenBits.getLong(label);
+                final double average = (double) written / (double) n;
+                final double averageBitPerBase = (double) written / (double) writtenBases;
                 // LOG.info
                 //       (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
                 //             written, average));
@@ -537,11 +548,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private double divide(long a, long b) {
+    private double divide(final long a, final long b) {
         return ((double) a / (double) b);
     }
 
-    protected final boolean debug(int level) {
+    protected final boolean debug(final int level) {
         return debug >= level;
     }
 
@@ -611,7 +622,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * @param out
      * @throws IOException
      */
-    public void writeRiceCoding(String label, IntList list, OutputBitStream out) throws IOException {
+    public void writeRiceCoding(final String label, final IntList list, final OutputBitStream out) throws IOException {
         final long writtenStart = out.writtenBits();
         out.writeNibble(list.size());
         for (final int value : list) {
@@ -636,18 +647,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * @return
      * @throws java.io.IOException
      */
-    private boolean tryWriteDeltas(String label, IntList list, OutputBitStream out) throws IOException {
+    private boolean tryWriteDeltas(final String label, final IntList list, final OutputBitStream out) throws IOException {
         if (list.size() == 0) {
             return false;
         }
         final long writtenStart = out.writtenBits();
 
         final IntArrayList deltas = new IntArrayList();
-        int first = list.getInt(0);
+        final int first = list.getInt(0);
         // write the first value as is:
         int previous = first;
         int index = 0;
-        for (int value : list) {
+        for (final int value : list) {
             if (index > 0) {
                 deltas.add(Fast.int2nat(value - previous));
                 previous = value;
@@ -672,7 +683,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     }
 
-    private float divide(int a, int b) {
+    private float divide(final int a, final int b) {
         return ((float) a) / ((float) b);
     }
 
@@ -687,12 +698,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private void readAsDeltas(String label, int numEntriesInChunk, InputBitStream bitInput, IntList list) throws IOException {
-        IntArrayList deltas = new IntArrayList();
+    private void readAsDeltas(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        final IntArrayList deltas = new IntArrayList();
         int previous = bitInput.readNibble();
         decodeArithmetic(label, numEntriesInChunk - 1, bitInput, deltas);
         list.add(previous);
-        for (int delta : deltas) {
+        for (final int delta : deltas) {
             final int newValue = Fast.nat2int(delta) + previous;
             list.add(newValue);
             previous = newValue;
@@ -716,13 +727,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         //  bitInput.flush();
     }
 
-    private void writeNibble(String label, IntList list, OutputBitStream out) throws IOException {
-        long writtenStart = out.writtenBits();
-        for (int value : list) {
+    private void writeNibble(final String label, final IntList list, final OutputBitStream out) throws IOException {
+        final long writtenStart = out.writtenBits();
+        for (final int value : list) {
             out.writeNibble(value);
         }
-        long writtenStop = out.writtenBits();
-        long written = writtenStop - writtenStart;
+        final long writtenStop = out.writtenBits();
+        final long written = writtenStop - writtenStart;
         recordStats(label, list, written);
     }
 
@@ -755,9 +766,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     }
+
     final IntArrayList encodedLengths = new IntArrayList();
     final IntArrayList encodedValues = new IntArrayList();
-    private void decodeArithmeticInternal(InputBitStream bitInput, IntList list) throws IOException {
+
+    private void decodeArithmeticInternal(final InputBitStream bitInput, final IntList list) throws IOException {
         final int size = bitInput.readNibble();
         if (size == 0) {
             return;
@@ -791,7 +804,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decode(bitInput, list, size, numTokens, distinctvalue);
     }
 
-    protected final void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
+    protected final void writeArithmetic(final String label, final IntList list, final OutputBitStream out) throws IOException {
         if (debug(2)) {
             System.err.flush();
             System.err.println("\nwriting " + label);
@@ -818,8 +831,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private boolean runLengthEncoding(String label, IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
-        float ratioListSizes = ((float) encodedLengths.size() + encodedValues.size()) / (float) list.size();
+    private boolean runLengthEncoding(final String label, final IntList list, final IntArrayList encodedLengths, final IntArrayList encodedValues) {
+        final float ratioListSizes = ((float) encodedLengths.size() + encodedValues.size()) / (float) list.size();
         final boolean result = encodedLengths.size() > 10 && ratioListSizes < 1;
         /*
         if (result) {
@@ -828,17 +841,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return result;
     }
 
-    private boolean encodeArithmeticInternal(String label, IntList list, OutputBitStream out) throws IOException {
+    private boolean encodeArithmeticInternal(final String label, final IntList list, final OutputBitStream out) throws IOException {
         out.writeNibble(list.size());        // LIST.size
         if (list.isEmpty()) {
             // no list to write.
             return true;
         }
         final IntSortedSet distinctSymbols = getTokens(list);
-        int minSymbol = distinctSymbols.firstInt();
-        int maxSymbol = distinctSymbols.lastInt();
-        int symbolRange = maxSymbol - minSymbol;
-        int numDistinctSymbols = distinctSymbols.size();
+        final int minSymbol = distinctSymbols.firstInt();
+        final int maxSymbol = distinctSymbols.lastInt();
+        final int symbolRange = maxSymbol - minSymbol;
+        final int numDistinctSymbols = distinctSymbols.size();
         final boolean hasNegativeValues = minSymbol < 0;
         if (symbolRange + 1 > numDistinctSymbols) {
             final int[] symbolValues = distinctSymbols.toIntArray();
@@ -858,7 +871,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             encode(label, list, out, distinctSymbols, symbolValues);
             return false;
         } else {
-          //  System.out.printf("%s symbolRange=%d symbolSize=%d%n", label, symbolRange, numDistinctSymbols);
+            //  System.out.printf("%s symbolRange=%d symbolSize=%d%n", label, symbolRange, numDistinctSymbols);
 
             // in this branch, we know the symbols are consecutive in values, so we write the min symbol, and the number of symbols.
             out.writeBit(true);
@@ -877,9 +890,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private void encode(String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
+    private void encode(final String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
+            final FastArithmeticCoderI coder = getCoder(distinctSymbols.size(),list.size());
             for (final int dp : list) {
                 final int symbolCode = Arrays.binarySearch(symbolValues, dp);
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -890,7 +903,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int[] frequencies = frequencies(list, symbolValues);
             final HuffmanCodec codec = new HuffmanCodec(frequencies);
             final CodeWordCoder coder = codec.coder();
-            for (int freq : frequencies) {
+            for (final int freq : frequencies) {
                 out.writeNibble(freq);
             }
             for (final int dp : list) {
@@ -902,6 +915,32 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
+    private FastArithmeticCoderI getCoder(final int numSymbols, final int listSize) {
+        switch (coderType) {
+
+            case ORDER_ONE:
+                return new FastArithmeticCoderOrder1(numSymbols);
+            case PLUS:
+                return new FastArithmeticCoderPlus(numSymbols);
+            default:
+            case ORDER_ZERO:
+                return new FastArithmeticCoder(numSymbols);
+        }
+
+    }
+    private FastArithmeticDecoderI getDecoder(final int numSymbols) {
+        switch (coderType) {
+
+                   case ORDER_ONE:
+                       return new FastArithmeticDecoderOrder1(numSymbols);
+                   case PLUS:
+                       return new FastArithmeticDecoderPlus(numSymbols);
+                   default:
+                   case ORDER_ZERO:
+                       return new FastArithmeticDecoder(numSymbols);
+               }
+
+       }
     /**
      * Here, we know that symbol values are consecutive, so we don't need to use binarySearch to code list values into symbols.
      * We use direct access instead.
@@ -911,9 +950,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * @param out
      * @throws IOException
      */
-    private void encodeDirect(String label, final IntList list, final OutputBitStream out, int minSymbol, int numSymbols) throws IOException {
+    private void encodeDirect(final String label, final IntList list, final OutputBitStream out, final int minSymbol, final int numSymbols) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoder coder = new FastArithmeticCoder(numSymbols);
+            final FastArithmeticCoderI coder = getCoder(numSymbols,list.size());
             for (final int dp : list) {
                 final int symbolCode = dp - minSymbol;
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -924,7 +963,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int[] frequencies = frequenciesDirect(list, minSymbol, numSymbols);
             final HuffmanCodec codec = new HuffmanCodec(frequencies);
             final CodeWordCoder coder = codec.coder();
-            for (int freq : frequencies) {
+            for (final int freq : frequencies) {
                 out.writeNibble(freq);
             }
             for (final int dp : list) {
@@ -936,9 +975,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private void decode(final InputBitStream bitInput, final IntList list, final int size, final int numTokens, int[] distinctvalue) throws IOException {
+    private void decode(final InputBitStream bitInput, final IntList list, final int size, final int numTokens, final int[] distinctvalue) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
+            final FastArithmeticDecoderI decoder = getDecoder(numTokens);
             for (int i = 0; i < size; i++) {
                 final int tokenValue = distinctvalue[decoder.decode(bitInput)];
                 list.add(tokenValue);
@@ -959,8 +998,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
+
+
     // return the frequencies of symbols in the list
-    private int[] frequencies(IntList list, int[] symbolValues) {
+    private int[] frequencies(final IntList list, final int[] symbolValues) {
         final int[] freqs = new int[symbolValues.length];
         for (final int value : list) {
             final int index = Arrays.binarySearch(symbolValues, value);
@@ -970,7 +1011,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     // return the frequencies of symbols in the list
-    private int[] frequenciesDirect(IntList list, int minSymbol, int numSymbols) {
+    private int[] frequenciesDirect(final IntList list, final int minSymbol, final int numSymbols) {
         final int[] freqs = new int[numSymbols];
         for (final int value : list) {
             final int index = value - minSymbol;
@@ -988,9 +1029,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return false;
     }
 
-    private void recordStats(String label, IntList list, long written) {
+    private void recordStats(final String label, final IntList list, final long written) {
         if (debug(1) && label != null) {
-            double average = ((double) written) / list.size();
+            final double average = ((double) written) / list.size();
             typeToNumEntries.put(label, list.size() + typeToNumEntries.getInt(label));
             typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
             /* if (label.contains("delta"))
@@ -1051,10 +1092,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     protected IntList linkOffsetOptimization = new IntArrayList();
 
 
-    private int decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
+    private int decompressBits(final InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
         streamVersion = bitInput.readDelta();
-
-        assert streamVersion <= VERSION : "FATAL: The stream version cannot have been written with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of the compressed stream).";
+        assert streamVersion <= VERSION : String.format("FATAL: The stream version (found=%d) cannot have been written " +
+                "with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of" +
+                " the compressed stream). This implementation has VERSION=%d",streamVersion,VERSION);
+        if (streamVersion <= 12) {
+                    coderType = CoderType.ORDER_ZERO;
+                } else {
+                    coderType = CoderType.values()[bitInput.readDelta()];
+                }
         if (streamVersion >= 8) {
             enableDomainOptimizations = bitInput.readBit() == 1;
         }
@@ -1143,7 +1190,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private void encodeRunLengths(IntList list, IntArrayList encodedLengths, IntArrayList encodedValues) {
+    private void encodeRunLengths(final IntList list, final IntArrayList encodedLengths, final IntArrayList encodedValues) {
         if (list.size() == 0) {
             return;
         }
@@ -1152,7 +1199,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         final int size = list.size();
         for (int index = 1; index < size; index++) {
-            int value = list.get(index);
+            final int value = list.get(index);
             if (value == previous) {
                 runLength += 1;
             } else {
@@ -1171,6 +1218,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
         out.writeDelta(VERSION);
+        out.writeDelta(coderType.ordinal());
         out.writeBit(enableDomainOptimizations);
         out.writeBit(multiplicityFieldsAllMissing);
 
@@ -1266,7 +1314,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    public IntArrayList deltaModTransform(IntList varPositionsList) {
+    public IntArrayList deltaModTransform(final IntList varPositionsList) {
         varPositionDeltaMods.clear();
         int previous = 0;
 
@@ -1397,7 +1445,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private Alignments.AlignmentEntry previousPartial;
     private int countAggregatedWithMultiplicity;
 
-    private Alignments.AlignmentEntry transform(final int index, int indexInReducedCollection, final Alignments.AlignmentEntry source) {
+    private Alignments.AlignmentEntry transform(final int index, final int indexInReducedCollection, final Alignments.AlignmentEntry source) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(source);
         final int position = source.getPosition();
         final int targetIndex = source.getTargetIndex();
@@ -1474,7 +1522,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int pos1 = source.getMatchingReverseStrand() ? length + readPos : readPos + 1;
             final int pos2 = EntryFlagHelper.isMateReverseStrand(source) ? length + matePos : matePos + 1;
             final int insertSize = source.getInsertSize();
-            int insertSizeDiff = Fast.int2nat(pos2 - pos1 - insertSize);
+            final int insertSizeDiff = Fast.int2nat(pos2 - pos1 - insertSize);
             // reverse:  insertSize= (pos2-pos1) - isd
             /*    if (insertSize != 0) {
        System.out.printf("insertSize %d length= %d %c %c readPos %d matePos %d  pos1 %d pos2 %d  pos2-pos1 %d matePos-readPos  %d  insertSizeDiff %d %n",
@@ -1497,7 +1545,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (previousPartial != null && indexInReducedCollection >= 1 && fastEqualsEntry(previousPartial, partial)) {
             //   System.out.println("same");
             //  print(partial);
-            int m = multiplicities.get(indexInReducedCollection - 1);
+            final int m = multiplicities.get(indexInReducedCollection - 1);
             multiplicities.set(indexInReducedCollection - 1, m + 1);
             // do not add this one, we just increased the multiplicity of the previous one.
             countAggregatedWithMultiplicity++;
@@ -1552,7 +1600,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             assert seqVar.getPosition() >= 0 : String.format("The following entry had a sequence variation with a negative position. This is not allowed since seqVar.positions must be >=0. %s ", source.toString());
 
             encodeVar(source.getMatchingReverseStrand(), source.getQueryLength(), seqVar);
-            Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
+            final Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
             varBuilder.clearPosition();
             varBuilder.clearFrom();
             varBuilder.clearTo();
@@ -1574,26 +1622,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
         final Alignments.AlignmentEntry alignmentEntry = result.build();
-    //       System.out.println(alignmentEntry);
+        //       System.out.println(alignmentEntry);
         return alignmentEntry;
     }
+
     // mask the strand bit from pair flag (we store it separately anyway)
-    private int reduceSamFlags(Alignments.AlignmentEntry source) {
+    private int reduceSamFlags(final Alignments.AlignmentEntry source) {
         return source.getPairFlags() & (~16);
     }
+
     // reconstitute the sam Flag with strand information:
-    private int restoreSamFlags(int samFlag, boolean matchesReverseStrand) {
-        return samFlag | (matchesReverseStrand?16:0);
+    private int restoreSamFlags(final int samFlag, final boolean matchesReverseStrand) {
+        return samFlag | (matchesReverseStrand ? 16 : 0);
     }
+
     private boolean isEmpty(final Alignments.SequenceVariation varBuilder) {
-        return useTemplateBasedCompression && fastEqualsInternal( varBuilder);
+        return useTemplateBasedCompression && fastEqualsInternal(varBuilder);
     }
 
     final ByteArrayOutputStream byteBufferSVO1 = new ByteArrayOutputStream();
     final ByteArrayOutputStream byteBufferSVO2 = new ByteArrayOutputStream();
     private byte[] EMPTY_SEQ_VAR_SERIALIZED;
 
-    private boolean fastEqualsInternal( Alignments.SequenceVariation o2) {
+    private boolean fastEqualsInternal(final Alignments.SequenceVariation o2) {
         // The protobuf message.equals method is a performance  bottleneck when performing template compression. See
         //http://www.mail-archive.com/protobuf@googlegroups.com/msg02534.html
         // This method  first serializes the two messages to bytes, then compare the byte arrays. This
@@ -1620,7 +1671,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         //  queryAlignedLength=  codedValue+targetAlignedLength
     }
 
-    public static int decodeQueryAlignedLength(int codedValue, int targetAlignedLength) {
+    public static int decodeQueryAlignedLength(final int codedValue, final int targetAlignedLength) {
         return Fast.nat2int(codedValue) + targetAlignedLength;
     }
 
@@ -1650,7 +1701,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return equals;
     }
 
-    private void recordVariationQualitiesAndClear(Alignments.AlignmentEntry source, Alignments.AlignmentEntry.Builder result, List<Alignments.SequenceVariation> sequenceVariationsList) {
+    private void recordVariationQualitiesAndClear(final Alignments.AlignmentEntry source, final Alignments.AlignmentEntry.Builder result, final List<Alignments.SequenceVariation> sequenceVariationsList) {
         if (source.hasReadQualityScores()) {
             for (final Alignments.SequenceVariation seqVar : sequenceVariationsList) {
                 varToQualLength.add(0);
@@ -1669,7 +1720,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 for (int i = 0; i < toQualSize; i++) {
                     varQuals.add(toQualities.byteAt(i));
                 }
-                Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
+                final Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
                 varBuilder.clearToQuality();
                 result.setSequenceVariations(index, varBuilder.buildPartial());
                 index++;
@@ -1678,12 +1729,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     }
 
-    private void print(Alignments.AlignmentEntry result) {
+    private void print(final Alignments.AlignmentEntry result) {
 
         System.out.println(result);
     }
 
-    private void encodeVar(boolean entryOnReverseStrand, int queryLenth, final Alignments.SequenceVariation seqVar) {
+    private void encodeVar(final boolean entryOnReverseStrand, final int queryLenth, final Alignments.SequenceVariation seqVar) {
 
         final String from = seqVar.getFrom();
         final String to = seqVar.getTo();
@@ -1716,7 +1767,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     MutableString to = new MutableString();
 
 
-    private Alignments.AlignmentEntry andBack(final int index, int originalIndex, final Alignments.AlignmentEntry reduced, int streamVersion) {
+    private Alignments.AlignmentEntry andBack(final int index, final int originalIndex, final Alignments.AlignmentEntry reduced, final int streamVersion) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(reduced);
 
         final int multiplicity = multiplicities.get(index);
@@ -1807,7 +1858,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         anInt = pairFlags.getInt(index);
         if (anInt != MISSING_VALUE) {
-            result.setPairFlags(restoreSamFlags(anInt,result.getMatchingReverseStrand()));
+            result.setPairFlags(restoreSamFlags(anInt, result.getMatchingReverseStrand()));
         }
         anInt = scores.getInt(index);
         if (anInt != MISSING_VALUE) {
@@ -1954,7 +2005,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private void recalculateInsertSize(Alignments.AlignmentEntry.Builder entry, int index) {
+    private void recalculateInsertSize(final Alignments.AlignmentEntry.Builder entry, final int index) {
         if (streamVersion < 10) {
             return;
         }
@@ -1980,7 +2031,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return linkOffsetOptimization.get(linkOffsetOptimizationIndex++);
     }
 
-    public void setDebugLevel(int level) {
+    public void setDebugLevel(final int level) {
         this.debug = level;
     }
 }

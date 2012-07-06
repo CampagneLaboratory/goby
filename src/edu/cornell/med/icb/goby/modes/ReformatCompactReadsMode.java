@@ -156,8 +156,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
-            if (startPosition==0 && endPosition==0) {
-                endPosition= Long.MAX_VALUE;
+            if (startPosition == 0 && endPosition == 0) {
+                endPosition = Long.MAX_VALUE;
             }
         }
 
@@ -254,7 +254,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             //DistinctIntValueCounterBitSet allEntries = new DistinctIntValueCounterBitSet();
             int numReadsKept = 0;
             for (final Reads.ReadEntry entry : readsReader) {
-            //    allEntries.observe(entry.getReadIndex());
+                //    allEntries.observe(entry.getReadIndex());
                 if (readIndexFilter == null || readIndexFilter.contains(entry.getReadIndex())) {
 
                     final int readLength = entry.getReadLength();
@@ -316,7 +316,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     }
                 }
             }
-          /*  float rate = allEntries.count();
+            /*  float rate = allEntries.count();
             rate -= numReadsKept;
             rate /= allEntries.count();
             if (readIndexFilter != null) System.out.printf("Percent reads redundant= %f3.2%% %n", rate);
@@ -353,6 +353,25 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         if (qualScoreSize != 0) {
             qualityScores.size(newLength);
         }
+    }
+
+    private byte[] trimQualityScores(final byte[] qualityScores, int trimReadStartLength, final int trimReadLength, final int initialLength) {
+        if (trimReadStartLength < 0) {
+            trimReadStartLength = 0;
+        }
+        final int newLength = Math.min(initialLength, trimReadLength) - trimReadStartLength;
+        if (initialLength == newLength) {
+            // no trimming needed.
+            return qualityScores;
+        }
+        if (qualityScores == null) {
+            return null;
+        }
+
+        final byte[] trimmedScores = new byte[newLength];
+        System.arraycopy(qualityScores, trimReadStartLength + trimReadStartLength, trimmedScores, trimReadStartLength, newLength - trimReadStartLength);
+        return trimmedScores;
+
     }
 
     /**

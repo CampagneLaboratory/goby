@@ -91,7 +91,11 @@ public class MessageChunksWriter {
      * @param numEntriesPerChunk maximum number of entries per chunk.
      */
     public void setNumEntriesPerChunk(final int numEntriesPerChunk) {
+        if (numEntriesPerChunk != this.numEntriesPerChunk) {
+            LOG.warn("Using chunk-size=" + numEntriesPerChunk);
+        }
         this.numEntriesPerChunk = numEntriesPerChunk;
+
     }
 
     public MessageChunksWriter(final OutputStream output) {

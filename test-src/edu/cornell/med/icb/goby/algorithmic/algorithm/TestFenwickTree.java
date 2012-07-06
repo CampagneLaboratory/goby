@@ -48,4 +48,11 @@ public class TestFenwickTree {
     }
 
 
+    private void add(FenwickTree tree, int num, int index) {
+        for (int i = 0; i < num; i++) {
+            tree.incrementCount(index);
+        }
+    }
+
+
 }
