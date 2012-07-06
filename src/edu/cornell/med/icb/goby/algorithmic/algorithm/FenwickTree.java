@@ -27,9 +27,11 @@ public class FenwickTree implements Serializable {
     private static final long serialVersionUID = -7830133715336861385L;
     private int n;
     private long totalCount;
+
     public int size() {
         return n;
     }
+
     public FenwickTree(int n) {
         this.cumCount = new long[n + 1];
         this.n = n;
@@ -60,7 +62,7 @@ public class FenwickTree implements Serializable {
      * @return count for element at index.
      */
     public long getCumulativeCount(int index) {
-        if (index>=cumCount.length-1) {
+        if (index >= cumCount.length - 1) {
             // past the capacity of the array is all the counts we have seen:
             return totalCount;
         }
@@ -77,6 +79,7 @@ public class FenwickTree implements Serializable {
     /**
      * Get the cumulative count over all the elements. This is exactly the number of times increment count has
      * been called.
+     *
      * @return
      */
     public long getTotalCount() {

@@ -22,7 +22,6 @@ package edu.cornell.med.icb.goby.algorithmic.compression;
 
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.io.InputBitStream;
-
 import java.io.IOException;
 
 /**
