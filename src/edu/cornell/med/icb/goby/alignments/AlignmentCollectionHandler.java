@@ -36,6 +36,7 @@ import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -168,7 +169,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public GeneratedMessage parse(final InputStream uncompressedStream) throws IOException {
-        final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressedStream);
+        final byte[] bytes = IOUtils.toByteArray(uncompressedStream);
+        final CodedInputStream codedInput = CodedInputStream.newInstance(bytes);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
 
         return Alignments.AlignmentCollection.parseFrom(codedInput);
@@ -215,9 +217,19 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         return remainingCollection.build();
     }
 
-    Int2ObjectMap<IntArrayList> queryIndexToPositionList = new Int2ObjectOpenHashMap<IntArrayList>();
-    Int2ObjectMap<IntArrayList> queryIndex2EntryIndices = new Int2ObjectOpenHashMap<IntArrayList>();
-    Int2ObjectMap<IntArrayList> queryIndex2FragmentIndices = new Int2ObjectOpenHashMap<IntArrayList>();
+    protected final Int2ObjectMap<CombinedLists> queryIndex2CombinedInfo = new Int2ObjectOpenHashMap<CombinedLists>();
+
+    protected class CombinedLists {
+        public IntArrayList positionList;
+        public IntArrayList entryIndices;
+        public IntArrayList fragmentIndices;
+
+        private CombinedLists() {
+            positionList = new IntArrayList();
+            entryIndices = new IntArrayList();
+            fragmentIndices = new IntArrayList();
+        }
+    }
 
     private void collectLinkLists(final Alignments.AlignmentCollectionOrBuilder alignmentCollection) {
         int entryIndex = 0;
@@ -225,22 +237,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         for (final Alignments.AlignmentEntry entry : alignmentCollection.getAlignmentEntriesList()) {
 
             final int queryIndex = entry.getQueryIndex();
-            IntArrayList list = queryIndexToPositionList.get(queryIndex);
-            IntArrayList listOfIndices = queryIndex2EntryIndices.get(queryIndex);
-            IntArrayList listOfFragmentIndices = queryIndex2FragmentIndices.get(queryIndex);
+            CombinedLists list = queryIndex2CombinedInfo.get(queryIndex);
             if (list == null) {
-                list = new IntArrayList();
-                listOfIndices = new IntArrayList();
-                listOfFragmentIndices = new IntArrayList();
-                queryIndexToPositionList.put(queryIndex, list);
-                queryIndex2EntryIndices.put(queryIndex, listOfIndices);
-                queryIndex2FragmentIndices.put(queryIndex, listOfFragmentIndices);
+                list = new CombinedLists();
+                queryIndex2CombinedInfo.put(queryIndex, list);
             }
 
-
-            list.add(entry.getPosition());
-            listOfIndices.add(entryIndex);
-            listOfFragmentIndices.add(entry.getFragmentIndex());
+            list.positionList.add(entry.getPosition());
+            list.entryIndices.add(entryIndex);
+            list.fragmentIndices.add(entry.getFragmentIndex());
             entryIndex++;
 
 
@@ -436,31 +441,33 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void restoreLinks(final Alignments.AlignmentCollection.Builder alignmentCollection) {
-        queryIndexToPositionList.clear();
+     //   queryIndexToPositionList.clear();
+        queryIndex2CombinedInfo.clear();
         collectLinkLists(alignmentCollection);
 
         final int size = alignmentCollection.getAlignmentEntriesCount();
         insertSizeIndex = 0;
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry.Builder entry = alignmentCollection.getAlignmentEntriesBuilder(index);
-            final IntArrayList positionList = queryIndexToPositionList.get(entry.getQueryIndex());
-            final IntArrayList fragmentList = queryIndex2FragmentIndices.get(entry.getQueryIndex());
+            final CombinedLists combinedLists = queryIndex2CombinedInfo.get(entry.getQueryIndex());
+            final IntArrayList positionList = combinedLists.positionList;
+            final IntArrayList fragmentList = combinedLists.fragmentIndices;
             final int queryIndex = entry.getQueryIndex();
             if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
 
                 final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
             }
 
             if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
 
                 final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
             }
             if (entry.hasSplicedBackwardAlignmentLink() && entry.getSplicedBackwardAlignmentLink().hasOptimizedIndex()) {
 
                 final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedBackwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder);
+                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
             }
             // we need to update insert size because the optimization messed up the mate position used by domain optimization:
 
@@ -470,7 +477,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void recoverLink(final Alignments.AlignmentCollection.Builder alignmentCollection, final Alignments.AlignmentEntry.Builder entry,
                              final IntArrayList positionList, final IntArrayList fragmentList, final int queryIndex,
-                             final Alignments.RelatedAlignmentEntry.Builder linkBuilder) {
+                             final Alignments.RelatedAlignmentEntry.Builder linkBuilder, final CombinedLists combinedLists) {
         final int indexOffset = linkBuilder.getOptimizedIndex();
         final int position = entry.getPosition();
         int index = 0;
@@ -484,7 +491,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int optimizedIndex = indexOffset + thisEntryIndex;
 
         //   final int linkIndex = Fast.nat2int(linkOffset) + thisEntryIndex;
-        final IntArrayList listOfIndices = queryIndex2EntryIndices.get(queryIndex);
+        final IntArrayList listOfIndices = combinedLists.entryIndices;
         final int otherEntryIndex = listOfIndices.get(optimizedIndex);
         final Alignments.AlignmentEntry otherEntry = alignmentCollection.getAlignmentEntries(otherEntryIndex);
         linkBuilder.setPosition(otherEntry.getPosition());
@@ -892,7 +899,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void encode(final String label, final IntList list, final OutputBitStream out, final IntSet distinctSymbols, final int[] symbolValues) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoderI coder = getCoder(distinctSymbols.size(),list.size());
+            final FastArithmeticCoderI coder = getCoder(distinctSymbols.size(), list.size());
             for (final int dp : list) {
                 final int symbolCode = Arrays.binarySearch(symbolValues, dp);
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -928,19 +935,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
     }
+
     private FastArithmeticDecoderI getDecoder(final int numSymbols) {
         switch (coderType) {
 
-                   case ORDER_ONE:
-                       return new FastArithmeticDecoderOrder1(numSymbols);
-                   case PLUS:
-                       return new FastArithmeticDecoderPlus(numSymbols);
-                   default:
-                   case ORDER_ZERO:
-                       return new FastArithmeticDecoder(numSymbols);
-               }
+            case ORDER_ONE:
+                return new FastArithmeticDecoderOrder1(numSymbols);
+            case PLUS:
+                return new FastArithmeticDecoderPlus(numSymbols);
+            default:
+            case ORDER_ZERO:
+                return new FastArithmeticDecoder(numSymbols);
+        }
 
-       }
+    }
+
     /**
      * Here, we know that symbol values are consecutive, so we don't need to use binarySearch to code list values into symbols.
      * We use direct access instead.
@@ -952,7 +961,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      */
     private void encodeDirect(final String label, final IntList list, final OutputBitStream out, final int minSymbol, final int numSymbols) throws IOException {
         if (useArithmeticCoding) {
-            final FastArithmeticCoderI coder = getCoder(numSymbols,list.size());
+            final FastArithmeticCoderI coder = getCoder(numSymbols, list.size());
             for (final int dp : list) {
                 final int symbolCode = dp - minSymbol;
                 assert symbolCode >= 0 : "symbol code must exist.";
@@ -997,7 +1006,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             // decoder.reposition(bitInput);
         }
     }
-
 
 
     // return the frequencies of symbols in the list
@@ -1096,12 +1104,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         streamVersion = bitInput.readDelta();
         assert streamVersion <= VERSION : String.format("FATAL: The stream version (found=%d) cannot have been written " +
                 "with a more recent version of Goby (The hybrid chunk codec cannot not support forward compatibility of" +
-                " the compressed stream). This implementation has VERSION=%d",streamVersion,VERSION);
+                " the compressed stream). This implementation has VERSION=%d", streamVersion, VERSION);
         if (streamVersion <= 12) {
-                    coderType = CoderType.ORDER_ZERO;
-                } else {
-                    coderType = CoderType.values()[bitInput.readDelta()];
-                }
+            coderType = CoderType.ORDER_ZERO;
+        } else {
+            coderType = CoderType.values()[bitInput.readDelta()];
+        }
         if (streamVersion >= 8) {
             enableDomainOptimizations = bitInput.readBit() == 1;
         }
@@ -1373,7 +1381,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         insertSizeIndex = 0;
         multiplicityFieldsAllMissing = true;
-        queryIndexToPositionList.clear();
+        queryIndex2CombinedInfo.clear();
         previousPosition = -1;
         previousTargetIndex = -1;
         deltaPositions.clear();
@@ -1427,9 +1435,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         linkOffsetOptimization.clear();
         linkOffsetOptimizationIndex = 0;
-        queryIndex2EntryIndices.clear();
-        queryIndex2FragmentIndices.clear();
-        queryIndexToPositionList.clear();
+        queryIndex2CombinedInfo.clear();
 
         varPositionDeltaMods.clear();
     }
@@ -2034,4 +2040,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     public void setDebugLevel(final int level) {
         this.debug = level;
     }
+
+
 }
