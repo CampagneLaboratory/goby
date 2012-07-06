@@ -51,15 +51,13 @@ class LinkInfo {
     private final String FRAGMENTS_LABEL;
     private final AlignmentCollectionHandler handler;
     private int fragmentIndex;
-    private Int2ObjectMap<IntArrayList> queryIndex2PositionList;
-    private Int2ObjectMap<IntArrayList> queryIndex2FragmentIndexList;
+    private Int2ObjectMap<AlignmentCollectionHandler.CombinedLists> queryIndex2CombinedInfo;
 
 
     LinkInfo(final AlignmentCollectionHandler handler, final String label) {
         this.handler = handler;
         this.label = label;
-        this.queryIndex2PositionList = handler.queryIndexToPositionList;
-        this.queryIndex2FragmentIndexList = handler.queryIndex2FragmentIndices;
+        this.queryIndex2CombinedInfo = handler.queryIndex2CombinedInfo;
         HAS_LINK_LABEL = "has" + label;
         POS_LABEL = label + "-pos";
         TARGETS_LABEL = label + "-targets";
@@ -130,8 +128,9 @@ class LinkInfo {
     }
 
     private boolean canOptimize(Alignments.AlignmentEntry entry, Alignments.RelatedAlignmentEntry relatedLink) {
-        final IntArrayList positionList = queryIndex2PositionList.get(entry.getQueryIndex());
-        final IntArrayList fragmentList = queryIndex2FragmentIndexList.get(entry.getQueryIndex());
+        final AlignmentCollectionHandler.CombinedLists combinedLists = queryIndex2CombinedInfo.get(entry.getQueryIndex());
+        final IntArrayList positionList = combinedLists.positionList;
+        final IntArrayList fragmentList = combinedLists.fragmentIndices;
         assert positionList != null : "positionList must be found for queryIndex=" + entry.getQueryIndex();
         final int position = entry.getPosition();
         final int linkPosition = relatedLink.getPosition();

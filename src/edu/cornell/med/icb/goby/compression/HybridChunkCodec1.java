@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -103,7 +104,7 @@ public class HybridChunkCodec1 implements ChunkCodec {
 
     @Override
     public Message decode(final byte[] bytes) throws IOException {
-        final DataInputStream completeChunkData = new DataInputStream(new ByteArrayInputStream(bytes));
+        final DataInputStream completeChunkData = new DataInputStream(new FastByteArrayInputStream(bytes));
         final int compressedSize = completeChunkData.readInt();
         final int storedChecksum = completeChunkData.readInt();
 

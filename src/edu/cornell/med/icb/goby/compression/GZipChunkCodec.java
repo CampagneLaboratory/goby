@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 
 import java.io.*;
 import java.util.zip.Deflater;

@@ -22,6 +22,7 @@ import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
+import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,7 +43,8 @@ public class ReadProtobuffCollectionHandler implements ProtobuffCollectionHandle
 
     @Override
     public GeneratedMessage parse(final InputStream compressedBytes) throws IOException {
-        final CodedInputStream codedInput = CodedInputStream.newInstance(compressedBytes);
+        final byte[] bytes= IOUtils.toByteArray(compressedBytes);
+        final CodedInputStream codedInput = CodedInputStream.newInstance(bytes);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
 
         return Reads.ReadCollection.parseFrom(codedInput);
