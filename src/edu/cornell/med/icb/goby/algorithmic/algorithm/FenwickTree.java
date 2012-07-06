@@ -85,4 +85,14 @@ public class FenwickTree implements Serializable {
     public long getTotalCount() {
         return totalCount;
     }
+
+    public answer createAnswer() {
+        return new answer();
+    }
+
+    public class answer {
+        int symbolIndex = -1;
+        long cumulativeCount = -1;
+        long nextLargerCumulativeCount = -1;
+    }
 }

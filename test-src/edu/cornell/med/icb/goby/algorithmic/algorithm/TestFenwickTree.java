@@ -46,7 +46,7 @@ public class TestFenwickTree {
         assertEquals(4, tree.getCumulativeCount(2));
         assertEquals(5, tree.getCumulativeCount(3));
     }
-
+    /*
     @Test
     public void testFind() {
         FenwickTree tree = new FenwickTree(4);
@@ -74,7 +74,7 @@ public class TestFenwickTree {
 
 
     }
-
+       */
     private void add(FenwickTree tree, int num, int index) {
         for (int i = 0; i < num; i++) {
             tree.incrementCount(index);
