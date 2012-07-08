@@ -400,12 +400,14 @@ public class SAMToCompactMode extends AbstractGobyMode {
                 readMaxOccurence = numTotalHits;
             }
             readMaxOccurence *= readIsSpliced ? 2 : 1;
+            /* While STAR uses NH to store readMaxOccurence, GSNAP seems to put some other values in that field so we
+             can't really trust these values in general. Disable for now on the stable branch.
             final Integer nh = samRecord.getIntegerAttribute("NH");
             // NH:i indicates: NH i Number of reported alignments that contains the query in the current record
             if (nh != null) {
                 // used by STAR, for instance, to encode readMaxOccurence
                 readMaxOccurence = nh;
-            }
+            } */
             final String readName = samRecord.getReadName();
 
             final int queryIndex = getQueryIndex(readMaxOccurence, readName);
