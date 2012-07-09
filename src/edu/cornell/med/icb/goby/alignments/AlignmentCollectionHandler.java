@@ -65,7 +65,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
             "symbol-modeling:string, a string which indicates which arithmetic coding scheme to use. order_zero will " +
                     "select a zero-order arithmetic coder. order_one will select an arithmetic order that models pairs of symbols. " +
-                    "plus will select an experimental coder.:plus",
+                    "plus will select an experimental coder.:order_zero",
             "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
