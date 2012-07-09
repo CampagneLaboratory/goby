@@ -52,7 +52,7 @@ import java.util.List;
  *         Date: 3/3/12
  *         Time: 11:45 AM
  */
-public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
+public final class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     /**
      * Used to log informational and debug messages.
      */
@@ -66,7 +66,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             "symbol-modeling:string, a string which indicates which arithmetic coding scheme to use. order_zero will " +
                     "select a zero-order arithmetic coder. order_one will select an arithmetic order that models pairs of symbols. " +
                     "plus will select an experimental coder.:order_zero",
-            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
+            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, " +
+                    "and can increase further compression. For instance, setting this flag to true will compress " +
+                    "related-alignment-links very efficiently if they link entries in the same chunk.:true"
 
     );
     private String statsFilename;
@@ -408,7 +410,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     @Override
     public Message decompressCollection(final Message reducedCollection, final byte[] compressedBytes) throws IOException {
         reset();
-        //TODO optimize away the copy:
         final byte[] moreRoom = new byte[compressedBytes.length + 100];
         System.arraycopy(compressedBytes, 0, moreRoom, 0, compressedBytes.length);
 
@@ -418,6 +419,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int numEntriesInChunk = alignmentCollection.getAlignmentEntriesCount();
 
         final int streamVersion = decompressBits(bitInput, numEntriesInChunk);
+        if (streamVersion > VERSION) {
+            System.err.printf("The hybrid-1 input data that you are trying to read has been generated with a more recent " +
+                    "version (streamVersion=%d) of Goby than this parser (VERSION=%d). Please upgrade Goby to the latest " +
+                    "version in order to decompress these data (Hybrid-1 codec do not support forward compatibility, " +
+                    "they will read older versions though) ", streamVersion, VERSION);
+            System.exit(1);
+        }
         int originalIndex = 0;
         for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
             final int templatePositionIndex = varPositionIndex;
@@ -441,34 +449,45 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void restoreLinks(final Alignments.AlignmentCollection.Builder alignmentCollection) {
-     //   queryIndexToPositionList.clear();
-        queryIndex2CombinedInfo.clear();
-        collectLinkLists(alignmentCollection);
+        if (enableDomainOptimizations) {
+            //   queryIndexToPositionList.clear();
+            queryIndex2CombinedInfo.clear();
 
+            collectLinkLists(alignmentCollection);
+
+            final int size = alignmentCollection.getAlignmentEntriesCount();
+            insertSizeIndex = 0;
+            for (int index = 0; index < size; index++) {
+                final Alignments.AlignmentEntry.Builder entry = alignmentCollection.getAlignmentEntriesBuilder(index);
+                final CombinedLists combinedLists = queryIndex2CombinedInfo.get(entry.getQueryIndex());
+                final IntArrayList positionList = combinedLists.positionList;
+                final IntArrayList fragmentList = combinedLists.fragmentIndices;
+                final int queryIndex = entry.getQueryIndex();
+                if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
+
+                    final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
+                    recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
+                }
+
+                if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
+
+                    final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
+                    recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
+                }
+                if (entry.hasSplicedBackwardAlignmentLink() && entry.getSplicedBackwardAlignmentLink().hasOptimizedIndex()) {
+
+                    final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedBackwardAlignmentLinkBuilder();
+                    recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
+                }
+                // we need to update insert size because the optimization messed up the mate position used by domain optimization:
+
+                //   recalculateInsertSize(entry, insertSizeIndex++);
+            }
+        }
         final int size = alignmentCollection.getAlignmentEntriesCount();
         insertSizeIndex = 0;
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry.Builder entry = alignmentCollection.getAlignmentEntriesBuilder(index);
-            final CombinedLists combinedLists = queryIndex2CombinedInfo.get(entry.getQueryIndex());
-            final IntArrayList positionList = combinedLists.positionList;
-            final IntArrayList fragmentList = combinedLists.fragmentIndices;
-            final int queryIndex = entry.getQueryIndex();
-            if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
-
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
-            }
-
-            if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
-
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
-            }
-            if (entry.hasSplicedBackwardAlignmentLink() && entry.getSplicedBackwardAlignmentLink().hasOptimizedIndex()) {
-
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedBackwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
-            }
             // we need to update insert size because the optimization messed up the mate position used by domain optimization:
 
             recalculateInsertSize(entry, insertSizeIndex++);

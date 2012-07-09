@@ -84,7 +84,7 @@ public class GZipChunkCodec implements ChunkCodec {
 
     @Override
     public Message decode(final byte[] bytes) throws IOException {
-        final GZIPInputStream uncompressStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        final GZIPInputStream uncompressStream = new GZIPInputStream(new FastByteArrayInputStream(bytes));
         try {
             return parser.parse(uncompressStream);
         } finally {

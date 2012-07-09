@@ -1,13 +1,12 @@
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
-   It is not the default since Goby 2.1 has not yet been integrated into IGV and will need time to propagate from IGV
-   dev to production builds.
- - Improve speed of decoding for GZIP (by about 20%).
- - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
-   colon. Thanks to Vadim Zalunin for reporting this problem.
+   It is not currently the default since Goby 2.1 has not been integrated into IGV and will need time to propagate from
+   IGV dev to production builds.
  - Remove import of NH:i bam tags as read-origin-index, since the NH tag seems to contain different types of data
    depending on the aligner that produced the alignment.
+ - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
+   colon. Thanks to Vadim Zalunin for reporting this problem.
 2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
