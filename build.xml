@@ -1,4 +1,4 @@
-<project name="goby" default="test" basedir=".">
+<project name="goby" default="test" basedir="." xmlns:artifact="antlib:org.apache.maven.artifact.ant">
     <!-- compiler and javadoc settings -->
     <property name="debug" value="on"/>
     <property name="optimize" value="on"/>
@@ -71,7 +71,22 @@
         <delete file="${goby-api-jarfile}"/>
         <delete file="${goby-spi-jarfile}"/>
     </target>
+    <target name="install" depends="jar" description="install the jar file(s) to maven local repository.">
+        <artifact:pom id="goby-pom" file="pom.xml"></artifact:pom>
 
+
+        <artifact:install file="goby.jar">
+            <pom refid="goby-pom"/>
+            <artifact:attach  file="goby-io.jar" classifier="io"/>
+            <artifact:attach  file="goby-api.jar" classifier="api"/>
+            <artifact:attach  file="goby-io-igv.jar" classifier="io-igv"/>
+        </artifact:install>
+
+        <!--artifact:deploy file="goby.jar">
+          <remoteRepository url="file:///www/repository"/>
+          <pom refid="mypom"/>
+        </artifact:deploy-->
+    </target>
     <target name="compile" depends="init,jar-goby-spi" description="compiles the source code">
 
         <javac srcdir="${src}" destdir="${classes}" debug="${debug}" deprecation="${deprecation}">
