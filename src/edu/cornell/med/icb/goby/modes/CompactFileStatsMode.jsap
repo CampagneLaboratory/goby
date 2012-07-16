@@ -61,5 +61,10 @@
             <longFlag>verbose</longFlag>
             <help>Display detailed statistics.</help>
         </switch>
+        <switch>
+                    <id>header-only</id>
+                    <longFlag>header-only</longFlag>
+                    <help>Only displays statistics from alignment headers (i.e, does not scan entries, tmh or other files).</help>
+                </switch>
     </parameters>
 </jsap>

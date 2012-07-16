@@ -6,7 +6,8 @@
  - Remove import of NH:i bam tags as read-origin-index, since the NH tag seems to contain different types of data
    depending on the aligner that produced the alignment.
  - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
-   colon. Thanks to Vadim Zalunin for reporting this problem.
+    colon. Thanks to Vadim Zalunin for reporting this problem.
+ - compact-file-stats: Add a feature to scan only alignment headers.
  - VCFParser group associations: Make it possible to lookup an INFO column by either INFO/colname or colname.
  - NonAmbiguousAlignmentReader: fix an NPE when reading alignments where all entries have the ambiguity field.
 2.0.1
