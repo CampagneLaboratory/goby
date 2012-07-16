@@ -45,8 +45,22 @@ public interface ProtobuffCollectionHandler {
 
     public GeneratedMessage parse(InputStream uncompressedStream) throws IOException;
 
+    /**
+     * Transform a collection to a stream of compressed bits, and return the left-over collection.
+     * @param readCollection collection to compress
+     * @param compressedBits stream of compressed bits.
+     * @return left over collection.
+     * @throws IOException
+     */
     Message compressCollection(Message readCollection, ByteArrayOutputStream compressedBits) throws IOException;
 
+    /**
+     * Take a left-over collection and a stream of compressed bits and reconstitute the original collection.
+     * @param reducedProtoBuff
+     * @param compressedBytes
+     * @return
+     * @throws IOException
+     */
     Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes) throws IOException;
 
     void setUseTemplateCompression(boolean useTemplateCompression);
