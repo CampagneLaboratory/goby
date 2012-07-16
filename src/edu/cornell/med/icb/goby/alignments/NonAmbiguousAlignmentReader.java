@@ -44,11 +44,11 @@ import java.util.Properties;
 public class NonAmbiguousAlignmentReader implements AlignmentReader {
     private static final Logger LOG = Logger.getLogger(NonAmbiguousAlignmentReader.class);
     @RegisterThis
-    public static final  DynamicOptionClient doc = new DynamicOptionClient(NonAmbiguousAlignmentReader.class,
+    public static final DynamicOptionClient doc = new DynamicOptionClient(NonAmbiguousAlignmentReader.class,
             "ambiguity-threshold: integer, maximum number of locations (inclusive) a read can match in the genome to be loaded:1"
     );
     private Alignments.AlignmentEntry possibleEntry;
-    private boolean allQueriesHaveAmbiguity;
+    private boolean allQueriesHaveAmbiguity = false;
     private int maxLocations = 1;
 
     public void setMaxLocations(int maxLocations) {
@@ -75,12 +75,23 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                                        final int startReferenceIndex, final int startPosition,
                                        final int endReferenceIndex, final int endPosition) throws IOException {
         delegate = new AlignmentReaderImpl(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
-        readTmh(basename);
-        initialize();
+        initialize(basename);
+
     }
 
-    private void initialize() {
+
+    private void initialize(String basename) throws IOException {
         maxLocations = doc().getInteger("ambiguity-threshold");
+        delegate.readHeader();
+        if (!delegate.hasAmbiguity()) {
+            // We have to rely on the TMH (pre-goby 2.0):
+            LOG.debug("Alignment does not have ambiguity field, using TMH file.");
+            readTmh(basename);
+            allQueriesHaveAmbiguity = false;
+        } else {
+            LOG.debug("All alignment entries have an ambiguity field.");
+            allQueriesHaveAmbiguity = true;
+        }
     }
 
     public static DynamicOptionClient doc() {
@@ -88,10 +99,8 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     }
 
     private void readTmh(String basename) throws IOException {
-        if (delegate.hasAmbiguity()) {
-            // no need to load the TMH if ambiguity field is present in each entry.
-            return;
-        }
+        assert (!delegate.hasAmbiguity()) : "This method must never be called when all entries have the ambiguity field";
+
         LOG.debug("start reading TMH for " + basename);
         final ProgressLogger pg = new ProgressLogger(LOG);
 
@@ -123,30 +132,12 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                                        final long endOffset,
                                        final String basename) throws IOException {
         delegate = new AlignmentReaderImpl(startOffset, endOffset, basename);
-        delegate.readHeader();
-        if (!delegate.hasAmbiguity()) {
-            LOG.debug("Alignment does not have query index occurrences, using TMH file.");
-            readTmh(basename);
-        } else {
-            LOG.debug("Alignment entries have query index occurrences.");
-            allQueriesHaveAmbiguity = true;
-        }
-        initialize();
+        initialize(basename);
     }
 
     public NonAmbiguousAlignmentReader(final String basename) throws IOException {
         delegate = new AlignmentReaderImpl(basename);
-        delegate.readHeader();
-        if (!delegate.hasAmbiguity()) {
-            // We have to rely on the TMH (pre-goby 2.0):
-            LOG.debug("Alignment does not have query index occurrences, using TMH file.");
-            readTmh(basename);
-            allQueriesHaveAmbiguity = false;
-        } else {
-            LOG.debug("Alignment entries have query index occurrences.");
-            allQueriesHaveAmbiguity = true;
-        }
-        initialize();
+        initialize(basename);
     }
 
     /**
@@ -217,6 +208,9 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                     possibleEntry = null;
                 }
             } else {
+                if (ambiguousQueryIndices == null) {
+                    System.out.println("STOP");
+                }
                 if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
                     final Alignments.AlignmentEntry tmp = possibleEntry;
                     possibleEntry = null;
