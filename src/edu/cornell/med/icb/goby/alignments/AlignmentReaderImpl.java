@@ -34,6 +34,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -139,6 +140,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public static boolean canRead(final String filename) {
 
         final String filenameNoExtension = FilenameUtils.removeExtension(filename);
+        String fileExtension=FilenameUtils.getExtension(filename);
+
+        if (!ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS, fileExtension)) {
+            // the file does not contain any of the Goby extensions. It is not a supported file.
+            return false;
+        }
+        // the file contains a Goby alignment extension, we further check that each needed extension exists:
         int count = 0;
         for (final String extension : AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
 
