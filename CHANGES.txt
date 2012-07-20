@@ -14,6 +14,9 @@
    the truncation and logs truncated lines.
  - Correct calculation for fold-change-magnitude column in goby diff exp mode. Previous calculation under-estimated
    magnitude when comparing low rpkms.
+ -  Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
+    (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
+    return 404 errors for missing content).
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
