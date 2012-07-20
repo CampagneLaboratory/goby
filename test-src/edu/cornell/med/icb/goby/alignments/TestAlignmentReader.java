@@ -150,4 +150,12 @@ public class TestAlignmentReader {
         assertArrayEquals("Basename not stripped properly from " + ArrayUtils.toString(filenames),
                 basenameArray, AlignmentReaderImpl.getBasenames(filenames));
     }
+
+
+    @Test
+    public void canRead() {
+
+        assertFalse(AlignmentReaderImpl.canRead("https://dm.genomespace.org/datamanager/file/Home/igvtest/breasttumor.acgh.info.txt"));
+
+    }
 }
