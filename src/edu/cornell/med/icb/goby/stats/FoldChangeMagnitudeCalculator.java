@@ -69,7 +69,8 @@ public class FoldChangeMagnitudeCalculator extends StatisticCalculator {
         }
         averageA /= samplesA.size();
         averageB /= samplesB.size();
-        final double foldChange = (averageA + 1) / (averageB + 1);
+        final double shift=0.000001;
+        final double foldChange = (averageA + shift ) / (averageB + shift);
         final double foldChangeMagnitudeStatistic = Math.max(foldChange, 1d / foldChange);
 
         info.statistics.size(results.getNumberOfStatistics());
