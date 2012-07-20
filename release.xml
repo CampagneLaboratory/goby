@@ -85,7 +85,7 @@
         </copy>
         <copy todir="${exportdir}/${tag}/testsupport">
             <fileset dir="testsupport" includes="**/*"/>
-            <fileset dir="buildsupport" excludes=".git"/>
+            <fileset dir="testsupport" excludes=".git"/>
         </copy>
         <!-- get the tagged version from git -->
         <git-export revision="${revision}" destinationDirectory="${exportdir}/${tag}"/>
