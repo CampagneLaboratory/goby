@@ -10,6 +10,9 @@
  - compact-file-stats: Add a feature to scan only alignment headers.
  - VCFParser group associations: Make it possible to lookup an INFO column by either INFO/colname or colname.
  - NonAmbiguousAlignmentReader: fix an NPE when reading alignments where all entries have the ambiguity field.
+ - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
+   (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
+   return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.
 2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
