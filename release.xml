@@ -6,7 +6,7 @@
     <property name="use-git" value="true"/>
 
     <!-- the default revision uses the current date and time -->
-    <property name="defaultrevision" value="2.0RC2"/>
+    <property name="defaultrevision" value="stable"/>
 
     <tstamp>
         <format property="exportdate" pattern="yyyyMMddHHmmss"/>
