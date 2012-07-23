@@ -121,17 +121,17 @@ public class TrimMode extends AbstractGobyMode {
 
         ReadsReader reader = null;
         ReadsWriter writer = null;
-        ProgressLogger progress = new ProgressLogger(LOG);
+        final ProgressLogger progress = new ProgressLogger(LOG);
         try {
 
             reader = new ReadsReader(inputFilename);
-            LineIterator lines = new LineIterator(new FileReader(adapterFilename));
-            ObjectArrayList<MutableString> adapterList = new ObjectArrayList<MutableString>();
+            final LineIterator lines = new LineIterator(new FileReader(adapterFilename));
+            final ObjectArrayList<MutableString> adapterList = new ObjectArrayList<MutableString>();
             while (lines.hasNext()) {
-                String next = lines.nextLine();
+                final String next = lines.nextLine();
                 adapterList.add(new MutableString(next));
             }
-            MutableString[] adapters;
+            final MutableString[] adapters;
             if (complementAdapters) {
                 adapters = addComplementAdapters(adapterList);
             } else {
@@ -140,18 +140,18 @@ public class TrimMode extends AbstractGobyMode {
             progress.start();
             writer = new ReadsWriterImpl(new FileOutputStream(outputFilename));
 
-            ByteArrayList newQualScores = new ByteArrayList();
-            ByteArrayList newPairQualScores = new ByteArrayList();
-            MutableString sequence = new MutableString();
-            MutableString sequencePair = new MutableString();
+            final ByteArrayList newQualScores = new ByteArrayList();
+            final ByteArrayList newPairQualScores = new ByteArrayList();
+            final MutableString sequence = new MutableString();
+            final MutableString sequencePair = new MutableString();
 
             for (final Reads.ReadEntry entry : reader) {
                 //      observe(counters, entry.getSequence(), entry.getReadIndex());
                 ReadsReader.decodeSequence(entry, sequence);
 
-                ByteString qualityScores = entry.getQualityScores();
+                final ByteString qualityScores = entry.getQualityScores();
                 newQualScores.clear();
-                MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
+                final MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
 
                 numSequencesInInput++;
@@ -160,7 +160,7 @@ public class TrimMode extends AbstractGobyMode {
 
                     ReadsReader.decodeSequence(entry, sequencePair, true);
 
-                    ByteString pairQualityScores = entry.getQualityScoresPair();
+                    final ByteString pairQualityScores = entry.getQualityScoresPair();
                     pairSeq = trim(adapters, newPairQualScores, sequencePair, pairQualityScores);
                     numSequencesInInput++;
                 }
@@ -187,8 +187,10 @@ public class TrimMode extends AbstractGobyMode {
 
                     }
                 }
-
-                writer.appendEntry(builder);
+                if (seq1.length() > 0 || sequencePair.length() > 0) {
+                    // some sequence must remain to append to the output:
+                    writer.appendEntry(builder);
+                }
                 progress.lightUpdate();
             }
             progress.stop();
@@ -217,19 +219,19 @@ public class TrimMode extends AbstractGobyMode {
         progress.stop();
     }
 
-    private double percent(double a, double b) {
+    private double percent(final double a, final double b) {
         return a / b * 100;
     }
 
-    protected MutableString trim(MutableString[] adapters, ByteArrayList newQualScores, MutableString sequence, ByteString qualityScores) {
+    protected MutableString trim(final MutableString[] adapters, final ByteArrayList newQualScores, final MutableString sequence, final ByteString qualityScores) {
         final int length = sequence.length();
-        MutableString a = contains(length, sequence, qualityScores, newQualScores, adapters);
-        MutableString b = trimLeft(length, a, qualityScores, newQualScores, adapters);
+        final MutableString a = contains(length, sequence, qualityScores, newQualScores, adapters);
+        final MutableString b = trimLeft(length, a, qualityScores, newQualScores, adapters);
         return trimRight(length, b, qualityScores, newQualScores, adapters);
     }
 
-    protected void convert(ByteString bytes, MutableString sequence) {
-        int length = bytes.size();
+    protected void convert(final ByteString bytes, final MutableString sequence) {
+        final int length = bytes.size();
         sequence.setLength(length);
 
         for (int pos = 0; pos < length; pos++) {
@@ -238,17 +240,17 @@ public class TrimMode extends AbstractGobyMode {
 
     }
 
-    protected MutableString[] addComplementAdapters(ObjectArrayList<MutableString> adapterList) {
-        ObjectArrayList<MutableString> result = new ObjectArrayList<MutableString>();
-        for (MutableString adapter : adapterList) {
+    protected MutableString[] addComplementAdapters(final ObjectArrayList<MutableString> adapterList) {
+        final ObjectArrayList<MutableString> result = new ObjectArrayList<MutableString>();
+        for (final MutableString adapter : adapterList) {
             result.add(adapter);
             result.add(complement(adapter));
         }
         return result.toArray(new MutableString[result.size()]);
     }
 
-    private MutableString complement(MutableString input) {
-        MutableString result = new MutableString();
+    private MutableString complement(final MutableString input) {
+        final MutableString result = new MutableString();
         result.setLength(input.length());
         // return the complement of input:
         for (int i = 0; i < input.length(); i++) {
@@ -273,13 +275,13 @@ public class TrimMode extends AbstractGobyMode {
     }
 
 
-    protected MutableString trimRight(int length, MutableString sequence,
-                                      ByteString qualityScores,
-                                      ByteArrayList newQualScores,
-                                      MutableString[] adapters) {
+    protected MutableString trimRight(final int length, final MutableString sequence,
+                                      final ByteString qualityScores,
+                                      final ByteArrayList newQualScores,
+                                      final MutableString[] adapters) {
 
-        int currentLength = sequence.length();
-        for (MutableString adapter : adapters) {
+        final int currentLength = sequence.length();
+        for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
 
             for (int j = minRightLength; j < adaptLength; j++) {
@@ -305,10 +307,10 @@ public class TrimMode extends AbstractGobyMode {
         return sequence;
     }
 
-    protected MutableString trimLeft(int length, MutableString sequence, ByteString qualityScores, ByteArrayList newQualScores, MutableString[] adapters) {
-        int currentLength = sequence.length();
+    protected MutableString trimLeft(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
+        final int currentLength = sequence.length();
 
-        for (MutableString adapter : adapters) {
+        for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
             for (int j = adaptLength; j >= minLeftLength; --j) {
                 if (sequence.startsWith(adapter.subSequence(0, j))) {
@@ -332,9 +334,9 @@ public class TrimMode extends AbstractGobyMode {
         return sequence;
     }
 
-    protected MutableString contains(int length, MutableString sequence, ByteString qualityScores, ByteArrayList newQualScores, MutableString[] adapters) {
+    protected MutableString contains(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
 
-        for (MutableString adapter : adapters) {
+        for (final MutableString adapter : adapters) {
             final int index = sequence.indexOf(adapter);
             if (index >= 0) {
                 System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
@@ -350,8 +352,8 @@ public class TrimMode extends AbstractGobyMode {
         return sequence;
     }
 
-    private void copy(ByteString qualityScores, ByteArrayList newQualScores) {
-        for (byte qual : qualityScores.toByteArray()) {
+    private void copy(final ByteString qualityScores, final ByteArrayList newQualScores) {
+        for (final byte qual : qualityScores.toByteArray()) {
             newQualScores.add(qual);
         }
     }
@@ -363,11 +365,11 @@ public class TrimMode extends AbstractGobyMode {
         new TrimMode().configure(args).execute();
     }
 
-    public void setMinLengthLeft(int i) {
+    public void setMinLengthLeft(final int i) {
         this.minLeftLength = i;
     }
 
-    public void setMinLengthRight(int i) {
+    public void setMinLengthRight(final int i) {
         this.minRightLength = i;
     }
 }
