@@ -673,6 +673,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 }
             }
 
+
             // get just the filename (strip the path, not the extension)
             final String basename = FilenameUtils.getName(inputBasename);
             final String sampleId = inputBasename;
