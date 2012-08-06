@@ -671,8 +671,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     deCalculator.defineElement(geneID);
                 }
             }
-            final String basename = FilenameUtils.getBaseName(inputBasename);
-            final String sampleId = basename;
+            // get just the filename (strip the path, not the extension)
+            final String basename=FilenameUtils.getName(inputBasename);
+            final String sampleId = inputBasename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.getId();
 
