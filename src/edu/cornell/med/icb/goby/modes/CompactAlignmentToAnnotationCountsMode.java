@@ -850,7 +850,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
                     if (linearray.length < 6) {
-                        LOG.warn("Annotation file, encountered truncated line, ignoring: " + line);
+                        LOG.warn("Annotation file, encountered truncated line, ignoring: "+line);
                         continue;
                     }
                     final String chromosome = linearray[0];
