@@ -36,14 +36,15 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
 import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.goby.util.Timer;
-import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -173,7 +174,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             doComparison = true;
         }
         if (doComparison) {
-              groupComparisonsList = deAnalyzer.parseCompare(compare);
+            groupComparisonsList = deAnalyzer.parseCompare(compare);
         }
         deAnalyzer.setRunInParallel(parallel);
         includeReferenceNameCommas = jsapResult.getString("include-reference-names");
@@ -480,7 +481,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             String key = entry.getKey();
             String chromosome = key;
 
-           for (final Annotation value : entry.getValue()) {
+            for (final Annotation value : entry.getValue()) {
 
                 chromosome = value.getChromosome();
                 // convert to zero-based coordinates:
@@ -671,8 +672,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     deCalculator.defineElement(geneID);
                 }
             }
-            final String basename = FilenameUtils.getBaseName(inputBasename);
-            final String sampleId = basename;
+
+            // get just the filename (strip the path, not the extension)
+            final String basename = FilenameUtils.getName(inputBasename);
+            final String sampleId = inputBasename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.getId();
 
@@ -846,7 +849,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
-
+                    if (linearray.length < 6) {
+                        LOG.warn("Annotation file, encountered truncated line, ignoring: " + line);
+                        continue;
+                    }
                     final String chromosome = linearray[0];
                     //           if(!chromosome.equalsIgnoreCase(chroName)) continue;
                     final String strand = linearray[1];
