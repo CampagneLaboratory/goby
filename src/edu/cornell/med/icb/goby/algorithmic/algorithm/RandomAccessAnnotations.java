@@ -34,6 +34,7 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 
 /**
  * @author Fabien Campagne
@@ -69,24 +70,32 @@ public class RandomAccessAnnotations {
      */
     public void loadAnnotations(final Reader annotReader) throws IOException {
 
-        final ObjectArrayList<Interval> result = new ObjectArrayList<Interval>();
         final Object2ObjectMap<String, ObjectList<Annotation>> map = CompactAlignmentToAnnotationCountsMode.readAnnotations(annotReader);
+        for (final Map.Entry<String, ObjectList<Annotation>> element : map.entrySet()) {
+            final String chromosomeKey = element.getKey();
+            for (final Annotation entry : element.getValue()) {
+                assert entry.getChromosome().equals(chromosomeKey) : "chromosome does not match for annotation " + entry;
+            }
+
+        }
         for (final String key : map.keySet()) {
             final ObjectList<Annotation> list = map.get(key);
-
+            int index = 0;
             if (list != null) {
+                final Interval[] intervals = new Interval[list.size()];
                 Collections.sort(list, compareAnnotationStart);
                 for (final Annotation element : list) {
                     final Interval interval = new Interval();
+
                     interval.referenceIndex = references.registerIdentifier(new MutableString(element.getChromosome()));
                     interval.start = element.getStart();
                     interval.end = element.getEnd();
                     interval.id = element.getId();
-                    result.add(interval);
-                }
-                final Interval[] intervals = new Interval[list.size()];
 
-                chromosomeToMap.put(key, result.toArray(intervals));
+                    intervals[index++] = interval;
+                }
+
+                chromosomeToMap.put(key, intervals);
             }
         }
 
@@ -125,7 +134,7 @@ public class RandomAccessAnnotations {
      */
     public Interval find(final String chromosome, final int start, final int end) {
         final Interval[] intervals = chromosomeToMap.get(chromosome);
-        if (intervals==null) {
+        if (intervals == null) {
             return null;
         }
         singleton.start = start;
@@ -151,7 +160,12 @@ public class RandomAccessAnnotations {
         if (previous.start <= start && previous.end >= end) {
             return previous;
         }
-
+        if (insertionPoint < intervals.length) {
+            final Interval next = intervals[insertionPoint];
+            if (next.start <= start && next.end >= end) {
+                return next;
+            }
+        }
         return null;
 
     }
