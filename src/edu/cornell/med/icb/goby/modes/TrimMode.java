@@ -151,7 +151,8 @@ public class TrimMode extends AbstractGobyMode {
 
                 ByteString qualityScores = entry.getQualityScores();
                 newQualScores.clear();
-                MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
+
+                final MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
 
                 numSequencesInInput++;
@@ -289,15 +290,15 @@ public class TrimMode extends AbstractGobyMode {
                         System.out.printf("%d bases matching right %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) {
-                        copy(qualityScores, newQualScores);
+                        if (newQualScores.size() == 0) {
+                            copy(qualityScores, newQualScores);
+                        }
                     }
                     if (!qualityScores.isEmpty()) {
                         newQualScores.removeElements(currentLength - trimedLength, Math.min(currentLength + 1, newQualScores.size()));
                     }
                     numTrimmedRight++;
                     return sequence.substring(0, currentLength - trimedLength);
-
-
                 }
 
             }
@@ -317,7 +318,9 @@ public class TrimMode extends AbstractGobyMode {
                         System.out.printf("%d bases matching left %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) { // previously unchanged, we need to copy quality score to the list representation for editing.
-                        copy(qualityScores, newQualScores);
+                        if (newQualScores.size() == 0) {
+                            copy(qualityScores, newQualScores);
+                        }
                     }
                     if (!qualityScores.isEmpty()) {
                         newQualScores.removeElements(0, trimedLength);
