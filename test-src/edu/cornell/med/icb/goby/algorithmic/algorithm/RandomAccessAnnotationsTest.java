@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
+import edu.cornell.med.icb.goby.algorithmic.data.Interval;
+import it.unimi.dsi.lang.MutableString;
 import junit.framework.TestCase;
 
 import java.io.IOException;
@@ -43,12 +45,22 @@ public class RandomAccessAnnotationsTest extends TestCase {
 
     public void testLoad() throws IOException {
         RandomAccessAnnotations finder = new RandomAccessAnnotations();
-        finder.loadAnnotations("/Users/campagne/IdeaProjects/gobyweb/exon-annotations.tsv");
-        assertNotNull(finder.find("1", 11, 200));
-        assertNotNull(finder.find("1", 10, 310));
-        assertNull(finder.find("1", 8, 9));
-        assertNull(finder.find("1", 311, 312));
-        assertNotNull(finder.find("1", 1000, 1001));
-        assertNull(finder.find("1", 1002, 1003));
+        finder.loadAnnotations("data/biomart-mouse-exons-ensembl57-genes-MM9.txt");
+        /// chr17	-1	ENSMUSG00000077184	ENSMUSE00000664149	24,160,167	24,160,293
+///      chr4	1	ENSMUSG00000083154	ENSMUSE00000717873	    24,165,247	24,165,247
+        ///   chr10	1	ENSMUSG00000086148	ENSMUSE00000794298	24,167,296	24,172,463
+
+        final Interval interval1 = finder.find("chr4", 24165247, 24165247);
+        assertNotNull(interval1);
+        final int chr4Index = finder.references.getInt(new MutableString("chr4"));
+
+        assertEquals(chr4Index, interval1.referenceIndex);
+
+        final Interval interval2 = finder.find("chr11",  11838488, 11843885);
+        assertNotNull(interval2);
+        final int chr11Index = finder.references.getInt(new MutableString("chr11"));
+
+        assertEquals(chr11Index, interval2.referenceIndex);
+
     }
 }
