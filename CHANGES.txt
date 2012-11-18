@@ -1,18 +1,27 @@
-Towards 2.1
- - methyl-stats mode: change output to TSV and make several independent files, one per type of data. Now also observe
-   depths independently of fragments.
- - Add group "indexed" to CpG context for methylation output.
- - The mode sample-quality-scores now supports .sam, .sam.gz, and .bam files to make a guess at the scale of
-   the quality scores contained in the file.
- - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can disable this improvement with
-   option -x AlignmentCollectionHandler:symbol-modeling=zero_order (this will yield the Goby 2-2.0.1 hybrid-1 codec
-   behavior).
+Towards 2.1.1
+ - Trim mode: Some sequence must remain after trimming to append to the output.
+ - Fix bug in alignment-to-annotation-counts when counts would be zero for samples whose name contained a
+   period '.' The code was incorrectly stripping alignment extensions twice.
+ - alignment-to-annotation-counts: add comparison description to t-test statistic column name (e.g. t-test[A/B] rather
+   than t-test). This change makes it possible to retrieve the t-test p-values when more than one comparison is
+   performed.
+ - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
+   Goby alignments (generated either by GSNAP or STAR at this time).
+2.1
+ - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
+   option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
+   It is not currently the default since Goby 2.1 has not been integrated into IGV and will need time to propagate from
+   IGV dev to production builds.
+ - Remove import of NH:i bam tags as read-origin-index, since the NH tag seems to contain different types of data
+   depending on the aligner that produced the alignment.
  - compact-to-sam mode: fix bug where bam tags containing a colon character (:) would be truncated after the first
     colon. Thanks to Vadim Zalunin for reporting this problem.
  - compact-file-stats: Add a feature to scan only alignment headers.
  - VCFParser group associations: Make it possible to lookup an INFO column by either INFO/colname or colname.
  - NonAmbiguousAlignmentReader: fix an NPE when reading alignments where all entries have the ambiguity field.
-2.0.1
+ - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
+   (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
+   return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
    Java APIs are already licensed under the LGPL (anything packaged under the Goby-io.jar file).
