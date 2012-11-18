@@ -150,4 +150,16 @@ public class TestAlignmentReader {
         assertArrayEquals("Basename not stripped properly from " + ArrayUtils.toString(filenames),
                 basenameArray, AlignmentReaderImpl.getBasenames(filenames));
     }
+
+
+    @Test
+    public void canRead() {
+
+        assertTrue(AlignmentReaderImpl.canRead("test-data/alignment-hybrid-codec/EJOYQAZ-small-bzip2.header"));
+        assertTrue(AlignmentReaderImpl.canRead("test-data/alignment-hybrid-codec/EJOYQAZ-small-bzip2.entries"));
+        assertTrue(AlignmentReaderImpl.canRead("test-data/alignment-hybrid-codec/EJOYQAZ-small-bzip2.index"));
+        assertTrue(AlignmentReaderImpl.canRead("test-data/alignment-hybrid-codec/EJOYQAZ-small-bzip2.perm"));
+        assertFalse(AlignmentReaderImpl.canRead("https://dm.genomespace.org/datamanager/file/Home/igvtest/breasttumor.acgh.info.txt"));
+
+    }
 }

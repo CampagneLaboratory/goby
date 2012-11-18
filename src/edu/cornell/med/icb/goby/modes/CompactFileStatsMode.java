@@ -121,6 +121,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private PrintStream stream;
     private String type;
+    private boolean headerOnly;
 
     @Override
     public String getModeName() {
@@ -152,6 +153,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         numberOfQuantiles = jsapResult.getInt("number-of-quantiles", 1);
         verbose = jsapResult.getBoolean("verbose");
         type = jsapResult.getString("type");
+        headerOnly = jsapResult.getBoolean("header-only");
         return this;
     }
 
@@ -282,6 +284,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Has query index permutation = %s%n", reader.getQueryIndicesWerePermuted());
         stream.printf("Has query index occurrences = %s%n", reader.hasQueryIndexOccurrences());
         stream.printf("Has all read quality scores = %s%n", reader.getHasAllReadQualityScores());
+        stream.printf("Has ambiguity = %s%n", reader.hasAmbiguity());
 
         if (verbose) {
             if (hasTargetIdentifiers) {
@@ -307,7 +310,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         } else {
             stream.println("Alignment has no Read Origin Info/Read Groups");
         }
-
+        if (headerOnly) return;
         // the query indices that aligned. Includes those
         final DistinctIntValueCounterBitSet alignedQueryIndices = new DistinctIntValueCounterBitSet();
 

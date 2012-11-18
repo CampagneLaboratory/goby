@@ -64,8 +64,8 @@ public class TTestCalculator extends StatisticCalculator {
         }
 
 
-        final int tTestStatIndex = defineStatisticId(results, "t-test", method);
-        final int tStatisticStatIndex = defineStatisticId(results, "t-statistic", method);
+        final int tTestStatIndex = defineStatisticId(results, "t-test", method, group);
+        final int tStatisticStatIndex = defineStatisticId(results, "t-statistic", method, group);
 
 
         final double[] valuesA = new double[samplesA.size()];
