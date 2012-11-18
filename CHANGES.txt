@@ -12,6 +12,8 @@
  - Fix a bug where RandomAccessAnnotations could return results on a different chromosome.
  - Add annotation loading test and fix for when annotation file is truncated. Goby now loads annotations up to
    the truncation and logs truncated lines.
+ - Correct calculation for fold-change-magnitude column in goby diff exp mode. Previous calculation under-estimated
+   magnitude when comparing low rpkms.
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
