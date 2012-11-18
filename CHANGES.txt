@@ -1,12 +1,17 @@
-Towards 2.1.1
+2.1.1
+ - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
+   Goby alignments (generated either by GSNAP or STAR at this time).
+ - Trim mode:Fix bug that caused quality scores to be duplicated (the bug triggered the assertion that checks
+   that sequence length equal quality length).
  - Trim mode: Some sequence must remain after trimming to append to the output.
  - Fix bug in alignment-to-annotation-counts when counts would be zero for samples whose name contained a
    period '.' The code was incorrectly stripping alignment extensions twice.
  - alignment-to-annotation-counts: add comparison description to t-test statistic column name (e.g. t-test[A/B] rather
    than t-test). This change makes it possible to retrieve the t-test p-values when more than one comparison is
    performed.
- - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
-   Goby alignments (generated either by GSNAP or STAR at this time).
+ - Fix a bug where RandomAccessAnnotations could return results on a different chromosome.
+ - Add annotation loading test and fix for when annotation file is truncated. Goby now loads annotations up to
+   the truncation and logs truncated lines.
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
