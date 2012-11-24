@@ -61,6 +61,7 @@ public class TestVCFParser {
     /**
      * Verify we can handle both TSV headers that contain spaces AND we correctly identify
      * the column types.
+     *
      * @throws IOException
      * @throws VCFParser.SyntaxException
      */
@@ -320,8 +321,65 @@ public class TestVCFParser {
         }
     }
 
+    @Test
+/**
+ *        Try to trigger issue https://github.com/CampagneLaboratory/goby/issues/1
+ *        Unable to replicate in stable branch.
+ */
+    public void testParseIssueNov20_2012() throws IOException, VCFParser.SyntaxException {
 
+        VCFParser parser = new VCFParser("test-data/vcf/issue-nov20-2012.vcf");
+        parser.readHeader();
+        Columns cols = parser.getColumns();
+        ColumnInfo format = cols.find("FORMAT");
+        assertTrue(format.hasField("GT"));
+        assertTrue(format.hasField("BC"));
+        assertTrue(format.hasField("GB"));
+        assertTrue(format.hasField("FB"));
+        int indexBC = format.getField("BC").globalFieldIndex;
+        String sampleColumns[] = parser.getColumnNamesUsingFormat();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("A=0,T=5,C=4,G=0,N=0", parser.getStringFieldValue(parser.getGlobalFieldIndex(sampleColumns[0], "BC")));
+        parser.next();
+        final int bcIndex = parser.getGlobalFieldIndex(sampleColumns[0], "BC");
+        assertEquals(null, parser.getStringFieldValue(bcIndex));
+        assertTrue(parser.hasNextDataLine());
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("A=0,T=5,C=4,G=0,N=0", parser.getStringFieldValue(parser.getGlobalFieldIndex(sampleColumns[0], "BC")));
 
+    }
+
+    @Test
+/**
+ *        Try to trigger issue https://github.com/CampagneLaboratory/goby/issues/1
+ *       This version obtains the index of the field once, then query the parser with it.
+ *       Still unable to replicate the issue.
+ */
+    public void testParseIssueNov20_2012_V2() throws IOException, VCFParser.SyntaxException {
+
+        VCFParser parser = new VCFParser("test-data/vcf/issue-nov20-2012.vcf");
+        parser.readHeader();
+        Columns cols = parser.getColumns();
+        ColumnInfo format = cols.find("FORMAT");
+        assertTrue(format.hasField("GT"));
+        assertTrue(format.hasField("BC"));
+        assertTrue(format.hasField("GB"));
+        assertTrue(format.hasField("FB"));
+        int indexBC = format.getField("BC").globalFieldIndex;
+        String sampleColumns[] = parser.getColumnNamesUsingFormat();
+        final int bcIndex = parser.getGlobalFieldIndex(sampleColumns[0], "BC");
+
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("A=0,T=5,C=4,G=0,N=0", parser.getStringFieldValue(bcIndex));
+        parser.next();
+        assertEquals(null, parser.getStringFieldValue(bcIndex));
+        assertTrue(parser.hasNextDataLine());
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("A=0,T=5,C=4,G=0,N=0", parser.getStringFieldValue(bcIndex));
+
+    }
     /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
