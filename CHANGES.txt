@@ -1,3 +1,6 @@
+towards 2.1.2
+ - Fix VCFParser issue https://github.com/CampagneLaboratory/goby/issues/1. The issue could be triggered when the FORMAT
+   column changed from line to line.
 2.1.1
  - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
    Goby alignments (generated either by GSNAP or STAR at this time).

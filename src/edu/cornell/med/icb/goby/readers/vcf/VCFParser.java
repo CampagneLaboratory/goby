@@ -688,7 +688,7 @@ public class VCFParser implements Closeable {
 
     private String[] split(final MutableString line, final char formatFieldSeparatorCharacter,
                            final int startFormatColumn, final int endFormatColumn) {
-        if (formatSplit != null) {
+        if (cacheFieldPermutation && formatSplit != null) {
             return formatSplit;
         } else {
             final MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
