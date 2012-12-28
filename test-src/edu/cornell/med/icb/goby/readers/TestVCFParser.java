@@ -380,6 +380,40 @@ public class TestVCFParser {
         assertEquals("A=0,T=5,C=4,G=0,N=0", parser.getStringFieldValue(bcIndex));
 
     }
+
+    @Test
+/**
+ *       Trigger issue https://github.com/CampagneLaboratory/goby/issues/1 with data file provided by Ahmed Hadad.
+ *
+ */
+    public void testParseIssueNov20_2012_V2b() throws IOException, VCFParser.SyntaxException {
+
+        VCFParser parser = new VCFParser("test-data/vcf/issue-nov20-2012_c.vcf");
+        parser.setCacheFieldPermutation(false);
+        parser.readHeader();
+        Columns cols = parser.getColumns();
+        ColumnInfo format = cols.find("FORMAT");
+        assertTrue(format.hasField("GT"));
+        assertTrue(format.hasField("GQ"));
+        assertTrue(format.hasField("GX"));
+
+        String sampleColumns[] = parser.getColumnNamesUsingFormat();
+        final int gqIndex = parser.getGlobalFieldIndex(sampleColumns[0], "GQ");
+
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("100", parser.getStringFieldValue(gqIndex));
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+        final int gxIndex = parser.getGlobalFieldIndex(sampleColumns[0], "GX");
+        final int newGqIndex=parser.getGlobalFieldIndex(sampleColumns[0], "GQ");
+        // the field GQ should not be defined:
+        assertEquals("", parser.getStringFieldValue(newGqIndex));
+        // the field GX should have value 33:
+        assertEquals("33", parser.getStringFieldValue(gxIndex));
+        parser.next();
+    }
+
+
     /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
