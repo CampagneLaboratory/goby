@@ -1,4 +1,7 @@
 towards 2.1.2
+ - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
+   Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you
+   are running JDK 1.7+ please let us know any issues you encounter.
  - Fix VCFParser issue https://github.com/CampagneLaboratory/goby/issues/1. The issue could be triggered when the FORMAT
    column changed from line to line.
  - Do not try to upgrade alignments when reading the header to concatenate permutations. This is not necessary and can

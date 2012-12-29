@@ -150,7 +150,7 @@
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>
                 <include name="mg4j-3.0.1.jar"/>
-                <include name="xstream-1.3.1.jar"/>
+                <include name="xstream-1.4.3.jar"/>
                 <!-- Required by JSAP -->
             </zipgroupfileset>
 
@@ -286,7 +286,7 @@
                 <!-- LGPL -->
                 <include name="JSAP-2.1.jar"/>
                 <!-- LGPL -->
-                <include name="xstream-1.3.1.jar"/>
+                <include name="xstream-1.4.3.jar"/>
                 <!-- Required by JSAP, BSD. -->
             </zipgroupfileset>
             <manifest>
