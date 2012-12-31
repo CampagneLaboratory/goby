@@ -10,7 +10,7 @@ from distutils.core import setup
 
 setup(
     name='goby',
-    version='2.1.1',
+    version='2.1.2',
     packages=['goby'],
     author='Campagne Lab',
     author_email='icb@med.cornell.edu',
