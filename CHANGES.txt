@@ -1,9 +1,12 @@
-towards 2.1.2
+2.1.2
  - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
    Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you
    are running JDK 1.7+ please let us know any issues you encounter.
  - Fix VCFParser issue https://github.com/CampagneLaboratory/goby/issues/1. The issue could be triggered when the FORMAT
    column changed from line to line.
+ - VCFWriter: improve support for VCF group associations. The Goby VCF parser makes it possible to associate columns
+   to groups (these associations are written in a ##FieldGroupAssociations field).
+ - Methylation rate VCF output: mark the context column with group 'indexed'.
  - Do not try to upgrade alignments when reading the header to concatenate permutations. This is not necessary and can
    open too many files when we are trying to concatenate alignments.
 2.1.1

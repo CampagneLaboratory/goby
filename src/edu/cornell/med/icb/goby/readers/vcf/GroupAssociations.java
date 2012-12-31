@@ -85,15 +85,40 @@ public class GroupAssociations {
         boolean first = true;
         for (final String association : associations) {
 
-            if (association.startsWith(columnName)) {
+            if (isMatchingColumnName(columnName, association)) {
                 if (!first) {
                     sb.append(",");
                 }
-                sb.append(association.replaceFirst(columnName + "=", ""));
+                sb.append(association.replace(getMatchingString(columnName, association), ""));
                 first = false;
             }
         }
         return sb.toString();
+    }
+
+    private String getMatchingString(String columnName, String association) {
+        if (association.startsWith(columnName)) {
+            return columnName + '=';
+        } else if (association.startsWith("INFO/") && association.contains(columnName)) {
+            return "INFO/" + columnName + '=';
+        }
+        String strippedColName = columnName.substring("INFO[".length(),columnName.length()-1);
+        if (association.startsWith("INFO") && association.contains(strippedColName)) {
+            return "INFO/" + strippedColName + '=';// association.substring(0,association.indexOf('=')+1) ;
+        } else return "not-matchjing=q3p-ow";
+
+    }
+
+    private boolean isMatchingColumnName(String columnName, String association) {
+        if (association==null || columnName==null) {
+            return false;
+        }
+        final String infoColumn = "INFO/" + columnName + "=";
+
+        if (association.startsWith(columnName) || association.startsWith(infoColumn)) return true;
+        String strippedColName = columnName.replace("INFO[", "").replace("]", "");
+
+        return association.startsWith("INFO") && association.contains(strippedColName);
     }
 
     /**
@@ -106,10 +131,12 @@ public class GroupAssociations {
         final ObjectArrayList<String> result = new ObjectArrayList<String>();
         for (final String association : associations) {
 
-            if (association.startsWith(columnName)) {
+            if (isMatchingColumnName(columnName, association)) {
 
-                result.add(association.replaceFirst(columnName + "=", ""));
+                final String matchingString = getMatchingString(columnName, association);
+                result.add(association.replace(matchingString, ""));
             }
+
         }
         return result;
     }
