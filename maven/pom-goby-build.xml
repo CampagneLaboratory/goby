@@ -22,16 +22,22 @@
   </scm>
 
   <properties>
-  	<repository.url.deploy>http://mac150355-1.med.cornell.edu:8000/artifactory/simple/CampagneLab/</repository.url.deploy>
+  	<repository.url.deploy>http://toulouse.med.cornell.edu:8010/artifactory/CampagneLab</repository.url.deploy>
   </properties>
-  
+
   <distributionManagement>
     <repository>
-      <id>CampagneLab</id>
-      <name> CampagneLab Repository</name>
-      <url>${repository.url.deploy}</url>
+        <id>toulouse.med.cornell.edu</id>
+        <name>toulouse.med.cornell.edu-releases</name>
+        <url>${repository.url.deploy}</url>
     </repository>
+    <snapshotRepository>
+        <id>toulouse.med.cornell.edu</id>
+        <name>toulouse.med.cornell.edu-snapshots</name>
+	<url>${repository.url.deploy}</url>
+    </snapshotRepository>
   </distributionManagement>
+  
 
   <dependencies/>
 
