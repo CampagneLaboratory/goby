@@ -81,6 +81,10 @@ public class TestVCFWriter {
                 "p-value2",
                 1, ColumnType.Float,
                 "A P-value", /* groups: */"p-value");
+        int fieldIndex2 = writer.defineField("INFO",
+                        "#Cm_Group[Group_1]",
+                        1, ColumnType.Float,
+                        "Some count", /* groups: */"#Cm");
         String samples[] = new String[]{"SampleA", "SampleB"};
         writer.defineSamples(samples);
         int zygFieldIndex = writer.defineField("FORMAT", "Zygosity", 1, ColumnType.String, "Zygosity", /* groups: */ "zygozity", "sample-data");
@@ -95,7 +99,12 @@ public class TestVCFWriter {
         assertTrue(textContent.contains("CHROM=cross-sample-field"));
         assertTrue(textContent.contains("POS=genomic-coordinate"));
         assertTrue(textContent.contains("INFO/p-value1=p-value"));
+        assertTrue(textContent.contains("INFO/p-value1=p-value"));
         assertTrue(textContent.contains("INFO/p-value2=p-value"));
+        assertTrue(textContent.contains("INFO/#Cm_Group[Group_1]"));
+        assertTrue(textContent.contains("INFO/p-value1=p-value"));
+        assertTrue(textContent.contains("INFO/p-value2=p-value"));
+        assertTrue(textContent.contains("INFO/#Cm_Group[Group_1]"));
         assertTrue(textContent.contains("FORMAT/Zygosity=sample-data"));
         assertTrue(textContent.contains("FORMAT/Zygosity=zygozity"));
         assertTrue(textContent.contains("FORMAT/Another=sample-data"));
@@ -106,6 +115,16 @@ public class TestVCFWriter {
         try {
             parser.readHeader();
             final GroupAssociations associations = parser.getGroupAssociations();
+
+            // check that an INFO/column is associated with its groups:
+            Assert.assertTrue(associations.listGroups("INFO[#Cm_Group[Group_1]]").contains("#Cm"));
+            Assert.assertTrue(associations.listGroupsAsString("INFO[#Cm_Group[Group_1]]").equals("cross-sample-field,#Cm"));
+            Assert.assertTrue(associations.listGroups("INFO[p-value1]").contains("p-value"));
+
+            Assert.assertTrue(associations.listGroups("p-value1").contains("p-value"));
+            Assert.assertTrue(associations.listGroupsAsString("p-value1").contains("p-value"));
+            Assert.assertTrue(associations.listGroups("INFO/p-value1").contains("p-value"));
+            Assert.assertTrue(associations.listGroupsAsString("INFO/p-value1").contains("p-value"));
             final ObjectArraySet<String> columnsWithGroup = associations.getColumnsWithGroup("p-value");
             assertNotNull(columnsWithGroup);
             Assert.assertTrue(columnsWithGroup.contains("INFO/p-value1"));
