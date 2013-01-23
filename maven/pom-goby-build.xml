@@ -1,6 +1,12 @@
 <project>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.campagnelab</groupId>
+  <modelVersion>4.0.0</modelVersion> 
+   <parent>
+            <groupId>org.campagnelab.build-utils</groupId>
+            <artifactId>maven-parent</artifactId>
+            <version>LATEST</version>
+    </parent>
+
+  <groupId>org.campagnelab.goby</groupId>
   <artifactId>goby</artifactId>
   <version>2.1.2</version>
   <packaging>jar</packaging>
@@ -20,24 +26,6 @@
   <scm>
     <url>scm:git:git://github.com/CampagneLaboratory/goby</url>
   </scm>
-
-  <properties>
-  	<repository.url.deploy>http://toulouse.med.cornell.edu:8010/artifactory/CampagneLab</repository.url.deploy>
-  </properties>
-
-  <distributionManagement>
-    <repository>
-        <id>toulouse.med.cornell.edu</id>
-        <name>toulouse.med.cornell.edu-releases</name>
-        <url>${repository.url.deploy}</url>
-    </repository>
-    <snapshotRepository>
-        <id>toulouse.med.cornell.edu</id>
-        <name>toulouse.med.cornell.edu-snapshots</name>
-	<url>${repository.url.deploy}</url>
-    </snapshotRepository>
-  </distributionManagement>
-  
 
   <dependencies/>
 
@@ -87,7 +75,7 @@
             				<phase>deploy</phase>
             				<configuration>
 						<file>../goby-io.jar</file>
-						<url>${repository.url.deploy}</url>
+						<url>${releases.repository.url.deploy}</url>
 						<pomFile>pom-goby-io-upload.xml</pomFile>
 					</configuration>
 					<goals>
@@ -99,7 +87,7 @@
                                         <phase>deploy</phase>
                                         <configuration>
                                                 <file>../goby-io-api.jar</file>
-                                                <url>${repository.url.deploy}</url>
+                                                <url>${releases.repository.url.deploy}</url>
 						<pomFile>pom-goby-io-api-upload.xml</pomFile>
                                         </configuration>
                                         <goals>
