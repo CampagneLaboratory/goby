@@ -29,7 +29,7 @@
             <longFlag>output</longFlag>
             <required>true</required>
             <help>The SAM/BAM output file to output to. Please note that if the file ends in .bam, a BAM file will be
-                written, whereas if the file ends in .sam, a BAM file will be written instead.
+                written, whereas if the file ends in .sam, a SAM file will be written instead.
             </help>
         </flaggedOption>
         <flaggedOption>

@@ -151,7 +151,7 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                 String id = String.format("%s/%d",
                         shortBasename,
                         seq.alignmentQueryIndex);
-                outWriter.print(String.format("%#50s %s%n",
+                outWriter.print(String.format("%50s %s%n",
                         id, clippedBases));
                 break;
             }
