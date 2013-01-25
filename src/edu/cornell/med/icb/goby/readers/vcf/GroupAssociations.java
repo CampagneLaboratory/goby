@@ -36,15 +36,15 @@ public class GroupAssociations {
     private Object2ObjectMap<String, ObjectArraySet<String>> groupToColumns = new Object2ObjectOpenHashMap<String, ObjectArraySet<String>>();
 
     public GroupAssociations(String associationsAsText, ColumnInfo formatColumn, String[] sampleIds) {
-       // parse associations stored in text in the header:
+        // parse associations stored in text in the header:
         associations = parse(associationsAsText);
-        if (formatColumn != null) {
-        // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
-        for (String sample : sampleIds) {
-            for (final ColumnField formatField : formatColumn.fields) {
-                associate(String.format("%s[%s]", sample, formatField.id), sample);
+        if (formatColumn != null && sampleIds!=null) {
+            // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
+            for (String sample : sampleIds) {
+                for (final ColumnField formatField : formatColumn.fields) {
+                    associate(String.format("%s[%s]", sample, formatField.id), sample);
+                }
             }
-        }
         }
     }
 
@@ -102,7 +102,7 @@ public class GroupAssociations {
         } else if (association.startsWith("INFO/") && association.contains(columnName)) {
             return "INFO/" + columnName + '=';
         }
-        String strippedColName = columnName.substring("INFO[".length(),columnName.length()-1);
+        String strippedColName = columnName.substring("INFO[".length(), columnName.length() - 1);
         if (association.startsWith("INFO") && association.contains(strippedColName)) {
             return "INFO/" + strippedColName + '=';// association.substring(0,association.indexOf('=')+1) ;
         } else return "not-matchjing=q3p-ow";
@@ -110,7 +110,7 @@ public class GroupAssociations {
     }
 
     private boolean isMatchingColumnName(String columnName, String association) {
-        if (association==null || columnName==null) {
+        if (association == null || columnName == null) {
             return false;
         }
         final String infoColumn = "INFO/" + columnName + "=";

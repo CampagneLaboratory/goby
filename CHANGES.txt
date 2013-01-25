@@ -1,3 +1,4 @@
+ - Fix a potential NPE in GroupAssociations when samples are null.
 2.1.2
  - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
    Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you
