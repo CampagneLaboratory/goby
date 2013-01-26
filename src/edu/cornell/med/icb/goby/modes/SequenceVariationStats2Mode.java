@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.IterateSortedAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -251,14 +248,14 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
 
         public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                          Alignments.AlignmentEntry alignmentEntry,
-                                         Int2ObjectMap<CountsAtPosition> positionToBases,
+                                         PositionToBasesMap<CountsAtPosition> positionToBases,
                                          int queryLength, boolean forwardStrand,
                                          int positionInMatch) {
 
         }
 
         public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
-                                         Int2ObjectMap<CountsAtPosition> positionToBases,
+                                         PositionToBasesMap<CountsAtPosition> positionToBases,
                                          int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
             if (currentReadIndex >= 1) {
                 if (LOG.isDebugEnabled()) {
@@ -280,7 +277,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
         WarningCounter negativeReadIndexWarning = new WarningCounter();
 
         public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                       Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases,
+                                       Alignments.AlignmentEntry alignmentEntry, PositionToBasesMap<CountsAtPosition> positionToBases,
                                        Alignments.SequenceVariation var,
                                        char toChar, char fromChar, byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
             if (LOG.isDebugEnabled()) {

@@ -123,7 +123,7 @@ public class EquivalentIndelRegionCalculator {
     MutableString p = new MutableString();
 
     /**
-     * Determine the span of equivalent indel regions for the observed indel. Indel are often non uniquely described
+     * Determine the span of equivalent indel regions for the observed indel. Indels are often non uniquely described
      * by the information provided by observed indel.
      *
      * @param referenceIndex Index of the reference sequence where the indel is located.
@@ -135,7 +135,7 @@ public class EquivalentIndelRegionCalculator {
         result.startPosition = indel.getStart();
         result.endPosition = indel.getEnd();
         result.referenceIndex = referenceIndex;
-        result.readIndex = indel.readIndex;
+        result.readIndices.add( indel.readIndex);
         p.setLength(0);
         final boolean insertion = insertionInRead(indel);
         p.append(insertion ? indel.to() : indel.from());
@@ -152,7 +152,8 @@ public class EquivalentIndelRegionCalculator {
             return null;
         }
 
-        while (p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(genomeReferenceIndex, result.startPosition)) {
+        while (result.startPosition >= 1 &&
+                p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(genomeReferenceIndex, result.startPosition)) {
             leftExtensions++;
             result.startPosition = indel.getStart() - leftExtensions;
             if (lastBaseIndex - leftExtensions + rewindLeft < 0) {
@@ -162,7 +163,9 @@ public class EquivalentIndelRegionCalculator {
         }
         int rightExtensions = 0;
         int rewindRight = 0;
-        while (p.charAt(rightExtensions + rewindRight) == genome.get(genomeReferenceIndex, result.endPosition)) {
+        int chromosomeSize = genome.getLength(genomeReferenceIndex);
+        while (result.endPosition < chromosomeSize &&
+                p.charAt(rightExtensions + rewindRight) == genome.get(genomeReferenceIndex, result.endPosition)) {
             rightExtensions++;
             result.endPosition = indel.getEnd() + rightExtensions;
             if (rightExtensions + rewindRight >= indelSize) {

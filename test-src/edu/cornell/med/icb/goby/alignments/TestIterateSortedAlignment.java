@@ -178,7 +178,7 @@ public class TestIterateSortedAlignment {
                 @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                           PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex,
@@ -241,7 +241,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                           PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -412,7 +412,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                           PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex,

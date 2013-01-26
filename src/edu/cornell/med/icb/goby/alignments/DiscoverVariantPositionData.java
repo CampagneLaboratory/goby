@@ -46,6 +46,11 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         position = -1;
     }
 
+    @Override
+    public String toString() {
+        return String.format("pos=%d #bases: %d #indels: %d",position, size(), hasCandidateIndels()?getIndels().size():0);
+    }
+
     public DiscoverVariantPositionData(final int position) {
         super();
         this.position = position;
@@ -66,6 +71,8 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
             for (final EquivalentIndelRegion eir : candidateIndels) {
                 if (eir.equals(candidateIndel)) {
                     eir.incrementFrequency();
+                    // since the EIR match, increase the number of distinct read indices observed for the overlap:
+                    eir.readIndices.addAll(candidateIndel.readIndices);
                 }
             }
         }
