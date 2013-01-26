@@ -21,19 +21,13 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.R.GobyRengine;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriterImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadsWriterImpl;
 import edu.cornell.med.icb.goby.util.TestFiles;
-import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -45,7 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
-import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * @author Fabien Campagne
@@ -86,7 +80,7 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
     @Test
     public void testDiscoverWithIndelSamples() throws IOException, JSAPException {
 
-        basenames[2] = specificAlignments[0];
+
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
         int i = 1;
         String outputFilename = "out-samples-" + i + "-indels.vcf";
@@ -99,8 +93,8 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
         mode.setCallIndels(true);
         mode.setDisableAtLeastQuarterFilter(false);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                new File("test-data/discover-variants/expected-output-indel-samples.vcf"));
+        assertEquals(
+                new File("test-data/discover-variants/expected-output-indel-samples.vcf"), new File(BASE_TEST_DIR + "/" + outputFilename));
 
     }
 
@@ -123,8 +117,7 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
     }
 
 
-    private String[] add
-            (String[] basenames, String[] specificAlignments) {
+    private String[] add(String[] basenames, String[] specificAlignments) {
         String result[] = new String[basenames.length + specificAlignments.length];
         int i = 0;
         for (String s : basenames) {
@@ -208,14 +201,34 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
         outTSV.println("basename\tread-index\tcount-variation-bases\tbases-at-index/all-variations-bases\tbases-at-index/all-reference-bases\tcount-reference-bases\tcount-reference-bases-at-index");
         for (int i = 0; i < NUM_BASENAME_PER_GROUP * 2; i++) {
             basenames[i] = BASE_TEST_DIR + "/basen" + i + "-indels";
-            writeAlignment(basenames, i, 'G');
+            String fromBases, toBases;
+           int varPos;
+            switch (i) {
+
+                case 1:
+                    fromBases = "--";
+                    toBases = "AA";
+                    varPos=25;
+                    break;
+                case 2:
+                    fromBases = "AAA";
+                    toBases = "---";
+                    varPos=36;
+                    break;
+                default:
+                    fromBases = "A";
+                    toBases = "G";
+                    varPos=40;
+            }
+            writeAlignment(basenames, i, varPos,fromBases, toBases);
             appendToStats(basenames, i, outTSV);
         }
-        specificAlignments = new String[1];
+        /*specificAlignments = new String[1];
         // write a new alignment that is different from all others:
         specificAlignments[0] = BASE_TEST_DIR + "/align-specific-sample-indels";
-        writeAlignment(specificAlignments, 0, '-');
+        writeAlignment(specificAlignments, 0, "AA", "--");
         appendToStats(specificAlignments, 0, outTSV);
+          */
 
         outTSV.close();
 
@@ -299,7 +312,7 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
 
     }
 
-    private static void writeAlignment(String[] basenames, int basenameIndex, char toBase) throws IOException {
+    private static void writeAlignment(String[] basenames, int basenameIndex, int varPos, String fromBases, String toBases) throws IOException {
 
         AlignmentWriter writer = new AlignmentWriterImpl(basenames[basenameIndex]);
         writer.setTargetLengths(new int[]{10000});
@@ -310,16 +323,13 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
         int readIndex = 0;
         int referencePosition = 1;
         int positionStart = 100;
-        writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
-        if (toBase == 'C') {
-            referencePosition = 1;
-            writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
-        }
+        writeAlignmentEntries(varPos, fromBases, toBases, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
+
         writer.close();
     }
 
-    private static void writeAlignmentEntries(char toBase, AlignmentWriter writer, int numAlignmentEntries, int readIndex, int referencePosition, int positionStart) throws IOException {
-        int varPos=25;
+    private static void writeAlignmentEntries(int varPos,String fromBases, String toBases, AlignmentWriter writer, int numAlignmentEntries, int readIndex, int referencePosition, int positionStart) throws IOException {
+
         for (int j = 0; j < numAlignmentEntries; j++) {
             final Alignments.AlignmentEntry.Builder builder =
                     Alignments.AlignmentEntry.newBuilder();
@@ -333,17 +343,19 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
             //  builder.setMatchingReverseStrand(false);
 
             builder.setScore(50);
-            builder.setNumberOfIndels(toBase == '-' ? 1 : 0);
+            builder.setNumberOfIndels(countIndelChars(toBases));
 
             builder.setQueryAlignedLength(50);
             int multiplicity = 1;
             builder.setMultiplicity(multiplicity);
             builder.setTargetAlignedLength(50);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
-            varBuilder.setFrom("A");
-            varBuilder.setTo(Character.toString(toBase));
+            varBuilder.setFrom(fromBases);
+            varBuilder.setTo(toBases);
 
-            varBuilder.setToQuality(ByteString.copyFrom(new byte[]{40}));
+            byte[] bytes = new byte[toBases.length()];
+            Arrays.fill(bytes, (byte) 40);
+            varBuilder.setToQuality(ByteString.copyFrom(bytes));
             varBuilder.setPosition(varPos--);
             varBuilder.setReadIndex(getNewReadIndex());
 
@@ -353,6 +365,14 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
             writer.appendEntry(entry);
 
         }
+    }
+
+    private static int countIndelChars(String toBases) {
+        int count = 0;
+        for (char c : toBases.toCharArray()) {
+            count += (c == '-') ? 1 : 0;
+        }
+        return count;
     }
 
     static int[] readIndices = {2, 25, 20, 34, 25, 12, 4, 12, 10, 32};

@@ -79,8 +79,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     }
 
     public ObjectArraySet<EquivalentIndelRegion> getIndels() {
-      // switch to disable indels calls
-        // return EMPTY_SET;
+
        return candidateIndels;
     }
 

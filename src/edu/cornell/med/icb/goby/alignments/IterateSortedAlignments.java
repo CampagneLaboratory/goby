@@ -468,7 +468,7 @@ public abstract class IterateSortedAlignments<T> {
 
                     }
                     //
-                    if (var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0) {
+                    if (isInsertionOrDeletion(var)) {
 
                         observeIndel(positionToBases, referenceIndex,
                                 alignmentEntry.getPosition() + var.getPosition() - 1 /* make start position zero-based */,
@@ -531,6 +531,10 @@ public abstract class IterateSortedAlignments<T> {
 
         sortedReaders.close();
         pg.stop();
+    }
+
+    private boolean isInsertionOrDeletion(Alignments.SequenceVariation var) {
+        return var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0;
     }
 
     protected void checkGenomeMatchAlignment(final ConcatSortedAlignmentReader sortedReaders,

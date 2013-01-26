@@ -301,7 +301,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
 
-                    incrementBaseCounter(info.to, sampleIndex);
+                    if (!info.isInsertionOrDeletion()) incrementBaseCounter(info.to, sampleIndex);
                 }
             }
 
