@@ -600,9 +600,10 @@ public abstract class IterateSortedAlignments<T> {
     private void processAndCleanup(final int lastReferenceIndex,
                                    final int lastPosition,
                                    final PositionToBasesMap<T> positionToBases) {
-      // indels can cause positions earlier than lastPosition to be in the map. This happens
-      // when an EIR is extended to the left before the current position. Output these first.
-        while (positionToBases.firstPosition() < lastPosition) {
+        // indels can cause positions earlier than lastPosition to be in the map. This happens
+        // when an EIR is extended to the left before the current position. Output these first.
+        while ((!positionToBases.isEmpty())
+                && positionToBases.firstPosition() < lastPosition) {
             int intermediatePosition = positionToBases.firstPosition();
             processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
             positionToBases.remove(intermediatePosition);
