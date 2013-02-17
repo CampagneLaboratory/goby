@@ -163,8 +163,9 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
     private boolean callIndels = false;
 
+
     @Override
-    public void observeIndel(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+    public void observeIndel(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                              final int referenceIndex,
                              final int startPosition, final String from, final String to,
                              final int sampleIndex, final int readIndex) {
@@ -194,12 +195,12 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             }
 
             positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
-            //printBasesAround(keyPos, positionToBases);
+            //  printBasesAround(keyPos, positionToBases);
         }
 
     }
 
-    private void printBasesAround(int keyPos, Int2ObjectMap<DiscoverVariantPositionData> positionBaseInfos) {
+    private void printBasesAround(int keyPos, PositionToBasesMap<DiscoverVariantPositionData> positionBaseInfos) {
         System.out.println("keyPos=" + keyPos);
         for (int i = keyPos - 10; i < keyPos + 10; i++) {
             DiscoverVariantPositionData list = positionBaseInfos.get(i);
@@ -263,7 +264,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                             sampleCounts[indel.sampleIndex].varCount += indel.getFrequency();
                             sumVariantCounts += indel.getFrequency();
                         }
-                        sampleCounts[indel.sampleIndex].distinctReadIndices.add(indel.readIndex);
+                        sampleCounts[indel.sampleIndex].distinctReadIndices.addAll(indel.readIndices);
+                        distinctReadIndices.addAll(indel.readIndices);
                         sampleCounts[indel.sampleIndex].addIndel(indel);
                         hasIndel = true;
                     }
@@ -298,7 +300,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                     }
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
-                    incrementBaseCounter(info.to, sampleIndex);
+
+                    if (!info.isInsertionOrDeletion()) incrementBaseCounter(info.to, sampleIndex);
                 }
             }
 
@@ -408,6 +411,9 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 break;
             case 'G':
                 sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
+                break;
+           case '-':
+                // deletions are handled as indels, do not report as Ns.
                 break;
             default:
                 sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] += 1;

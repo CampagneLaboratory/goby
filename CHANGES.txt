@@ -1,4 +1,10 @@
+Towards 2.2
+ - Framework API change: introduce class PositionToBasesMap<T> to use as type for positionToBases. The class provides
+   methods to get the range of positions described in the map. This unfortunately requires changes to all clients/
+   implementations of IterateSortedAlignments<T>.
+ - Mode discover-sequence-variants: Fix various problems that prevented reporting genotypes for deletions (i.e., C/-).
  - Fix a potential NPE in GroupAssociations when samples are null.
+ - Fix for issue #2, see https://github.com/CampagneLaboratory/goby/issues/2
 2.1.2
  - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
    Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you

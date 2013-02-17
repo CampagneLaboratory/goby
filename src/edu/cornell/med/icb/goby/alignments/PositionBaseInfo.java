@@ -43,4 +43,8 @@ public class PositionBaseInfo {
         return matchesReference ? String.format("%c ref: %c s=%d", strand, from, readerIndex) :
                 String.format("%c %c/%c q=%d s=%d", strand, from, to, qualityScore, readerIndex);
     }
+    public boolean isInsertionOrDeletion() {
+        return from=='-' || to=='-';
+    }
+
 }

@@ -723,6 +723,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);
         sortedPositionIterator.setOverrideReferenceWithGenome(overrideReferenceWithGenome);
         sortedPositionIterator.setMaxThreshold(maxThresholdPerSite);
+        sortedPositionIterator.setCallIndels(callIndels);
         sortedPositionIterator.iterate(basenames);
 
         sortedPositionIterator.finish();

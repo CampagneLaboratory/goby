@@ -1,0 +1,17 @@
+##fileformat=VCFv4.1
+##Goby=UNKNOWN
+##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates for use with Biomart.">
+##INFO=<ID=INDEL,Number=1,Type=Flag,Description="Indicates that the variation is an indel.">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=BC,Number=5,Type=String,Description="Base counts in format A=?;T=?;C=?;G=?;N=?.">
+##FORMAT=<ID=GB,Number=1,Type=String,Description="Number of bases that pass base filters in this sample, or ignore string.">
+##FORMAT=<ID=FB,Number=1,Type=String,Description="Number of bases that failed base filters in this sample, or ignore string.">
+##FORMAT=<ID=Zygosity,Number=1,Type=String,Description="Zygosity">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	basen0-indels	basen1-indels	basen2-indels	basen3-indels	basen4-indels	basen5-indels	basen6-indels	basen7-indels	basen8-indels	basen9-indels
+target1	124	.	T--AAAAAAAA	TAAAAAAAAAA	.	.	BIOMART_COORDS=target1:124:124;INDEL	GT:BC:GB:FB:Zygosity	0/0:T=4:4:0:homozygous	0/1:T=4,TAAAAAAAAAA=4:8:0:heterozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous
+target1	126	.	A	.	.	.	BIOMART_COORDS=target1:126:126	GT:BC:GB:FB:Zygosity	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous
+target1	136	.	TAAAAAAAA	T---AAAAA	.	.	BIOMART_COORDS=target1:136:136;INDEL	GT:BC:GB:FB:Zygosity	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/1:T=4,T---AAAAA=4:8:0:heterozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous	0/0:T=4:4:0:homozygous
+target1	137	.	A	.	.	.	BIOMART_COORDS=target1:137:137	GT:BC:GB:FB:Zygosity	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0::0:0:not-typed	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous
+target1	138	.	A	.	.	.	BIOMART_COORDS=target1:138:138	GT:BC:GB:FB:Zygosity	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0::0:0:not-typed	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous
+target1	139	.	A	.	.	.	BIOMART_COORDS=target1:139:139	GT:BC:GB:FB:Zygosity	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0::0:0:not-typed	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous
+target1	141	.	A	G	.	.	BIOMART_COORDS=target1:141:141	GT:BC:GB:FB:Zygosity	1/1:G=4:4:0:homozygous	0/0:A=4:4:0:homozygous	0/0:A=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous	1/1:G=4:4:0:homozygous

@@ -33,7 +33,7 @@ public abstract class IterateSortedAlignmentsListImpl2
 
     public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                      Alignments.AlignmentEntry alignmentEntry,
-                                     Int2ObjectMap<ObjectArrayList<PositionBaseInfo2>> positionToBases,
+                                     PositionToBasesMap<ObjectArrayList<PositionBaseInfo2>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo2 info = new PositionBaseInfo2();
         info.readerIndex = alignmentEntry.getSampleIndex();
@@ -50,7 +50,7 @@ public abstract class IterateSortedAlignmentsListImpl2
 
 
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                   Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo2>> positionToBases,
+                                   Alignments.AlignmentEntry alignmentEntry, PositionToBasesMap<ObjectArrayList<PositionBaseInfo2>> positionToBases,
                                    Alignments.SequenceVariation var,
                                    char toChar, char fromChar, byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 
@@ -67,7 +67,7 @@ public abstract class IterateSortedAlignmentsListImpl2
     }
 
 
-    private void addToFuture(Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl2.PositionBaseInfo2>> positionToBases,
+    private void addToFuture(PositionToBasesMap<ObjectArrayList<IterateSortedAlignmentsListImpl2.PositionBaseInfo2>> positionToBases,
                              PositionBaseInfo2 info) {
 
         ObjectArrayList<PositionBaseInfo2> list = positionToBases.get(info.position);

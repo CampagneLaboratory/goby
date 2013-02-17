@@ -49,7 +49,7 @@ public abstract class IterateSortedAlignmentsListImpl
     @Override
     public final void observeReferenceBase(final ConcatSortedAlignmentReader sortedReaders,
                                            final Alignments.AlignmentEntry alignmentEntry,
-                                           final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                           final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                            final int currentReferenceIndex, final int currentRefPosition, final int currentReadIndex) {
         /*if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
@@ -78,7 +78,7 @@ public abstract class IterateSortedAlignmentsListImpl
     @Override
     public void observeVariantBase(final ConcatSortedAlignmentReader sortedReaders,
                                    final Alignments.AlignmentEntry alignmentEntry,
-                                   final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                   final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                    final Alignments.SequenceVariation variation,
                                    final char toChar, final char fromChar,
                                    final byte toQual, final int currentReferenceIndex,
@@ -105,7 +105,7 @@ public abstract class IterateSortedAlignmentsListImpl
     }
 
 
-    private void addToFuture(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+    private void addToFuture(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                              final PositionBaseInfo info) {
 
         DiscoverVariantPositionData list = positionToBases.get(info.position);

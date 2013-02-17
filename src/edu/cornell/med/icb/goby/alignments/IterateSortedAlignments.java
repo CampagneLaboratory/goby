@@ -312,7 +312,7 @@ public abstract class IterateSortedAlignments<T> {
         // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
         int lastPosition = -1;
         int lastTarget = -1;
-        Int2ObjectMap<T> positionToBases = new Int2ObjectOpenHashMap<T>();
+        PositionToBasesMap<T> positionToBases = new PositionToBasesMap<T>();
 
 
         int currentPosition;
@@ -468,7 +468,7 @@ public abstract class IterateSortedAlignments<T> {
 
                     }
                     //
-                    if (var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0) {
+                    if (isInsertionOrDeletion(var)) {
 
                         observeIndel(positionToBases, referenceIndex,
                                 alignmentEntry.getPosition() + var.getPosition() - 1 /* make start position zero-based */,
@@ -533,6 +533,10 @@ public abstract class IterateSortedAlignments<T> {
         pg.stop();
     }
 
+    private boolean isInsertionOrDeletion(Alignments.SequenceVariation var) {
+        return var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0;
+    }
+
     protected void checkGenomeMatchAlignment(final ConcatSortedAlignmentReader sortedReaders,
                                              final RandomAccessSequenceInterface genome) {
         if (genome == null) {
@@ -594,9 +598,16 @@ public abstract class IterateSortedAlignments<T> {
     }
 
     private void processAndCleanup(final int lastReferenceIndex,
-                                   final int lastPosition, final
-    Int2ObjectMap<T> positionToBases) {
-
+                                   final int lastPosition,
+                                   final PositionToBasesMap<T> positionToBases) {
+        // indels can cause positions earlier than lastPosition to be in the map. This happens
+        // when an EIR is extended to the left before the current position. Output these first.
+        while ((!positionToBases.isEmpty())
+                && positionToBases.firstPosition() < lastPosition) {
+            int intermediatePosition = positionToBases.firstPosition();
+            processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
+            positionToBases.remove(intermediatePosition);
+        }
         for (int intermediatePosition = lastRemovedPosition + 1;
              intermediatePosition <= lastPosition; intermediatePosition++) {
 
@@ -623,7 +634,7 @@ public abstract class IterateSortedAlignments<T> {
      * @param lastReferenceIndex the last referenceIndex?
      * @param positionToBases    positionToBases?
      */
-    private void processAllPreviousPositions(final int lastReferenceIndex, final Int2ObjectMap<T> positionToBases) {
+    private void processAllPreviousPositions(final int lastReferenceIndex, final PositionToBasesMap positionToBases) {
 
         tmpPositions.clear();
         tmpPositions.addAll(positionToBases.keySet());
@@ -633,7 +644,7 @@ public abstract class IterateSortedAlignments<T> {
         for (final int intermediatePosition : tmpPositions) {
             if (positionToBases.containsKey(intermediatePosition)) {
                 // TODO remove positionToBases from method signature:
-                processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
+                processPositions(lastReferenceIndex, intermediatePosition, (T) positionToBases.get(intermediatePosition));
                 positionToBases.remove(intermediatePosition);
                 lastRemovedPosition = intermediatePosition;
             }
@@ -654,7 +665,7 @@ public abstract class IterateSortedAlignments<T> {
      */
     public abstract void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                               Alignments.AlignmentEntry alignmentEntry,
-                                              Int2ObjectMap<T> positionToBases,
+                                              PositionToBasesMap<T> positionToBases,
                                               int currentReferenceIndex,
                                               int currentRefPosition,
                                               int currentReadIndex);
@@ -675,7 +686,7 @@ public abstract class IterateSortedAlignments<T> {
      */
     public abstract void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                             Alignments.AlignmentEntry alignmentEntry,
-                                            Int2ObjectMap<T> positionToBases,
+                                            PositionToBasesMap<T> positionToBases,
                                             Alignments.SequenceVariation var,
                                             char toChar, char fromChar,
                                             byte toQual, int currentReferenceIndex,
@@ -696,7 +707,7 @@ public abstract class IterateSortedAlignments<T> {
      * @param sampleIndex     Index of the sample where the indel was observed.
      * @param readIndex       Index of the base in the read at the left of where the indel is observed.
      */
-    public void observeIndel(final Int2ObjectMap<T> positionToBases,
+    public void observeIndel(final PositionToBasesMap<T> positionToBases,
                              final int referenceIndex,
                              final int startPosition,
                              final String from, final String to,

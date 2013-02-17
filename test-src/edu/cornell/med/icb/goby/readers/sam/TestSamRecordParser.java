@@ -494,12 +494,12 @@ public class TestSamRecordParser {
         final SAMFileReader parser = new SAMFileReader(new FileInputStream(inputFile));
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         final SamRecordParser recordParser = new SamRecordParser();
-        final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap = TestIteratedSortedAlignment2.readSeqVarFile(
+        final PositionToBasesMap<PerQueryAlignmentData> seqvarDataMap = TestIteratedSortedAlignment2.readSeqVarFile(
                 "test-data/seq-var-test/seq-var-reads-gsnap.seqvar");
         final int[] seqvarQueryIndexes = seqvarDataMap.keySet().toIntArray();
         Arrays.sort(seqvarQueryIndexes);
 
-        final Int2ObjectMap<PerQueryAlignmentData> samSeqvarDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
+        final PositionToBasesMap<PerQueryAlignmentData> samSeqvarDataMap = new PositionToBasesMap<PerQueryAlignmentData>();
 
         for (final SAMRecord samRecord : new SAMRecordIterable(parser.iterator())) {
             final GobySamRecord gobySamRecord = recordParser.processRead(samRecord);
@@ -563,8 +563,8 @@ public class TestSamRecordParser {
     public static void verifySequenceVariationsMatch(
             final int[] seqvarQueryIndexes,
             final int[] alignmentQueryIndexes,
-            final Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap,
-            final Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap) {
+            final PositionToBasesMap<PerQueryAlignmentData> seqvarDataMap,
+            final PositionToBasesMap<PerQueryAlignmentData> alignmentDataMap) {
         assertArrayEquals("queryIndexes are not the same", seqvarQueryIndexes, alignmentQueryIndexes);
         for (final int queryIndex : seqvarQueryIndexes) {
             final PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);

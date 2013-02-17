@@ -34,6 +34,7 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
 
 
     public char get(int referenceIndex, int position) {
+        assert position>=0 :"position must be positive.";
         return referenceSequences[referenceIndex].charAt(position);
     }
 
@@ -41,7 +42,7 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
         return referenceSequences[targetIndex].length();
     }
 
-    @Override
+
     public void getRange(int referenceIndex, int position, int length, MutableString bases) {
         bases.setLength(0);
         bases.append(referenceSequences[referenceIndex].substring(position, position + length));
@@ -53,17 +54,17 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
      * @param referenceId an id
      * @return zero
      */
-    @Override
+
     public int getReferenceIndex(String referenceId) {
         return 0;
     }
 
-    @Override
+
     public String getReferenceName(int index) {
         return "no-name";
     }
 
-    @Override
+
     public int size() {
         return referenceSequences.length;
     }
