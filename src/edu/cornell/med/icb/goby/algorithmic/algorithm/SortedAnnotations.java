@@ -111,7 +111,7 @@ public class SortedAnnotations {
         for (int referenceIndex = 0; referenceIndex < genome.size(); referenceIndex++) {
             final ObjectList<Annotation> list = map.get(genome.getReferenceName(referenceIndex));
             if (list != null) {
-                Collections.sort(list, compareAnnotationStart);
+                Collections.sort(list, COMPARE_ANNOTATION_START);
                 result.addAll(list);
             }
         }
@@ -305,7 +305,7 @@ public class SortedAnnotations {
         annotationIndex += 1;
     }
 
-    private final Comparator<? super Annotation> compareAnnotationStart = new Comparator<Annotation>() {
+    public static final Comparator<? super Annotation> COMPARE_ANNOTATION_START = new Comparator<Annotation>() {
         @Override
         public int compare(final Annotation annotation, final Annotation annotation1) {
             return annotation.getStart() - annotation1.getStart();
