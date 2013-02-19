@@ -1,11 +1,11 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.campagnelab</groupId>
-  <artifactId>goby-api</artifactId>
+  <groupId>org.campagnelab.goby</groupId>
+  <artifactId>goby-io-api</artifactId>
   <version>2.1.2</version>
   <packaging>jar</packaging>
 
-  <name>Goby API</name>
+  <name>Goby IO API</name>
   <description>See http://goby.campagnelab.org/ for information about the Goby project</description>
   <url>http://goby.campagnelab.org/</url>
 
@@ -30,5 +30,22 @@
     </developer>
   </developers>
 
-  <dependencies/>
+ <repositories>
+        <repository>
+            <id>bioinfo</id>
+            <name>repos.bioinfo.cipf.es</name>
+            <url>http://repos.bioinfo.cipf.es/maven2/</url>
+        </repository>
+    </repositories>
+
+  <dependencies>
+   <dependency>
+            <groupId>net.sf</groupId>
+            <artifactId>samtools</artifactId>
+            <version>1.66</version>
+            <scope>compile</scope>
+        </dependency>
+ </dependencies>
+
 </project>
+
