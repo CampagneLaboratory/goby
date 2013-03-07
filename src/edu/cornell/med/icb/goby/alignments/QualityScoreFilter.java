@@ -58,26 +58,18 @@ public class QualityScoreFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        /*ByteArrayList bytes = new ByteArrayList();
-        int position = 0;
-        for (final PositionBaseInfo info : list) {
-            position = info.position;
-            bytes.add(info.qualityScore);
-        }
-        System.out.println(position + ": " + bytes.toString());*/
 
         for (final PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
                 if (!filteredList.contains(info)) {
-                    if (info.to != '-') {
-                        // deleted bases have a quality score  of zero but should not be removed at this stage.
-                        filteredList.add(info);
-                        final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
-                        final int baseIndex = countInfo.baseIndex(info.to);
-                        countInfo.counts[baseIndex]--;
-                        varCountRemovedPerSample[info.readerIndex]++;
-                        numFiltered++;
+                    if (info.to != '-' && info.from != '-') {
+                        // indels have a quality score  of zero but should not be removed at this stage.
+                        final SampleCountInfo sampleCountInfo = sampleCounts[info.readerIndex];
+                        final int baseIndex = sampleCountInfo.baseIndex(info.to);
+
+                        sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                        removeGenotype(info, filteredList);
                     }
                 }
             }
@@ -103,6 +95,7 @@ public class QualityScoreFilter extends GenotypeFilter {
         }
 
         */
+        adjustGenotypes(list, filteredList, sampleCounts);
         // adjust refCount and varCount:
         adjustRefVarCounts(sampleCounts);
     }

@@ -23,8 +23,10 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -46,11 +48,18 @@ public class SampleCountInfo {
     public int sampleIndex;
     public int varCount;
     public int refCount;
+
+
     /**
      * Number of bases that failed base filters, for any reason.
      */
+
     public int failedCount;
     public int[] counts = new int[5];
+    /**
+     * While base genotypes were flagged for removal by some filter in this sample.
+     */
+    public boolean filtered[] = new boolean[5];
     /**
      * List of indel eirs that start at the position in this sample.
      */
@@ -378,14 +387,51 @@ public class SampleCountInfo {
 
     @Override
     public String toString() {
-        return String.format("sample: %d counts A=%d C=%d T=%d G=%d N=%d FB=%d indels={ %s }%n",
+        return String.format("sample: %d counts %s %s %s %s %s FB=%d indels={ %s }%n",
                 sampleIndex,
-                counts[BASE_A_INDEX],
-                counts[BASE_C_INDEX],
-                counts[BASE_T_INDEX],
-                counts[BASE_G_INDEX],
-                counts[BASE_OTHER_INDEX],
+                toString(BASE_A_INDEX),
+                toString(BASE_T_INDEX),
+                toString(BASE_C_INDEX),
+                toString(BASE_G_INDEX),
+                toString(BASE_OTHER_INDEX),
                 failedCount,
                 indels);
+    }
+
+    private String toString(int baseIndex) {
+        StringBuffer buffer = new StringBuffer();
+        if (hasFilteredBases(baseIndex)) {
+            buffer.append("(");
+        }
+        buffer.append(base(baseIndex));
+        buffer.append("=");
+        buffer.append(counts[baseIndex]);
+        if (hasFilteredBases(baseIndex)) {
+            buffer.append(")");
+        }
+        return buffer.toString();
+
+    }
+
+    protected boolean hasFilteredBases(int baseIndex) {
+        return filtered[baseIndex];
+    }
+
+    public void suggestRemovingGenotype(int baseIndex) {
+        filtered[baseIndex] = true;
+        if (counts[baseIndex] - 1 >= 0) {
+
+            counts[baseIndex]--;
+        }
+
+
+    }
+
+    public void clearFiltered() {
+        Arrays.fill(filtered, false);
+    }
+
+    public void clearFiltered(int baseIndex) {
+        filtered[baseIndex] = false;
     }
 }

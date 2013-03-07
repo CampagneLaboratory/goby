@@ -44,15 +44,24 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     public DiscoverVariantPositionData() {
         super();
         position = -1;
+        filtered = new ObjectArraySet[5];
+        for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+            filtered[baseIndex] = new ObjectArraySet();
+        }
     }
+
+    /**
+     * Count of genotypes that were flagged for removal by some filter in this sample.
+     */
+    public ObjectArraySet filtered[];
 
     @Override
     public String toString() {
-        return String.format("pos=%d #bases: %d #indels: %d",position, size(), hasCandidateIndels()?getIndels().size():0);
+        return String.format("pos=%d #bases: %d #indels: %d", position, size(), hasCandidateIndels() ? getIndels().size() : 0);
     }
 
     public DiscoverVariantPositionData(final int position) {
-        super();
+        this();
         this.position = position;
     }
 
@@ -80,7 +89,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
 
     public ObjectArraySet<EquivalentIndelRegion> getIndels() {
 
-       return candidateIndels;
+        return candidateIndels;
     }
 
     /**
@@ -89,7 +98,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
      * @param indel the candidate indel that failed tests.
      */
     public void failIndel(final EquivalentIndelRegion indel) {
-        if (candidateIndels!=null) {
+        if (candidateIndels != null) {
             candidateIndels.remove(indel);
         }
         if (failedIndels == null) {

@@ -274,14 +274,15 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
 
             for (final edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
+                final int sampleIndex = info.readerIndex;
 
                 if (info.matchesReference && referenceBase != '\0') {
                     // from and to have to be set if the position matches the reference.
                     info.from = referenceBase;
                     info.to = referenceBase;
+                } else {
+                    distinctReadIndices.add(info.readIndex);
                 }
-                final int sampleIndex = info.readerIndex;
-                distinctReadIndices.add(info.readIndex);
                 if (info.matchesReference) {
 
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
@@ -317,11 +318,16 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                         filteredList.clear();
                         for (final GenotypeFilter filter : genotypeFilters) {
                             filter.filterGenotypes(list, sampleCounts, filteredList);
-                            //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
+
+                           /*  System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
+
+                            if (anyCountNegative(sampleCounts)) {
+                                LOG.warn(String.format("filter %s produced negative counts! position=%d %n",
+                                        filter.getName(),position));
+                            } */
                         }
                         final CountFixer fixer = new CountFixer();
                         fixer.fix(list, sampleCounts, filteredList);
-
                     }
 
                     // make genotypes comparable across all samples:
@@ -333,6 +339,17 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
             }
         }
+    }
+
+    private boolean anyCountNegative(SampleCountInfo[] sampleCounts) {
+
+        for (SampleCountInfo sci : sampleCounts) {
+            for (int count : sci.counts) {
+                if (count < 0) return true;
+            }
+
+        }
+        return false;
     }
 
     private boolean inRegionToWrite(final int referenceIndex, final int position) {
@@ -412,7 +429,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             case 'G':
                 sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
                 break;
-           case '-':
+            case '-':
                 // deletions are handled as indels, do not report as Ns.
                 break;
             default:

@@ -6,7 +6,12 @@ Towards 2.2
  - Fix a potential NPE in GroupAssociations when samples are null.
  - Fix for issue #2, see https://github.com/CampagneLaboratory/goby/issues/2
  - Expose comparator in SortedAnnotations.
-
+ - Remove threshold effects when calling genotypes in several samples. Modified the filters to not remove bases in
+   specific samples when the genotype survived filters in at least another sample (previous versions reported these
+   threshold edge effects as differences, which could be confusing, this version simply shows the marginal raw base
+   counts in samples where the genotype could have been filtered by a filter, which makes it easier to compare the
+   strength of the genotype support across samples). This adjustment was done for both base genotype and indel genotypes.
+ - LeftOverFilter: now uses minVariationSupport as minimum threshold.
 2.1.2
  - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
    Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you

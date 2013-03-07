@@ -21,6 +21,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.log4j.Logger;
 
 /**
@@ -68,7 +69,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.to = '\0';
         info.matchesReference = true;
         info.position = currentRefPosition - 1; // store 0-based position
-        info.qualityScore = 40;
+        info.qualityScore = (byte) (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
         info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         //System.out.printf("position=%d %s%n", currentRefPosition, info);
         addToFuture(positionToBases, info);
@@ -99,7 +100,8 @@ public abstract class IterateSortedAlignmentsListImpl
         info.to = toChar;
         info.matchesReference = false;
         info.position = currentRefPosition - 1; // store 0-based position
-        info.qualityScore = toQual;
+        final int readMappingQuality = (byte) (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
+        info.qualityScore = (byte) Math.min(toQual, readMappingQuality);
         info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
@@ -112,20 +114,19 @@ public abstract class IterateSortedAlignmentsListImpl
         if (list == null) {
             list = new DiscoverVariantPositionData(info.position);
             positionToBases.put(info.position, list);
-        }
-        else {
-           assert list.getZeroBasedPosition()==info.position : "info position must match list position.";
+        } else {
+            assert list.getZeroBasedPosition() == info.position : "info position must match list position.";
         }
         if (list.size() > maxThreshold) {
-            /* IntOpenHashSet positions=new IntOpenHashSet();
-           for (PositionBaseInfo element:list) {
-               positions.add(element.position);
-           }
-           LOG.warn(String.format("position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
-                   positions.size()));
-           LOG.warn("positions: "+positions.toString());
-            */
-            // stop accumulating if the position has more than half a million variants!
+            IntOpenHashSet positions = new IntOpenHashSet();
+            for (PositionBaseInfo element : list) {
+                positions.add(element.position);
+            }
+            LOG.warn(String.format("position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
+                    positions.size()));
+            LOG.warn("positions: " + positions.toString());
+
+            // stop accumulating if the position has more than half a million bases!
 
             return;
         }

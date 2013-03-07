@@ -279,7 +279,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case VARIANT_DISCOVERY:
 
                 genotypeFilters.add(new QualityScoreFilter());
-                genotypeFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
@@ -296,7 +296,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case GENOTYPES:
 
                 genotypeFilters.add(new QualityScoreFilter());
-                genotypeFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
 
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
@@ -310,7 +310,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 break;
             case INDEL_COUNTS:
                 genotypeFilters.add(new QualityScoreFilter());
-                genotypeFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
                 genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());

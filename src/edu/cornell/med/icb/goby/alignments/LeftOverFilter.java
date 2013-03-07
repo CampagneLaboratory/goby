@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
@@ -35,17 +36,19 @@ import java.util.Arrays;
  */
 public class LeftOverFilter extends GenotypeFilter {
     private static final int MULTIPLIER = 2;
+    private int minVariationSupport = 0;
+
+    public LeftOverFilter(int minVariationSupport) {
+        this.minVariationSupport = minVariationSupport;
+    }
 
     @Override
     void initStorage(int numSamples) {
         super.initStorage(numSamples);
         if (thresholdsPerSample == null) {
             thresholdsPerSample = new int[numSamples];
-        } else {
-            Arrays.fill(thresholdsPerSample, 0);
         }
-
-
+        Arrays.fill(thresholdsPerSample, minVariationSupport);
     }
 
     private int[] thresholdsPerSample;
@@ -61,9 +64,15 @@ public class LeftOverFilter extends GenotypeFilter {
         for (PositionBaseInfo positionBaseInfo : filteredList) {
             thresholdsPerSample[positionBaseInfo.readerIndex] += 1;
         }
-
-        for (int sampleIndex=0;sampleIndex<sampleCounts.length;sampleIndex++) {
-          thresholdsPerSample[sampleIndex] *= MULTIPLIER;
+        if (list.hasCandidateIndels()) {
+            for (EquivalentIndelRegion indel : list.getIndels()) {
+                if (indel.isFiltered()) {
+                    thresholdsPerSample[indel.sampleIndex] += 1;
+                }
+            }
+        }
+        for (int sampleIndex = 0; sampleIndex < sampleCounts.length; sampleIndex++) {
+            thresholdsPerSample[sampleIndex] *= MULTIPLIER;
         }
 
         for (PositionBaseInfo positionBaseInfo : list) {
@@ -79,33 +88,23 @@ public class LeftOverFilter extends GenotypeFilter {
             if (count == 0) continue;
             if (count < thresholdsPerSample[sampleIndex]) {
 
-               /* if (positionBaseInfo.position == 62579823 - 1 ) {
-                    System.out.printf("At position %d Filtering out from sample %d allele %c %d < %d  %n", positionBaseInfo.position,
-                            positionBaseInfo.readerIndex,
-                            base, count, thresholdsPerSample[sampleIndex] );
-                }*/
-
-                                // less counts remaining for this allele than were removed on average by previous filters, still likely
+                // less counts remaining for this allele than were removed on average by previous filters, still likely
                 // an error.
                 // We remove this call
 
-                if (!filteredList.contains(positionBaseInfo)) {
-                    sampleCountInfo.counts[baseIndex]--;
-                    if (positionBaseInfo.matchesReference) {
-                        refCountRemovedPerSample[sampleIndex]++;
-                    } else {
-                        varCountRemovedPerSample[sampleIndex]++;
-                    }
-                    filteredList.add(positionBaseInfo);
-                    numFiltered++;
-                }
-
+                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                removeGenotype(positionBaseInfo, filteredList);
             }
         }
 
-        filterIndels(list,sampleCounts);
+        filterIndels(list, sampleCounts);
+        adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
+
+
+
+
 
 
     @Override

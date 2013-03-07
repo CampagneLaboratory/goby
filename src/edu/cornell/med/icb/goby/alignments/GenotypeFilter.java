@@ -19,7 +19,12 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
@@ -33,6 +38,10 @@ import java.util.Arrays;
  */
 public abstract class GenotypeFilter {
 
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(DiscoverVariantIterateSortedAlignments.class);
 
     /**
      * Adjust genotypes and sampleCounts to remove/reduce the effect of sequencing errors.
@@ -60,6 +69,11 @@ public abstract class GenotypeFilter {
     int[] refCountRemovedPerSample;
     int numFiltered = 0;
     int numScreened = 0;
+    /**
+     * List of sampleIndex,genotypeIndex tuples. Items in this list indicate genotypes suggested for removal by some
+     * filter.
+     */
+    protected LongArrayList removalSuggestions = new LongArrayList();
 
     public double getPercentFilteredOut() {
         double rate = numFiltered;
@@ -100,19 +114,112 @@ public abstract class GenotypeFilter {
         }
     }
 
+    private ObjectArraySet<EquivalentIndelRegion> toBeRemoved = new ObjectArraySet<EquivalentIndelRegion>();
+    private IntArraySet toBeRemovedFromSampleIndices = new IntArraySet();
+
     protected void filterIndels(final DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts) {
+
         if (list.hasCandidateIndels()) {
+            int numSamplesWithIndels = 0;
+            for (SampleCountInfo sci : sampleCounts) {
+                numSamplesWithIndels += sci.hasIndels() ? 1 : 0;
+            }
             // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
             // at that position):
-            for (final EquivalentIndelRegion indel : list.getIndels()) {
+            ObjectArraySet<EquivalentIndelRegion> indels = new ObjectArraySet<EquivalentIndelRegion>(list.getIndels());
+            toBeRemoved.clear();
+            toBeRemovedFromSampleIndices.clear();
+            for (final EquivalentIndelRegion indel : indels) {
+
                 if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
+                    toBeRemoved.add(indel);
+                    toBeRemovedFromSampleIndices.add(indel.sampleIndex);
+                }
+
+            }
+            if (toBeRemovedFromSampleIndices.size() == numSamplesWithIndels) {
+
+                for (final EquivalentIndelRegion indel : toBeRemoved) {
+                    // only remove indels that would be removed consistently from all samples. This makes sure we keep
+                    // data about indels across samples when one indel is not removed in at least one sample by some
+                    // filter.
                     indel.markFiltered();
                     list.failIndel(indel);
                     sampleCounts[indel.sampleIndex].removeIndel(indel);
                 }
+
             }
         }
     }
+
+    /**
+     * Adjust the genotypes according considering suggestions and thresholding effects.
+     *
+     * @param list
+     * @param filteredList
+     * @param sampleCounts
+     */
+    protected void adjustGenotypes(DiscoverVariantPositionData list, ObjectSet<PositionBaseInfo> filteredList, SampleCountInfo[] sampleCounts) {
+
+        // determine the number of samples that had each the genotype filtered:
+
+        for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+            int samplesWithGenotype = 0;
+            int samplesWithGenotypeFiltered = 0;
+            for (SampleCountInfo sci : sampleCounts) {
+                if (sci.hasFilteredBases(baseIndex)) {
+                    samplesWithGenotypeFiltered++;
+                }
+                samplesWithGenotype += sci.counts[baseIndex] > 0 ? 1 : 0;
+            }
+            if (samplesWithGenotype == samplesWithGenotypeFiltered) {
+                // remove the genotype, it was filtered from all samples where it appeared.
+            } else {
+                // do not remove the genotype from any sample, at least one sample had the genotype passing all filters.
+                // we preserve all counts to facilitate comparing across samples.
+                for (SampleCountInfo sci : sampleCounts) {
+                    sci.clearFiltered(baseIndex);
+                }
+            }
+        }
+        // now, scan filtered list to remove those bases that should not have been filtered:
+        for (PositionBaseInfo positionBaseInfo : filteredList) {
+            final int sampleIndex = positionBaseInfo.readerIndex;
+            SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
+            final int baseIndex = sampleCountInfo.baseIndex(positionBaseInfo.to);
+
+            if (sampleCountInfo.hasFilteredBases(baseIndex) && filteredList.contains(positionBaseInfo)) {
+
+                filteredList.remove(positionBaseInfo);
+                sampleCountInfo.counts[baseIndex]++;
+                if (positionBaseInfo.matchesReference) {
+                    refCountRemovedPerSample[sampleIndex]--;
+                } else {
+                    varCountRemovedPerSample[sampleIndex]--;
+                }
+                numFiltered--;
+            }
+        }
+    }
+
+    /**
+     * Use this method to remove a genotype in a sub-class filter.
+     * @param info the base to remove from consideration, according to the filter logic.
+     * @param filteredList the list of filtered bases to add to.
+     */
+    protected void removeGenotype(PositionBaseInfo info, ObjectSet<PositionBaseInfo> filteredList) {
+        filteredList.add(info);
+
+        final int sampleIndex = info.readerIndex;
+        if (info.matchesReference) {
+            refCountRemovedPerSample[sampleIndex]--;
+        } else {
+            varCountRemovedPerSample[sampleIndex]--;
+        }
+        numFiltered--;
+    }
+
+
 
     public abstract int getThresholdForSample(final int sampleIndex);
 }

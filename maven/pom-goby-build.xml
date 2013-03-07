@@ -1,114 +1,115 @@
 <project>
-  <modelVersion>4.0.0</modelVersion> 
-   <parent>
-            <groupId>org.campagnelab.build-utils</groupId>
-            <artifactId>maven-parent</artifactId>
-            <version>LATEST</version>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.campagnelab.build-utils</groupId>
+        <artifactId>maven-parent</artifactId>
+        <version>LATEST</version>
     </parent>
 
-  <groupId>org.campagnelab.goby</groupId>
-  <artifactId>goby</artifactId>
-  <version>2.1.2</version>
-  <packaging>jar</packaging>
+    <groupId>org.campagnelab.goby</groupId>
+    <artifactId>goby</artifactId>
+    <version>2.1.2</version>
+    <packaging>jar</packaging>
 
-  <name>Goby</name>
-  <description>See http://goby.campagnelab.org/ for information about the Goby project</description>
-  <url>http://goby.campagnelab.org/</url>
+    <name>Goby</name>
+    <description>See http://goby.campagnelab.org/ for information about the Goby project</description>
+    <url>http://goby.campagnelab.org/</url>
 
-  <licenses>
-    <license>
-      <name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3</name>
-      <url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <licenses>
+        <license>
+            <name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-  <scm>
-    <url>scm:git:git://github.com/CampagneLaboratory/goby</url>
-  </scm>
+    <scm>
+        <url>scm:git:git://github.com/CampagneLaboratory/goby</url>
+    </scm>
 
-  <dependencies/>
+    <dependencies/>
 
-	<build>
+    <build>
 
         <plugins>
-   		<plugin>
-                	<groupId>org.apache.maven.plugins</groupId>
-                	<artifactId>maven-antrun-plugin</artifactId>
-                	<executions>
-                    		<execution>
-					<id>buildjars</id>
-                        		<phase>package</phase>
-                        		<configuration>
-                            			<tasks>
-							<echo message="Building goby jars..."/>
-				 			<ant antfile="build.xml" dir=".." target="jar" /> 
-                            			</tasks>
-                        		</configuration>
-                        		<goals>
-                            			<goal>run</goal>
-                        		</goals>
-                    		</execution>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>buildjars</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Building goby jars..."/>
+                                <ant antfile="build.xml" dir=".." target="jar"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
 
-				<execution> 
-                                        <id>cleanjars</id>
-                                        <phase>clean</phase>
-                                        <configuration>
-                                                <tasks>
-                                                        <echo message="Cleaning goby jars..."/>
-                                                        <ant antfile="build.xml" dir=".." target="clean" />
-                                                </tasks>
-                                        </configuration>
-                                        <goals>
-                                                <goal>run</goal>
-                                        </goals>
-                                </execution>
+                    <execution>
+                        <id>cleanjars</id>
 
-                	</executions>
-		</plugin>
- 		<plugin>
-        		<groupId>org.apache.maven.plugins</groupId>
-        		<artifactId>maven-deploy-plugin</artifactId>
-        		<executions>
-          			<execution>
-					<id>goby-io</id>
-            				<phase>deploy</phase>
-            				<configuration>
-						<file>../goby-io.jar</file>
-						<url>${releases.repository.url.deploy}</url>
-						<pomFile>pom-goby-io-upload.xml</pomFile>
-					</configuration>
-					<goals>
-              					<goal>deploy-file</goal>
-            				</goals>
-          			</execution>
-			      <execution>
-                                        <id>goby-io-api</id>
-                                        <phase>deploy</phase>
-                                        <configuration>
-                                                <file>../goby-io-api.jar</file>
-                                                <url>${releases.repository.url.deploy}</url>
-						<pomFile>pom-goby-io-api-upload.xml</pomFile>
-                                        </configuration>
-                                        <goals>
-                                                <goal>deploy-file</goal>
-                                        </goals>
-                                </execution>
-				<execution>
-                        		<id>goby-api</id>
-                        		<phase>deploy</phase>
-                       			 <configuration>
-                          		  <file>../goby-api.jar</file>
-                          		  <url>${releases.repository.url.deploy}</url>
-                       		        <pomFile>pom-goby-api-upload.xml</pomFile>
-                        		</configuration>
-                        		<goals>
-                           			 <goal>deploy-file</goal>
-                        		</goals>
-                    		</execution>
-        		</executions>
-      		</plugin>	
-      </plugins>
+                        <phase>clean</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Cleaning goby jars..."/>
+                                <ant antfile="build.xml" dir=".." target="clean"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>goby-io</id>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <file>../goby-io.jar</file>
+                            <url>${releases.repository.url.deploy}</url>
+                            <pomFile>pom-goby-io-upload.xml</pomFile>
+                        </configuration>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>goby-io-api</id>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <file>../goby-io-api.jar</file>
+                            <url>${releases.repository.url.deploy}</url>
+                            <pomFile>pom-goby-io-api-upload.xml</pomFile>
+                        </configuration>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>goby-api</id>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <file>../goby-api.jar</file>
+                            <url>${releases.repository.url.deploy}</url>
+                            <pomFile>pom-goby-api-upload.xml</pomFile>
+                        </configuration>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
 

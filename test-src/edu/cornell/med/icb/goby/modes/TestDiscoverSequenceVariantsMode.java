@@ -246,7 +246,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testCleanup() {
         QualityScoreFilter qualityScoreFilter = new QualityScoreFilter();
-        LeftOverFilter leftOverFilter = new LeftOverFilter();
+        LeftOverFilter leftOverFilter = new LeftOverFilter(0);
 
 
         DiscoverVariantPositionData list = new DiscoverVariantPositionData();
@@ -258,6 +258,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
         SampleCountInfo[] sampleCounts = sampleCounts(list);
         qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
+
+        assertNotNull(sampleCounts[0].toString());
         assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
@@ -501,7 +503,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
-        LeftOverFilter adjuster2 = new LeftOverFilter();
+        LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 
         assertEquals(5, sampleCounts[0].refCount);
@@ -532,7 +534,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount2() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
-        LeftOverFilter adjuster2 = new LeftOverFilter();
+        LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 
         assertEquals(5, sampleCounts[0].refCount);
@@ -727,7 +729,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--compare A/B " +
                 "--genome use-dummy-in-test " +
                 "--eval %s " +
-                "--minimum-variation-support 1 " +
+                "--minimum-variation-support 0 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +
                 "%s", statsFilename, groups, evalString, outputfilename, basenamesString);

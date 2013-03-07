@@ -84,8 +84,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final ReaderFastaParser parser = new ReaderFastaParser(reader);
         final MutableString description = new MutableString();
         int refIndex = 0;
-        minRefIndex=Integer.MAX_VALUE;
-        maxRefIndex=Integer.MIN_VALUE;
+        minRefIndex = Integer.MAX_VALUE;
+        maxRefIndex = Integer.MIN_VALUE;
         while (parser.hasNextSequence()) {
             int position = 0;
             parser.nextSequence(description);
@@ -124,8 +124,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
     private void updateSliceIndices(final int refIndex) {
 
-         this.minRefIndex=Math.min(refIndex,minRefIndex);
-         this.maxRefIndex=Math.max(refIndex, maxRefIndex);
+        this.minRefIndex = Math.min(refIndex, minRefIndex);
+        this.maxRefIndex = Math.max(refIndex, maxRefIndex);
 
     }
 
@@ -140,8 +140,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final MutableString description = new MutableString();
         int refIndex = 0;
         Reads.ReadEntry entry;
-         minRefIndex=Integer.MAX_VALUE;
-        maxRefIndex=Integer.MIN_VALUE;
+        minRefIndex = Integer.MAX_VALUE;
+        maxRefIndex = Integer.MIN_VALUE;
         while (parser.hasNext()) {
             entry = parser.next();
 
@@ -211,19 +211,19 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         load(basename);
         /**  Disable this to test if this causes the problems I observed on miklos' data chunk 23
          *
-        minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.getInt(minRefId);
-        maxRefIndex = "max".equals(maxRefId) ? referenceNameMap.size() : referenceNameMap.getInt(maxRefId);
+         minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.getInt(minRefId);
+         maxRefIndex = "max".equals(maxRefId) ? referenceNameMap.size() : referenceNameMap.getInt(maxRefId);
 
-        // remove sequences we won't need. Don't call remove because that changes the index. Instead just set the
-        // element to null to allow garbage collection..
-        for (int i = 0; i < minRefIndex; i++) {
-            compressedData.set(i, null);
-            referenceIgnoreLists.set(i, null);
-        }
-        for (int i = maxRefIndex + 1; i < referenceNameMap.size(); i++) {
-            compressedData.set(i, null);
-            referenceIgnoreLists.set(i, null);
-        }
+         // remove sequences we won't need. Don't call remove because that changes the index. Instead just set the
+         // element to null to allow garbage collection..
+         for (int i = 0; i < minRefIndex; i++) {
+         compressedData.set(i, null);
+         referenceIgnoreLists.set(i, null);
+         }
+         for (int i = maxRefIndex + 1; i < referenceNameMap.size(); i++) {
+         compressedData.set(i, null);
+         referenceIgnoreLists.set(i, null);
+         }
          */
 
     }
@@ -344,11 +344,14 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
         final int maxSize = sizes.getInt(referenceIndex);
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
+        if (position >= maxSize) {
+            return 'N';
+        }
+        assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ") chr="
+                + getReferenceName(referenceIndex);
+        // assert position < ignoreList.length() : " position must be smaller than ignore list size.";
 
-        assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
-       // assert position < ignoreList.length() : " position must be smaller than ignore list size.";
-
-        if (position>=ignoreList.size() || !ignoreList.get(position)) {
+        if (position >= ignoreList.size() || !ignoreList.get(position)) {
             return decode(compressedData.get(referenceIndex), position,
                     maxSize);
         } else {
@@ -366,7 +369,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
         final int offset = position * 2;
         final int index = offset / 8;
-        if (index>=bytes.length) return 'N';
+        if (index >= bytes.length) return 'N';
         final byte b = bytes[index];
         final int c = b >> (6 - (offset % 8)) & 0x3; // two right-most bits are left, which encode
 
