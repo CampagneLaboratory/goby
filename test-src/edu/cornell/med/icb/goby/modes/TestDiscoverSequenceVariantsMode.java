@@ -494,9 +494,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         System.out.println("list: " + list);
         assertEquals(16, list.size());
-        assertEquals(4, filteredList.size());
+        assertEquals(2, filteredList.size());
         assertEquals(5, sampleCounts[0].refCount);
-        assertEquals(7, sampleCounts[0].varCount);
+        assertEquals(9, sampleCounts[0].varCount);
 
     }
 
@@ -522,9 +522,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
 
-        assertEquals(22, filteredList.size());
-        assertEquals(0, sampleCounts[0].refCount);
-        assertEquals(0, sampleCounts[0].varCount);
+        assertEquals(8, filteredList.size());
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(9, sampleCounts[0].varCount);
 
         assertEquals(10, sampleCounts[1].refCount);
         assertEquals(6 - 6, sampleCounts[1].varCount);
@@ -554,9 +554,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
 
-        assertEquals(3, filteredList.size());
+        assertEquals(0, filteredList.size());
         assertEquals(5, sampleCounts[0].refCount);
-        assertEquals(8, sampleCounts[0].varCount);
+        assertEquals(11, sampleCounts[0].varCount);
 
         assertEquals(10, sampleCounts[1].refCount);
         assertEquals(6, sampleCounts[1].varCount);

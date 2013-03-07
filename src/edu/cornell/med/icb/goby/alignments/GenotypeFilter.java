@@ -153,13 +153,14 @@ public abstract class GenotypeFilter {
     }
 
     /**
-     * Adjust the genotypes according considering suggestions and thresholding effects.
+     * Adjust the genotypes considering genotype removals and thresholding effects.
      *
      * @param list
      * @param filteredList
      * @param sampleCounts
      */
-    protected void adjustGenotypes(DiscoverVariantPositionData list, ObjectSet<PositionBaseInfo> filteredList, SampleCountInfo[] sampleCounts) {
+    protected void adjustGenotypes(DiscoverVariantPositionData list, ObjectSet<PositionBaseInfo> filteredList,
+                                   SampleCountInfo[] sampleCounts) {
 
         // determine the number of samples that had each the genotype filtered:
 
@@ -184,27 +185,30 @@ public abstract class GenotypeFilter {
         }
         // now, scan filtered list to remove those bases that should not have been filtered:
         for (PositionBaseInfo positionBaseInfo : filteredList) {
-            final int sampleIndex = positionBaseInfo.readerIndex;
-            SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
-            final int baseIndex = sampleCountInfo.baseIndex(positionBaseInfo.to);
+            if (positionBaseInfo != null) {   // info may be null when already removed by a previous loop iteration..
+                final int sampleIndex = positionBaseInfo.readerIndex;
+                SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
+                final int baseIndex = sampleCountInfo.baseIndex(positionBaseInfo.to);
 
-            if (sampleCountInfo.hasFilteredBases(baseIndex) && filteredList.contains(positionBaseInfo)) {
+                if (sampleCountInfo.hasFilteredBases(baseIndex) && filteredList.contains(positionBaseInfo)) {
 
-                filteredList.remove(positionBaseInfo);
-                sampleCountInfo.counts[baseIndex]++;
-                if (positionBaseInfo.matchesReference) {
-                    refCountRemovedPerSample[sampleIndex]--;
-                } else {
-                    varCountRemovedPerSample[sampleIndex]--;
+                    filteredList.remove(positionBaseInfo);
+                    sampleCountInfo.counts[baseIndex]++;
+                    if (positionBaseInfo.matchesReference) {
+                        refCountRemovedPerSample[sampleIndex]--;
+                    } else {
+                        varCountRemovedPerSample[sampleIndex]--;
+                    }
+                    numFiltered--;
                 }
-                numFiltered--;
             }
         }
     }
 
     /**
      * Use this method to remove a genotype in a sub-class filter.
-     * @param info the base to remove from consideration, according to the filter logic.
+     *
+     * @param info         the base to remove from consideration, according to the filter logic.
      * @param filteredList the list of filtered bases to add to.
      */
     protected void removeGenotype(PositionBaseInfo info, ObjectSet<PositionBaseInfo> filteredList) {
@@ -212,13 +216,12 @@ public abstract class GenotypeFilter {
 
         final int sampleIndex = info.readerIndex;
         if (info.matchesReference) {
-            refCountRemovedPerSample[sampleIndex]--;
+            refCountRemovedPerSample[sampleIndex]++;
         } else {
-            varCountRemovedPerSample[sampleIndex]--;
+            varCountRemovedPerSample[sampleIndex]++;
         }
-        numFiltered--;
+        numFiltered++;
     }
-
 
 
     public abstract int getThresholdForSample(final int sampleIndex);
