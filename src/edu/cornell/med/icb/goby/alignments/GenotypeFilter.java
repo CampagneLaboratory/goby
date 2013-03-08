@@ -115,7 +115,7 @@ public abstract class GenotypeFilter {
     }
 
     private ObjectArraySet<EquivalentIndelRegion> toBeRemoved = new ObjectArraySet<EquivalentIndelRegion>();
-    private IntArraySet toBeRemovedFromSampleIndices = new IntArraySet();
+    private IntArraySet doNotRemoveSampleIndices = new IntArraySet();
 
     protected void filterIndels(final DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts) {
 
@@ -128,16 +128,19 @@ public abstract class GenotypeFilter {
             // at that position):
             ObjectArraySet<EquivalentIndelRegion> indels = new ObjectArraySet<EquivalentIndelRegion>(list.getIndels());
             toBeRemoved.clear();
-            toBeRemovedFromSampleIndices.clear();
+            doNotRemoveSampleIndices.clear();
             for (final EquivalentIndelRegion indel : indels) {
 
                 if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
                     toBeRemoved.add(indel);
-                    toBeRemovedFromSampleIndices.add(indel.sampleIndex);
+
+                }  else {
+                    doNotRemoveSampleIndices.add(indel.sampleIndex);
                 }
 
             }
-            if (toBeRemovedFromSampleIndices.size() == numSamplesWithIndels) {
+            if (doNotRemoveSampleIndices.size() ==0) {  // none of the candidate indels survived the filters. remove them
+
 
                 for (final EquivalentIndelRegion indel : toBeRemoved) {
                     // only remove indels that would be removed consistently from all samples. This makes sure we keep
