@@ -53,6 +53,9 @@ public class DiploidFilter extends GenotypeFilter {
                                 final ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
+        for (SampleCountInfo sci : sampleCounts) {
+            sci.clearFiltered();
+        }
         for (final SampleCountInfo sci : sampleCounts) {
             final int sampleIndex = sci.sampleIndex;
             int maxIndex = sci.getGenotypeMaxIndex();

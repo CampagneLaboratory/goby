@@ -61,6 +61,11 @@ public class SampleCountInfo {
      */
     public boolean filtered[] = new boolean[5];
     /**
+     * Counts as they were before a filter removed some bases. Used to rollback to pre-filter state when we
+     * determine filtering would affect some samples differently than others.
+     */
+    public int beforeFilterCounts[] = new int[5];
+    /**
      * List of indel eirs that start at the position in this sample.
      */
     private ObjectArrayList<EquivalentIndelRegion> indels;
@@ -418,19 +423,29 @@ public class SampleCountInfo {
     }
 
     public void suggestRemovingGenotype(int baseIndex) {
+        if (!filtered[baseIndex]) {
+            // save the pre-filter count:
+            beforeFilterCounts[baseIndex] = counts[baseIndex];
+        }
         filtered[baseIndex] = true;
         if (counts[baseIndex] - 1 >= 0) {
 
             counts[baseIndex]--;
         }
 
-
     }
 
     public void clearFiltered() {
         Arrays.fill(filtered, false);
+        System.arraycopy(counts, 0, beforeFilterCounts, 0, counts.length);
+        Arrays.fill(beforeFilterCounts, 0);
     }
 
+    /**
+     * Clear the filtered state and restore the previous count for this base.
+     *
+     * @param baseIndex
+     */
     public void clearFiltered(int baseIndex) {
         filtered[baseIndex] = false;
     }

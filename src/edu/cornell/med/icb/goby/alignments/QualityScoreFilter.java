@@ -58,7 +58,9 @@ public class QualityScoreFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-
+        for (SampleCountInfo sci : sampleCounts) {
+            sci.clearFiltered();
+        }
         for (final PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {

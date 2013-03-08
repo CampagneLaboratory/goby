@@ -60,7 +60,9 @@ public class LeftOverFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-
+        for (SampleCountInfo sci : sampleCounts) {
+            sci.clearFiltered();
+        }
         for (PositionBaseInfo positionBaseInfo : filteredList) {
             thresholdsPerSample[positionBaseInfo.readerIndex] += 1;
         }
@@ -101,10 +103,6 @@ public class LeftOverFilter extends GenotypeFilter {
         adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
-
-
-
-
 
 
     @Override

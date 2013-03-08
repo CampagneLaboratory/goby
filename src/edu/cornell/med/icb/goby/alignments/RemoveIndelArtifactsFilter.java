@@ -34,22 +34,25 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
+        for (SampleCountInfo sci:sampleCounts) {
+            sci.clearFiltered();
+        }
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 for (final PositionBaseInfo info : list) {
 
 
-                    if (info.readerIndex == indel.sampleIndex && info.to == '-') {
+                    if (info.readerIndex == indel.sampleIndex && info.to == '-' ) {
                         //     list.remove(info);
 
                         final SampleCountInfo sampleCountInfo = sampleCounts[info.readerIndex];
-                        final char base = info.to;
+                        final char base = info.to == '-'? info.from : info.to;
                         final int baseIndex = sampleCountInfo.baseIndex(base);
                         if (!filteredList.contains(info)) {
                             sampleCountInfo.suggestRemovingGenotype(baseIndex);
                             removeGenotype(info, filteredList);
                         }
-                        /*       if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
+                        /*  if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
 
                             System.out.println("STOP3");
                         }*/
@@ -59,6 +62,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
 
         }
         numScreened += list.size();
+     // do not adjust for thresholding effects.
         adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }

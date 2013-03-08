@@ -174,7 +174,7 @@ public abstract class GenotypeFilter {
                 if (sci.hasFilteredBases(baseIndex)) {
                     samplesWithGenotypeFiltered++;
                 }
-                samplesWithGenotype += sci.counts[baseIndex] > 0 ? 1 : 0;
+                samplesWithGenotype += sci.beforeFilterCounts[baseIndex] > 0 ? 1 : 0;
             }
             if (samplesWithGenotype == samplesWithGenotypeFiltered) {
                 // remove the genotype, it was filtered from all samples where it appeared.

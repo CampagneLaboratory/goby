@@ -59,7 +59,9 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
         resetCounters();
         initStorage(sampleCounts.length);
+
         for (SampleCountInfo sci : sampleCounts) {
+            sci.clearFiltered();
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int count = sci.getGenotypeCount(genotypeIndex);
                 maxAlleleCountsPerSample[sci.sampleIndex] = Math.max(maxAlleleCountsPerSample[sci.sampleIndex], count);
@@ -84,10 +86,8 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
                 // this allele has less than 1/4 of the counts of the allele with the most counts in this sample.
                 // remove.
-
                 sampleCountInfo.suggestRemovingGenotype(baseIndex);
-                removeGenotype(positionBaseInfo,filteredList);
-
+                removeGenotype(positionBaseInfo, filteredList);
             }
         }
         filterIndels(list, sampleCounts);
