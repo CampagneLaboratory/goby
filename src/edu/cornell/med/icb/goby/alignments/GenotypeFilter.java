@@ -194,9 +194,10 @@ public abstract class GenotypeFilter {
                 final int baseIndex = sampleCountInfo.baseIndex(positionBaseInfo.to);
 
                 if (sampleCountInfo.hasFilteredBases(baseIndex) && filteredList.contains(positionBaseInfo)) {
-
+                    // this base should not have been filtered.
                     filteredList.remove(positionBaseInfo);
-                    sampleCountInfo.counts[baseIndex]++;
+                    // set the count to zero since this base is completely filtered out:
+                    sampleCountInfo.counts[baseIndex]=0;
                     if (positionBaseInfo.matchesReference) {
                         refCountRemovedPerSample[sampleIndex]--;
                     } else {
