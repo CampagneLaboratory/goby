@@ -246,6 +246,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case GENOTYPES:
                 formatter = new GenotypesOutputFormat();
                 break;
+            case SOMATIC_VARIATIONS:
+                formatter = new SomaticVariationOutputFormat();
+                break;
             case METHYLATION_REGIONS:
                 formatter = new MethylationRegionsOutputFormat();
                 methylFormat((MethylationFormat) formatter);
@@ -312,6 +315,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (diploid) {
                     genotypeFilters.add(new DiploidFilter());
                 }
+                break;
+            case SOMATIC_VARIATIONS:
+
+                genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new LeftOverFilter());
+
+                if (callIndels) {
+                    genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                }
+
                 break;
             case INDEL_COUNTS:
                 genotypeFilters.add(new QualityScoreFilter());
@@ -538,6 +551,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     /**
      * Return information about covariates (parsed from the file provided with option --covariates).  If no --covariates
      * option was provided, still return an empty instance.
+     *
      * @return An instance of CovariateInfo populated with data from the covariates file.
      */
     public CovariateInfo getCovariateInfo() {
@@ -553,7 +567,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         METHYLATION,
         BETWEEN_GROUPS,
         INDEL_COUNTS,
-        METHYLATION_REGIONS
+        METHYLATION_REGIONS,
+        SOMATIC_VARIATIONS,
     }
 
     enum AlignmentProcessorNames {

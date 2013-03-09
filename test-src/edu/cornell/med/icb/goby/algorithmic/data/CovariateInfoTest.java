@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Fabien Campagne
@@ -37,12 +38,20 @@ public class CovariateInfoTest {
         assertEquals(expectedParentsOfS1, info.samplesContainCovariate("parents", "S1"));
 
         assertEquals("S1|S2", info.getCovariateValue("S3","parents"));
+        assertTrue( info.hasCovariateValue("S3", "parents","S1|S2"));
+        assertTrue(! info.hasCovariateValue("S3", "parents"," x S1|S2"));
 
 
         assertEquals("sample does not exist", null, info.getCovariateValue("S--","parents"));
 
-        assertEquals("covariate does not exist", null, info.getCovariateValue("S3","parent---s"));
+        assertEquals("covariate does not exist", null, info.getCovariateValue("S3", "parent---s"));
 
+    }
+
+    @Test
+       public void testGetCovariateNames() throws IOException {
+           CovariateInfo info = CovariateInfo.parse("test-data/covariates/example-3.tsv");
+       assertEquals(7, info.getCovariateKeys().size());
     }
 
 }

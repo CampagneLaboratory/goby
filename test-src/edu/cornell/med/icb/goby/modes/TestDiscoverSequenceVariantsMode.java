@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.data.CovariateInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
@@ -71,6 +72,38 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         GobyRengine.getInstance();
         //    assertNotNull("R engine must be available", GobyRengine.getInstance().getRengine());
+    }
+
+    @Test
+    public void testDiscoverSomaticVariation() throws IOException, JSAPException {
+
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-somatic-" + i + ".vcf";
+        String[] args = constructArgumentString(
+                add(basenames,specificAlignments), BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.SOMATIC_VARIATIONS.toString()});
+
+        configureTestGenome(mode);
+        final CovariateInfo covInfo = CovariateInfo.parse("test-data/covariates/example-4.tsv");
+        FormatConfigurator configurator = new FormatConfigurator() {
+
+            @Override
+            public void configureFormatter(final SequenceVariationOutputFormat formatter) {
+
+                ((SomaticVariationOutputFormat) formatter).setCovariateInfo(covInfo);
+
+            }
+        };
+        mode.setFormatConfigurator(configurator);
+        mode.configure(args);
+
+        mode.execute();
+        assertEquals(
+                new File("test-data/discover-variants/expected-output-somatic.vcf"),
+                new File(BASE_TEST_DIR + "/" + outputFilename)
+        );
+
     }
 
     @Test

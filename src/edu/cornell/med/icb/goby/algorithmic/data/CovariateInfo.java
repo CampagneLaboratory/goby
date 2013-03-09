@@ -4,10 +4,7 @@ import edu.cornell.med.icb.io.TSVReader;
 import edu.cornell.med.icb.io.TsvToFromMap;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
 import edu.cornell.med.icb.maps.LinkedHashToMultiTypeMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -68,38 +65,36 @@ public class CovariateInfo {
     }
 
     /**
-        * Retrieve the set of samples that satisfy the covariate relation key.contains(value). In contrast to
-     *   samplesWithExactCovariate, this method looks for samples whose covariate string contains the value.
-     *   This means that you can encode covariates with multiple values separated by some character and lookup
-     *   all samples that include the covariate element. For instance, in the following table, it is possible
-     *   to lookup samples that have S1 as a parent by calling samplesContainCovariate("Parents",S1): {S3,S4}:
-     *   Note that lookups are case sensitive.
-
-     <table border="1" style="border-collapse:collapse">
-     <tr><td>sample-id</td><td>Gender</td><td>Type</td><td>Kind-Of-Sample</td><td>Tissue</td><td>Parents</td><td>Offspring</td></tr>
-     <tr><td>S1</td><td>Male</td><td>Father</td><td>Germline</td><td>Blood</td><td>N/A</td><td>S3|S4</td></tr>
-     <tr><td>S2</td><td>Female</td><td>Mother</td><td>Germline</td><td>Blood</td><td>N/A</td><td>S3|S4</td></tr>
-     <tr><td>S3</td><td>Male</td><td>Patient</td><td>Somatic</td><td>Blood</td><td>S1|S2</td><td>N/A</td></tr>
-     <tr><td>S4</td><td>Male</td><td>Patient</td><td>Germline</td><td>Skin</td><td>S1|S2</td><td>N/A</td></tr>
-     </table>
-
-
-        *
-        * @param key   Covariate/Key that sample must have to be returned.
-        * @param value CovariateValue that sample must include to be returned.
-        */
-       public ObjectArraySet<String> samplesContainCovariate(String key, String value) {
-           ObjectArraySet<String> result = new ObjectArraySet<String>();
-           for (String sampleId : map.keySet()) {
-               Object2ObjectMap<String, String> objectMap = map.get(sampleId);
-               if (objectMap.containsKey(key)) {
-                   if (objectMap.get(key).contains(value)) {
-                       result.add(sampleId);
-                   }
-               }
-           }
-           return result;
-       }
+     * Retrieve the set of samples that satisfy the covariate relation key.contains(value). In contrast to
+     * samplesWithExactCovariate, this method looks for samples whose covariate string contains the value.
+     * This means that you can encode covariates with multiple values separated by some character and lookup
+     * all samples that include the covariate element. For instance, in the following table, it is possible
+     * to lookup samples that have S1 as a parent by calling samplesContainCovariate("Parents",S1): {S3,S4}:
+     * Note that lookups are case sensitive.
+     * <p/>
+     * <table border="1" style="border-collapse:collapse">
+     * <tr><td>sample-id</td><td>Gender</td><td>Type</td><td>Kind-Of-Sample</td><td>Tissue</td><td>Parents</td><td>Offspring</td></tr>
+     * <tr><td>S1</td><td>Male</td><td>Father</td><td>Germline</td><td>Blood</td><td>N/A</td><td>S3|S4</td></tr>
+     * <tr><td>S2</td><td>Female</td><td>Mother</td><td>Germline</td><td>Blood</td><td>N/A</td><td>S3|S4</td></tr>
+     * <tr><td>S3</td><td>Male</td><td>Patient</td><td>Somatic</td><td>Blood</td><td>S1|S2</td><td>N/A</td></tr>
+     * <tr><td>S4</td><td>Male</td><td>Patient</td><td>Germline</td><td>Skin</td><td>S1|S2</td><td>N/A</td></tr>
+     * </table>
+     *
+     * @param key   Covariate/Key that sample must have to be returned.
+     * @param value CovariateValue that sample must include to be returned.
+     */
+    public ObjectArraySet<String> samplesContainCovariate(String key, String value) {
+        ObjectArraySet<String> result = new ObjectArraySet<String>();
+        for (String sampleId : map.keySet()) {
+            Object2ObjectMap<String, String> objectMap = map.get(sampleId);
+            if (objectMap.containsKey(key)) {
+                if (objectMap.get(key).contains(value)) {
+                    result.add(sampleId);
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Indicate that the random access cache was created.
@@ -108,11 +103,11 @@ public class CovariateInfo {
 
     private Object2ObjectAVLTreeMap<String, ObjectArraySet<String>> covariateToSampleSetCache =
             new Object2ObjectAVLTreeMap<String, ObjectArraySet<String>>();
-
+    ObjectSet<String> allCovariates;
     private void refresh() {
 
         if (!randomAccessCacheCreated) {
-         ObjectSet<String> allCovariates=new ObjectArraySet<String>();
+            allCovariates = new ObjectArraySet<String>();
             for (Map.Entry<String, Object2ObjectMap<String, String>> entry : map.entrySet()) {
                 ObjectSet<String> covariates = entry.getValue().keySet();
                 allCovariates.addAll(covariates);
@@ -160,16 +155,36 @@ public class CovariateInfo {
 
     /**
      * Return the value associated to a sample for a given covariate.
-     * @param sampleId  sample of interest.
+     *
+     * @param sampleId     sample of interest.
      * @param covariateKey Key of the covariate for which the value is sought.
      * @return null when either the sampleId or covariate key is not defined, or the value of the associated covariate.
      */
     public String getCovariateValue(String sampleId, String covariateKey) {
 
         Object2ObjectMap<String, String> sampleMap = map.get(sampleId);
-        if (sampleMap==null) {
+        if (sampleMap == null) {
             return null;
         }
         return sampleMap.get(covariateKey);
+    }
+
+    /**
+     * Returns true iff the sample has the specific value of the covariate.
+     *
+     * @param sampleId
+     * @param covariateKey
+     * @param value
+     * @return
+     */
+    public boolean hasCovariateValue(String sampleId, String covariateKey, String value) {
+        String v = getCovariateValue(sampleId, covariateKey);
+        if (v == null) return false;
+        return (value.equals(v));
+    }
+
+    public ObjectSet<String> getCovariateKeys() {
+        refresh();
+        return allCovariates;
     }
 }
