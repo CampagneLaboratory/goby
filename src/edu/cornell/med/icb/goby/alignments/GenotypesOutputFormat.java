@@ -41,7 +41,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int numberOfSamples;
     private int[] refCountsPerSample;
     private int[] variantsCountPerSample;
-    private VCFWriter statsWriter;
+    protected VCFWriter statsWriter;
     String[] samples;
     private int chromosomeColumnIndex;
     private int idColumnIndex;
@@ -115,7 +115,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     @Override
     public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator, final SampleCountInfo[] sampleCounts,
-                            final int referenceIndex, int position, final DiscoverVariantPositionData list, final int groupIndexA, final int groupIndexB) {
+                            final int referenceIndex, int position, final DiscoverVariantPositionData list,
+                            final int groupIndexA, final int groupIndexB) {
 
         position = position + 1; // report  1-based position
         fillVariantCountArrays(sampleCounts);
