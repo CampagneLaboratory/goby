@@ -307,10 +307,14 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
+<<<<<<< HEAD
           <root url="jar://$MODULE_DIR$/lib/xstream-1.4.3.jar!/" />
+=======
+          <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
+>>>>>>> 89b524138adc13955e0a4033d0c17ae051657502
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -328,7 +332,11 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+<<<<<<< HEAD
           <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
+=======
+          <root url="jar://$MODULE_DIR$/lib/xstream-1.4.3.jar!/" />
+>>>>>>> 89b524138adc13955e0a4033d0c17ae051657502
         </CLASSES>
         <JAVADOC />
         <SOURCES />

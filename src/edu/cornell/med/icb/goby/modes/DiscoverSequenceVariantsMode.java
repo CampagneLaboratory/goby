@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.Release1_9_7_2;
+import edu.cornell.med.icb.goby.algorithmic.data.CovariateInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
@@ -106,6 +107,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private boolean callIndels = Release1_9_7_2.callIndels;
     private String[] dymamicOptions;
     private boolean diploid;
+    /**
+     * Covariate info provided from the command line.
+     */
+    private CovariateInfo covInfo;
 
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
@@ -241,6 +246,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case GENOTYPES:
                 formatter = new GenotypesOutputFormat();
                 break;
+            case SOMATIC_VARIATIONS:
+                formatter = new SomaticVariationOutputFormat();
+                break;
             case METHYLATION_REGIONS:
                 formatter = new MethylationRegionsOutputFormat();
                 methylFormat((MethylationFormat) formatter);
@@ -308,6 +316,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     genotypeFilters.add(new DiploidFilter());
                 }
                 break;
+            case SOMATIC_VARIATIONS:
+
+                genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new LeftOverFilter());
+
+                if (callIndels) {
+                    genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                }
+
+                break;
             case INDEL_COUNTS:
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
@@ -325,6 +343,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         System.out.println("Filtering reads that have these criteria:");
         for (final GenotypeFilter filter : genotypeFilters) {
             System.out.println(filter.describe());
+        }
+        String covInfoFilename = jsapResult.getString("covariates");
+        if (covInfoFilename != null) {
+            covInfo = CovariateInfo.parse(covInfoFilename);
         }
 
         final RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
@@ -526,6 +548,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return callIndels;
     }
 
+    /**
+     * Return information about covariates (parsed from the file provided with option --covariates).  If no --covariates
+     * option was provided, still return an empty instance.
+     *
+     * @return An instance of CovariateInfo populated with data from the covariates file.
+     */
+    public CovariateInfo getCovariateInfo() {
+        return covInfo;
+    }
+
 
     enum OutputFormat {
         VARIANT_DISCOVERY,
@@ -535,7 +567,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         METHYLATION,
         BETWEEN_GROUPS,
         INDEL_COUNTS,
-        METHYLATION_REGIONS
+        METHYLATION_REGIONS,
+        SOMATIC_VARIATIONS,
     }
 
     enum AlignmentProcessorNames {

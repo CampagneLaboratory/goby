@@ -24,7 +24,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-               <defaults>
+            <defaults>
                 <string>-</string>
             </defaults>
             <help>The name of the output file.</help>
@@ -40,38 +40,58 @@
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
-            <help>When provided, process only reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+            <help>When provided, process only reference identifiers listed in this comma separated list. To process only
+                chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>groups</id>
             <shortFlag>g</shortFlag>
             <longFlag>groups</longFlag>
             <required>false</required>
-            <help>Define groups for multi-group comparisons. This option is required for some output formats. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/). If the option is not provided, one group per sample is assumed and group1... groupN are defined corresponding to the N input basenames, in the order these appear on the command line.</help>
+            <help>Define groups for multi-group comparisons. This option is required for some output formats. The syntax
+                of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the
+                first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename
+                provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).
+                If the option is not provided, one group per sample is assumed and group1... groupN are defined
+                corresponding to the N input basenames, in the order these appear on the command line.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>group-file</id>
             <longFlag>group-file</longFlag>
             <required>false</required>
-            <help>Define groups for multi-group comparisons. This parameter names a file in the Java properties format. The format describes mapping between samples and groups. Each line must have the format sample-id=group-id or be a comment. Please refer to the --groups option for a description of sample/group mapping.</help>
+            <help>Define groups for multi-group comparisons. This parameter names a file in the Java properties format.
+                The format describes mapping between samples and groups. Each line must have the format
+                sample-id=group-id or be a comment. Please refer to the --groups option for a description of
+                sample/group mapping.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>compare</id>
             <longFlag>compare</longFlag>
             <required>false</required>
-            <help>Compare sequence variations across groups of samples. This option is required for some output formats. When provided, the compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B. Starting with version 1.9.8.1, several pairs of groups can be specified. Use format A/B,A/C,A/D to compare group A to group B, C and D respectively.</help>
+            <help>Compare sequence variations across groups of samples. This option is required for some output formats.
+                When provided, the compare flag must be followed by group ids separated by slashes. For instance, if
+                groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will
+                evaluate statistical tests between sequence variation in groups A and B. Starting with version 1.9.8.1,
+                several pairs of groups can be specified. Use format A/B,A/C,A/D to compare group A to group B, C and D
+                respectively.
+            </help>
         </flaggedOption>
         <flaggedOption>
-             <id>eval</id>
-             <longFlag>eval</longFlag>
-             <required>false</required>
-             <stringParser>
+            <id>eval</id>
+            <longFlag>eval</longFlag>
+            <required>false</required>
+            <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-             <defaults>
+            <defaults>
                 <string>samples</string>
             </defaults>
-                <help>List of optional analysis steps. This option is currently ignored. Previous versions use this option to control output. Output formats are now controlled by the --format flag.</help>
+            <help>List of optional analysis steps. This option is currently ignored. Previous versions use this option
+                to control output. Output formats are now controlled by the --format flag.
+            </help>
         </flaggedOption>
         <!--flaggedOption>
              <id>filters</id>
@@ -82,7 +102,7 @@
             </stringParser>
                 <help>List of base filters to use. The default will use the filters most appropriate for the output format, but you can override this choice. The syntax of the filter argument is id1,id2,... where id1 and id2 are the names of base filters.</help>
         </flaggedOption-->
-       <flaggedOption>
+        <flaggedOption>
             <id>start-position</id>
             <shortFlag>s</shortFlag>
             <longFlag>start-position</longFlag>
@@ -90,7 +110,10 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The start position within the file, which should be number of bytes into the file to start reading from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that have a position after the start position are considered.</help>
+            <help>The start position within the file, which should be number of bytes into the file to start reading
+                from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that have a position
+                after the start position are considered.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>end-position</id>
@@ -100,7 +123,10 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The end position within the file, which should be number of bytes into the file to end reading from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that occur before the specified position are analyzed.</help>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from,
+                or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that occur before the
+                specified position are analyzed.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>start-flap-size</id>
@@ -112,17 +138,24 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>Size of the flap to consider before start-position (in bp). Reads that start within start-flap and start are used to accumulate base counts. Base counts are used to emit statistics between start and end, but not between start-flap and start. This strategy makes is possible to concatenate results from distinct windows without reporting redundant results.</help>
+            <help>Size of the flap to consider before start-position (in bp). Reads that start within start-flap and
+                start are used to accumulate base counts. Base counts are used to emit statistics between start and end,
+                but not between start-flap and start. This strategy makes is possible to concatenate results from
+                distinct windows without reporting redundant results.
+            </help>
         </flaggedOption>
-         <flaggedOption>
-             <id>variation-stats</id>
-             <shortFlag>v</shortFlag>
-             <longFlag>variation-stats</longFlag>
-             <required>false</required>
-             <stringParser>
+        <flaggedOption>
+            <id>variation-stats</id>
+            <shortFlag>v</shortFlag>
+            <longFlag>variation-stats</longFlag>
+            <required>false</required>
+            <stringParser>
                 <classname>FileStringParser</classname>
             </stringParser>
-            <help>Path to a variation stastistics file produced with --mode sequence-variation-stats2 over the same set of alignments. This file provides variation counts for specific read indices which are used in calculating the within group P-values for variation discovery.</help>
+            <help>Path to a variation stastistics file produced with --mode sequence-variation-stats2 over the same set
+                of alignments. This file provides variation counts for specific read indices which are used in
+                calculating the within group P-values for variation discovery.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>minimum-variation-support</id>
@@ -135,7 +168,9 @@
             <defaults>
                 <string>10</string>
             </defaults>
-            <help>The minimum number of times a variation must be seen across all alignments to be considered for statistical test. </help>
+            <help>The minimum number of times a variation must be seen across all alignments to be considered for
+                statistical test.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>threshold-distinct-read-indices</id>
@@ -148,7 +183,9 @@
             <defaults>
                 <string>3</string>
             </defaults>
-            <help>The minimum number of distinct read indices that support a variation for this variation to be considered for statistical test. </help>
+            <help>The minimum number of distinct read indices that support a variation for this variation to be
+                considered for statistical test.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>max-coverage-per-site</id>
@@ -160,31 +197,40 @@
             <defaults>
                 <string>500000</string>
             </defaults>
-            <help>The maximum coverage per site considered for comparisons. Any bases in excess of the specified coverage at a given site is ignored.</help>
+            <help>The maximum coverage per site considered for comparisons. Any bases in excess of the specified
+                coverage at a given site is ignored.
+            </help>
         </flaggedOption>
-         <switch>
+        <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
-            <help>Run some computations in parallel. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+            <help>Run some computations in parallel. You can tune the number of processors used by setting the property
+                pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per
+                processing core of the machine will be used unless specified otherwise (with pj.nt).
+            </help>
         </switch>
 
-         <flaggedOption>
+        <flaggedOption>
             <id>format</id>
             <shortFlag>f</shortFlag>
             <longFlag>format</longFlag>
             <required>false</required>
-               <defaults>
+            <defaults>
                 <string>variant_discovery</string>
             </defaults>
-            <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups, methylation.</help>
+            <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups,
+                methylation.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>genome</id>
             <longFlag>genome</longFlag>
             <required>true</required>
-            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the compressed, random access files this mode needs. </help>
+            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the
+                compressed, random access files this mode needs.
+            </help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>processor</id>
             <shortFlag>p</shortFlag>
             <longFlag>processor</longFlag>
@@ -192,9 +238,13 @@
             <defaults>
                 <string>NONE</string>
             </defaults>
-            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
+            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment
+                entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a
+                processor that realigns reads in the proximity of indels will be used. Please note that this feature is
+                experimental (Since Goby 1.9.7).
+            </help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>call-indels</id>
             <longFlag>call-indels</longFlag>
             <stringParser>
@@ -204,7 +254,7 @@
             <defaults>
                 <string>false</string>
             </defaults>
-            <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels). </help>
+            <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels).</help>
         </flaggedOption>
         <flaggedOption>
             <id>diploid</id>
@@ -216,8 +266,19 @@
             <defaults>
                 <string>false</string>
             </defaults>
-            <help>Force diploid genotypes. Use when you know the genome you are trying to call genotypes against are diploid. </help>
+            <help>Force diploid genotypes. Use when you know the genome you are trying to call genotypes against are
+                diploid.
+            </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>covariates</id>
 
+            <longFlag>covariates</longFlag>
+            <required>false</required>
+
+            <help>The name of the covariate info file. When present, this file must be in tab delimited format, and
+                provide at least one line per sample in the input.
+            </help>
+        </flaggedOption>
     </parameters>
 </jsap>

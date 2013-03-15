@@ -1,0 +1,5 @@
+sample-id	gender	type	kind-of-sample	tissue
+S1	Male	Father	Germline	Blood
+S2	Female	Mother	Germline	Blood
+S3	Male	Patient	Somatic	Blood
+S4	Male	Patient	Germline	Skin

@@ -139,8 +139,7 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
     }
 
     @Before
-    public void setUp
-            () throws IOException {
+    public void setUp() throws IOException {
 
         final File dir = new File(BASE_TEST_DIR);
         dir.mkdirs();
@@ -202,25 +201,25 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
         for (int i = 0; i < NUM_BASENAME_PER_GROUP * 2; i++) {
             basenames[i] = BASE_TEST_DIR + "/basen" + i + "-indels";
             String fromBases, toBases;
-           int varPos;
+            int varPos;
             switch (i) {
 
                 case 1:
                     fromBases = "--";
                     toBases = "AA";
-                    varPos=25;
+                    varPos = 25;
                     break;
                 case 2:
                     fromBases = "AAA";
                     toBases = "---";
-                    varPos=36;
+                    varPos = 36;
                     break;
                 default:
                     fromBases = "A";
                     toBases = "G";
-                    varPos=40;
+                    varPos = 40;
             }
-            writeAlignment(basenames, i, varPos,fromBases, toBases);
+            writeAlignment(basenames, i, varPos, fromBases, toBases);
             appendToStats(basenames, i, outTSV);
         }
         /*specificAlignments = new String[1];
@@ -328,7 +327,7 @@ public class TestDiscoverSequenceVariantsIndelGenotypes extends TestFiles {
         writer.close();
     }
 
-    private static void writeAlignmentEntries(int varPos,String fromBases, String toBases, AlignmentWriter writer, int numAlignmentEntries, int readIndex, int referencePosition, int positionStart) throws IOException {
+    private static void writeAlignmentEntries(int varPos, String fromBases, String toBases, AlignmentWriter writer, int numAlignmentEntries, int readIndex, int referencePosition, int positionStart) throws IOException {
 
         for (int j = 0; j < numAlignmentEntries; j++) {
             final Alignments.AlignmentEntry.Builder builder =

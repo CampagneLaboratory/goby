@@ -1,0 +1,5 @@
+sample-id	gender	type	kind-of-sample	tissue	parents	offspring
+S1	Male	Father	Germline	Blood	N/A	S3|S4
+S2	Female	Mother	Germline	Blood	N/A	S3|S4
+S3	Male	Patient	Somatic	Blood	S1|S2	N/A
+S4	Male	Patient	Germline	Skin	S1|S2	N/A
