@@ -34,9 +34,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        for (SampleCountInfo sci:sampleCounts) {
-            sci.clearFiltered();
-        }
+
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 for (final PositionBaseInfo info : list) {
@@ -62,6 +60,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
 
         }
         numScreened += list.size();
+     //   filterIndels(list, sampleCounts);
      // do not adjust for thresholding effects.
         adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);

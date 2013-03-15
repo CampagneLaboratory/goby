@@ -100,7 +100,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.to = toChar;
         info.matchesReference = false;
         info.position = currentRefPosition - 1; // store 0-based position
-        final int readMappingQuality = (byte) (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
+        final int readMappingQuality =  (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
         info.qualityScore = (byte) Math.min(toQual, readMappingQuality);
         info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);

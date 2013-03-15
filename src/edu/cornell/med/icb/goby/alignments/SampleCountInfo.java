@@ -405,29 +405,18 @@ public class SampleCountInfo {
 
     private String toString(int baseIndex) {
         StringBuffer buffer = new StringBuffer();
-        if (hasFilteredBases(baseIndex)) {
-            buffer.append("(");
-        }
+
         buffer.append(base(baseIndex));
         buffer.append("=");
         buffer.append(counts[baseIndex]);
-        if (hasFilteredBases(baseIndex)) {
-            buffer.append(")");
-        }
+
         return buffer.toString();
 
     }
 
-    protected boolean hasFilteredBases(int baseIndex) {
-        return filtered[baseIndex];
-    }
 
     public void suggestRemovingGenotype(int baseIndex) {
-        if (!filtered[baseIndex]) {
-            // save the pre-filter count:
-            beforeFilterCounts[baseIndex] = counts[baseIndex];
-        }
-        filtered[baseIndex] = true;
+
         if (counts[baseIndex] - 1 >= 0) {
 
             counts[baseIndex]--;
@@ -435,18 +424,27 @@ public class SampleCountInfo {
 
     }
 
-    public void clearFiltered() {
-        Arrays.fill(filtered, false);
-        System.arraycopy(counts, 0, beforeFilterCounts, 0, counts.length);
-        Arrays.fill(beforeFilterCounts, 0);
-    }
+
 
     /**
-     * Clear the filtered state and restore the previous count for this base.
+     * Reset a genotype count to a given value.
      *
-     * @param baseIndex
+     * @param genotypeIndex
+     * @param count
      */
-    public void clearFiltered(int baseIndex) {
-        filtered[baseIndex] = false;
+    public void setGenotypeCount(int genotypeIndex, int count) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            counts[genotypeIndex] = count;
+            return;
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
+                equivalentIndelRegion.setFrequency(count);
+                equivalentIndelRegion.removeFiltered();
+                return;
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
     }
 }

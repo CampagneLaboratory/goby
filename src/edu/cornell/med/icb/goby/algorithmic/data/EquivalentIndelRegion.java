@@ -69,7 +69,7 @@ public class EquivalentIndelRegion {
      * The indices of the first bases in the reads where the indel was observed. This is a set because an EIR may
      * represent multiple read observations of an indel.
      */
-    public IntArraySet readIndices=new IntArraySet();
+    public IntArraySet readIndices = new IntArraySet();
     /**
      * Quality scores across the length of the indel.
      */
@@ -174,6 +174,13 @@ public class EquivalentIndelRegion {
      */
     public void markFiltered() {
         filtered = true;
+    }
+
+    /**
+     * Remove the filtered flag from an indel.
+     */
+    public void removeFiltered() {
+        filtered = false;
     }
 
     public boolean isFiltered() {

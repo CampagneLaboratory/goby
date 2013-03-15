@@ -22,6 +22,8 @@ import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import java.util.Arrays;
+
 /**
  * @author Fabien Campagne
  *         Date: Mar 23, 2011
@@ -31,6 +33,7 @@ public class QualityScoreFilter extends GenotypeFilter {
     private byte scoreThreshold = 30;
     @RegisterThis
     public static final DynamicOptionClient doc = new DynamicOptionClient(QualityScoreFilter.class, "scoreThreshold:Phred score threshold to keep bases.:30");
+
 
     public static DynamicOptionClient doc() {
         return doc;
@@ -44,9 +47,11 @@ public class QualityScoreFilter extends GenotypeFilter {
         return "q<" + scoreThreshold;
     }
 
+    int thresholdPerSample[];
+
     @Override
     public int getThresholdForSample(int sampleIndex) {
-        throw new UnsupportedOperationException("This filter does not support method getThresholdForSample()");
+        return thresholdPerSample[sampleIndex];
     }
 
     int[] removed = new int[5];
@@ -58,8 +63,11 @@ public class QualityScoreFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        for (SampleCountInfo sci : sampleCounts) {
-            sci.clearFiltered();
+        if (thresholdPerSample == null) {
+            thresholdPerSample = new int[sampleCounts.length];
+
+        } else {
+            Arrays.fill(thresholdPerSample, 0);
         }
         for (final PositionBaseInfo info : list) {
             numScreened++;
@@ -72,10 +80,12 @@ public class QualityScoreFilter extends GenotypeFilter {
 
                         sampleCountInfo.suggestRemovingGenotype(baseIndex);
                         removeGenotype(info, filteredList);
+                        thresholdPerSample[info.readerIndex]++;
                     }
                 }
             }
         }
+        filterIndels(list, sampleCounts);
         /*
        TODO: enable this when we store quality score for context of indels:
        if (list.hasCandidateIndels()) {
@@ -98,6 +108,7 @@ public class QualityScoreFilter extends GenotypeFilter {
 
         */
         adjustGenotypes(list, filteredList, sampleCounts);
+
         // adjust refCount and varCount:
         adjustRefVarCounts(sampleCounts);
     }

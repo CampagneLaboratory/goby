@@ -61,7 +61,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
         initStorage(sampleCounts.length);
 
         for (SampleCountInfo sci : sampleCounts) {
-            sci.clearFiltered();
+
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int count = sci.getGenotypeCount(genotypeIndex);
                 maxAlleleCountsPerSample[sci.sampleIndex] = Math.max(maxAlleleCountsPerSample[sci.sampleIndex], count);

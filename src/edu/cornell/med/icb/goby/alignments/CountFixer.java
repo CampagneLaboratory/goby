@@ -58,9 +58,12 @@ public class CountFixer implements CountFixerInterface {
             ++(sampleCounts[failedIndel.sampleIndex].failedCount);
         }
         list.removeAll(likelyErrors);
-        for (SampleCountInfo sci : sampleCounts) {
-            sci.clearFiltered();
-        }
+
+    }
+
+    @Override
+    public void preserveCounts(SampleCountInfo[] sampleCounts) {
+            // this implementation does not need to preserve counts.
     }
 
 }

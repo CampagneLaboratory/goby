@@ -313,25 +313,27 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 // base counts for reads that can overlap with the window under consideration.
 
                 if (inRegionToWrite(referenceIndex, position)) {
+                    // make genotypes comparable across all samples:
+                    SampleCountInfo.alignIndels(sampleCounts);
 
                     if (genotypeFilters.length != 0) {
                         filteredList.clear();
+                        final CountFixer fixer = new CountFixerNoThresholdingEffect();
+                        fixer.preserveCounts(sampleCounts);
                         for (final GenotypeFilter filter : genotypeFilters) {
                             filter.filterGenotypes(list, sampleCounts, filteredList);
-
-                           /*  System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
+                           /*
+                             System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
 
                             if (anyCountNegative(sampleCounts)) {
                                 LOG.warn(String.format("filter %s produced negative counts! position=%d %n",
                                         filter.getName(),position));
-                            } */
+                            }*/
                         }
-                        final CountFixer fixer = new CountFixer();
+
                         fixer.fix(list, sampleCounts, filteredList);
                     }
 
-                    // make genotypes comparable across all samples:
-                    SampleCountInfo.alignIndels(sampleCounts);
 
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
 

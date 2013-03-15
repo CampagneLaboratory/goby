@@ -100,6 +100,7 @@ public abstract class GenotypeFilter {
 
         numScreened = 0;
         numFiltered = 0;
+
     }
 
     protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts) {
@@ -118,39 +119,15 @@ public abstract class GenotypeFilter {
     private IntArraySet doNotRemoveSampleIndices = new IntArraySet();
 
     protected void filterIndels(final DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts) {
-
         if (list.hasCandidateIndels()) {
-            int numSamplesWithIndels = 0;
-            for (SampleCountInfo sci : sampleCounts) {
-                numSamplesWithIndels += sci.hasIndels() ? 1 : 0;
-            }
             // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
             // at that position):
-            ObjectArraySet<EquivalentIndelRegion> indels = new ObjectArraySet<EquivalentIndelRegion>(list.getIndels());
-            toBeRemoved.clear();
-            doNotRemoveSampleIndices.clear();
-            for (final EquivalentIndelRegion indel : indels) {
-
+            for (final EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
-                    toBeRemoved.add(indel);
-
-                }  else {
-                    doNotRemoveSampleIndices.add(indel.sampleIndex);
-                }
-
-            }
-            if (doNotRemoveSampleIndices.size() ==0) {  // none of the candidate indels survived the filters. remove them
-
-
-                for (final EquivalentIndelRegion indel : toBeRemoved) {
-                    // only remove indels that would be removed consistently from all samples. This makes sure we keep
-                    // data about indels across samples when one indel is not removed in at least one sample by some
-                    // filter.
                     indel.markFiltered();
                     list.failIndel(indel);
                     sampleCounts[indel.sampleIndex].removeIndel(indel);
                 }
-
             }
         }
     }
