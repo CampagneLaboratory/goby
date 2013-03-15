@@ -11,11 +11,17 @@ import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.apache.commons.math.MathException;
+import org.apache.commons.math.MaxIterationsExceededException;
+import org.apache.commons.math.distribution.ChiSquaredDistributionImpl;
 import org.apache.commons.math.distribution.PoissonDistributionImpl;
+import org.apache.commons.math.stat.inference.ChiSquareTest;
+import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
+import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
 
 import java.util.Arrays;
@@ -45,10 +51,18 @@ import java.util.Arrays;
  *         Time: 10:13 AM
  */
 public class SomaticVariationOutputFormat implements SequenceVariationOutputFormat {
+
+
+    protected void setSomaticPValueIndex(int[] somaticPValueIndex) {
+        this.somaticPValueIndex = somaticPValueIndex;
+    }
+
     private int somaticPValueIndex[];
     private CovariateInfo covInfo;
     private ObjectArraySet<String> somaticSampleIds;
     GenotypesOutputFormat genotypeFormatter = new GenotypesOutputFormat();
+    private static final Logger LOG = Logger.getLogger(SomaticVariationOutputFormat.class);
+
     /**
      * Given the index of a somatic sample, provides the index of the patient's father sample in sampleCounts.
      * Indices that are not defined have value -1.
@@ -72,9 +86,35 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     private int referenceIndex;
     private int[] sampleIndex2SomaticSampleIndex;
     private boolean[] isSomatic;
+    /**
+     * Proportion of total bases observed in a given sample.
+     */
+    private double[] proportionCountsIn;
+    /**
+     * Cumulative count of total bases observed in a given sample.
+     */
+    private double[] countsInSample;
+
+    /**
+     * Hook to install mock statsWriter.
+     */
+    protected void setStatsWriter(VCFWriter statsWriter) {
+        this.statsWriter = statsWriter;
+    }
+
     private VCFWriter statsWriter;
     String[] samples;
     private int igvFieldIndex;
+
+    /**
+     * Hook to install the somatic sample indices for testing.
+     *
+     * @param somaticSampleIndices
+     */
+    protected void setSomaticSampleIndices(IntArrayList somaticSampleIndices) {
+        this.somaticSampleIndices = somaticSampleIndices;
+    }
+
     private IntArrayList somaticSampleIndices;
 
     public void defineColumns(OutputInfo outputInfo, DiscoverSequenceVariantsMode mode) {
@@ -119,27 +159,21 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         // add column(s) for p-values of somatic variation:
         somaticPValueIndex = new int[numSamples];
         Arrays.fill(somaticPValueIndex, -1);
+        setupR();
+
         for (String sample : somaticSampleIds) {
             int sampleIndex = locateSampleIndex(sample);
             assert sampleIndex != -1 : "sample-id must match between covariate file and alignment basenames.";
             somaticPValueIndex[sampleIndex] = statsWriter.defineField("INFO",
-                    String.format("Somatic-P-value(%s)[%s]", fisherRInstalled?"Fisher":"Poisson",sample),
+                    String.format("Somatic-P-value(%s)[%s]", fisherRInstalled ? "Fisher" : "Poisson", sample),
                     1, ColumnType.String,
-                    "P-value that a variation is somatic in this particular sample, compared to other germline samples (e.g., germline skin, or mother/father).");
+                    "P-value that a variation is somatic in this particular sample, compared to other germline samples (e.g., germline skin, or mother/father).", "p-value", "statistic", "indexed");
         }
 
         sample2FatherSampleIndex = new int[numSamples];
         sample2MotherSampleIndex = new int[numSamples];
 
-        final Rengine rEngine = GobyRengine.getInstance().getRengine();
-        fisherRInstalled = rEngine != null && rEngine.isAlive();
-        //assert fisherRInstalled : "Somatic format requires a working R connection.";
-        if (fisherRInstalled) {
-            System.err.println("Using FISHER statistics to estimate somatic variation p-values.");
-        } else {
-            System.err.println("Using Poisson statistics to estimate somatic variation p-values.");
 
-        }
         Arrays.fill(sample2FatherSampleIndex, -1);
         Arrays.fill(sample2MotherSampleIndex, -1);
 
@@ -148,19 +182,22 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             int sampleIndex = locateSampleIndex(somaticSampleId);
             somaticSampleIndices.add(sampleIndex);
             String parentString = covInfo.getCovariateValue(somaticSampleId, "parents");
-            String[] parentIds = parentString.split("[|]");
-            for (String parentId : parentIds) {
+            if (parentString != null) {
+                // parents column was defined:
+                String[] parentIds = parentString.split("[|]");
+                for (String parentId : parentIds) {
 
-                String parentSampleId = covInfo.samplesWithExactCovariate("patient-id", parentId).iterator().next();
-                String genderOfParent = covInfo.getCovariateValue(parentSampleId, "gender");
-                int parentSampleIndex = locateSampleIndex(parentSampleId);
-                if (genderOfParent.equals("Male")) {
+                    String parentSampleId = covInfo.samplesWithExactCovariate("patient-id", parentId).iterator().next();
+                    String genderOfParent = covInfo.getCovariateValue(parentSampleId, "gender");
+                    int parentSampleIndex = locateSampleIndex(parentSampleId);
+                    if (genderOfParent.equals("Male")) {
 
-                    sample2FatherSampleIndex[sampleIndex] = parentSampleIndex;
-                }
-                if (genderOfParent.equals("Female")) {
+                        sample2FatherSampleIndex[sampleIndex] = parentSampleIndex;
+                    }
+                    if (genderOfParent.equals("Female")) {
 
-                    sample2MotherSampleIndex[sampleIndex] = parentSampleIndex;
+                        sample2MotherSampleIndex[sampleIndex] = parentSampleIndex;
+                    }
                 }
             }
         }
@@ -182,7 +219,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             }
             int index = 0;
             sample2GermlineSampleIndices[sampleIndex] = new int[count];
-            System.out.printf("SampleIndex=%d count=%d%n", sampleIndex, count);
+            //   System.out.printf("SampleIndex=%d count=%d%n", sampleIndex, count);
             for (String sampleId : allSamplesForPatient) {
                 int germlineSampleIndex = locateSampleIndex(sampleId);
                 if (covInfo.hasCovariateValue(sampleId, "kind-of-sample", "Germline")) {
@@ -193,7 +230,23 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         }
         statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
+        countsInSample = new double[numSamples];
+        proportionCountsIn = new double[numSamples];
+        // initialize sample counts to equal counts across all samples:
+        Arrays.fill(countsInSample, 1);
 
+    }
+
+    protected void setupR() {
+        final Rengine rEngine = GobyRengine.getInstance().getRengine();
+        fisherRInstalled = rEngine != null && rEngine.isAlive();
+        //assert fisherRInstalled : "Somatic format requires a working R connection.";
+        if (fisherRInstalled) {
+            System.err.println("Using FISHER statistics to estimate somatic variation p-values.");
+        } else {
+            System.err.println("Using Poisson statistics to estimate somatic variation p-values.");
+
+        }
     }
 
     private int locateSampleIndex(String somaticSampleId) {
@@ -206,8 +259,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
-
-
+        this.numSamples = numberOfSamples;
+        countsInSample = new double[numberOfSamples];
+        proportionCountsIn = new double[numberOfSamples];
+        // initialize sample counts to equal counts across all samples:
+        Arrays.fill(countsInSample, 1);
         this.numSamples = numberOfSamples;
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
     }
@@ -216,7 +272,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator, final SampleCountInfo[] sampleCounts,
                             final int referenceIndex, int position, final DiscoverVariantPositionData list,
                             final int groupIndexA, final int groupIndexB) {
-
+        updateSampleProportions();
         this.pos = position;
         position = position + 1; // report  1-based position
         genotypeFormatter.fillVariantCountArrays(sampleCounts);
@@ -241,8 +297,49 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
         estimateSomaticPValue(sampleCounts);
         statsWriter.writeRecord();
-
+        updateSampleCumulativeCounts(sampleCounts);
     }
+
+    private void updateSampleCumulativeCounts(SampleCountInfo[] sampleCounts) {
+        for (SampleCountInfo info : sampleCounts) {
+            // estimate sample proportion with number of reference bases that matched.
+            countsInSample[info.sampleIndex] += info.refCount;
+        }
+    }
+
+    private void updateSampleProportions() {
+        long sumAllCounts = 0;
+
+        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+            sumAllCounts += countsInSample[sampleIndex];
+        }
+        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+
+            proportionCountsIn[sampleIndex] = ((double) countsInSample[sampleIndex]) / (double) sumAllCounts;
+        }
+    }
+
+    /**
+     * Calculate the proportion of bases that we would expect across a pair of sample.
+     *
+     * @param sampleIndexA first sample index of the pair under consideration
+     * @param sampleIndexB second sample index of the pair under consideration
+     * @param request      index of the sample for which the proportion should be returned.
+     * @return proportion of bases for request sample.
+     */
+    private double getSpecificSampleProportion(int sampleIndexA, int sampleIndexB, int request) {
+        long sumAllCounts = 0;
+
+        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+            if (sampleIndex == sampleIndexA || sampleIndex == sampleIndexB) {
+                sumAllCounts += countsInSample[sampleIndex];
+            }
+        }
+        if (request == sampleIndexA) return ((double) countsInSample[sampleIndexA]) / (double) sumAllCounts;
+        else if (request == sampleIndexB) return ((double) countsInSample[sampleIndexB]) / (double) sumAllCounts;
+        else throw new IllegalArgumentException("request must be one of sampleIndexA or sampleIndexB");
+    }
+
 
     public void close() {
 
@@ -250,19 +347,32 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
+        genotypeFormatter.setGenome(genome);
     }
 
     public void setGenomeReferenceIndex(int index) {
-
+        genotypeFormatter.setGenomeReferenceIndex(index);
     }
 
-    DoubleArrayList pValues = new DoubleArrayList();
+    protected DoubleArrayList pValues = new DoubleArrayList();
 
-    private void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
+    protected void setSample2FatherSampleIndex(int[] sample2FatherSampleIndex) {
+        this.sample2FatherSampleIndex = sample2FatherSampleIndex;
+    }
+
+    protected void setSample2GermlineSampleIndices(int[][] sample2GermlineSampleIndices) {
+        this.sample2GermlineSampleIndices = sample2GermlineSampleIndices;
+    }
+
+    protected void setSample2MotherSampleIndex(int[] sample2MotherSampleIndex) {
+        this.sample2MotherSampleIndex = sample2MotherSampleIndex;
+    }
+
+    protected void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
         pValues.clear();
         // compare somatic to father:
 
-        for (int sampleIndex:somaticSampleIndices) {
+        for (int sampleIndex : somaticSampleIndices) {
 
             SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
             int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
@@ -301,37 +411,47 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         return max;
     }
 
-    private double estimateP(SampleCountInfo somaticCounts, SampleCountInfo otherCounts) {
+    protected double estimateP(SampleCountInfo somaticCounts, SampleCountInfo germlineCounts) {
 
-        double fisherP = -1;
-        int sumCountsSomatic = 0;
-        int sumCountsOther = 0;
-        for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
+        double fisherP = 1;
 
-            sumCountsSomatic += somaticCounts.getGenotypeCount(genotypeIndex);
-            sumCountsOther += otherCounts.getGenotypeCount(genotypeIndex);
-        }
 
         for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
 
-            boolean ok = checkCounts(somaticCounts, otherCounts, genotypeIndex);
-            final int a = somaticCounts.getGenotypeCount(genotypeIndex);
-            final int b = sumCountsSomatic;
-            final int c = otherCounts.getGenotypeCount(genotypeIndex);
-            final int d = sumCountsOther;
+
+            boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
+            final int a = germlineCounts.getGenotypeCount(genotypeIndex);
+            final int b = somaticCounts.getGenotypeCount(genotypeIndex);
+            if (a >= 5) {
+                // at least 5 bases in germline, we don't need to score this:
+                fisherP = Math.min(fisherP, 1);
+                continue;
+            }
+            //    final int c = (int) ((a + b) * proportionCountsIn[germlineCounts.sampleIndex]);
+            //    final int d = (int) ((a + b) * proportionCountsIn[somaticCounts.sampleIndex]);
+            double germlineSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
+                    somaticCounts.sampleIndex, germlineCounts.sampleIndex);
+            double somaticSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
+                    somaticCounts.sampleIndex, somaticCounts.sampleIndex);
+            assert germlineSampleExpectedProportion + somaticSampleExpectedProportion == 1 : "proportions must sum to 1.0";
+            final int c = (int) ((a + b) * germlineSampleExpectedProportion);
+            final int d = (int) ((a + b) * somaticSampleExpectedProportion);
             if (ok) {
                 if (fisherRInstalled) {
-                    fisherP = fisherRInstalled ? Math.max(fisherP, FisherExactRCalculator.getFisherPValue(
+                    //    System.out.printf("%n fisher=? %n%d|%d%n%d|%d ", a, b - a, c, d - c);
+                    fisherP = Math.min(fisherP, FisherExactRCalculator.getFisherOneTailedLesserPValue(
                             a, b,
-                            c, d)) : Double.NaN;
+                            c, d));
+                    //System.out.printf("%n fisher=%g %n%d|%d%n%d|%d ", fisherP, a, b, c, d);
+                    //System.out.flush();
                 } else {
 
-                    int mean = Math.max(1,(a+c)/2);
+                    int mean = Math.max(1, (a + c) / 2);
 
                     final PoissonDistributionImpl poissonDistribution = new PoissonDistributionImpl(mean);
                     try {
-                        fisherP =  poissonDistribution.cumulativeProbability(c);
-                       // System.out.printf("%nmean=%d%n%d|%d%n%d|%d  x=%d  P(X<=x) %g",mean, a,b,c,d,c, fisherP);
+                        fisherP = Math.min(fisherP, poissonDistribution.cumulativeProbability(c));
+                        // System.out.printf("%nmean=%d%n%d|%d%n%d|%d  x=%d  P(X<=x) %g",mean, a,b,c,d,c, fisherP);
                     } catch (MathException e) {
                         fisherP = Double.NaN;
                     }
