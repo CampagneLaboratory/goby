@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="javaeeApplication" name="javaEEApplication">
-      <configuration>
-        <descriptors>
-          <deploymentDescriptor name="application.xml" url="file://$MODULE_DIR$/META-INF/application.xml" />
-        </descriptors>
-      </configuration>
-    </facet>
-  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/classes" />
     <output-test url="file://$MODULE_DIR$/test-classes" />
@@ -19,6 +10,28 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="lib2" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="lib3" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/scripts/autojar/autojar.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/testsupport/checkstyle/lib/checkstyle-all-5.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lib4" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -310,11 +323,7 @@
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-<<<<<<< HEAD
-          <root url="jar://$MODULE_DIR$/lib/xstream-1.4.3.jar!/" />
-=======
           <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
->>>>>>> 89b524138adc13955e0a4033d0c17ae051657502
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -332,11 +341,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< HEAD
-          <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
-=======
           <root url="jar://$MODULE_DIR$/lib/xstream-1.4.3.jar!/" />
->>>>>>> 89b524138adc13955e0a4033d0c17ae051657502
         </CLASSES>
         <JAVADOC />
         <SOURCES />

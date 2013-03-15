@@ -165,48 +165,7 @@ public abstract class GenotypeFilter {
     protected void adjustGenotypes(DiscoverVariantPositionData list, ObjectSet<PositionBaseInfo> filteredList,
                                    SampleCountInfo[] sampleCounts) {
 
-        // determine the number of samples that had each the genotype filtered:
 
-        for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
-            int samplesWithGenotype = 0;
-            int samplesWithGenotypeFiltered = 0;
-            for (SampleCountInfo sci : sampleCounts) {
-                if (sci.hasFilteredBases(baseIndex)) {
-                    samplesWithGenotypeFiltered++;
-                }
-                samplesWithGenotype += sci.beforeFilterCounts[baseIndex] > 0 ? 1 : 0;
-            }
-            if (samplesWithGenotype == samplesWithGenotypeFiltered) {
-                // remove the genotype, it was filtered from all samples where it appeared.
-            } else {
-                // do not remove the genotype from any sample, at least one sample had the genotype passing all filters.
-                // we preserve all counts to facilitate comparing across samples.
-                for (SampleCountInfo sci : sampleCounts) {
-                    sci.clearFiltered(baseIndex);
-                }
-            }
-        }
-        // now, scan filtered list to remove those bases that should not have been filtered:
-        for (PositionBaseInfo positionBaseInfo : filteredList) {
-            if (positionBaseInfo != null) {   // info may be null when already removed by a previous loop iteration..
-                final int sampleIndex = positionBaseInfo.readerIndex;
-                SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
-                final int baseIndex = sampleCountInfo.baseIndex(positionBaseInfo.to);
-
-                if (sampleCountInfo.hasFilteredBases(baseIndex) && filteredList.contains(positionBaseInfo)) {
-                    // this base should not have been filtered.
-                    filteredList.remove(positionBaseInfo);
-                    // set the count to zero since this base is completely filtered out:
-                    sampleCountInfo.counts[baseIndex]=0;
-                    if (positionBaseInfo.matchesReference) {
-                        refCountRemovedPerSample[sampleIndex]--;
-                    } else {
-                        varCountRemovedPerSample[sampleIndex]--;
-                    }
-                    numFiltered--;
-                }
-            }
-        }
     }
 
     /**

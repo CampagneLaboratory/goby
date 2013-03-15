@@ -245,7 +245,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             System.err.println("Using FISHER statistics to estimate somatic variation p-values.");
         } else {
             System.err.println("Using Poisson statistics to estimate somatic variation p-values.");
-
         }
     }
 
