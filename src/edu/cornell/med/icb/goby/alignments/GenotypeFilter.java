@@ -41,7 +41,7 @@ public abstract class GenotypeFilter {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(DiscoverVariantIterateSortedAlignments.class);
+    protected static final Log LOG = LogFactory.getLog(DiscoverVariantIterateSortedAlignments.class);
 
     /**
      * Adjust genotypes and sampleCounts to remove/reduce the effect of sequencing errors.

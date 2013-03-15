@@ -308,6 +308,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                    genotypeFilters.add(new CommonIndelArtifactFilter());
                 }
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
@@ -323,6 +324,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                    genotypeFilters.add(new CommonIndelArtifactFilter());
                 }
 
                 break;

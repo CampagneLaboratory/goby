@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -89,7 +91,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
 
     public ObjectArraySet<EquivalentIndelRegion> getIndels() {
 
-        return candidateIndels;
+       return candidateIndels;
     }
 
     /**

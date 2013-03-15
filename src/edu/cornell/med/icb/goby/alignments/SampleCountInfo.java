@@ -82,6 +82,7 @@ public class SampleCountInfo {
         }
     };
 
+
     /**
      * Add an indel to this sample info. This method lazily creates the indels collection when the first
      * indel is added. If the same indel was already added (equality by range of eir start-end), the frequency
@@ -446,5 +447,13 @@ public class SampleCountInfo {
             }
         }
         throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    public int getSumCounts() {
+        int sum=0;
+        for (int i=0;i<getGenotypeMaxIndex(); i++) {
+            sum+=getGenotypeCount(i);
+        }
+        return sum;
     }
 }
