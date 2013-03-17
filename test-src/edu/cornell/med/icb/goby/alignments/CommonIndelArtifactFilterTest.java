@@ -44,10 +44,29 @@ public class CommonIndelArtifactFilterTest {
     public void testGapLength() throws Exception {
         CommonIndelArtifactFilter filter = new CommonIndelArtifactFilter();
 
-        assertEquals(4,filter.gapLength("A----G"));
-        assertEquals(4,filter.gapLength("-A---G"));
-        assertEquals(4,filter.gapLength("A---G-"));
-        assertEquals(4,filter.gapLength("----"));
-        assertEquals(4,filter.gapLength("A-C-T-G-A"));
+        assertEquals(4, filter.gapLength("A----G"));
+        assertEquals(4, filter.gapLength("-A---G"));
+        assertEquals(4, filter.gapLength("A---G-"));
+        assertEquals(4, filter.gapLength("----"));
+        assertEquals(4, filter.gapLength("A-C-T-G-A"));
+    }
+
+    @Test
+    public void testRepetitivePatterns() throws Exception {
+        CommonIndelArtifactFilter filter = new CommonIndelArtifactFilter();
+
+        assertEquals(2, filter.repeatPatternLength("--AGAGAG", "AGAGAGAG"));
+        assertEquals(3, filter.repeatPatternLength("---AGTAGTAGT", "AGTAGTAGT"));
+        assertEquals(4, filter.repeatPatternLength("----CGATCGATCGAT ", "CGATCGAT"));
+
+
+        EquivalentIndelRegion indel = new EquivalentIndelRegion();
+        indel.from = "--AGAGAG";
+        indel.to = "AGAGAGAG";
+        assertEquals(2, filter.repeatPatternLength(indel));
+
+        indel.from = "AGAGAGAG";
+        indel.to = "--AGAGAG";
+        assertEquals(2, filter.repeatPatternLength(indel));
     }
 }
