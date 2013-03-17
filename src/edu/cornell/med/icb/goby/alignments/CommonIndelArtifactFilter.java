@@ -30,21 +30,23 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null) {
-
-                    int lengthRepeatBases = countRepetitiveBases(indel) * indel.getFrequency();
+                    int depthAtPosition = sampleCounts[indel.sampleIndex].getSumCounts();
+                    final int repeatLength = countRepetitiveBases(indel);
+                    int lengthRepeatBases = repeatLength * indel.getFrequency();
                     int expectedFrequency = (int) (lengthRepeatBases * proportionFreqOverLength);
                     int gapLength = calculateGapLength(indel);
                     if (expectedFrequency > 0) {
 
                         try {
-                            cumulativeIndelBaseRepeatLength += countRepetitiveBases(indel) * indel.getFrequency();
+                            cumulativeIndelBaseRepeatLength += repeatLength * indel.getFrequency();
                             cumulativeIndelFrequency += indel.getFrequency();
 
                             int actualObservedBaseIndels = lengthRepeatBases;
                             PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualObservedBaseIndels);
                             System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d%n",
-                                    indel.from, indel.to, lengthRepeatBases, indel.getFrequency(),
-                                    gapLength, cumulativeIndelBaseRepeatLength, cumulativeIndelFrequency, expectedFrequency, actualObservedBaseIndels);
+                                    indel.from, indel.to, indel.getFrequency(), depthAtPosition, repeatLength, gapLength,
+                                    lengthRepeatBases,
+                                    expectedFrequency, actualObservedBaseIndels);
 
                             if (actualObservedBaseIndels <= expectedFrequency || poisson.cumulativeProbability(expectedFrequency) > 0.05) {
 
