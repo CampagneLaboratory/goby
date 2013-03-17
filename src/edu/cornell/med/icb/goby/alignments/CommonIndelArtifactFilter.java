@@ -30,7 +30,10 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null) {
-                    int depthAtPosition = sampleCounts[indel.sampleIndex].getSumCounts();
+                    int depthAtPosition = 0;
+                    for (SampleCountInfo sci : sampleCounts) {
+                        depthAtPosition += sci.getSumCounts();
+                    }
                     final int repeatLength = countRepetitiveBases(indel);
                     int lengthRepeatBases = repeatLength * indel.getFrequency();
                     int expectedFrequency = (int) (lengthRepeatBases * proportionFreqOverLength);
