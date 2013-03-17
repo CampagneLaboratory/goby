@@ -74,7 +74,6 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                         }
                     }
                 }
-
             }
 
             // update cumulative counts and proportions:
@@ -200,7 +199,9 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         String seq1NoGap = seq1.replaceAll("-", "");
         String seq2NoGap = seq2.replaceAll("-", "");
         int i;
-        for (i = 0; i < gapLength; i++) {
+        int maxIndex=Math.min(Math.min(gapLength, seq1NoGap.length()),seq1NoGap.length());
+
+        for (i = 0; i < maxIndex; i++) {
 
             if (seq1NoGap.charAt(i) != seq2NoGap.charAt(i)) {
                 break;

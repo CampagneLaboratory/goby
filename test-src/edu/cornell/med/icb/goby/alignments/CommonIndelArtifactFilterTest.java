@@ -58,6 +58,7 @@ public class CommonIndelArtifactFilterTest {
         assertEquals(2, filter.repeatPatternLength("--AGAGAG", "AGAGAGAG"));
         assertEquals(3, filter.repeatPatternLength("---AGTAGTAGT", "AGTAGTAGT"));
         assertEquals(4, filter.repeatPatternLength("----CGATCGATCGAT ", "CGATCGAT"));
+        assertEquals(1, filter.repeatPatternLength("----C ", "CGAT"));
 
 
         EquivalentIndelRegion indel = new EquivalentIndelRegion();
