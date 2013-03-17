@@ -30,19 +30,21 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null) {
+
                     int lengthRepeatBases = countRepetitiveBases(indel) * indel.getFrequency();
                     int expectedFrequency = (int) (lengthRepeatBases * proportionFreqOverLength);
+                    int gapLength = calculateGapLength(indel);
                     if (expectedFrequency > 0) {
-                        if (indel.from.contains("AAAAAAAAAAAA") || indel.to.equals("AAAAAAAAAAAA")) {
-                            System.out.println("STOP");
-                        }
-                        try {
 
+                        try {
                             cumulativeIndelBaseRepeatLength += countRepetitiveBases(indel) * indel.getFrequency();
                             cumulativeIndelFrequency += indel.getFrequency();
 
                             int actualObservedBaseIndels = lengthRepeatBases;
                             PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualObservedBaseIndels);
+                            System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d%n",
+                                    indel.from, indel.to, lengthRepeatBases, indel.getFrequency(),
+                                    gapLength, cumulativeIndelBaseRepeatLength, cumulativeIndelFrequency, expectedFrequency, actualObservedBaseIndels);
 
                             if (actualObservedBaseIndels <= expectedFrequency || poisson.cumulativeProbability(expectedFrequency) > 0.05) {
 
@@ -77,6 +79,20 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         }
 
 
+    }
+
+    private int calculateGapLength(EquivalentIndelRegion indel) {
+        return Math.max(gapLength(indel.from), gapLength(indel.to));
+    }
+
+    protected int gapLength(String to) {
+        int length = 0;
+        for (int i = 0; i < to.length(); i++) {
+            if (to.charAt(i) == '-') {
+                length++;
+            }
+        }
+        return length;
     }
 
     private void estimateProportions() {

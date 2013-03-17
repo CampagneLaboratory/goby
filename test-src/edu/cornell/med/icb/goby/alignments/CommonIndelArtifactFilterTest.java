@@ -27,17 +27,27 @@ public class CommonIndelArtifactFilterTest {
 
 
     }
+
     @Test
-       public void testCase1() throws Exception {
-           CommonIndelArtifactFilter filter = new CommonIndelArtifactFilter();
+    public void testCase1() throws Exception {
+        CommonIndelArtifactFilter filter = new CommonIndelArtifactFilter();
 
         EquivalentIndelRegion indel = new EquivalentIndelRegion();
-        indel.from="C-TTTTTTTTTTTTTT";
-        indel.to="CTTTTTTTTTTTTTTT";
+        indel.from = "C-TTTTTTTTTTTTTT";
+        indel.to = "CTTTTTTTTTTTTTTT";
         assertEquals(14, filter.countRepetitiveBases(indel));
 
 
+    }
 
-       }
+    @Test
+    public void testGapLength() throws Exception {
+        CommonIndelArtifactFilter filter = new CommonIndelArtifactFilter();
 
+        assertEquals(4,filter.gapLength("A----G"));
+        assertEquals(4,filter.gapLength("-A---G"));
+        assertEquals(4,filter.gapLength("A---G-"));
+        assertEquals(4,filter.gapLength("----"));
+        assertEquals(4,filter.gapLength("A-C-T-G-A"));
+    }
 }
