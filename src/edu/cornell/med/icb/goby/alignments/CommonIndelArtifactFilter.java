@@ -35,34 +35,37 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                         depthAtPosition += sci.getSumCounts();
                     }
                     final int repeatLength = countRepetitiveBases(indel);
-                    int lengthRepeatBases = repeatLength * indel.getFrequency();
-                    int expectedFrequency = (int) (lengthRepeatBases * proportionFreqOverLength);
+                    final int actualIndelFrequency = indel.getFrequency();
+                    int lengthRepeatBases = repeatLength * actualIndelFrequency;
                     int gapLength = calculateGapLength(indel);
+                    double indelFractionOfDepth = actualIndelFrequency / depthAtPosition;
+                    int expectedFrequency = getPredictedIndelFrequency(repeatLength, gapLength, indelFractionOfDepth, depthAtPosition < 10 ? 1 : 0);
                     if (expectedFrequency > 0) {
 
                         try {
-                            cumulativeIndelBaseRepeatLength += repeatLength * indel.getFrequency();
-                            cumulativeIndelFrequency += indel.getFrequency();
+                            cumulativeIndelBaseRepeatLength += repeatLength * actualIndelFrequency;
+                            cumulativeIndelFrequency += actualIndelFrequency;
 
-                            int actualObservedBaseIndels = lengthRepeatBases;
-                            PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualObservedBaseIndels);
-                            System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d%n",
-                                    indel.from, indel.to, indel.getFrequency(), depthAtPosition, repeatLength, gapLength,
+
+                            PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualIndelFrequency);
+                            double pValue = poisson.cumulativeProbability(expectedFrequency);
+                            System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g\t%s%n",
+                                    indel.from, indel.to, actualIndelFrequency, depthAtPosition, repeatLength, gapLength,
                                     lengthRepeatBases,
-                                    expectedFrequency, actualObservedBaseIndels);
+                                    expectedFrequency, actualIndelFrequency, pValue, pValue > 0.05 ? "FILTER" : "KEPT");
 
-                            if (actualObservedBaseIndels <= expectedFrequency || poisson.cumulativeProbability(expectedFrequency) > 0.05) {
+                            if (actualIndelFrequency <= expectedFrequency || poisson.cumulativeProbability(expectedFrequency) > 0.05) {
 
                                 // fail this index, since it is expected given the number of repeat bases.
-                                System.out.printf("Failing INDEL=%s Expected prop=%g freq=%d observed freq=%d%n",
+                             /*   System.out.printf("Failing INDEL=%s Expected prop=%g freq=%d observed freq=%d%n",
                                         indel,
-                                        proportionFreqOverLength, expectedFrequency, indel.getFrequency());
-
+                                        proportionFreqOverLength, expectedFrequency, actualIndelFrequency);
+                               */
                                 indel.markFiltered();
                                 list.failIndel(indel);
                                 sampleCounts[indel.sampleIndex].removeIndel(indel);
                             } else {
-                                System.out.println("Not filtering " + indel);
+                              //  System.out.println("Not filtering " + indel);
                             }
                         } catch (MathException e) {
                             System.err.println(e);
@@ -135,5 +138,29 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
     @Override
     public int getThresholdForSample(int sampleIndex) {
         return 0;
+    }
+    // use a trained neural net to determine the expected indel frequency, from the fraction of indel at depth, repeat length and gapLength
+    public int getPredictedIndelFrequency(int repeatLength, int gapLength, double indelFractionOfDepth, int depthLessThan10) {
+        /*%PRODUCER: JMP - Neural */
+        /*%TARGET: indel_getFrequency_ */
+        /*%INPUT: repeatLength */
+        /*%INPUT: gapLength */
+        /*%INPUT: indelFractionOfDepth */
+        /*%INPUT: depthLessThan10 */
+        /*%OUTPUT: indel_getFrequency__Predicted */
+
+        /* Transformation Code */
+
+        /* Hidden Layer Code */
+        double H1 = Math.tanh(.5 * (0.27356506270027 * repeatLength + 0.166529009810623 * gapLength + 27.3279278140353 * indelFractionOfDepth + -3.2012277396908 * depthLessThan10 + -2.36610247334202));
+        double H2 = Math.tanh(.5 * (-0.198507001359369 * repeatLength + -0.0762741349243423 * gapLength + -4.30342582957599 * indelFractionOfDepth + -8.93908165427444 * depthLessThan10 + 2.32056339497897));
+        double H3 = Math.tanh(.5 * (-0.193335839754507 * repeatLength + -0.0705430261002909 * gapLength + -23.8750875209862 * indelFractionOfDepth + -13.3575848303556 * depthLessThan10 + 4.85244737726472));
+
+        /* Final Layer Code */
+        double THETA1 = 18.3130689781713 * H1 + 46.7611929833778 * H2 + -26.3989806176432 * H3 + 8.92550399206593;
+
+        /* Response Mapping Code */
+        int indel_getFrequency__Predicted = (int) THETA1;
+        return Math.max(0, indel_getFrequency__Predicted);
     }
 }
