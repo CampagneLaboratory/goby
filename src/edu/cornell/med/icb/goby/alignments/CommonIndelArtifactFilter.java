@@ -63,8 +63,6 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                                 indel.markFiltered();
                                 list.failIndel(indel);
                                 sampleCounts[indel.sampleIndex].removeIndel(indel);
-                            } else {
-                                //  System.out.println("Not filtering " + indel);
                             }
                         } catch (MathException e) {
                             System.err.println(e);

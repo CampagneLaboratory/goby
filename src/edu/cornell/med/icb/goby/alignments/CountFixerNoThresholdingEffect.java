@@ -37,13 +37,19 @@ public class CountFixerNoThresholdingEffect extends CountFixer {
                 genotypePresentInSomeSample |= beforeFilterCounts[sci.sampleIndex].getInt(genotypeIndex) > 0;
                 genotypeRemainsInSomeSample |= sci.getGenotypeCount(genotypeIndex) > 0;
             }
-            // when the genotype was present, and it remains after fitlering in some sample, we revert the effect of the
+            // when the genotype was present, and it remains after filtering in some sample, we revert the effect of the
             // filters in all samples:
             if (genotypePresentInSomeSample && genotypeRemainsInSomeSample) {
                 // we need to revert filtering for this genotype to prevent artifactual thresholding effects.
                 for (SampleCountInfo sci : sampleCounts) {
                     final int countBeforeFiltering = beforeFilterCounts[sci.sampleIndex].getInt(genotypeIndex);
                     sci.setGenotypeCount(genotypeIndex, countBeforeFiltering);
+                    if (sci.isIndel(genotypeIndex)) {
+                   //     System.out.println("reverting indel genotype.");
+                        EquivalentIndelRegion indel = sci.getIndelGenotype(genotypeIndex);
+                        indel.removeFiltered();
+                        list.getFailedIndels().remove(indel);
+                    }
                 }
             }
         }
