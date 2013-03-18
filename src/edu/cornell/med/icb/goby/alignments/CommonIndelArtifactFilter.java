@@ -36,26 +36,24 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                     }
                     final int repeatLength = countRepetitiveBases(indel);
                     final int actualIndelFrequency = indel.getFrequency();
-                    int lengthRepeatBases = repeatLength * actualIndelFrequency;
                     int gapLength = calculateGapLength(indel);
                     double indelFractionOfDepth = actualIndelFrequency / depthAtPosition;
-                    //getPredictedIndelFrequency3(int repeatLength, int gapLength, double indelFractionOfDepth, int repeatPatternLength, int depthLessThan10)
-                    int expectedFrequency = getPredictedIndelFrequency3(repeatLength, gapLength, indelFractionOfDepth, repeatPatternLength(indel),depthAtPosition<10?1:0);
+                    int depthLessThan10 = depthAtPosition < 10 ? 1 : 0;
+                    int expectedFrequency = getPredictedIndelFrequency3(repeatLength, gapLength, depthAtPosition, repeatPatternLength(indel), depthLessThan10);
                     if (expectedFrequency > 0) {
 
                         try {
                             cumulativeIndelBaseRepeatLength += repeatLength * actualIndelFrequency;
                             cumulativeIndelFrequency += actualIndelFrequency;
 
-
                             PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualIndelFrequency);
                             double pValue = poisson.cumulativeProbability(expectedFrequency);
-                            System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g\t%s%n",
-                                    indel.from, indel.to, actualIndelFrequency, depthAtPosition, repeatLength, gapLength,
-                                    lengthRepeatBases, repeatPatternLength(indel),
-                                    expectedFrequency, actualIndelFrequency, pValue, pValue > 0.05 ? "FILTER" : "KEPT");
-
-                            if (actualIndelFrequency <= expectedFrequency || poisson.cumulativeProbability(expectedFrequency) > 0.05) {
+                         /*   System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g\t%s%n",
+                                    indel.from, indel.to,  depthAtPosition, repeatLength, gapLength,
+                                    repeatPatternLength(indel), depthLessThan10, expectedFrequency, actualIndelFrequency, pValue,
+                                    pValue > 0.05 ? "FILTER" : "KEPT");
+                           */
+                            if (actualIndelFrequency <= expectedFrequency || pValue > 0.05) {
 
                                 // fail this index, since it is expected given the number of repeat bases.
                              /*   System.out.printf("Failing INDEL=%s Expected prop=%g freq=%d observed freq=%d%n",
@@ -145,81 +143,34 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         return 0;
     }
 
-    // use a trained neural net to determine the expected indel frequency, from the fraction of indel at depth, repeat length and gapLength
-    public int getPredictedIndelFrequency(int repeatLength, int gapLength, double indelFractionOfDepth, int depthLessThan10) {
-        /*%PRODUCER: JMP - Neural */
-        /*%TARGET: indel_getFrequency_ */
-        /*%INPUT: repeatLength */
-        /*%INPUT: gapLength */
-        /*%INPUT: indelFractionOfDepth */
-        /*%INPUT: depthLessThan10 */
-        /*%OUTPUT: indel_getFrequency__Predicted */
-
-        /* Transformation Code */
-
-        /* Hidden Layer Code */
-        double H1 = Math.tanh(.5 * (0.27356506270027 * repeatLength + 0.166529009810623 * gapLength + 27.3279278140353 * indelFractionOfDepth + -3.2012277396908 * depthLessThan10 + -2.36610247334202));
-        double H2 = Math.tanh(.5 * (-0.198507001359369 * repeatLength + -0.0762741349243423 * gapLength + -4.30342582957599 * indelFractionOfDepth + -8.93908165427444 * depthLessThan10 + 2.32056339497897));
-        double H3 = Math.tanh(.5 * (-0.193335839754507 * repeatLength + -0.0705430261002909 * gapLength + -23.8750875209862 * indelFractionOfDepth + -13.3575848303556 * depthLessThan10 + 4.85244737726472));
-
-        /* Final Layer Code */
-        double THETA1 = 18.3130689781713 * H1 + 46.7611929833778 * H2 + -26.3989806176432 * H3 + 8.92550399206593;
-
-        /* Response Mapping Code */
-        int indel_getFrequency__Predicted = (int) THETA1;
-        return Math.max(0, indel_getFrequency__Predicted);
-    }
-
-    // use a trained neural net to determine the expected indel frequency, from the fraction of indel at depth, repeat length and gapLength
-    public int getPredictedIndelFrequency2(int repeatLength, int gapLength, double depthAtPosition, int lengthRepeatBases) {
-       /*%PRODUCER: JMP - Neural */
-       /*%TARGET: actualIndelFrequency */
-       /*%INPUT: depthAtPosition */
-       /*%INPUT: repeatLength */
-       /*%INPUT: gapLength */
-       /*%INPUT: lengthRepeatBases */
-       /*%OUTPUT: actualIndelFrequency_Predicted */
-       /* Transformation Code */
-
-       /* Hidden Layer Code */
-        double H1 = Math.tanh(.5 * (-0.000086554144926645 * depthAtPosition + 3.16907492832398 * repeatLength + -0.0250392599204096 * gapLength + 0.00860053382931063 * lengthRepeatBases + -1.8028891458221));
-        double H2 = Math.tanh(.5 * (0.0000599121636027239 * depthAtPosition + -1.79882893444531 * repeatLength + 0.0221281375539389 * gapLength + 0.00637589716134292 * lengthRepeatBases + -0.348968572114815));
-        double H3 = Math.tanh(.5 * (-0.000001671794178104 * depthAtPosition + -0.0015960570685604 * repeatLength + -0.00126693572993562 * gapLength + 0.00465859744456237 * lengthRepeatBases + 0.274169573724267));
-
-       /* Final Layer Code */
-        double THETA1 = 109.812429539664 * H1 + 233.811671806761 * H2 + 144.232437536586 * H3 + 100.624807326541;
-
-       /* Response Mapping Code */
-        int actualIndelFrequency_Predicted = (int) Math.max(0, THETA1);
-        return actualIndelFrequency_Predicted;
-    }  // use a trained neural net to determine the expected indel frequency, from the fraction of indel at depth, repeat length and gapLength
-    public int getPredictedIndelFrequency3(int repeatLength, int gapLength, double indelFractionOfDepth, int repeatPatternLength, int depthLessThan10) {
+    // use a trained neural net to determine the expected indel frequency, from features about the indel:
+    public int getPredictedIndelFrequency3(int repeatLength, int gapLength, int depthAtPosition, int repeatPatternLengthIndel, int depthLessThan10) {
       /*%PRODUCER: JMP - Neural */
-      /*%TARGET: actualIndelFrequency */
-      /*%INPUT: depthLessThan10 */
-      /*%INPUT: indelFractionOfDepth */
+      /*%TARGET: Log10_actual_indel_freq */
       /*%INPUT: repeatLength */
       /*%INPUT: gapLength */
-      /*%INPUT: repeatPatternLength */
-      /*%OUTPUT: actualIndelFrequency_Predicted */
-
+      /*%INPUT: repeatPatternLengthIndel */
+      /*%INPUT: log10_Depth_at_position */
+      /*%OUTPUT: Log10_actual_indel_freq_Predicted */
+        double log10_Depth_at_position = Math.log10(depthAtPosition);
       /* Transformation Code */
 
       /* Hidden Layer Code */
-    double  H1 = Math.tanh(.5 * (30.7569539696584 * depthLessThan10 + -28.6613224227517 * indelFractionOfDepth + -0.141307074837274 * repeatLength + 0.0127209881460977 * gapLength + 0.0815326097409295 * repeatPatternLength + 4.39285626019316));
-        double  H2 = 147.329633240459*depthLessThan10 + -80.1455280830311*indelFractionOfDepth + -4.14627675030666*repeatLength + 0.437086814147535*gapLength + 2.69260298511829*repeatPatternLength + 22.5654455372969;
-        double  HH1 = Math.tanh(.5 * (2.46731575079385 * H1 + -0.0861261422718692 * H2 + -0.14432842314448));
-        double  HH2 = Math.tanh(.5 * (-0.976232159013453 * H1 + 1.51964305777285 * H2 + -18.4356764270507));
-        double  HH3 = Math.tanh(.5 * (-74.5927953058719 * H1 + -0.0722113892561223 * H2 + 75.1015067951385));
-        double  HH4 = -0.0955052634966312*H1 + -0.0935448245948543*H2 + -3.14711649420219;;
-        double  HH5 = 0.168513127901274*H1 + 0.28526253608911*H2 + 6.47779522886649;;
+        double H1 = Math.tanh(.5 * (-0.217511440307164 * repeatLength + -0.153912432260887 * gapLength + -0.626691444965826 * repeatPatternLengthIndel + 1.07492523248614 * log10_Depth_at_position + -1.69089686523462));
+        double H2 = 0.068941619222792 * repeatLength + -0.0863283200708544 * gapLength + 0.00229027639005201 * repeatPatternLengthIndel + -3.84733744230361 * log10_Depth_at_position + 11.7784564182034;
+        double HH1 = Math.tanh(.5 * (7.08109026103453 * H1 + 1.27426071706873 * H2 + 1.10315736842476));
+        double HH2 = Math.tanh(.5 * (-0.0150959912141104 * H1 + -1.46380340536445 * H2 + -1.2308961426117));
+        double HH3 = Math.tanh(.5 * (1.53535193119845 * H1 + -0.562710832434124 * H2 + 1.51259843151645));
+        double HH4 = -0.480384063647369 * H1 + -0.0935191076999823 * H2 + -0.373846155675067;
+        double HH5 = -0.323686814060226 * H1 + -0.0216726416714448 * H2 + -0.154578788760765;
+        double HH6 = -0.0364869192793619 * H1 + 0.0235850981885036 * H2 + -0.768639170264522;
 
       /* Final Layer Code */
-        double  THETA1=-25.5467286027933*HH1 + -4.66183256485626*HH2 + 19.1258767129895*HH3 + 60.8855184647536*HH4 + 19.8522989361628*HH5 + 69.8630756526183;
+        double THETA1 = -0.200181906310874 * HH1 + 0.194417036932698 * HH2 + -0.394347363656623 * HH3 + 0.897881984682189 * HH4 + -1.14470827545174 * HH5 + -1.68508250216669 * HH6 + 0.360199064456832;
 
       /* Response Mapping Code */
-
-        int actualIndelFrequency_Predicted = (int) Math.max(0, THETA1);
+        double Log10_actual_indel_freq_Predicted = THETA1;
+        int actualIndelFrequency_Predicted = (int) Math.max(0, Math.pow(10, Log10_actual_indel_freq_Predicted));
         return actualIndelFrequency_Predicted;
     }
 
@@ -228,7 +179,7 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
         String seq1NoGap = seq1.replaceAll("-", "");
         String seq2NoGap = seq2.replaceAll("-", "");
         int i;
-        int maxIndex=Math.min(Math.min(gapLength, seq1NoGap.length()),seq1NoGap.length());
+        int maxIndex = Math.min(Math.min(gapLength, seq1NoGap.length()), seq1NoGap.length());
 
         for (i = 0; i < maxIndex; i++) {
 
