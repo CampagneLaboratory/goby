@@ -32,10 +32,12 @@ public class CountFixerNoThresholdingEffect extends CountFixer {
             // determine if the genotype was present before filtering:
             boolean genotypePresentInSomeSample = false;
             boolean genotypeRemainsInSomeSample = false;
+            boolean genotypeFilteredInAllSamples = true;
             for (SampleCountInfo sci : sampleCounts) {
 
                 genotypePresentInSomeSample |= beforeFilterCounts[sci.sampleIndex].getInt(genotypeIndex) > 0;
                 genotypeRemainsInSomeSample |= sci.getGenotypeCount(genotypeIndex) > 0;
+                genotypeFilteredInAllSamples &= sci.isFiltered(genotypeIndex);
             }
             // when the genotype was present, and it remains after filtering in some sample, we revert the effect of the
             // filters in all samples:
@@ -45,10 +47,22 @@ public class CountFixerNoThresholdingEffect extends CountFixer {
                     final int countBeforeFiltering = beforeFilterCounts[sci.sampleIndex].getInt(genotypeIndex);
                     sci.setGenotypeCount(genotypeIndex, countBeforeFiltering);
                     if (sci.isIndel(genotypeIndex)) {
-                   //     System.out.println("reverting indel genotype.");
+                        //     System.out.println("reverting indel genotype.");
                         EquivalentIndelRegion indel = sci.getIndelGenotype(genotypeIndex);
                         indel.removeFiltered();
                         list.getFailedIndels().remove(indel);
+                    }
+                }
+            } else {
+                if (genotypeFilteredInAllSamples) {
+
+                    for (SampleCountInfo sci : sampleCounts) {
+                        if (sci.isIndel(genotypeIndex)) {
+                            EquivalentIndelRegion indel = sci.getIndelGenotype(genotypeIndex);
+                            list.failIndel(indel);
+                            sci.removeIndel(indel);
+                            sci.setGenotypeCount(genotypeIndex, 0);
+                        }
                     }
                 }
             }
@@ -83,7 +97,7 @@ public class CountFixerNoThresholdingEffect extends CountFixer {
         int sampleIndex = 0;
 
         if (beforeFilterCounts == null) {
-            beforeFilterCounts=new IntArrayList[sampleCounts.length];
+            beforeFilterCounts = new IntArrayList[sampleCounts.length];
             for (SampleCountInfo sci : sampleCounts) {
                 beforeFilterCounts[sci.sampleIndex] = new IntArrayList();
             }

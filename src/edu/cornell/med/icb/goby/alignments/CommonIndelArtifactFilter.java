@@ -61,8 +61,8 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                                         proportionFreqOverLength, expectedFrequency, actualIndelFrequency);
                                */
                                 indel.markFiltered();
-                                list.failIndel(indel);
-                                sampleCounts[indel.sampleIndex].removeIndel(indel);
+
+                                //sampleCounts[indel.sampleIndex].removeIndel(indel);
                             }
                         } catch (MathException e) {
                             System.err.println(e);

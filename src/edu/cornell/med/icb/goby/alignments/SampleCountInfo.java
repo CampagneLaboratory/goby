@@ -60,11 +60,7 @@ public class SampleCountInfo {
      * While base genotypes were flagged for removal by some filter in this sample.
      */
     public boolean filtered[] = new boolean[5];
-    /**
-     * Counts as they were before a filter removed some bases. Used to rollback to pre-filter state when we
-     * determine filtering would affect some samples differently than others.
-     */
-    public int beforeFilterCounts[] = new int[5];
+
     /**
      * List of indel eirs that start at the position in this sample.
      */
@@ -426,7 +422,6 @@ public class SampleCountInfo {
     }
 
 
-
     /**
      * Reset a genotype count to a given value.
      *
@@ -450,10 +445,24 @@ public class SampleCountInfo {
     }
 
     public int getSumCounts() {
-        int sum=0;
-        for (int i=0;i<getGenotypeMaxIndex(); i++) {
-            sum+=getGenotypeCount(i);
+        int sum = 0;
+        for (int i = 0; i < getGenotypeMaxIndex(); i++) {
+            sum += getGenotypeCount(i);
         }
         return sum;
+    }
+
+    public boolean isFiltered(int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return filtered[genotypeIndex];
+
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
+
+                return equivalentIndelRegion.isFiltered();
+            }   else return false;
+        }
     }
 }
