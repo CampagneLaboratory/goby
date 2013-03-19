@@ -6,7 +6,10 @@ Towards 2.2
  - Fix a potential NPE in GroupAssociations when samples are null.
  - Fix for issue #2, see https://github.com/CampagneLaboratory/goby/issues/2
  - Expose comparator in SortedAnnotations.
-
+ - Mode suggest-position-slices: add option number-of-bytes to suggest slices with a uniform number of compressed
+   bytes. This option aims to provide more balanced slices in bases where the genome as very non uniform coverage
+   by position. With this option, the number of slices is determined to yield slices that need to decompress about
+   the amount of bytes indicated on the command line.    `
 2.1.2
  - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
    Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you

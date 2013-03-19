@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.alignments;
 
 /**
  * Describes a location on a reference sequence.
+ *
  * @author Fabien Campagne
  *         Date: Dec 14, 2010
  *         Time: 6:00:39 PM
@@ -28,6 +29,11 @@ public class ReferenceLocation implements Comparable {
 
     public final int targetIndex;
     public int position;
+    /**
+     * The amount of compressed data since the previous location.
+     */
+
+    public long compressedByteAmountSincePreviousLocation;
 
     public ReferenceLocation(int referenceIndex, int position) {
         this.targetIndex = referenceIndex;
@@ -39,13 +45,13 @@ public class ReferenceLocation implements Comparable {
         if (!(o instanceof ReferenceLocation)) {
             return false;
         }
-        final ReferenceLocation other= (ReferenceLocation) o;
-        return targetIndex==other.targetIndex && position==other.position;
+        final ReferenceLocation other = (ReferenceLocation) o;
+        return targetIndex == other.targetIndex && position == other.position;
     }
 
     @Override
     public int hashCode() {
-       return targetIndex ^ position;
+        return targetIndex ^ position;
     }
 
     public int compareTo(Object o) {
@@ -56,8 +62,8 @@ public class ReferenceLocation implements Comparable {
         ReferenceLocation other = (ReferenceLocation) o;
         if (other.targetIndex == targetIndex) {
 
-            return position - other.position  ;
-            
+            return position - other.position;
+
         } else {
             return targetIndex - other.targetIndex;
         }
