@@ -836,6 +836,31 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
 
+    @Override
+    public ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException {
+
+        assert isHeaderLoaded() : "header must be loaded to query locations.";
+        if (!isIndexed()) throw new RuntimeException("Alignment must be sorted and indexed to obtain locations.");
+
+        readIndex();
+        int i = 0;
+        ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+        long lastFileOffsetPushed = -1;
+
+        for (long absoluteLocation : indexAbsolutePositions) {
+            long offsetInEntriesFile = indexOffsets.get(i);
+            long compressedByteAmountSincePreviousLocation = offsetInEntriesFile - lastFileOffsetPushed;
+            if (compressedByteAmountSincePreviousLocation > bytesPerSlice) {
+                final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation);
+                location.compressedByteAmountSincePreviousLocation=compressedByteAmountSincePreviousLocation;
+                result.add(location);
+                lastFileOffsetPushed = offsetInEntriesFile;
+            }
+            i++;
+        }
+        return result;
+    }
+
     /**
      * Returns a sample of locations covered by this alignment.
      *
@@ -851,11 +876,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
         for (long absoluteLocation : indexAbsolutePositions) {
             final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation - (absoluteLocation % modulo));
+
             result.add(location);
 
         }
         return result;
     }
+
 
     private ReferenceLocation decodeAbsoluteLocation(long absoluteLocation) {
         int referenceIndex;

@@ -30,14 +30,17 @@
             <longFlag>output</longFlag>
             <required>false</required>
             <help>The file where slices definitions will be written (tab delimited:
-                targetIdStart	%positionStart	start:(ref,pos)	targetIdEnd    %positionEnd	end:(ref,pos).</help>
+                targetIdStart %positionStart start:(ref,pos) targetIdEnd %positionEnd end:(ref,pos).
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>annotations</id>
             <shortFlag>a</shortFlag>
             <longFlag>annotations</longFlag>
             <required>false</required>
-            <help>When provided, filename to Goby annotation file. Slices are generated such that no slice would split the external boundaries of an annotation element. </help>
+            <help>When provided, filename to Goby annotation file. Slices are generated such that no slice would split
+                the external boundaries of an annotation element.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>number-of-slices</id>
@@ -50,9 +53,22 @@
             <defaults>
                 <string>10</string>
             </defaults>
-            <help>The number of slices to produce. </help>
+            <help>The number of slices to produce.</help>
         </flaggedOption>
-          <flaggedOption>
+        <flaggedOption>
+            <id>number-of-bytes</id>
+            <longFlag>number-of-bytes</longFlag>
+            <shortFlag>b</shortFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>50000000</string>
+            </defaults>
+            <help>The approximate number of compressed bytes to put in each slice.</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>modulo</id>
             <longFlag>modulo</longFlag>
             <required>false</required>
@@ -62,9 +78,11 @@
             <defaults>
                 <string>1000000</string>
             </defaults>
-            <help>Modulo for slicing positions. Large numbers require less memory and result in coarser, potentially less balanced slices.  </help>
+            <help>Modulo for slicing positions. Large numbers require less memory and result in coarser, potentially
+                less balanced slices.
+            </help>
         </flaggedOption>
 
-          
+
     </parameters>
 </jsap>

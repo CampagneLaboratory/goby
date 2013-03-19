@@ -122,7 +122,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
-                                    hasReadOrigin=new boolean[basenames.length];
+        hasReadOrigin = new boolean[basenames.length];
         readersWithMoreEntries = new IntArraySet();
 
         for (int readerIndex = 0; readerIndex < basenames.length; readerIndex++) {
@@ -172,7 +172,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
-        hasReadOrigin=new boolean[basenames.length];
+        hasReadOrigin = new boolean[basenames.length];
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
         for (final String basename : basenames) {
@@ -455,6 +455,62 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         for (final AlignmentReader reader : readers) {
             reader.close();
         }
+    }
+
+    public ObjectList<ReferenceLocation> getLocationsByBytes(int numBytesPerSlice) throws IOException {
+        readHeader();
+        ObjectSet<ReferenceLocation> result = new ObjectOpenHashSet<ReferenceLocation>();
+        int numReaders = this.readers.length;
+        long byteAccumulation = 0;
+        int readerIndex = 0;
+        ObjectList<ReferenceLocation> locations[] = new ObjectList[numReaders];
+        int[] locationIndices = new int[numReaders];
+        int maxLocationIndices = -1;
+        for (AlignmentReader reader : this.readers) {
+
+            locations[readerIndex] = reader.getLocationsByBytes(numBytesPerSlice / numReaders);
+            maxLocationIndices = Math.max(maxLocationIndices, locations[readerIndex].size());
+            readerIndex++;
+        }
+
+        long sizeSinceLastSlice = 0;
+        for (int i = 0; i < maxLocationIndices; i++) {
+
+            for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+                if (i < locations[readerIndex].size()) {
+                    assert readerIndex < locations.length : "readerIndex must be smaller than locations length";
+                    assert readerIndex < locationIndices.length : "i must be smaller than locationIndices length";
+
+                    ReferenceLocation readerLocation = locations[readerIndex]
+                            .get(locationIndices[readerIndex]);
+                    sizeSinceLastSlice += readerLocation.compressedByteAmountSincePreviousLocation;
+
+                }
+                locationIndices[readerIndex]++;
+            }
+            if (sizeSinceLastSlice > numBytesPerSlice) {
+                ObjectList<ReferenceLocation> currentLocations = new ObjectArrayList<ReferenceLocation>();
+                for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+
+                    if (locationIndices[readerIndex] < locations[readerIndex].size()) {
+                        ReferenceLocation readerLocation = locations[readerIndex].get(locationIndices[readerIndex]);
+                        currentLocations.add(readerLocation);
+                    }
+                }
+                Collections.sort(currentLocations);
+                int medianIndex = currentLocations.size() / 2;
+                if (medianIndex < currentLocations.size()) {
+                    ReferenceLocation medianLocation = currentLocations.get(medianIndex);
+                    result.add(medianLocation);
+                }
+
+                sizeSinceLastSlice = 0;
+            }
+        }
+        ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
+        list.addAll(result);
+        Collections.sort(list);
+        return list;
     }
 
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {

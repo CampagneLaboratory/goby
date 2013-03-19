@@ -131,8 +131,9 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
      * @return stats or null.
      */
     Properties getStatistics();
+
     /**
-       Obtain the number of aligned reads from the header.
+     * Obtain the number of aligned reads from the header.
      */
     int getNumberOfAlignedReads();
 
@@ -147,7 +148,19 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException;
 
     /**
+     * Returns a sample of locations covered by this alignment.
+     * <p/>
+     *
+     *
+     * @param bytesPerSlice Return locations approximately spaced by this number of compressed bytes.
+     * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
+     *         * @throws IOException
+     */
+    ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException;
+
+    /**
      * Indicates if query lengths are stored in alignment entries (True) or in the alignment header (alignments produced with goby 1.7-, False).
+     *
      * @return True or False.
      */
     boolean isQueryLengthStoredInEntries();
@@ -178,7 +191,7 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     int getNumberOfQueries();
 
-     /**
+    /**
      * @return True if the alignment stores a constant query length.
      */
     boolean isConstantQueryLengths();
@@ -207,14 +220,16 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     /**
      * This field is true when entries in the alignment .entries file all have the query_index_occurences field populated
-      (Since Goby 2.0).
+     * (Since Goby 2.0).
+     *
      * @return True when entries are garanteed to have a query-index-occurrences field.
      */
     boolean hasQueryIndexOccurrences();
 
-     /**
+    /**
      * This field is true when entries in the alignment .entries file all have the ambiguity field populated
-      (Since Goby 2.0).
+     * (Since Goby 2.0).
+     *
      * @return True when entries are guaranteed to have a ambiguity field.
      */
     boolean hasAmbiguity();
@@ -236,7 +251,8 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     /**
      * Return the read origin infos from the header.
-     * @return  A list of read origin info messages.
+     *
+     * @return A list of read origin info messages.
      */
     ReadOriginInfo getReadOriginInfo();
 }
