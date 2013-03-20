@@ -166,7 +166,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             assert sampleIndex != -1 : "sample-id must match between covariate file and alignment basenames.";
             somaticPValueIndex[sampleIndex] = statsWriter.defineField("INFO",
                     String.format("Somatic-P-value(%s)[%s]", fisherRInstalled ? "Fisher" : "Poisson", sample),
-                    1, ColumnType.String,
+                    1, ColumnType.Float,
                     "P-value that a variation is somatic in this particular sample, compared to other germline samples (e.g., germline skin, or mother/father).", "p-value", "statistic", "indexed");
         }
 
@@ -229,6 +229,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             assert index == count : "all germline indices must be filled";
         }
         statsWriter.defineSamples(samples);
+        statsWriter.setWriteFieldGroupAssociations(true);
         statsWriter.writeHeader();
         countsInSample = new double[numSamples];
         proportionCountsIn = new double[numSamples];

@@ -1,3 +1,8 @@
+>> 2.2.1
+ - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
+   columns with group q-value.
+ - Somatic variation output format: annotate somatic p-value column with 'p-value' group. Fix the type of the p-value
+   column to be a number (was String in release 2.2).
 2.2
  - Remove threshold effects when calling genotypes in several samples. Modified the filters to not remove bases in
    specific samples when the genotype survived filters in at least another sample (previous versions reported these

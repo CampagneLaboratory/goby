@@ -35,6 +35,14 @@ public class GroupAssociations {
 
     private Object2ObjectMap<String, ObjectArraySet<String>> groupToColumns = new Object2ObjectOpenHashMap<String, ObjectArraySet<String>>();
 
+    /**
+     * Return true when associations were defined in the VCF, false otherwise.
+     * @return True or False.
+     */
+    public boolean hasAssociations() {
+        return groupToColumns.size()!=0;
+    }
+
     public GroupAssociations(String associationsAsText, ColumnInfo formatColumn, String[] sampleIds) {
         // parse associations stored in text in the header:
         associations = parse(associationsAsText);
