@@ -187,16 +187,22 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 String[] parentIds = parentString.split("[|]");
                 for (String parentId : parentIds) {
 
-                    String parentSampleId = covInfo.samplesWithExactCovariate("patient-id", parentId).iterator().next();
-                    String genderOfParent = covInfo.getCovariateValue(parentSampleId, "gender");
-                    int parentSampleIndex = locateSampleIndex(parentSampleId);
-                    if (genderOfParent.equals("Male")) {
+                    ObjectArraySet<String> parentSamples = covInfo.samplesWithExactCovariate("patient-id", parentId);
+                    if (parentSamples.size() != 0) {
 
-                        sample2FatherSampleIndex[sampleIndex] = parentSampleIndex;
-                    }
-                    if (genderOfParent.equals("Female")) {
+                        String parentSampleId = parentSamples.iterator().next();
+                        String genderOfParent = covInfo.getCovariateValue(parentSampleId, "gender");
+                        int parentSampleIndex = locateSampleIndex(parentSampleId);
+                        if (genderOfParent.equals("Male")) {
 
-                        sample2MotherSampleIndex[sampleIndex] = parentSampleIndex;
+                            sample2FatherSampleIndex[sampleIndex] = parentSampleIndex;
+                        }
+                        if (genderOfParent.equals("Female")) {
+
+                            sample2MotherSampleIndex[sampleIndex] = parentSampleIndex;
+                        }
+                    } else {
+                        LOG.warn("Parent could not be found for id:"+parentId);
                     }
                 }
             }
