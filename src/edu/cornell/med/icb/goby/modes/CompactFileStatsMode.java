@@ -30,17 +30,16 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -440,11 +439,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         try {
             final long size = file.length();
-            reader = new ReadsReader(FileUtils.openInputStream(file));
+            reader = new ReadsReader(new FastBufferedInputStream(new FileInputStream(file)));
+            ProgressLogger pg=new ProgressLogger();
+            pg.displayFreeMemory=true;
+            pg.itemsName="reads";
+            pg.start();
             for (final Reads.ReadEntry entry : reader) {
                 final int readLength = entry.getReadLength();
 
-                for (int i = 0; i < entry.getMetaDataCount(); i++) {
+                int metaDataCount = entry.getMetaDataCount();
+                for (int i = 0; i < metaDataCount; i++) {
                     Reads.MetaData metaData = entry.getMetaData(i);
                     stream.printf("meta-data key=%s value=%s%n",
                             metaData.getKey(),
@@ -499,7 +503,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 // adjust the min/max length of across all files
                 minReadLength = Math.min(minReadLength, readLength);
                 maxReadLength = Math.max(maxReadLength, readLength);
+                pg.lightUpdate();
             }
+            pg.stop();
 
 
             stream.printf("Average bytes per entry: %f%n", divide(size, allQueryIndices.count()));

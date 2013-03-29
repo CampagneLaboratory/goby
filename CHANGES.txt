@@ -5,6 +5,8 @@
    column to be a number (was String in release 2.2).
  - Somatic variation output format: handle unrecognized sample-ids in the parents column.
  - discover-sequence-variants mode: add assertion to give hint to user that syntax is incorrect in for -s and -e options.
+ - compact-file-stats mode: print progress when scanning reads files. Use a buffered reader to improve read file
+   parsing performance.
 2.2
  - Remove threshold effects when calling genotypes in several samples. Modified the filters to not remove bases in
    specific samples when the genotype survived filters in at least another sample (previous versions reported these
