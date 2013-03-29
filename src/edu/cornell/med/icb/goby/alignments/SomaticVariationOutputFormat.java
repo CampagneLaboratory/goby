@@ -375,10 +375,10 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     protected void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
-        pValues.clear();
-        // compare somatic to father:
+       // compare somatic to father:
 
         for (int sampleIndex : somaticSampleIndices) {
+            pValues.clear();
 
             SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
             int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
