@@ -21,15 +21,21 @@ public class EntropicIndelArtifactFilter extends GenotypeFilter {
 
     public void initStorage(int numSamples) {
         super.initStorage(numSamples);
-        distinctIndelsWithCount = new int[numSamples];
+        if (distinctIndelsWithCount == null) {
+            distinctIndelsWithCount = new int[numSamples];
+        } else {
+            Arrays.fill(distinctIndelsWithCount, 0);
+        }
     }
 
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
                                 ObjectSet<PositionBaseInfo> filteredSet) {
-        Arrays.fill(distinctIndelsWithCount, 0);
-        int likelyIndelArtifact=0;
+        resetCounters();
+        initStorage(sampleCounts.length);
+
+        int likelyIndelArtifact = 0;
         for (SampleCountInfo sci : sampleCounts) {
 
             for (EquivalentIndelRegion indel : sci.getEquivalentIndelRegions()) {
@@ -53,15 +59,11 @@ public class EntropicIndelArtifactFilter extends GenotypeFilter {
                 for (EquivalentIndelRegion indel : sci.getEquivalentIndelRegions()) {
 
 
-
-
                     indel.markFiltered();
                 }
             }
         }
     }
-
-
 
 
     @Override

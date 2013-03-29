@@ -1,5 +1,6 @@
 ##fileformat=VCFv4.1
 ##Goby=UNKNOWN
+##FieldGroupAssociations=INFO/pchi2-BH-FDR-q-value=q-value,INFO/pchi2-BH-FDR-q-value=indexed,CHROM=genomic-coordinate,CHROM=cross-sample-field,CHROM/VALUE=genomic-coordinate,CHROM/VALUE=cross-sample-field,POS=genomic-coordinate,POS=cross-sample-field,POS/VALUE=genomic-coordinate,POS/VALUE=cross-sample-field,ID=external-identifiers,ID=cross-sample-field,ID/VALUE=external-identifiers,ID/VALUE=cross-sample-field,REF=cross-sample-field,REF/VALUE=cross-sample-field,ALT=cross-sample-field,ALT/VALUE=cross-sample-field,QUAL=cross-sample-field,QUAL/VALUE=cross-sample-field,FILTER=cross-sample-field,FILTER/VALUE=cross-sample-field,
 ##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">
 ##INFO=<ID=AF1,Number=1,Type=Float,Description="Max-likelihood estimate of the site allele frequency of the first ALT allele">

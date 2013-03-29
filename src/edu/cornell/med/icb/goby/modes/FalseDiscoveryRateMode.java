@@ -210,20 +210,23 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             parser.readHeader();
             GroupAssociations groupAssociations = parser.getGroupAssociations();
             ObjectArraySet<String> pValueColumns = groupAssociations.getColumnsWithGroup("p-value");
-            System.out.println("Adding columns with group matching 'p-value': " + pValueColumns);
-            for (String columnName: pValueColumns){
-                if (columnName.startsWith("INFO/")) {
-                    selection.add(columnName.substring("INFO/".length(),columnName.length()));
-                } else {
-                    selection.add(columnName);
+            if (pValueColumns != null) {
+                System.out.println("Adding columns with group matching 'p-value': " + pValueColumns);
+                for (String columnName : pValueColumns) {
+                    if (columnName.startsWith("INFO/")) {
+                        selection.add(columnName.substring("INFO/".length(), columnName.length()));
+                    } else {
+                        selection.add(columnName);
+                    }
                 }
             }
-
         } catch (VCFParser.SyntaxException e) {
             LOG.error("Error parsing VCF to retrieve group associations.");
+
         } catch (IOException e) {
             LOG.error("Error parsing VCF to retrieve group associations.");
         }
+
     }
 
     private void recordTopHits(final DifferentialExpressionResults data) {
@@ -420,14 +423,14 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         Columns columns = new Columns();
         ObjectArrayList<String> sampleIdList = new ObjectArrayList();
         boolean inputHasGroupAssociations = false;
-        GroupAssociations groupAssociations=null;
+        GroupAssociations groupAssociations = null;
         for (String filename : inputFiles) {
             VCFParser parser = new VCFParser(filename);
             try {
                 try {
                     parser.readHeader();
-                    if (groupAssociations==null) {
-                        groupAssociations=parser.getGroupAssociations();
+                    if (groupAssociations == null) {
+                        groupAssociations = parser.getGroupAssociations();
                     }
                 } catch (VCFParser.SyntaxException e) {
                     throw new InternalError("this syntax error should have been caught in the first pass.");
@@ -465,7 +468,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             ObjectArrayList<String> groups = groupAssociations.listGroups(fieldName);
             vcfWriter.defineField("INFO", fieldName, 1, ColumnType.Float,
                     String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName),
-                    "q-value","indexed");
+                    "q-value", "indexed");
             statIndexToInfoFieldIndex.put(statIndex++, vcfWriter.getNumInfoFields() - 1);
         }
 
