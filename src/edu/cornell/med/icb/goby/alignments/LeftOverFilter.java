@@ -43,7 +43,7 @@ public class LeftOverFilter extends GenotypeFilter {
     }
 
     @Override
-    void initStorage(int numSamples) {
+    public void initStorage(int numSamples) {
         super.initStorage(numSamples);
         if (thresholdsPerSample == null) {
             thresholdsPerSample = new int[numSamples];

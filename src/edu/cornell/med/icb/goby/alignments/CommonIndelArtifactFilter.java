@@ -29,7 +29,7 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
     public void filterGenotypes(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts, ObjectSet<PositionBaseInfo> filteredSet) {
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
-                if (indel != null) {
+                if (indel != null && indel.getFrequency()>0) {
                     int depthAtPosition = 0;
                     for (SampleCountInfo sci : sampleCounts) {
                         depthAtPosition += sci.getSumCounts();

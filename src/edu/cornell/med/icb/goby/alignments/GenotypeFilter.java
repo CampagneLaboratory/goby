@@ -85,7 +85,7 @@ public abstract class GenotypeFilter {
         return "filter (" + describe() + ")";
     }
 
-    void initStorage(int numSamples) {
+    public void initStorage(int numSamples) {
 
         if (varCountRemovedPerSample == null) {
             varCountRemovedPerSample = new int[numSamples];

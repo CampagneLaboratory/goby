@@ -36,7 +36,7 @@ public class DiploidFilter extends GenotypeFilter {
     private int secondMaxFrequency[];
 
     @Override
-    void initStorage(final int numSamples) {
+    public void initStorage(final int numSamples) {
         super.initStorage(numSamples);
         if (firstMaxFrequency == null) {
             firstMaxFrequency = new int[numSamples];

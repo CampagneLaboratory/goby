@@ -323,8 +323,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 //genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
 
                 if (callIndels) {
+                    genotypeFilters.add(new EntropicIndelArtifactFilter());
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                     genotypeFilters.add(new CommonIndelArtifactFilter());
+
                 }
 
                 break;
@@ -345,6 +347,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         System.out.println("Filtering reads that have these criteria:");
         for (final GenotypeFilter filter : genotypeFilters) {
             System.out.println(filter.describe());
+            int numSamples = sampleToGroupMap.keySet().size();
+            filter.initStorage(numSamples);
         }
         String covInfoFilename = jsapResult.getString("covariates");
         if (covInfoFilename != null) {

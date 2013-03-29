@@ -39,7 +39,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
         return "count(allele in sample) < 1/4 * max_count over alleles in sample";
     }
 
-    void initStorage(int numSamples) {
+    public void initStorage(int numSamples) {
         super.initStorage(numSamples);
         if (maxAlleleCountsPerSample == null) {
             maxAlleleCountsPerSample = new int[numSamples];
