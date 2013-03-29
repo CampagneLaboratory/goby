@@ -263,6 +263,8 @@ public abstract class IterateSortedAlignments<T> {
             if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
                 sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory, false, basenames);
             } else {
+                assert  startOffsetArgument.contains(",") : "start offset must contain a coma delimiter.";
+                assert  endOffsetArgument.contains(",") : "end offset must contain a coma delimiter.";
                 final String[] startTokens = startOffsetArgument.split("[,]");
                 final String[] endTokens = endOffsetArgument.split("[,]");
                 startPosition = Integer.parseInt(startTokens[1]);
