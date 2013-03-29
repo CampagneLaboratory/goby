@@ -322,13 +322,13 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                         fixer.preserveCounts(sampleCounts);
                         for (final GenotypeFilter filter : genotypeFilters) {
                             filter.filterGenotypes(list, sampleCounts, filteredList);
-                           /*
-                             System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
+
+                            /*System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
 
                             if (anyCountNegative(sampleCounts)) {
                                 LOG.warn(String.format("filter %s produced negative counts! position=%d %n",
                                         filter.getName(),position));
-                            }*/
+                            } */
                         }
 
                         fixer.fix(list, sampleCounts, filteredList);

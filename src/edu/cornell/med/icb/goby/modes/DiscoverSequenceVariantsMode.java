@@ -320,7 +320,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case SOMATIC_VARIATIONS:
 
                 genotypeFilters.add(new QualityScoreFilter());
-                genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
+                //genotypeFilters.add(new LeftOverFilter(minimumVariationSupport));
 
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
