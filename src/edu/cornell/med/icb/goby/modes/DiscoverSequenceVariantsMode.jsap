@@ -219,7 +219,7 @@
                 <string>variant_discovery</string>
             </defaults>
             <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups,
-                methylation.
+                methylation, somatic_variations.
             </help>
         </flaggedOption>
         <flaggedOption>
