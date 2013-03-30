@@ -1,6 +1,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.PoissonDistributionImpl;
@@ -23,34 +24,37 @@ public class EntropicIndelArtifactFilter extends GenotypeFilter {
         super.initStorage(numSamples);
         if (distinctIndelsWithCount == null) {
             distinctIndelsWithCount = new int[numSamples];
+            candidateIndels= new  ObjectArraySet<EquivalentIndelRegion>();
+
         } else {
             Arrays.fill(distinctIndelsWithCount, 0);
+            candidateIndels.clear();
         }
     }
-
+    ObjectArraySet<EquivalentIndelRegion> candidateIndels;
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
                                 ObjectSet<PositionBaseInfo> filteredSet) {
         resetCounters();
         initStorage(sampleCounts.length);
-
         int likelyIndelArtifact = 0;
         for (SampleCountInfo sci : sampleCounts) {
 
             for (EquivalentIndelRegion indel : sci.getEquivalentIndelRegions()) {
                 if (indel.getFrequency() > 0) {
                     distinctIndelsWithCount[sci.sampleIndex]++;
+                    candidateIndels.add(indel);
                 }
             }
-            if (distinctIndelsWithCount[sci.sampleIndex] >= 2) {
+            if (distinctIndelsWithCount[sci.sampleIndex] > 1) {
                 likelyIndelArtifact++;
             }
 
         }
 
 
-        if (likelyIndelArtifact >= sampleCounts.length / 4) {
+        if (candidateIndels.size()>1 || likelyIndelArtifact >= sampleCounts.length / 4) {
             // more than a quarter of samples seem to have indel artifacts at this genomic site. Filter everything.
 
             //   System.out.printf("Filtering indels at site with %d samples with likely indel artifact %n",                    likelyIndelArtifact);
