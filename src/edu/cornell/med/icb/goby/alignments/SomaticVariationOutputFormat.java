@@ -428,8 +428,8 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
             final int a = germlineCounts.getGenotypeCount(genotypeIndex);
             final int b = somaticCounts.getGenotypeCount(genotypeIndex);
-            if (a >= 5) {
-                // at least 5 bases in germline, we don't need to score this:
+            if (a >= 1) {
+                // at least 1 base in germline, we don't need to score this:
                 fisherP = Math.min(fisherP, 1);
                 continue;
             }
