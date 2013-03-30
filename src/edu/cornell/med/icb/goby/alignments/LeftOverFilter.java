@@ -35,8 +35,9 @@ import java.util.Arrays;
  *         Time: 11:42:42 AM
  */
 public class LeftOverFilter extends GenotypeFilter {
-    private static final int MULTIPLIER = 2;
+    private int multiplier = 2;
     private int minVariationSupport = 0;
+
 
     public LeftOverFilter(int minVariationSupport) {
         this.minVariationSupport = minVariationSupport;
@@ -72,7 +73,7 @@ public class LeftOverFilter extends GenotypeFilter {
             }
         }
         for (int sampleIndex = 0; sampleIndex < sampleCounts.length; sampleIndex++) {
-            thresholdsPerSample[sampleIndex] *= MULTIPLIER;
+            thresholdsPerSample[sampleIndex] *= multiplier;
         }
 
         for (PositionBaseInfo positionBaseInfo : list) {
@@ -105,7 +106,7 @@ public class LeftOverFilter extends GenotypeFilter {
 
     @Override
     public String describe() {
-        return String.format("#count(allele) < (%d *#filtered)", MULTIPLIER);
+        return String.format("#count(allele) < (%d *#filtered)", multiplier);
     }
 
     @Override
@@ -113,4 +114,8 @@ public class LeftOverFilter extends GenotypeFilter {
         return thresholdsPerSample[sampleIndex];
     }
 
+    public LeftOverFilter setMultiplier(int multiplier) {
+        this.multiplier = multiplier;
+        return this;
+    }
 }
