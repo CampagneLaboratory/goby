@@ -24,14 +24,16 @@ public class EntropicIndelArtifactFilter extends GenotypeFilter {
         super.initStorage(numSamples);
         if (distinctIndelsWithCount == null) {
             distinctIndelsWithCount = new int[numSamples];
-            candidateIndels= new  ObjectArraySet<EquivalentIndelRegion>();
+            candidateIndels = new ObjectArraySet<EquivalentIndelRegion>();
 
         } else {
             Arrays.fill(distinctIndelsWithCount, 0);
             candidateIndels.clear();
         }
     }
+
     ObjectArraySet<EquivalentIndelRegion> candidateIndels;
+
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
@@ -40,21 +42,21 @@ public class EntropicIndelArtifactFilter extends GenotypeFilter {
         initStorage(sampleCounts.length);
         int likelyIndelArtifact = 0;
         for (SampleCountInfo sci : sampleCounts) {
-
-            for (EquivalentIndelRegion indel : sci.getEquivalentIndelRegions()) {
-                if (indel.getFrequency() > 0) {
-                    distinctIndelsWithCount[sci.sampleIndex]++;
-                    candidateIndels.add(indel);
+            if (sci.hasIndels()) {
+                for (EquivalentIndelRegion indel : sci.getEquivalentIndelRegions()) {
+                    if (indel.getFrequency() > 0) {
+                        distinctIndelsWithCount[sci.sampleIndex]++;
+                        candidateIndels.add(indel);
+                    }
+                }
+                if (distinctIndelsWithCount[sci.sampleIndex] > 1) {
+                    likelyIndelArtifact++;
                 }
             }
-            if (distinctIndelsWithCount[sci.sampleIndex] > 1) {
-                likelyIndelArtifact++;
-            }
-
         }
 
 
-        if (candidateIndels.size()>1 || likelyIndelArtifact >= sampleCounts.length / 4) {
+        if (candidateIndels.size() > 1 || likelyIndelArtifact >= sampleCounts.length / 4) {
             // more than a quarter of samples seem to have indel artifacts at this genomic site. Filter everything.
 
             //   System.out.printf("Filtering indels at site with %d samples with likely indel artifact %n",                    likelyIndelArtifact);
