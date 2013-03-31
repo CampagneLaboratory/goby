@@ -426,38 +426,47 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
 
             boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
-            final int a = germlineCounts.getGenotypeCount(genotypeIndex);
-            final int b = somaticCounts.getGenotypeCount(genotypeIndex);
-            if (a >= 1) {
-                // at least 1 base in germline, we don't need to score this:
+            final int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
+            final int somaticCount = somaticCounts.getGenotypeCount(genotypeIndex);
+            final int failedCountGermline=germlineCounts.failedCount;
+            if (germlineCount > failedCountGermline) {
+                // We see at least as many bases in the germline than there were failed bases in this sample. Consider
+                // that the genotype was seen in germline and therefore is not somatic.
+                /* Consider these examples:
+                      germlineCount=1  failedCountGermline=3 : ignore the occurence in germline, estimate P
+                      germlineCount=1  failedCountGermline=0 : not somatic since seen in germline
+                      germlineCount=0  failedCountGermline=0 : estimate P
+                      germlineCount=2  failedCountGermline=6 : estimate P
+                      germlineCount=4  failedCountGermline=2 : not somatic since seen in germline
+                 */
                 fisherP = Math.min(fisherP, 1);
                 continue;
             }
-            //    final int c = (int) ((a + b) * proportionCountsIn[germlineCounts.sampleIndex]);
-            //    final int d = (int) ((a + b) * proportionCountsIn[somaticCounts.sampleIndex]);
+            //    final int c = (int) ((germlineCount + somaticCount) * proportionCountsIn[germlineCounts.sampleIndex]);
+            //    final int d = (int) ((germlineCount + somaticCount) * proportionCountsIn[somaticCounts.sampleIndex]);
             double germlineSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
                     somaticCounts.sampleIndex, germlineCounts.sampleIndex);
             double somaticSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
                     somaticCounts.sampleIndex, somaticCounts.sampleIndex);
             assert germlineSampleExpectedProportion + somaticSampleExpectedProportion == 1 : "proportions must sum to 1.0";
-            final int c = (int) ((a + b) * germlineSampleExpectedProportion);
-            final int d = (int) ((a + b) * somaticSampleExpectedProportion);
+            final int c = (int) ((germlineCount + somaticCount) * germlineSampleExpectedProportion);
+            final int d = (int) ((germlineCount + somaticCount) * somaticSampleExpectedProportion);
             if (ok) {
                 if (fisherRInstalled) {
-                    //    System.out.printf("%n fisher=? %n%d|%d%n%d|%d ", a, b - a, c, d - c);
+                    //    System.out.printf("%n fisher=? %n%d|%d%n%d|%d ", germlineCount, somaticCount - germlineCount, c, d - c);
                     fisherP = Math.min(fisherP, FisherExactRCalculator.getFisherOneTailedLesserPValue(
-                            a, b,
+                            germlineCount, somaticCount,
                             c, d));
-                    //System.out.printf("%n fisher=%g %n%d|%d%n%d|%d ", fisherP, a, b, c, d);
+                    //System.out.printf("%n fisher=%g %n%d|%d%n%d|%d ", fisherP, germlineCount, somaticCount, c, d);
                     //System.out.flush();
                 } else {
 
-                    int mean = Math.max(1, (a + c) / 2);
+                    int mean = Math.max(1, (germlineCount + c) / 2);
 
                     final PoissonDistributionImpl poissonDistribution = new PoissonDistributionImpl(mean);
                     try {
                         fisherP = Math.min(fisherP, poissonDistribution.cumulativeProbability(c));
-                        // System.out.printf("%nmean=%d%n%d|%d%n%d|%d  x=%d  P(X<=x) %g",mean, a,b,c,d,c, fisherP);
+                        // System.out.printf("%nmean=%d%n%d|%d%n%d|%d  x=%d  P(X<=x) %g",mean, germlineCount,somaticCount,c,d,c, fisherP);
                     } catch (MathException e) {
                         fisherP = Double.NaN;
                     }
@@ -467,11 +476,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             } else {
                 System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
                         "referenceId=%s referenceIndex=%d position=%d %n" +
-                        "a=%d b=%d%n" +
+                        "germlineCount=%d somaticCount=%d%n" +
                         "c=%d, d=%d",
                         currentReferenceId, referenceIndex,
                         pos + 1,
-                        a, b, c, d
+                        germlineCount, somaticCount, c, d
                 );
             }
 
