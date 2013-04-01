@@ -1,4 +1,4 @@
->> 2.2.1
+2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.
  - Somatic variation output format: annotate somatic p-value column with 'p-value' group. Fix the type of the p-value
@@ -11,8 +11,10 @@
  - discover-sequence-variants: Add a new filter to remove indels at a site where a sample shows lots of distinct
    possible indels. Indels at these sites are very likely to be artefactual. We count the number of samples where
    three distinct indel genotypes are seen. If more than 1/4 of the samples have likely indel artifacts, we remove
-   all indel candidates at the site. This filter is added to the somatic variations output format. See dynamic options
-   for this filter with --x-help
+   all indel candidates at the site. maxIndelPerSite:Maximum number of distinct indels at a given genomic site.:1
+   Additional filter: fractionOfSamples: Maximum fraction of samples that can have an indel candidate for the indel
+   to be considered (indel candidates that occur in many samples are more likely to be spurious).:0.25
+   This filter is added to the somatic variations output format. See dynamic options for this filter with --x-help
 2.2
  - Remove threshold effects when calling genotypes in several samples. Modified the filters to not remove bases in
    specific samples when the genotype survived filters in at least another sample (previous versions reported these
