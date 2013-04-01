@@ -396,7 +396,7 @@ public class TestSkipTo {
 
         // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");
         //  AlignmentReader reader = new AlignmentReaderImpl("/data/igv-test/UANMNXR-hybrid-domain-reindexed.entries");
-        AlignmentReader reader = new AlignmentReaderImpl("http://gobyweb.apps.campagnelab.org/data/H_T_D/HZFWPTI/HZFWPTI-hybrid-domain.entries");
+        AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/HZFWPTI-hybrid-domain.entries");
         reader.readHeader();
         reader.reposition(10, 67501982);
         Alignments.AlignmentEntry entry = reader.skipTo(10, 67501982);
