@@ -27,6 +27,9 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
 
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts, ObjectSet<PositionBaseInfo> filteredSet) {
+        resetCounters();
+        initStorage(sampleCounts.length);
+
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null && indel.getFrequency()>0) {
@@ -45,7 +48,7 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                         try {
                             cumulativeIndelBaseRepeatLength += repeatLength * actualIndelFrequency;
                             cumulativeIndelFrequency += actualIndelFrequency;
-
+                            numScreened++;
                             PoissonDistributionImpl poisson = new PoissonDistributionImpl(actualIndelFrequency);
                             double pValue = poisson.cumulativeProbability(expectedFrequency);
                          /*   System.out.printf("@INDEL_DATA@%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g\t%s%n",
@@ -54,7 +57,7 @@ public class CommonIndelArtifactFilter extends GenotypeFilter {
                                     pValue > 0.05 ? "FILTER" : "KEPT");
                            */
                             if (actualIndelFrequency <= expectedFrequency || pValue > 0.05) {
-
+                                numFiltered++;
                                 // fail this index, since it is expected given the number of repeat bases.
                              /*   System.out.printf("Failing INDEL=%s Expected prop=%g freq=%d observed freq=%d%n",
                                         indel,

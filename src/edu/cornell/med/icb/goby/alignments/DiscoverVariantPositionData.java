@@ -78,6 +78,8 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         }
         if (!candidateIndels.contains(candidateIndel)) {
             candidateIndels.add(candidateIndel);
+           // System.out.println(candidateIndels);
+           // assert candidateIndels.contains(candidateIndel) : "indel must have been added.";
         } else {
             for (final EquivalentIndelRegion eir : candidateIndels) {
                 if (eir.equals(candidateIndel)) {
