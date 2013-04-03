@@ -33,7 +33,7 @@
             </help>
         </flaggedOption>
         <flaggedOption>
-            <id>input-genome</id>
+            <id>genome</id>
             <shortFlag>g</shortFlag>
             <longFlag>genome</longFlag>
             <required>true</required>
