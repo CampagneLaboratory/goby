@@ -2,6 +2,11 @@
  - concatenate-alignments mode: add ability to restrict output to a genomic slice (see -s and -e options).
  - API change: AlignmentSliceHelper makes it easier to parse and process genomic slices for sets of alignments.
  - concatenate-alignments mode: now transfers read groups to output in the same way that non-sorted concat does.
+ - concatenate-alignments mode: Add a mechanism to override/define read groups/read origin info on the fly when
+   reading alignments that did not include them. Coupled with changes to compact-to-sam, this makes it possible
+   to get BAM files with read groups directly from Goby alignments.
+ - compact-to-sam mode: fixed output of read groups, which were not correctly written for platform, platform unit,
+   and library.
 2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.

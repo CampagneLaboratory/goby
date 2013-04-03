@@ -144,10 +144,17 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (maxEntriesToProcess == -1) {
             maxEntriesToProcess = Integer.MAX_VALUE;
         }
-        sliceHelper.parseIncludeReferenceArgument(jsapResult,inputFilenames);
+        if (jsapResult.userSpecified("add-read-origin-info")) {
+            readGroupHelper.parseReadGroupOptions(jsapResult, inputFilenames);
+            readGroupHelper.setOverrideReadGroups(true);
+        }
+        sliceHelper.parseIncludeReferenceArgument(jsapResult, inputFilenames);
         return this;
     }
-    AlignmentSliceHelper sliceHelper=new AlignmentSliceHelper();
+
+    private AlignmentSliceHelper sliceHelper = new AlignmentSliceHelper();
+    private ReadGroupHelper readGroupHelper = new ReadGroupHelper();
+
     /**
      * Perform the concatenation.
      *
@@ -175,11 +182,21 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
                 new NoUpgradeAlignmentReaderFactory();
 
         final ConcatAlignmentReader alignmentReader = allSorted ?
-                new ConcatSortedAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames) :
-                new ConcatAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames);
+                new ConcatSortedAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames) {
+                    @Override
+                    public ReadGroupHelper getReadGroupHelper() {
+                        return readGroupHelper;
+                    }
+                } :
+                new ConcatAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames) {
+                    @Override
+                    public ReadGroupHelper getReadGroupHelper() {
+                        return readGroupHelper;
+                    }
+                };
         if (allSorted) {
             GenomicRange genomicRange = sliceHelper.getGenomicRange();
-            ((ConcatSortedAlignmentReader)alignmentReader).setGenomicRange(genomicRange);
+            ((ConcatSortedAlignmentReader) alignmentReader).setGenomicRange(genomicRange);
         }
         alignmentReader.setAdjustSampleIndices(adjustSampleIndices);
         alignmentReader.setStartEndOffsets(startOffsetArgument, endOffsetArgument);

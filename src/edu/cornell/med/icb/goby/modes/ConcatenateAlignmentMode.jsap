@@ -139,5 +139,24 @@
                 specified position will be written.
             </help>
         </flaggedOption>
+        <switch>
+            <id>add-read-origin-info</id>
+            <longFlag>add-read-origin-info</longFlag>
+            <shortFlag>r</shortFlag>
+            <help>Add read origin info to the input alignment. By default, the alignment basenames are associated
+                with the ID and SM (sample) read origin, equivalent to SAM @RG\tID:basename\tSM:basename.
+            </help>
+        </switch>
+        <flaggedOption>
+            <id>platform</id>
+            <longFlag>platform</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The platform string to use for read group/read origin info PL. This will be considered constant across
+                all input samples.
+            </help>
+        </flaggedOption>
     </parameters>
 </jsap>

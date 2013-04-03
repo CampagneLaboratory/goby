@@ -45,7 +45,7 @@ public class TestConcatSortedAlignmentReader {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(TestReadWriteAlignments.class);
+    private static final Log LOG = LogFactory.getLog(TestConcatSortedAlignmentReader.class);
     private static final String BASE_TEST_DIR = "test-results/sort-concat";
 
     @BeforeClass
@@ -169,6 +169,31 @@ public class TestConcatSortedAlignmentReader {
             assertEquals(expectedPositions[i], sortedPositions.getInt(i));
         }
     }
+
+
+    @Test
+       public void testSortConcatWithReadGroupOverride() throws IOException {
+        final ReadGroupHelper readGroupHelper=new ReadGroupHelper();
+        readGroupHelper.setOverrideReadGroups(true);
+
+        final ConcatSortedAlignmentReader concat = new ConcatSortedAlignmentReader(basename1, basename2, basename3) {
+               @Override
+               public ReadGroupHelper getReadGroupHelper() {
+
+                   return readGroupHelper;
+               }
+           };
+           final IntList sortedPositions = new IntArrayList();
+           final int[] expectedPositions = {1, 2, 3, 5, 6, 7, 8, 9, 10, 10, 12, 99};
+           for (final Alignments.AlignmentEntry entry : concat) {
+               // System.out.println("entry.position(): "+entry.getPosition());
+               sortedPositions.add(entry.getPosition());
+           }
+           assertEquals(expectedPositions.length, sortedPositions.size());
+           for (int i = 0; i < expectedPositions.length; i++) {
+               assertEquals(expectedPositions[i], sortedPositions.getInt(i));
+           }
+       }
 
     @Test
     public void testSortConcatNonAmbiguous() throws IOException {
