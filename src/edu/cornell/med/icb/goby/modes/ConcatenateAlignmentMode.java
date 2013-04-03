@@ -53,6 +53,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
      */
     private static final Log LOG = LogFactory.getLog(ConcatenateAlignmentMode.class);
     private int maxEntriesToProcess = Integer.MAX_VALUE;
+    private String startOffsetArgument;
+    private String endOffsetArgument;
 
     public void setIgnoreTmh(boolean ignoreTmh) {
         this.ignoreTmh = ignoreTmh;
@@ -142,10 +144,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (maxEntriesToProcess == -1) {
             maxEntriesToProcess = Integer.MAX_VALUE;
         }
-
+        sliceHelper.parseIncludeReferenceArgument(jsapResult,inputFilenames);
         return this;
     }
-
+    AlignmentSliceHelper sliceHelper=new AlignmentSliceHelper();
     /**
      * Perform the concatenation.
      *
@@ -159,6 +161,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final boolean allSorted = isAllSorted(upgrade, basenames);
         if (allSorted) {
             System.out.println("input alignments are all sorted, the output will also be sorted.");
+
         } else {
 
             System.out.println("At least one of the input alignments is not sorted, the output will NOT be sorted.");
@@ -174,9 +177,12 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final ConcatAlignmentReader alignmentReader = allSorted ?
                 new ConcatSortedAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames) :
                 new ConcatAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames);
-
+        if (allSorted) {
+            GenomicRange genomicRange = sliceHelper.getGenomicRange();
+            ((ConcatSortedAlignmentReader)alignmentReader).setGenomicRange(genomicRange);
+        }
         alignmentReader.setAdjustSampleIndices(adjustSampleIndices);
-
+        alignmentReader.setStartEndOffsets(startOffsetArgument, endOffsetArgument);
         final ProgressLogger progress = new ProgressLogger();
         progress.displayFreeMemory = true;
         int entriesInOutputFile = 0;

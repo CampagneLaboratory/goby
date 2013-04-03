@@ -113,5 +113,31 @@
                 integer n will only write up to n entries (useful to extract small subsets of large alignments).
             </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading
+                from, or a string in the format ref-id,ref-position (since Goby 2.3). Only entries that have a position
+                after the start position will be written.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from,
+                or a string in the format ref-id,ref-position (since Goby 2.3). Only entries that occur before the
+                specified position will be written.
+            </help>
+        </flaggedOption>
     </parameters>
 </jsap>

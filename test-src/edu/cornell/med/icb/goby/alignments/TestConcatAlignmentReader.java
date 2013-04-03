@@ -50,7 +50,7 @@ public class TestConcatAlignmentReader {
     private int numQueries101;
     private int numEntriesIn102;
     private int numQueries102;
-    private final int numTargets = 5;
+    private final int numTargets = 1;
     private String outputBasename1;
     private String outputBasename2;
     private int count102;
@@ -81,22 +81,39 @@ public class TestConcatAlignmentReader {
         assertEquals(count101, counts[0]);
         assertEquals(count102, counts[3]);
         ReadOriginInfo roiList = concatReader.getReadOriginInfo();
-        assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
-        assertEquals("SOLID",roiList.getInfo(3).getPlatform());
+        assertEquals("ILLUMINA", roiList.getInfo(0).getPlatform());
+        assertEquals("SOLID", roiList.getInfo(3).getPlatform());
     }
+
+
     @Test
-       public void testLoadTwoAdjustReadOrigins2() throws IOException {
-           final int[] counts;
+    public void testLoadTwoAdjustReadOriginsWithSortedConcat() throws IOException {
+        //same as testLoadTwoAdjustReadOrigins, but test sorted concat
+        final int[] counts;
 
-           final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1);
-           concatReader.readHeader();
-           counts = countsForReadOrigins(concatReader);
-           assertEquals(count101, counts[0]);
-           ReadOriginInfo roiList = concatReader.getReadOriginInfo();
-           assertEquals(3,roiList.size());
-           assertEquals("ILLUMINA",roiList.getInfo(0).getPlatform());
+        final ConcatAlignmentReader concatReader = new ConcatSortedAlignmentReader(outputBasename1, outputBasename2);
+        concatReader.readHeader();
+        counts = countsForReadOrigins(concatReader);
+        assertEquals(count101, counts[0]);
+        assertEquals(count102, counts[3]);
+        ReadOriginInfo roiList = concatReader.getReadOriginInfo();
+        assertEquals("ILLUMINA", roiList.getInfo(0).getPlatform());
+        assertEquals("SOLID", roiList.getInfo(3).getPlatform());
+    }
 
-       }
+    @Test
+    public void testLoadTwoAdjustReadOrigins2() throws IOException {
+        final int[] counts;
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1);
+        concatReader.readHeader();
+        counts = countsForReadOrigins(concatReader);
+        assertEquals(count101, counts[0]);
+        ReadOriginInfo roiList = concatReader.getReadOriginInfo();
+        assertEquals(3, roiList.size());
+        assertEquals("ILLUMINA", roiList.getInfo(0).getPlatform());
+
+    }
 
     @Test
     public void testLoadTwoAlignerName() throws IOException {
@@ -122,7 +139,7 @@ public class TestConcatAlignmentReader {
         concatReader.readHeader();
         System.out.println(concatReader.getSmallestSplitQueryIndex());
         System.out.println(concatReader.getLargestSplitQueryIndex());
-        assertEquals(Math.max(numQueries101 , numQueries102), concatReader.getNumberOfQueries());
+        assertEquals(Math.max(numQueries101, numQueries102), concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
     }
@@ -192,14 +209,18 @@ public class TestConcatAlignmentReader {
     }
 
     private int[] countsForReadOrigins(final AbstractAlignmentReader reader) {
-
+        int numScanned = 0;
         int[] readOriginCounts = new int[10];
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
+            if (alignmentEntry.hasReadOriginIndex()) {
+                System.out.printf("entry: score=%g readOriginIndex=%d %n" ,alignmentEntry.getScore(), alignmentEntry.getReadOriginIndex());
 
-            readOriginCounts[alignmentEntry.getReadOriginIndex()]++;
+                readOriginCounts[alignmentEntry.getReadOriginIndex()]++;
+            }
+            numScanned++;
         }
-
+        System.out.println("Scanned " + numScanned + " entries");
         return readOriginCounts;
     }
 
@@ -230,7 +251,7 @@ public class TestConcatAlignmentReader {
             writer.setReadOriginInfo(buildReadGroup(0, "group_0_sample_1", "ILLUMINA", "concat-align-101"));
             writer.addReadOriginInfo(buildReadGroup(1, "group_1_sample_1", "454", "concat-align-101"));
             writer.addReadOriginInfo(buildReadGroup(2, "group_2_sample_1", "another", "concat-align-101"));
-            final int numQuery = 10;
+            final int numQuery = 2;
             int position = 100;
             final int score = 30;
 
@@ -270,7 +291,7 @@ public class TestConcatAlignmentReader {
             writer.setNumAlignmentEntriesPerChunk(1000);
             writer.setReadOriginInfo(buildReadGroup(0, "group_0_sample_2", "SOLID", "concat-align-102"));
 
-            final int numQuery = 13;
+            final int numQuery = 3;
 
             int position = 1;
             final int score = 50;
@@ -321,12 +342,12 @@ public class TestConcatAlignmentReader {
     public void testLoadTwoFromFileURLs() throws IOException {
         final int count;
 
-        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false,"file://./" + outputBasename1, "file://./" + outputBasename2);
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false, "file://./" + outputBasename1, "file://./" + outputBasename2);
         count = countAlignmentEntries(concatReader);
         assertEquals(count101 + count102, count);
         concatReader.readHeader();
 
-        assertEquals(Math.max(numQueries101 , numQueries102), concatReader.getNumberOfQueries());
+        assertEquals(Math.max(numQueries101, numQueries102), concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
     }

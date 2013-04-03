@@ -1,3 +1,7 @@
+>> 2.3
+ - concatenate-alignments mode: add ability to restrict output to a genomic slice (see -s and -e options).
+ - API change: AlignmentSliceHelper makes it easier to parse and process genomic slices for sets of alignments.
+ - concatenate-alignments mode: now transfers read groups to output in the same way that non-sorted concat does.
 2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.

@@ -372,7 +372,7 @@ public class TestSkipTo {
 
     }
 
-     @Test
+
     public void testOldHybrid() throws IOException {
 
         // AlignmentReader reader = new AlignmentReaderImpl("http://dl.dropbox.com/u/357497/UANMNXR-hybrid-domain.header");

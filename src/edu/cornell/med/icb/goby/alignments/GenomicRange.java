@@ -20,6 +20,11 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
 
 
 /**
@@ -30,13 +35,34 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
  *         Time: 12:44 PM
  */
 public class GenomicRange {
+    private static final Log LOG = LogFactory.getLog(GenomicRange.class);
+
     public int startReferenceIndex;
-    public String startChromosome;
+    public String startChromosome = "?";
     public int startPosition;
     public int endReferenceIndex;
-    public String endChromosome;
+    public String endChromosome = "?";
     public int endPosition;
     private DoubleIndexedIdentifier ids;
+
+    public GenomicRange() {
+    }
+
+    @Override
+    public String toString() {
+        return String.format(" ]%d:%d-%d:%d] or ]%s:%d-%s-%d]", startReferenceIndex, startPosition,
+                endReferenceIndex, endPosition,
+
+                startChromosome, startPosition,
+                endChromosome, endPosition);
+    }
+
+    public GenomicRange(int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition) {
+        this.startReferenceIndex = startReferenceIndex;
+        this.endReferenceIndex = endReferenceIndex;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+    }
 
     public void resolveChromosomeIndices(DoubleIndexedIdentifier referenceIds) {
         startReferenceIndex = referenceIds.getIndex(startChromosome);
@@ -44,7 +70,6 @@ public class GenomicRange {
     }
 
     /**
-     *
      * @param chromosome   chromosome.
      * @param segmentStart zero-based position of the start of the segment on chromosome.
      * @param segmentEnd   zero-based position of the end of the segment on chromosome.
@@ -62,15 +87,86 @@ public class GenomicRange {
         if (chromosomeIndex == endReferenceIndex && segmentEnd > endPosition) {
             return false;
         }
-        return true ;
+        return true;
 
 
     }
 
+    /**
+     * Return true if and only if the specified position occurs strictly after the end
+     * of the slice.
+     *
+     * @param referenceIndex
+     * @param position
+     * @return
+     */
+    public boolean positionIsPastEnd(int referenceIndex, int position) {
+        if (referenceIndex > endReferenceIndex) return true;
+        if (referenceIndex == endReferenceIndex && position > endPosition) {
+            return true;
+        }
+        return false;
+
+    }
+
+    /**
+     * Return true if and only if the specified position occurs before or at the start
+     * of the slice.
+     *
+     * @param referenceIndex
+     * @param position
+     * @return
+     */
+    public boolean positionIsBeforeStart(int referenceIndex, int position) {
+        if (referenceIndex < startReferenceIndex) return true;
+        if (referenceIndex == startReferenceIndex && position <= startPosition) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Set target ids to translate chromosome into indices.
+     * @param inputFilenames list of alignment file names.
+     * @return Success code: False upon error, True upon success.
+     */
+    public boolean setTargetIds(String... inputFilenames) {
+        ConcatAlignmentReader concat = null;
+        try {
+            concat = new ConcatAlignmentReader(AlignmentReaderImpl.getBasenames(inputFilenames));
+
+            concat.readHeader();
+
+            setTargetIds(concat.getTargetIdentifiers());
+
+            concat.close();
+            concat = null;
+        } catch (IOException e) {
+            LOG.error("Unable to obtain target identifiers/index mapping from input alignments.");
+            return false;
+        } finally {
+
+            if (concat != null) {
+                try {
+                    concat.close();
+                } catch (IOException e) {
+                    LOG.trace("Unable to close, ignoring");
+                }
+            }
+
+        }
+        return true;
+
+    }
 
     public void setTargetIds(IndexedIdentifier targetIdentifiers) {
         ids = new DoubleIndexedIdentifier(targetIdentifiers);
         startReferenceIndex = ids.getIndex(startChromosome);
         endReferenceIndex = ids.getIndex(endChromosome);
     }
+
+    public DoubleIndexedIdentifier getTargetIds() {
+        return ids;
+    }
+
 }

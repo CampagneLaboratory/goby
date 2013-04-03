@@ -74,11 +74,11 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
      * The second index is the original read origin index in the input reader. The value is the
      * permuted read origin index for the concatenated entry.
      */
-    private int[][] readOriginPermutations;
+    protected int[][] readOriginPermutations;
     private boolean needsPermutation;
     private String[] basenames;
     // indicates whether a reader has read a origin information:
-    private boolean[] hasReadOrigin;
+    protected boolean[] hasReadOrigin;
 
     /**
      * Construct an alignment reader over a set of alignments.
@@ -400,12 +400,18 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             if (adjustSampleIndices) {
                 builder = builder.setSampleIndex(activeIndex);
             }
-            if (alignmentEntry.hasReadOriginIndex() && hasReadOrigin[activeIndex]) {
-                // remove conflicts by permuting read origin index to the concatenated read origin indices:
-                builder = builder.setReadOriginIndex(readOriginPermutations[activeIndex][alignmentEntry.getReadOriginIndex()]);
-            }
+            builder = processReadGroups(alignmentEntry, builder, activeIndex);
             return builder.build();
         }
+    }
+
+    protected Alignments.AlignmentEntry.Builder processReadGroups(Alignments.AlignmentEntry alignmentEntry,
+                                                                  Alignments.AlignmentEntry.Builder builder, final int readerIndex) {
+        if (alignmentEntry.hasReadOriginIndex() && hasReadOrigin[readerIndex]) {
+            // remove conflicts by permuting read origin index to the concatenated read origin indices:
+            builder = builder.setReadOriginIndex(readOriginPermutations[readerIndex][alignmentEntry.getReadOriginIndex()]);
+        }
+        return builder;
     }
 
     /**
@@ -536,5 +542,22 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     public ReadOriginInfo getReadOriginInfo() {
         return new ReadOriginInfo(mergedReadOriginInfoList);
     }
+
+    private String startOffsetArgument;
+    private String endOffsetArgument;
+
+    /**
+     * Restrict concatenation to a slice of the inputs. Offset arguments are either long byte offsets
+     * in a string, or strings in the format ref,genomic-pos, where ref is the identifier of the reference
+     * sequence where the slice stats/ends and genomic-pos is the corresponding genomic position on that reference.
+     *
+     * @param startOffsetArgument
+     * @param endOffsetArgument
+     */
+    public void setStartEndOffsets(String startOffsetArgument, String endOffsetArgument) {
+        this.startOffsetArgument = startOffsetArgument;
+        this.endOffsetArgument = endOffsetArgument;
+    }
+
 
 }
