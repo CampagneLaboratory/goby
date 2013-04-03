@@ -509,7 +509,7 @@ message ReadOriginInfo {
     */
     required string origin_id = 2;
     /*
-       The sample from which the reads were sequenced. This field is compatible with the SM/platform field of BAM read
+       The sample from which the reads were sequenced. This field is compatible with the SM/sample field of BAM read
        groups. Free text.
     */
     optional string sample = 4;

@@ -80,8 +80,10 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     // indicates whether a reader has read a origin information:
     protected boolean[] hasReadOrigin;
 
+
+
     /**
-     * Construct an alignment reader over a set of alignments.
+     * Construct an alignment reader over a RepositionableInputStreamset of alignments.
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
      * This version uses adjustQueryIndices as the default true.
@@ -237,7 +239,15 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                     numberOfQueries = Math.max(numberOfQueries, numQueriesForReader);
                 }
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
-                mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList(), readers.length);
+                ReadOriginInfo readOriginInfo = reader.getReadOriginInfo();
+                ReadGroupHelper readGroupHelper = getReadGroupHelper();
+                if (readOriginInfo.size() > 0 && readGroupHelper.isOverrideReadGroups()) {
+                    LOG.warn("Source contained read origin info, but overriding.");
+                }
+                if (readGroupHelper.isOverrideReadGroups()) {
+                    readOriginInfo = makeDefaultReadOriginInfo(reader);
+                }
+                mergeReadOrigins(readerIndex, readOriginInfo.getPbList(), readers.length);
 
                 readerIndex++;
             }
@@ -297,6 +307,26 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
 
 
         setHeaderLoaded(true);
+    }
+
+    private ReadOriginInfo makeDefaultReadOriginInfo(AlignmentReader reader) {
+
+        List<Alignments.ReadOriginInfo> list = new ObjectArrayList<Alignments.ReadOriginInfo>();
+        Alignments.ReadOriginInfo.Builder builder = Alignments.ReadOriginInfo.newBuilder();
+        builder.setOriginIndex(0);
+        String basename = reader.basename();
+        ReadGroupHelper readGroupHelper = getReadGroupHelper();
+        builder.setOriginId(readGroupHelper.getId(basename));
+        builder.setSample(readGroupHelper.getSample(basename));
+        // Assume only one barcode per sample:
+        builder.setPlatformUnit(readGroupHelper.getSample(basename));
+        builder.setPlatform(readGroupHelper.getPlatform(basename));
+        list.add(builder.build());
+        return new ReadOriginInfo(list);
+    }
+
+    public ReadGroupHelper getReadGroupHelper() {
+        return new ReadGroupHelper();
     }
 
     private int nextAvailableReadOriginIndex = 0;
