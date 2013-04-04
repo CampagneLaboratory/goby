@@ -263,10 +263,11 @@ public abstract class IterateSortedAlignments<T> {
             if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
                 sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory, false, basenames);
             } else {
-                assert  startOffsetArgument.contains(",") : "start offset must contain a coma delimiter.";
-                assert  endOffsetArgument.contains(",") : "end offset must contain a coma delimiter.";
-                final String[] startTokens = startOffsetArgument.split("[,]");
-                final String[] endTokens = endOffsetArgument.split("[,]");
+                assert  isValidOffsetArgument(startOffsetArgument) : "start offset must contain a coma or colon delimiter.";
+                assert  isValidOffsetArgument(endOffsetArgument) : "end offset must contain a coma delimiter.";
+
+                final String[] startTokens = startOffsetArgument.split("[:,]");
+                final String[] endTokens = endOffsetArgument.split("[:,]");
                 startPosition = Integer.parseInt(startTokens[1]);
                 endPosition = Integer.parseInt(endTokens[1]);
 
@@ -537,6 +538,10 @@ public abstract class IterateSortedAlignments<T> {
 
         sortedReaders.close();
         pg.stop();
+    }
+
+    protected boolean isValidOffsetArgument(String offsetArgument) {
+            return offsetArgument.contains(",") |offsetArgument.contains(":");
     }
 
     private boolean isInsertionOrDeletion(Alignments.SequenceVariation var) {

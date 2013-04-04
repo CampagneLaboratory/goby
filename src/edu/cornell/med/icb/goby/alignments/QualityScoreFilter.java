@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.math.random.MersenneTwister;
 
 import java.util.Arrays;
 
@@ -32,15 +33,27 @@ import java.util.Arrays;
 public class QualityScoreFilter extends GenotypeFilter {
     private byte scoreThreshold = 30;
     @RegisterThis
-    public static final DynamicOptionClient doc = new DynamicOptionClient(QualityScoreFilter.class, "scoreThreshold:Phred score threshold to keep bases.:30");
+    public static final DynamicOptionClient doc = new DynamicOptionClient(QualityScoreFilter.class, "scoreThreshold:Phred score threshold to keep bases.:30",
+            "NoRandomGuard:The random guard prevents this filter from removing genotypes with overall low quality that stack at the same site and agree. Random guards are default since Goby 2.3 and should be used, but this option can produice Goby 2.2.1 behaviour.:false");
+
+    private boolean noRandomSampling;
 
 
     public static DynamicOptionClient doc() {
         return doc;
     }
 
+    /**
+     * Setting this attribute to true will make the filter compatible with Goby 2.2.1
+     * @param noRandomSampling True for Goby 2.2.1 behavior, False for 2.3+ (default).
+     */
+    public void setNoRandomSampling(boolean noRandomSampling) {
+        this.noRandomSampling = noRandomSampling;
+    }
+
     public QualityScoreFilter() {
         scoreThreshold = doc.getByte("scoreThreshold");
+        noRandomSampling =doc.getBoolean("NoRandomGuard");
     }
 
     public String describe() {
@@ -58,11 +71,31 @@ public class QualityScoreFilter extends GenotypeFilter {
 
 
     @Override
+    public void initStorage(int numSamples) {
+        super.initStorage(numSamples);
+        if (proportions == null) {
+            proportions = new double[numSamples][SampleCountInfo.BASE_MAX_INDEX];
+
+        } else {
+            for (int i = 0; i < numSamples; i++) {
+                Arrays.fill(proportions[i], 0);
+            }
+        }
+    }
+
+    @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
+        estimateGenotypeProportions(sampleCounts);
+        // create a random number generator and initialize according to counts at this site. This is done to keep sites
+        // independent of each other, so that processing one slice or an entire genome yields the same result for each
+        // site.
+        int seed = Arrays.deepHashCode(sampleCounts);
+        MersenneTwister randomGenerator = new MersenneTwister(seed);
+
         if (thresholdPerSample == null) {
             thresholdPerSample = new int[sampleCounts.length];
 
@@ -74,13 +107,23 @@ public class QualityScoreFilter extends GenotypeFilter {
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
                 if (!filteredList.contains(info)) {
                     if (info.to != '-' && info.from != '-') {
+
                         // indels have a quality score  of zero but should not be removed at this stage.
                         final SampleCountInfo sampleCountInfo = sampleCounts[info.readerIndex];
                         final int baseIndex = sampleCountInfo.baseIndex(info.to);
 
-                        sampleCountInfo.suggestRemovingGenotype(baseIndex);
-                        removeGenotype(info, filteredList);
-                        thresholdPerSample[info.readerIndex]++;
+                        final double randomValue = randomGenerator.nextDouble();
+                        if (noRandomSampling || randomValue > proportions[info.readerIndex][baseIndex]) {
+                            // we reject the base if the randomValue is greater than the proportion of the genotype
+                            // prior filtering.
+                            // Rationale: most bases with low quality will have a low proportion of genotypes (because
+                            // errors stack at the same position only by chance and yield small proportions compared to
+                            // the other genotypes. A genotype with a strong proportion is more likely to be correct,
+                            // irrespective of quality scores.
+                            sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                            removeGenotype(info, filteredList);
+                            thresholdPerSample[info.readerIndex]++;
+                        }
                     }
                 }
             }
@@ -111,6 +154,22 @@ public class QualityScoreFilter extends GenotypeFilter {
 
         // adjust refCount and varCount:
         adjustRefVarCounts(sampleCounts);
+    }
+
+    private double proportions[][];
+
+    private void estimateGenotypeProportions(SampleCountInfo[] sampleCounts) {
+        for (SampleCountInfo sci : sampleCounts) {
+            int sumCount = 0;
+            for (int genotypeIndex = 0; genotypeIndex < SampleCountInfo.BASE_MAX_INDEX; genotypeIndex++) {
+                int genotypeCount = sci.getGenotypeCount(genotypeIndex);
+                proportions[sci.sampleIndex][genotypeIndex] += genotypeCount;
+                sumCount += genotypeCount;
+            }
+            for (int genotypeIndex = 0; genotypeIndex < SampleCountInfo.BASE_MAX_INDEX; genotypeIndex++) {
+                proportions[sci.sampleIndex][genotypeIndex] /= (double) sumCount;
+            }
+        }
     }
 
 

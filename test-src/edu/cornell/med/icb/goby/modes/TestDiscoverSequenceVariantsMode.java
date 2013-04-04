@@ -279,6 +279,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testCleanup() {
         QualityScoreFilter qualityScoreFilter = new QualityScoreFilter();
+        // make filter compatible with Goby 2.2.1
+        qualityScoreFilter.setNoRandomSampling(true);
         LeftOverFilter leftOverFilter = new LeftOverFilter(1);
 
 
@@ -486,7 +488,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             } else {
                 sci[sampleIndex].varCount++;
             }
-           sci[sampleIndex].sampleIndex=sampleIndex;
+            sci[sampleIndex].sampleIndex = sampleIndex;
         }
         return sci;
     }
@@ -566,6 +568,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testQualityScoreAdjuster() {
         QualityScoreFilter adjuster = new QualityScoreFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster.setNoRandomSampling(true);
         SampleCountInfo[] sampleCounts = makeSampleCounts();
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
@@ -585,6 +589,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster1.setNoRandomSampling(true);
         LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 
@@ -616,6 +622,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount2() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster1.setNoRandomSampling(true);
         LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 

@@ -202,7 +202,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                             sample2MotherSampleIndex[sampleIndex] = parentSampleIndex;
                         }
                     } else {
-                        LOG.warn("Parent could not be found for id:"+parentId);
+                        LOG.warn("Parent could not be found for id:" + parentId);
                     }
                 }
             }
@@ -251,7 +251,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         if (fisherRInstalled) {
             System.err.println("Using FISHER statistics to estimate somatic variation p-values.");
         } else {
-            System.err.println("Using Poisson statistics to estimate somatic variation p-values.");
+            throw new InternalError("Somatic variation output requires a working R connection. The output format needs to estimate fisher exact test p-values.");
         }
     }
 
@@ -375,7 +375,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     protected void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
-       // compare somatic to father:
+        // compare somatic to father:
 
         for (int sampleIndex : somaticSampleIndices) {
             pValues.clear();
@@ -428,7 +428,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
             final int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
             final int somaticCount = somaticCounts.getGenotypeCount(genotypeIndex);
-            final int failedCountGermline=germlineCounts.failedCount;
+            final int failedCountGermline = germlineCounts.failedCount;
             if (germlineCount > failedCountGermline) {
                 // We see at least as many bases in the germline than there were failed bases in this sample. Consider
                 // that the genotype was seen in germline and therefore is not somatic.
