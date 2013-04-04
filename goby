@@ -14,7 +14,7 @@ memory_requirement=$1
 shift
 other_parameters=$*
 
-WORKING_DIR=`dirname "$0"`
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ $OSTYPE == "cygwin" ]]; then
     WORKING_DIR=`cygpath -m "${WORKING_DIR}"`
 fi
@@ -28,9 +28,13 @@ if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
   cat >/tmp/r-cmd.txt <<EOT
 system.file("jri",package="rJava")
 EOT
-  export RJAVA_HOME=`R --no-save </tmp/r-cmd.txt|grep [1]|tail -1 |awk '{print $2}'`
+  tmpWithQuotes=`R --no-save </tmp/r-cmd.txt|grep [1]|tail -1 |awk '{print $2}'`
+  temp="${tmpWithQuotes%\"}"
+  temp="${temp#\"}"
+  echo "$temp"
+  export RJAVA_HOME=${temp}
   rm -f /tmp/r-cmd.txt
- 
+  echo "RJAVA_HOME=${RJAVA_HOME}"
 fi
 
 echo java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${LOG4J_PROPS} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
