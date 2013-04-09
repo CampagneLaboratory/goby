@@ -283,13 +283,14 @@ public class ExportableAlignmentEntryData {
         return alignmentEntry.getPairAlignmentLink().getPosition() + 1;
     }
 
-    /** Return the inferred size stored in the entry, or zero if the entry has no such field.
+    /**
+     * Return the inferred size stored in the entry, or zero if the entry has no such field.
      *
      * @return
      */
     public int getInferredInsertSize() {
 
-        return alignmentEntry.hasInsertSize()? alignmentEntry.getInsertSize():0;
+        return alignmentEntry.hasInsertSize() ? alignmentEntry.getInsertSize() : 0;
     }
 
     public Alignments.AlignmentEntry getAlignmentEntry() {
@@ -590,7 +591,7 @@ public class ExportableAlignmentEntryData {
                         } else {
                             qual = predefEndClipQuality != null ? predefEndClipQuality.byteAt(rightClipIndex) : UNKNOWN_MAPPING_VALUE;
                         }
-                        assert qualities!=null: "qualities field must never be null.";
+                        assert qualities != null : "qualities field must never be null.";
                         qualities.add(qual);
                         qualAddedForClip = true;
                         if (rightClippedPosition) {
@@ -637,7 +638,7 @@ public class ExportableAlignmentEntryData {
                 final char from = froms.charAt(i);
                 final char to = tos.charAt(i);
                 final Byte toQual = toQuals == null ? null :
-                        (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
+                        (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(i < toQuals.length ? toQuals[i] : 0);
 
                 final int refPosition = startRefPosition + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
