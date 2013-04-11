@@ -195,7 +195,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
                 };
         if (allSorted) {
             GenomicRange genomicRange = sliceHelper.getGenomicRange();
-            ((ConcatSortedAlignmentReader) alignmentReader).setGenomicRange(genomicRange);
+            if (genomicRange != null) {
+                ((ConcatSortedAlignmentReader) alignmentReader).setGenomicRange(genomicRange);
+            }
         }
         alignmentReader.setAdjustSampleIndices(adjustSampleIndices);
         alignmentReader.setStartEndOffsets(startOffsetArgument, endOffsetArgument);
