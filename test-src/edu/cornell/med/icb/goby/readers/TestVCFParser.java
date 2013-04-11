@@ -405,7 +405,7 @@ public class TestVCFParser {
         parser.next();
         assertTrue(parser.hasNextDataLine());
         final int gxIndex = parser.getGlobalFieldIndex(sampleColumns[0], "GX");
-        final int newGqIndex=parser.getGlobalFieldIndex(sampleColumns[0], "GQ");
+        final int newGqIndex = parser.getGlobalFieldIndex(sampleColumns[0], "GQ");
         // the field GQ should not be defined:
         assertEquals("", parser.getStringFieldValue(newGqIndex));
         // the field GX should have value 33:
@@ -413,7 +413,12 @@ public class TestVCFParser {
         parser.next();
     }
 
-
+    @Test
+    public void testMutectHeader() throws IOException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser("test-data/tsv/mutect-header.tsv");
+        parser.setCacheFieldPermutation(false);
+        parser.readHeader();
+    }
     /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
