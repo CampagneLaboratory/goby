@@ -7,6 +7,9 @@
    to get BAM files with read groups directly from Goby alignments.
  - compact-to-sam mode: fixed output of read groups, which were not correctly written for platform, platform unit,
    and library.
+ - suggest-position-slices: add --restrict-per-chromosome option.  When this switch is provided, slices will be
+   restricted to start and end on the same chromosome. This is useful to produce intervals to give Mutect,
+   for instance.
 2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.
