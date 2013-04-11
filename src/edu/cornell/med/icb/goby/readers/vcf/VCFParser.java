@@ -906,10 +906,12 @@ public class VCFParser implements Closeable {
     private void processMetaInfoLine(final MutableString line) throws SyntaxException {
         final int start = 2;
         final int end = line.indexOf('=');
-        final String columnName = line.substring(start, end).toString();
+        if (end > start) {
+            final String columnName = line.substring(start, end).toString();
 
-        final MutableString restOfLine = line.substring(end + 1);
-        processMetaInfo(columnName, restOfLine);
+            final MutableString restOfLine = line.substring(end + 1);
+            processMetaInfo(columnName, restOfLine);
+        }
     }
 
 
@@ -1032,7 +1034,7 @@ public class VCFParser implements Closeable {
     }
 
     public GroupAssociations getGroupAssociations() {
-        return new GroupAssociations(associationString,columns.find("FORMAT"),getColumnNamesUsingFormat());
+        return new GroupAssociations(associationString, columns.find("FORMAT"), getColumnNamesUsingFormat());
     }
 
 
