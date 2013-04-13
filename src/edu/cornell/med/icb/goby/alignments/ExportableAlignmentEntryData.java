@@ -777,11 +777,11 @@ public class ExportableAlignmentEntryData {
     }
 
     private boolean isRightClippedPosition(int endOfLoop, int position, String endClips) {
-        return position > endOfLoop - endClip && endClips != null;
+        return position > endOfLoop - endClip && endClips != null  && position<endClips.length();
     }
 
     private boolean isLeftClippedPosition(int endOfLoop, int i, String startClips) {
-        return i < startClip && startClips != null;
+        return i < startClip && startClips != null && i<startClips.length();
     }
 
     private boolean isClipPosition(final int endOfLoop, int position) {
