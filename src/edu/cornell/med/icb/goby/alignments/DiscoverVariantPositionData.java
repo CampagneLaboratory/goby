@@ -131,4 +131,12 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
             return failedIndels;
         }
     }
+    public String completeToString() {
+        return super.toString();
+
+    }
+
+    public void printAll(){
+        System.out.println(completeToString());
+    }
 }
