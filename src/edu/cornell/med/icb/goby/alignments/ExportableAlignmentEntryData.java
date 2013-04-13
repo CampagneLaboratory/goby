@@ -472,8 +472,7 @@ public class ExportableAlignmentEntryData {
         queryLength = alignmentEntry.getQueryLength();
         queryAlignedLength = alignmentEntry.getQueryAlignedLength();
         targetAlignedLength = alignmentEntry.getTargetAlignedLength();
-        endClip = Math.max(0,queryLength - queryAlignedLength - startClip);
-
+        endClip = queryLength - queryAlignedLength - startClip;
         final int startPosition = alignmentEntry.getPosition();
 
         this.alignmentEntry = alignmentEntry;
@@ -734,7 +733,7 @@ public class ExportableAlignmentEntryData {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
             final int readSize = readBases.size();
             final int genomePosition = alignmentEntry.getPosition() + alignmentEntry.getQueryAlignedLength() + numDeletions - numInserts;
-            for (int i = 0; i < endClip; i++) {
+            for (int i = 0; i < Math.min(endClip,predefEndClips.length()); i++) {
                 final int pos = readSize - endClip + i;
                 if (predefEndClips == null) {
                     readBases.set(pos, 'N');
