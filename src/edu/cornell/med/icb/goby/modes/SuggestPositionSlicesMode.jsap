@@ -83,6 +83,11 @@
             </help>
         </flaggedOption>
 
+        <switch>
+            <id>restrict-per-chromosome</id>
+            <longFlag>restrict-per-chromosome</longFlag>
+            <help>When this switch is provided, slices will be restricted to start and end on the same chromosome.</help>
+        </switch>
 
     </parameters>
 </jsap>

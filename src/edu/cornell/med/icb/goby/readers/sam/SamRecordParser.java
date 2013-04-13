@@ -114,7 +114,13 @@ public class SamRecordParser implements Resettable {
         reset();
         int numInserts = 0;
         int numDeletes = 0;
-        final String allRefBases = new String(SequenceUtil.makeReferenceFromAlignment(samRecord, true));
+        final String allRefBases;
+        try {
+            allRefBases = new String(SequenceUtil.makeReferenceFromAlignment(samRecord, true));
+        } catch (net.sf.samtools.SAMException e) {
+            LOG.error("Error detected calling samtools code: SequenceUtil.makeReferenceFromAlignment(samRecord)",e);
+            return null;
+        }
         final String allReadBases = samRecord.getReadString();
         final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
         int refStringPosition = 0;
