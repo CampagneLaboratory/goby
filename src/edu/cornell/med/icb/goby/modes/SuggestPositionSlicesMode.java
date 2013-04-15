@@ -72,6 +72,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
      * spanned chromosome. The next slice starts at the beginning of the next chromosome.
      */
     private boolean restrictPerChromosome;
+    private int numBreakPointAdded=0;
 
 
     @Override
@@ -150,12 +151,12 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                     getReferenceLocationsWithBytes(stream, input, ids);
 
             if (ranges != null) {
-                adjustBreakpointsWithAnnotations(breakpoints, ranges);
+         adjustBreakpointsWithAnnotations(breakpoints, ranges);
             }
             if (restrictPerChromosome) {
                 breakpoints = restrictPerChromosome(breakpoints, input);
             }
-            for (int i = 0; i < numberOfSlices; i++) {
+            for (int i = 0; i < breakpoints.length-1; i++) {
                 if (!restrictPerChromosome ||
                         (restrictPerChromosome && breakpoints[i].targetIndex == breakpoints[i + 1].targetIndex))
                 stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
@@ -188,6 +189,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                     result.add(new ReferenceLocation(lastTargetIndex, reader.getTargetLength(lastTargetIndex)));
                     result.add(new ReferenceLocation(breakpoint.targetIndex, 0));
                     System.out.println("Adding breakpoint at end of "+lastTargetIndex);
+                    numBreakPointAdded++;
                 }
                 lastTargetIndex = breakpoint.targetIndex;
             }
