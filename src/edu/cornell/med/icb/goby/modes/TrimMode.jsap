@@ -39,7 +39,7 @@
             <required>true</required>
             <help>Name of the compact file output.</help>
         </flaggedOption>
-          <flaggedOption>
+        <flaggedOption>
             <id>adapters</id>
             <shortFlag>a</shortFlag>
             <longFlag>adapters</longFlag>
@@ -52,9 +52,9 @@
         <switch>
             <id>complement</id>
             <longFlag>complement</longFlag>
-            <help>When this switch is provided, the complement of the adapter sequences are also trimmed.  </help>
+            <help>When this switch is provided, the complement of the adapter sequences are also trimmed.</help>
         </switch>
-          <flaggedOption>
+        <flaggedOption>
             <id>min-left-length</id>
             <longFlag>min-left-length</longFlag>
             <stringParser>
@@ -62,22 +62,46 @@
             </stringParser>
             <required>false</required>
             <defaults>
-                    <string>0</string>
+                <string>0</string>
             </defaults>
             <help>Minimum number of bases the adapter must match on the left to be trimmed.</help>
         </flaggedOption>
         <flaggedOption>
-          <id>min-right-length</id>
-          <longFlag>min-right-length</longFlag>
-          <stringParser>
-              <classname>IntegerStringParser</classname>
-          </stringParser>
-          <required>false</required>
-          <defaults>
+            <id>min-right-length</id>
+            <longFlag>min-right-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
                 <string>0</string>
-          </defaults>
-          <help>Minimum number of bases the adapter must match on the right to be trimmed.</help>
-      </flaggedOption>
+            </defaults>
+            <help>Minimum number of bases the adapter must match on the right to be trimmed.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>trim-left</id>
+            <longFlag>trim-left</longFlag>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <help>Trim the left of the sequence.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>trim-right</id>
+            <longFlag>trim-right</longFlag>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <help>Trim the right of the sequence.</help>
+        </flaggedOption>
 
     </parameters>
 </jsap>

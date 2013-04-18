@@ -69,6 +69,9 @@ public class TrimMode extends AbstractGobyMode {
     private int minRightLength = 0;
     private int minLeftLength = 0;
 
+    private boolean trimLeft=true;
+    private boolean trimRight=true;
+
 
     /**
      * {@inheritDoc}
@@ -110,6 +113,8 @@ public class TrimMode extends AbstractGobyMode {
         complementAdapters = jsapResult.getBoolean("complement");
         minLeftLength = jsapResult.getInt("min-left-length");
         minRightLength = jsapResult.getInt("min-right-length");
+        trimLeft=jsapResult.getBoolean("trim-left");
+        trimRight=jsapResult.getBoolean("trim-right");
         return this;
     }
 
@@ -178,7 +183,7 @@ public class TrimMode extends AbstractGobyMode {
                 if (entry.hasSequencePair()) {
                     builder = builder.mergeFrom(entry)
                             .setSequencePair(ReadsWriterImpl.encodeSequence(pairSeq, buffer))
-                            .setReadLength(pairSeq.length());
+                            .setReadLengthPair(pairSeq.length());
 
                     if (sequencePair.length() != pairSeq.length()) {
                         numTrimmed++;
@@ -279,7 +284,9 @@ public class TrimMode extends AbstractGobyMode {
                                       final ByteString qualityScores,
                                       final ByteArrayList newQualScores,
                                       final MutableString[] adapters) {
-
+        if (!trimRight) {
+            return sequence;
+        }
         final int currentLength = sequence.length();
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
@@ -309,7 +316,9 @@ public class TrimMode extends AbstractGobyMode {
 
     protected MutableString trimLeft(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
         final int currentLength = sequence.length();
-
+        if (!trimLeft) {
+            return sequence;
+        }
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
             for (int j = adaptLength; j >= minLeftLength; --j) {

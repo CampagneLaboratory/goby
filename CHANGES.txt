@@ -10,6 +10,7 @@
  - suggest-position-slices: add --restrict-per-chromosome option.  When this switch is provided, slices will be
    restricted to start and end on the same chromosome. This is useful to produce intervals to give Mutect,
    for instance.
+ - Trim mode: add --trim-left --trim-right parameters to control trimming of specific sequence extremities.
 2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.
