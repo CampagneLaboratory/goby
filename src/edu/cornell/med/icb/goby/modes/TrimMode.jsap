@@ -102,6 +102,11 @@
             </defaults>
             <help>Trim the right of the sequence.</help>
         </flaggedOption>
-
+        <switch>
+            <id>verbose</id>
+            <shortFlag>v</shortFlag>
+            <longFlag>verbose</longFlag>
+            <help>Be extra verbose.</help>
+        </switch>
     </parameters>
 </jsap>

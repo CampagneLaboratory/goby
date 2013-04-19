@@ -71,6 +71,7 @@ public class TrimMode extends AbstractGobyMode {
 
     private boolean trimLeft=true;
     private boolean trimRight=true;
+    private boolean verbose;
 
 
     /**
@@ -115,6 +116,7 @@ public class TrimMode extends AbstractGobyMode {
         minRightLength = jsapResult.getInt("min-right-length");
         trimLeft=jsapResult.getBoolean("trim-left");
         trimRight=jsapResult.getBoolean("trim-right");
+        verbose=jsapResult.getBoolean("verbose");
         return this;
     }
 
@@ -294,7 +296,7 @@ public class TrimMode extends AbstractGobyMode {
             for (int j = minRightLength; j < adaptLength; j++) {
                 if (sequence.endsWith(adapter.subSequence(j, adaptLength))) {
                     final int trimedLength = adaptLength - j;
-                    if (trimedLength > 10) {
+                    if (verbose && trimedLength > 10) {
                         System.out.printf("%d bases matching right %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) {
@@ -324,7 +326,7 @@ public class TrimMode extends AbstractGobyMode {
             for (int j = adaptLength; j >= minLeftLength; --j) {
                 if (sequence.startsWith(adapter.subSequence(0, j))) {
                     final int trimedLength = j;
-                    if (trimedLength > 10) {
+                    if (verbose && trimedLength > 10) {
                         System.out.printf("%d bases matching left %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) { // previously unchanged, we need to copy quality score to the list representation for editing.
@@ -350,7 +352,9 @@ public class TrimMode extends AbstractGobyMode {
         for (final MutableString adapter : adapters) {
             final int index = sequence.indexOf(adapter);
             if (index >= 0) {
-                System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
+                if (verbose) {
+                    System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
+                }
                 copy(qualityScores, newQualScores);
 
                 final int end = adapter.length() + index;
