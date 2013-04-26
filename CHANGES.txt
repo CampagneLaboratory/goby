@@ -1,4 +1,4 @@
->> 2.3
+2.3
  - concatenate-alignments mode: add ability to restrict output to a genomic slice (see -s and -e options).
  - API change: AlignmentSliceHelper makes it easier to parse and process genomic slices for sets of alignments.
  - concatenate-alignments mode: now transfers read groups to output in the same way that non-sorted concat does.
@@ -11,6 +11,7 @@
    restricted to start and end on the same chromosome. This is useful to produce intervals to give Mutect,
    for instance.
  - Trim mode: add --trim-left --trim-right parameters to control trimming of specific sequence extremities.
+ - Trim mode: add --verbose flag.
 2.2.1
  - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
    columns with group q-value.
