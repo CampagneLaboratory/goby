@@ -44,7 +44,7 @@ public class DifferentialExpressionAnalysis {
     private static final Log LOG = LogFactory.getLog(DifferentialExpressionAnalysis.class);
 
 
-    private String[] groups;
+    private String[] groups=new String[0];
     private final Object2ObjectMap<String, Integer> groupSizes =
             new Object2ObjectOpenHashMap<String, Integer>();
 
