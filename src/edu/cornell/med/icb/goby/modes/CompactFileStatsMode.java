@@ -36,11 +36,15 @@ import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Display some basic statistics on file in compact reads format.
@@ -48,6 +52,11 @@ import java.util.*;
  * @author Kevin Dorff
  */
 public class CompactFileStatsMode extends AbstractGobyMode {
+
+    /**
+     * Used to log informational and debug messages.
+     */
+    private static final Logger LOG = Logger.getLogger(CompactFileStatsMode.class);
     /**
      * The mode name.
      */
@@ -326,7 +335,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int numProperlyPaired = 0;
         int numFirstInPair = 0;
         int numSecondInPair = 0;
-        boolean hasSoftClips=false;
+        boolean hasSoftClips = false;
 
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
@@ -341,8 +350,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.observe(entry.getQueryIndex());
-            hasSoftClips|=entry.hasSoftClippedBasesLeft();
-            hasSoftClips|=entry.hasSoftClippedBasesRight();
+            hasSoftClips |= entry.hasSoftClippedBasesLeft();
+            hasSoftClips |= entry.hasSoftClippedBasesRight();
             // check entry then header for the query length
 
             final double queryLength = entry.getQueryLength();
@@ -388,7 +397,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
         stream.printf("Percent second in pair = %,.2f %% %n", divide(numSecondInPair, numEntries) * 100d);
 
-        stream.printf("Aligment entries have some softClips: %b %n",hasSoftClips);
+        stream.printf("Aligment entries have some softClips: %b %n", hasSoftClips);
     }
 
     private double divide(final long a, final long b) {
@@ -440,10 +449,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         try {
             final long size = file.length();
             reader = new ReadsReader(new FastBufferedInputStream(new FileInputStream(file)));
-            ProgressLogger pg=new ProgressLogger();
-            pg.displayFreeMemory=true;
-            pg.itemsName="reads";
+            ProgressLogger pg = new ProgressLogger(LOG);
+            pg.displayFreeMemory = true;
+            pg.itemsName = "reads";
             pg.start();
+
             for (final Reads.ReadEntry entry : reader) {
                 final int readLength = entry.getReadLength();
 
@@ -453,10 +463,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     stream.printf("meta-data key=%s value=%s%n",
                             metaData.getKey(),
                             metaData.getValue());
-
                 }
 
                 // across this file
+
                 allQueryIndices.observe(entry.getReadIndex());
                 totalReadLength += readLength;
                 totalReadLengthPair += entry.getReadLengthPair();

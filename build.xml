@@ -77,9 +77,9 @@
 
         <artifact:install file="goby.jar">
             <pom refid="goby-pom"/>
-            <artifact:attach  file="goby-io.jar" classifier="io"/>
-            <artifact:attach  file="goby-api.jar" classifier="api"/>
-            <artifact:attach  file="goby-io-igv.jar" classifier="io-igv"/>
+            <artifact:attach file="goby-io.jar" classifier="io"/>
+            <artifact:attach file="goby-api.jar" classifier="api"/>
+            <artifact:attach file="goby-io-igv.jar" classifier="io-igv"/>
         </artifact:install>
 
         <!--artifact:deploy file="goby.jar">
@@ -125,7 +125,7 @@
                 <include name="commons-collections-3.2.1.jar"/>
                 <include name="commons-configuration-1.6.jar"/>
                 <include name="commons-exec-1.0.1.jar"/>
-                <include name="commons-io-1.4.jar"/>
+                <include name="commons-io-2.4.jar"/>
                 <include name="commons-lang-2.5.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
                 <include name="commons-math-2.1.jar"/>
@@ -133,7 +133,7 @@
                 <include name="edu.mssm.crover.cli.jar"/>
                 <include name="bzip2.jar"/>
                 <include name="fastutil-6.3.jar"/>
-                <include name="dsiutils-1.0.12.jar"/>
+                <include name="dsiutils-2.0.14.jar"/>
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
