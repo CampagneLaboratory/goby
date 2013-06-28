@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.algorithmic.data;
 import it.unimi.dsi.bits.LongArrayBitVector;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 import java.util.BitSet;
@@ -81,6 +82,18 @@ public class TestDistinctIntValueCounter {
         counter.observe(Integer.MAX_VALUE);
 
         assertEquals(4, counter.count());
+
+    }
+
+    //@Test
+    public void testSlow() {
+        DistinctIntValueCounterBitSet counter = new DistinctIntValueCounterBitSet();
+
+        for (int index = 0; index < Integer.MAX_VALUE; index++) {
+            counter.observe(index);
+        }
+
+        assertEquals(Integer.MAX_VALUE, counter.count());
 
     }
 }

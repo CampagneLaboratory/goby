@@ -37,9 +37,10 @@ import java.util.BitSet;
  */
 public class DistinctIntValueCounterBitSet implements DistinctIntValueCounterInterface {
 
-  //  BitSet values = new BitSet();
-    private LongArrayBitVector bitVector=LongArrayBitVector.ofLength(1L<<(32-6));
-    private LongSortedSet set=bitVector.asLongSet();
+    //  BitSet values = new BitSet();
+    private LongArrayBitVector bitVector ;
+    private LongSortedSet set ;
+
     public void observe(IntCollection values) {
         for (int i : values) observe(i);
     }
@@ -49,11 +50,21 @@ public class DistinctIntValueCounterBitSet implements DistinctIntValueCounterInt
         for (int i : values) observe(i);
     }
 
-    public final void observe(final int value) {
-        set.add(value);
-     }
+    public DistinctIntValueCounterBitSet() {
+        bitVector=LongArrayBitVector.ofLength((1L << 32) / 64);
+        set= bitVector.asLongSet();
+        // grow the set to maximum value once and for all:
+        set.add(Integer.MAX_VALUE-1);
+        set.remove(Integer.MAX_VALUE-1);
+    }
 
-        /**
+    public final void observe(final int value) {
+
+        set.add(value);
+
+    }
+
+    /**
      * Return the number of distinct integer values in the observed sequence.
      *
      * @return
