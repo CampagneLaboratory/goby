@@ -1,4 +1,4 @@
->2.3.1
+2.3.1
  - Fix for https://github.com/CampagneLaboratory/goby/issues/3
  - Upgrade commons-io and dsiutils to latest jar versions. Log messages when scanning reads file with cfs mode.
  - DistinctValueCounterBitSet: now grows to biggest size at construction time.
