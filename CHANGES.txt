@@ -2,6 +2,10 @@
  - Fix for https://github.com/CampagneLaboratory/goby/issues/3
  - Upgrade commons-io and dsiutils to latest jar versions. Log messages when scanning reads file with cfs mode.
  - DistinctValueCounterBitSet: now grows to biggest size at construction time.
+ - Fixed a performance problem. When reading large reads file (>10GB), performance of ReadsReader would degrade
+   over time. This was due to caching of data in static protobuf methods of ReadCollection. We now create a
+   builder instance that gets garbage collected when it is no longer used. This fixes a subtle performance
+   problem. The same fix has been applied to alignment readers.
 2.3
  - concatenate-alignments mode: add ability to restrict output to a genomic slice (see -s and -e options).
  - API change: AlignmentSliceHelper makes it easier to parse and process genomic slices for sets of alignments.

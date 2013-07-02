@@ -174,8 +174,9 @@ public final class AlignmentCollectionHandler implements ProtobuffCollectionHand
         final byte[] bytes = IOUtils.toByteArray(uncompressedStream);
         final CodedInputStream codedInput = CodedInputStream.newInstance(bytes);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
+        Alignments.AlignmentCollection.Builder builder = Alignments.AlignmentCollection.newBuilder();
 
-        return Alignments.AlignmentCollection.parseFrom(codedInput);
+        return builder.mergeFrom(codedInput).build();
     }
 
     int numChunksProcessed = 0;
