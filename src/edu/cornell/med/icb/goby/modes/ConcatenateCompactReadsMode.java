@@ -171,7 +171,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     for (final Reads.ReadEntry readEntry : readsReader) {
                         // only concatenate if (1) there is no filter or (2) the read index is in the filter.
                         if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
-                            final Reads.ReadEntry.Builder readEntryBuilder = Reads.ReadEntry.newBuilder(readEntry);
+                            final Reads.ReadEntry.Builder readEntryBuilder = readEntry.toBuilder();
                             readEntryBuilder.setReadIndex(numberOfReads);
                             writer.appendEntry(readEntryBuilder);
                             minReadLength = Math.min(minReadLength, readEntry.getReadLength());
