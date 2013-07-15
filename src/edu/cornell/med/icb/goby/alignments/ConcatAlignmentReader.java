@@ -510,6 +510,20 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
 
         long sizeSinceLastSlice = 0;
+        // explicitely put start and end locations into the result:
+        ReferenceLocation startLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        ReferenceLocation endLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+            ReferenceLocation readerFirst = locations[readerIndex].get(0);
+            ReferenceLocation readerLast = locations[readerIndex].get(locations[readerIndex].size()-1);
+            if (readerFirst.compareTo(startLocation)<0) {
+                startLocation=readerFirst;
+            }
+            if (readerLast.compareTo(startLocation)>0) {
+                endLocation=readerLast;
+            }
+        }
+
         for (int i = 0; i < maxLocationIndices; i++) {
 
             for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
@@ -524,11 +538,11 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 }
                 locationIndices[readerIndex]++;
             }
-            if (sizeSinceLastSlice > numBytesPerSlice) {
+            if ( sizeSinceLastSlice > numBytesPerSlice) {
                 ObjectList<ReferenceLocation> currentLocations = new ObjectArrayList<ReferenceLocation>();
                 for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
 
-                    if (locationIndices[readerIndex] < locations[readerIndex].size()) {
+                    if (locationIndices[readerIndex]==0 || locationIndices[readerIndex] < locations[readerIndex].size()) {
                         ReferenceLocation readerLocation = locations[readerIndex].get(locationIndices[readerIndex]);
                         currentLocations.add(readerLocation);
                     }
@@ -545,6 +559,8 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
         ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
         list.addAll(result);
+        list.add(startLocation);
+        list.add(endLocation);
         Collections.sort(list);
         return list;
     }

@@ -850,7 +850,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         for (long absoluteLocation : indexAbsolutePositions) {
             long offsetInEntriesFile = indexOffsets.get(i);
             long compressedByteAmountSincePreviousLocation = offsetInEntriesFile - lastFileOffsetPushed;
-            if (compressedByteAmountSincePreviousLocation > bytesPerSlice) {
+            if (lastFileOffsetPushed==-1 || compressedByteAmountSincePreviousLocation > bytesPerSlice) {
                 final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation);
                 location.compressedByteAmountSincePreviousLocation=compressedByteAmountSincePreviousLocation;
                 result.add(location);

@@ -1,3 +1,6 @@
+> 2.3.2
+ - suggest-position-slices: fix problem where first slice of genome was omitted from output (with new split
+   by number of bytes option introduced in 2.3).
 2.3.1
  - Fix for https://github.com/CampagneLaboratory/goby/issues/3
  - Upgrade commons-io and dsiutils to latest jar versions. Log messages when scanning reads file with cfs mode.
