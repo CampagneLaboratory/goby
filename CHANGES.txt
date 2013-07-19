@@ -1,6 +1,9 @@
 > 2.3.2
+ - run-parallel-mode now supports paired input files.
  - suggest-position-slices: fix problem where first slice of genome was omitted from output (with new split
    by number of bytes option introduced in 2.3).
+ - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
+   encoding range.
 2.3.1
  - Fix for https://github.com/CampagneLaboratory/goby/issues/3
  - Upgrade commons-io and dsiutils to latest jar versions. Log messages when scanning reads file with cfs mode.

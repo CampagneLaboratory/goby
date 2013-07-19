@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Converts a compact alignment to plain text.
+ * Run some command in parallel for parts of a compact-reads file.
  *
  * @author Fabien Campagne
  */
@@ -88,10 +88,16 @@ public class RunParallelMode extends AbstractGobyMode {
         input = jsapResult.getString("input");
         output = jsapResult.getString("output");
         command = jsapResult.getStringArray("process-part-command");
+        paired = jsapResult.getBoolean("paired");
+
         StringBuffer sb = new StringBuffer();
         for (String arg : command) {
             sb.append(arg);
             sb.append(" ");
+            if (!paired && args.equals("%pair.fastq%")) {
+                System.err.println("%pair.fastq% requires the --paired argument.");
+                System.exit(1);
+            }
         }
         processPartCommand = sb.toString();
         numParts = jsapResult.getInt("num-parts");
@@ -105,6 +111,8 @@ public class RunParallelMode extends AbstractGobyMode {
         long startOffset;
         long endOffset;
     }
+
+    private boolean paired = false;
 
     public void execute() throws IOException {
         final Slice slices[] = new Slice[numParts];
@@ -144,15 +152,19 @@ public class RunParallelMode extends AbstractGobyMode {
                     ctfm.setOutputFormat(CompactToFastaMode.OutputFormat.FASTQ);
                     ctfm.setStartPosition(slices[loopIndex].startOffset);
                     ctfm.setEndPosition(slices[loopIndex].endOffset);
-
                     String s = FilenameUtils.getBaseName(FilenameUtils.removeExtension(input)) + "-" + Integer.toString(loopIndex);
                     String fastqFilename = s + "-input.fq";
+                    String fastqPairedFilename = s + "-pair-input.fq";
                     allFastq.add(fastqFilename);
+                    allFastq.add(fastqPairedFilename);
                     File tmp1 = new File(s + "-tmp");
                     tmp1.deleteOnExit();
                     File output = new File(s + "-out");
                     output.deleteOnExit();
                     ctfm.setOutputFilename(fastqFilename);
+                    if (paired) {
+                        ctfm.setOutputPairFilename(fastqPairedFilename);
+                    }
                     LOG.info(String.format("Extracting FASTQ for slice [%d-%d] loopIndex=%d %n",
                             slices[loopIndex].startOffset,
                             slices[loopIndex].endOffset, loopIndex));
@@ -160,16 +172,19 @@ public class RunParallelMode extends AbstractGobyMode {
                     if (loopIndex > 0) {
                         while (!done.isDone()) {
                             // wait a bit to give the first thread the time to load the database and establish shared memory pool
-                         //   System.out.println("sleep 5 thread "+loopIndex);
+                            //   System.out.println("sleep 5 thread "+loopIndex);
                             sleep(5);
                         }
-                        System.out.println("Thread "+loopIndex+" can now start.");
+                        System.out.println("Thread " + loopIndex + " can now start.");
                     }
                     final Map<String, String> replacements = new HashMap<String, String>();
 
                     final String outputFilename = output.getName();
 
                     replacements.put("%read.fastq%", fastqFilename);
+                    if (paired) {
+                        replacements.put("%pair.fastq%", fastqPairedFilename);
+                    }
                     replacements.put("%tmp1%", tmp1.getName());
                     replacements.put("%output%", outputFilename);
                     final String transformedCommand = transform(processPartCommand, replacements);
@@ -214,7 +229,7 @@ public class RunParallelMode extends AbstractGobyMode {
             e.printStackTrace();
         }
 
-        System.out.printf("Preparing to concatenate %d outputs..%n",allOutputs.size());
+        System.out.printf("Preparing to concatenate %d outputs..%n", allOutputs.size());
         final ConcatenateAlignmentMode concat = new ConcatenateAlignmentMode();
         concat.setInputFileNames(allOutputs.toArray(new String[allOutputs.size()]));
         concat.setOutputFilename(output);
