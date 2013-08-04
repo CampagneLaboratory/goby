@@ -36,8 +36,8 @@
             <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-            <required>true</required>
-            <help>Name of the compact file output.</help>
+            <required>false</required>
+            <help>Name of the compact file output. When not provided, we make an output name with the original filename and -trim at the end. </help>
         </flaggedOption>
         <flaggedOption>
             <id>adapters</id>
