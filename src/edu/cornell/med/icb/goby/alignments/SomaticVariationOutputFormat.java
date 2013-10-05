@@ -434,6 +434,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             }
             // use the max of the above p-values:
             double pValue = max(pValues);
+            if (!isSomaticCandidate()) {
+                pValue=1.0;
+            }
             statsWriter.setInfo(somaticPValueIndex[sampleIndex], pValue);
 
             float somaticFrequency = 0;
@@ -441,6 +444,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
                     somaticFrequency = Math.max(somaticCounts.frequency(genotypeIndex), somaticFrequency);
                 }
+            }
+            if (!isSomaticCandidate()) {
+                somaticFrequency=0;
             }
             statsWriter.setInfo(candidateFrequencyIndex[sampleIndex], somaticFrequency * 100);
         }
