@@ -1,3 +1,8 @@
+2.3.3
+ - Make it possible to run simple trio design by removing the requirement for a germline sample.
+ - Earlier versions were reporting somatic variation candidates when two parents are homozygotes and the
+   somatic samples was Het (the fisher p-value with each parent is very significant in this case, but does not
+   indicate a somatic change).
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified

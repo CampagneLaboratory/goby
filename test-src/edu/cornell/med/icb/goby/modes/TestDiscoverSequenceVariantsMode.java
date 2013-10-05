@@ -106,6 +106,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
+
+
     @Test
     public void testDiscoverGroupsOnly() throws IOException, JSAPException {
 
@@ -353,7 +355,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         // C genotype must be rescued by sample 1
         assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
-
         assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX]);
         assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(0, sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX]);

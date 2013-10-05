@@ -474,9 +474,11 @@ public class SampleCountInfo {
      */
     public float frequency(int genotypeIndex) {
         int sum = 0;
+
         for (int index = 0; index < getGenotypeMaxIndex(); index++) {
             sum += getGenotypeCount(index);
         }
+        if (sum == 0) return 0;
         float count = (float) getGenotypeCount(genotypeIndex);
         return count / ((float) sum);
     }
