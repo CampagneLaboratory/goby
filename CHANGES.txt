@@ -1,8 +1,12 @@
 2.3.3
- - Make it possible to run simple trio design by removing the requirement for a germline sample.
- - Earlier versions were reporting somatic variation candidates when two parents are homozygotes and the
-   somatic samples was Het (the fisher p-value with each parent is very significant in this case, but does not
-   indicate a somatic change).
+ - discover-sequence-variants somatic output: Make it possible to run simple trio design by removing the
+   requirement for a germline sample.
+ - discover-sequence-variants somatic output: Earlier versions were reporting somatic variation candidates
+   when two parents are homozygotes and the somatic samples was Het (the fisher p-value with each parent is
+   very significant in this case, but does not indicate a somatic change). This also improves q-values because
+   they are less results that need to be corrected.
+ - discover-sequence-variants somatic output: Add an error message when a sample is mispelled in the covariates
+   file.
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
