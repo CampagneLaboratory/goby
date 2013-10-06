@@ -420,30 +420,32 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             int maxPriority = Integer.MIN_VALUE;
 
             for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
-                int genotypePriority = 0;
-                int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
-                if (fatherSampleIndex != -1) {
+                if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
+                    int genotypePriority = 0;
+                    int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
+                    if (fatherSampleIndex != -1) {
 
-                    SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
-                    int fatherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, fatherCounts);
-                    genotypePriority += fatherPriority;
-                }
-                int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
-                if (motherSampleIndex != -1) {
-
-                    SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
-                    int motherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, motherCounts);
-                    genotypePriority += motherPriority;
-                }
-                int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
-                for (int germlineSampleIndex : germlineSampleIndices) {
-                    if (germlineSampleIndex != -1) {
-                        SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
-                        int germlinePriority = estimatePriorityComponent(genotypeIndex, somaticCounts, germlineCounts);
-                        genotypePriority += germlinePriority;
+                        SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
+                        int fatherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, fatherCounts);
+                        genotypePriority += fatherPriority;
                     }
+                    int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
+                    if (motherSampleIndex != -1) {
+
+                        SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
+                        int motherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, motherCounts);
+                        genotypePriority += motherPriority;
+                    }
+                    int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
+                    for (int germlineSampleIndex : germlineSampleIndices) {
+                        if (germlineSampleIndex != -1) {
+                            SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                            int germlinePriority = estimatePriorityComponent(genotypeIndex, somaticCounts, germlineCounts);
+                            genotypePriority += germlinePriority;
+                        }
+                    }
+                    maxPriority = Math.max(genotypePriority, maxPriority);
                 }
-                maxPriority = Math.max(genotypePriority, maxPriority);
             }
             statsWriter.setInfo(maxGenotypeSomaticPriority[sampleIndex], maxPriority);
 
