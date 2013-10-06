@@ -22,7 +22,7 @@ import static org.easymock.EasyMock.replay;
  *         Date: 3/13/13
  *         Time: 1:49 PM
  */
-public class SomaticVariationOutputFormatTest {
+public class TestSomaticVariationOutputFormat {
     private static final int GERMLINE = 0;
     private static final int SOMATIC = 1;
     int[] dummyIndices = new int[]{-1, -1};
@@ -65,7 +65,9 @@ public class SomaticVariationOutputFormatTest {
 
     @Test
     public void testEstimateSomaticPValue4() throws Exception {
-//        The following hit must not be found because they are more than 5 hits in the germline sample:
+//        The following hit will be found. We don't use a hard limit on the number of times the genotype can
+// be seen in a germline sample because we can have leaking in skin from the immune cells.
+
         //      1	28422629	.	TCCC	T-CC	.	.	BIOMART_COORDS=1:28422629-28422629;INDEL;Somatic-P-value(Fisher)[YHUDRHR-LMFRNGS-7-42-F-FSGSR-PBMC-patient-T0]=0.002235811068873165	GT:BC:GB:FB	0/1:T=388,T-CC=6:394:0	0/1:T=274,T-CC=6:280:0
 
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
@@ -75,7 +77,7 @@ public class SomaticVariationOutputFormatTest {
         sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_C_INDEX] = 5;     // too many bases for C genotype in germline. P-value will be 1.0.
         sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_C_INDEX] = 100;
         sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_A_INDEX] = 50;
-        assertPWithCounts(1.0, sampleCounts, 0f);
+        assertPWithCounts(1.6933846698892596E-14, sampleCounts,  66.66667f);
 
     }
 
