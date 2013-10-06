@@ -435,7 +435,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             // use the max of the above p-values:
             double pValue = max(pValues);
             if (!isSomaticCandidate()) {
-                pValue=1.0;
+                pValue = 1.0;
             }
             statsWriter.setInfo(somaticPValueIndex[sampleIndex], pValue);
 
@@ -446,7 +446,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 }
             }
             if (!isSomaticCandidate()) {
-                somaticFrequency=0;
+                somaticFrequency = 0;
             }
             statsWriter.setInfo(candidateFrequencyIndex[sampleIndex], somaticFrequency * 100);
         }
@@ -478,11 +478,16 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                     float somaticBaseFrequency = somaticCounts.frequency(genotypeIndex);
                     float maxParentBaseFrequency = Math.max(fatherCounts.frequency(genotypeIndex), motherCounts.frequency(genotypeIndex));
+                    float maxParentBaseCount = Math.max(fatherCounts.getGenotypeCount(genotypeIndex), motherCounts.getGenotypeCount(genotypeIndex));
                     if (somaticBaseFrequency <= maxParentBaseFrequency) {
                         isSomaticCandidate[sampleIndex][genotypeIndex] |= false;
                     } else {
                         isSomaticCandidate[sampleIndex][genotypeIndex] |= true;
 
+                    }
+                    if (maxParentBaseCount > 10) {
+                        // more than 10 reads support hte genotype in a parent, this is not somatic.
+                        isSomaticCandidate[sampleIndex][genotypeIndex] = false;
                     }
                 }
 
@@ -497,6 +502,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                             isSomaticCandidate[sampleIndex][genotypeIndex] |= false;
                         } else {
                             isSomaticCandidate[sampleIndex][genotypeIndex] |= true;
+                        }
+                        float maxParentBaseCount = sampleCounts[germlineSampleIndex].getGenotypeCount(genotypeIndex);
+                        if (maxParentBaseCount > 10) {
+                            // more than 10 reads support hte genotype in the germline, this is not somatic.
+                            isSomaticCandidate[sampleIndex][genotypeIndex] = false;
                         }
                     }
                 }

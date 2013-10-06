@@ -107,7 +107,6 @@ public class SomaticVariationOutputFormatTest {
 
 
     @Test
-
     public void testDiscoverSomaticVariation2() throws IOException, JSAPException {
         SomaticVariationOutputFormat output = new SomaticVariationOutputFormat();
         output.setupR();
@@ -176,7 +175,51 @@ public class SomaticVariationOutputFormatTest {
         statsWriter.setInfo(2, 1.0d);
         statsWriter.setInfo(3, 0f);
         replay(statsWriter);
-       assertFalse( output.isPossibleSomaticVariation(sampleCounts));
+        assertFalse(output.isPossibleSomaticVariation(sampleCounts));
+        output.estimateSomaticPValue(sampleCounts);
+    }
+
+
+    @Test
+    public void testDiscoverSomaticVariation3() throws IOException, JSAPException {
+        SomaticVariationOutputFormat output = new SomaticVariationOutputFormat();
+        output.setupR();
+        output.allocateStorage(3, 0);
+
+        final CovariateInfo covInfo = CovariateInfo.parse("test-data/covariates/example-4.tsv");
+        output.setCovariateInfo(covInfo);
+        IntArrayList indices = new IntArrayList();
+
+
+        int somaticCount = 10;
+        int somaticFailedCount = 0;
+        int fatherCount = 0;
+        int motherCount = 0;
+        int baseline = 50;
+
+        SampleCountInfo[] sampleCounts = makeSomaticSampleCounts(somaticCount, somaticFailedCount,
+                fatherCount, motherCount, baseline);
+        output.allocateIsSomaticCandidate(sampleCounts);
+        output.setSomaticSampleIndices(indices);
+
+        somaticCount = 0;
+
+        sampleCounts = makeSomaticSampleCounts(somaticCount, somaticFailedCount,
+                0, 0, 0);
+        // test parents homozygous, mother C/C, father T/T, patient C/T.
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 182);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 84);
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 226);
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 118);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 188);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 110);
+        output.allocateIsSomaticCandidate(sampleCounts);
+        VCFWriter statsWriter = EasyMock.createMock(VCFWriter.class);
+        output.setStatsWriter(statsWriter);
+        statsWriter.setInfo(2, 1.0d);
+        statsWriter.setInfo(3, 0f);
+        replay(statsWriter);
+        assertFalse(output.isPossibleSomaticVariation(sampleCounts));
         output.estimateSomaticPValue(sampleCounts);
     }
 
