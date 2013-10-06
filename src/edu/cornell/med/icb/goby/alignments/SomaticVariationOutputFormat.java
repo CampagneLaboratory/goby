@@ -520,55 +520,38 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         // otherwise, we do not output the variation in the somatic report.
 
         for (int sampleIndex : somaticSampleIndices) {
-            int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
-            int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
-            final SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
-            if (fatherSampleIndex != -1 && motherSampleIndex != -1) {
-                // trio design, we need to filter out sites het in the patient and homozygote in both parents:
-                final SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
-                final SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
-                float frequency = 0;
-                for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
+            SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
+            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
 
-                    float somaticBaseFrequency = somaticCounts.frequency(genotypeIndex);
-                    float maxParentBaseFrequency = Math.max(fatherCounts.frequency(genotypeIndex), motherCounts.frequency(genotypeIndex));
-                    float maxParentBaseCount = Math.max(fatherCounts.getGenotypeCount(genotypeIndex), motherCounts.getGenotypeCount(genotypeIndex));
-                    if (somaticBaseFrequency <= maxParentBaseFrequency) {
-                        isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                    } else {
-                        isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                float maxGermlineOrParentsFrequency = 0;
+                int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
+                if (fatherSampleIndex != -1) {
 
-                    }
-                    if (maxParentBaseCount > 10) {
-                        // more than 10 reads support hte genotype in a parent, this is not somatic.
-                        isSomaticCandidate[sampleIndex][genotypeIndex] = false;
+                    SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
+                    maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
+                }
+                int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
+                if (motherSampleIndex != -1) {
+
+                    SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
+                    maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
+
+                }
+                int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
+                for (int germlineSampleIndex : germlineSampleIndices) {
+                    if (germlineSampleIndex != -1) {
+                        SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                        maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
+
                     }
                 }
-
-            } else {
-                // one somatic sample and possibly multiple germline samples:
-                for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
-                    int[] germlineSampleIndices = sample2GermlineSampleIndices[sampleIndex];
-                    float somaticBaseFrequency = somaticCounts.frequency(genotypeIndex);
-                    for (int germlineSampleIndex : germlineSampleIndices) {
-                        float germlineFrequency = sampleCounts[germlineSampleIndex].frequency(genotypeIndex);
-                        if (somaticBaseFrequency <= germlineFrequency) {
-                            isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                        } else {
-                            isSomaticCandidate[sampleIndex][genotypeIndex] = true;
-                        }
-                        float maxParentBaseCount = sampleCounts[germlineSampleIndex].getGenotypeCount(genotypeIndex);
-                        if (maxParentBaseCount > 10) {
-                            // more than 10 reads support hte genotype in the germline, this is not somatic.
-                            isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                        }
-                    }
+                if (somaticCounts.frequency(genotypeIndex)>maxGermlineOrParentsFrequency) {
+                    isSomaticCandidate[sampleIndex][genotypeIndex]=true;
                 }
             }
-
+            }
+            return isSomaticCandidate();
         }
-        return isSomaticCandidate();
-    }
 
     private double max(DoubleArrayList pValues) {
         if (pValues.size() == 0) return Double.NaN;
