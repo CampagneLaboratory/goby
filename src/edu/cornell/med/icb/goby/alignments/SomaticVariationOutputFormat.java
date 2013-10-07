@@ -522,36 +522,45 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         for (int sampleIndex : somaticSampleIndices) {
             SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
             for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
-
+                boolean parentHasGenotype = false;
                 float maxGermlineOrParentsFrequency = 0;
                 int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
                 if (fatherSampleIndex != -1) {
 
                     SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
+                    parentHasGenotype |= fatherCounts.getGenotypeCount(genotypeIndex) >= 10;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
                 }
                 int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
                 if (motherSampleIndex != -1) {
 
                     SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
+                    parentHasGenotype |= motherCounts.getGenotypeCount(genotypeIndex) >= 10;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
 
                 }
+                boolean germlineHasPhenotype = false;
                 int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
                 for (int germlineSampleIndex : germlineSampleIndices) {
                     if (germlineSampleIndex != -1) {
                         SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                        germlineHasPhenotype |= germlineCounts.getGenotypeCount(genotypeIndex) >= 10;
                         maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
 
                     }
                 }
-                if (somaticCounts.frequency(genotypeIndex)>maxGermlineOrParentsFrequency) {
-                    isSomaticCandidate[sampleIndex][genotypeIndex]=true;
+                if (parentHasGenotype || germlineHasPhenotype) {
+                    isSomaticCandidate[sampleIndex][genotypeIndex] = false;
+                    continue;
+                }
+                if (somaticCounts.frequency(genotypeIndex) > maxGermlineOrParentsFrequency) {
+
+                    isSomaticCandidate[sampleIndex][genotypeIndex] = true;
                 }
             }
-            }
-            return isSomaticCandidate();
         }
+        return isSomaticCandidate();
+    }
 
     private double max(DoubleArrayList pValues) {
         if (pValues.size() == 0) return Double.NaN;
