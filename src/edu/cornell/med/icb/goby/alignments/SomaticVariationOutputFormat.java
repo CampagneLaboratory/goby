@@ -528,14 +528,14 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 if (fatherSampleIndex != -1) {
 
                     SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
-                    parentHasGenotype |= fatherCounts.getGenotypeCount(genotypeIndex) >= 10;
+                    parentHasGenotype |= fatherCounts.getGenotypeCount(genotypeIndex) > fatherCounts.failedCount;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
                 }
                 int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
                 if (motherSampleIndex != -1) {
 
                     SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
-                    parentHasGenotype |= motherCounts.getGenotypeCount(genotypeIndex) >= 10;
+                    parentHasGenotype |= motherCounts.getGenotypeCount(genotypeIndex) > motherCounts.failedCount;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
 
                 }
@@ -551,11 +551,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 }
                 if (parentHasGenotype || germlineHasPhenotype) {
                     isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                    continue;
-                }
-                if (somaticCounts.frequency(genotypeIndex) > maxGermlineOrParentsFrequency) {
+                } else {
+                    if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
 
-                    isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                        isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                    }
                 }
             }
         }
