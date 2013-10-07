@@ -539,17 +539,17 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
 
                 }
-                boolean germlineHasPhenotype = false;
+                boolean germlineHasGenotype = false;
                 int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
                 for (int germlineSampleIndex : germlineSampleIndices) {
                     if (germlineSampleIndex != -1) {
                         SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
-                        germlineHasPhenotype |= germlineCounts.getGenotypeCount(genotypeIndex) >= 10;
+                        germlineHasGenotype |= germlineCounts.getGenotypeCount(genotypeIndex) >= 10;
                         maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
 
                     }
                 }
-                if (parentHasGenotype || germlineHasPhenotype) {
+                if (parentHasGenotype || germlineHasGenotype) {
                     isSomaticCandidate[sampleIndex][genotypeIndex] = false;
                 } else {
                     if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
