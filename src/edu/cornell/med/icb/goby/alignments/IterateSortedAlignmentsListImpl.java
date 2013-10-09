@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.log4j.Logger;
@@ -106,7 +107,7 @@ public abstract class IterateSortedAlignmentsListImpl
         addToFuture(positionToBases, info);
     }
 
-
+    private WarningCounter moreVariantsThanThreshold = new WarningCounter(10);
     private void addToFuture(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                              final PositionBaseInfo info) {
 
@@ -122,9 +123,9 @@ public abstract class IterateSortedAlignmentsListImpl
             for (PositionBaseInfo element : list) {
                 positions.add(element.position);
             }
-            LOG.warn(String.format("position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
-                    positions.size()));
-            LOG.warn("positions: " + positions.toString());
+            moreVariantsThanThreshold.warn(LOG,"position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
+                                positions.size());
+            moreVariantsThanThreshold.warn(LOG,"positions: " + positions.toString());
 
             // stop accumulating if the position has more than half a million bases!
 
