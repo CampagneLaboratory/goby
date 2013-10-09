@@ -1,4 +1,6 @@
 2.3.3
+ - IterateSortedAlignmentsListImpl: Use a WarningCounter to limit warnings to 10 instances. This is needed to
+   avoid writing Gb of log output when the threshold is met.
  - discover-sequence-variants somatic output: Make it possible to run simple trio design by removing the
    requirement for a germline sample.
  - discover-sequence-variants somatic output: Earlier versions were reporting somatic variation candidates
