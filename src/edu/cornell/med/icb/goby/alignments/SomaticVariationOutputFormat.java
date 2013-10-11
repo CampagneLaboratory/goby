@@ -52,6 +52,16 @@ import java.util.Arrays;
  */
 public class SomaticVariationOutputFormat implements SequenceVariationOutputFormat {
 
+    /**
+     * We will store the largest candidate somatic frequency here.
+     */
+    private int[] candidateFrequencyIndex;
+
+    /**
+     * A priority score for the somatic site. Larger integer values indicate more support for the site being a
+     * somatic variation. Indexed by sampleIndex.
+     */
+    private int[] maxGenotypeSomaticPriority;
 
     protected void setSomaticPValueIndex(int[] somaticPValueIndex) {
         this.somaticPValueIndex = somaticPValueIndex;
@@ -158,6 +168,8 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         }
         // add column(s) for p-values of somatic variation:
         somaticPValueIndex = new int[numSamples];
+        candidateFrequencyIndex = new int[numSamples];
+        maxGenotypeSomaticPriority = new int[numSamples];
         Arrays.fill(somaticPValueIndex, -1);
         setupR();
 
@@ -168,6 +180,15 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     String.format("Somatic-P-value(%s)[%s]", fisherRInstalled ? "Fisher" : "Poisson", sample),
                     1, ColumnType.Float,
                     "P-value that a variation is somatic in this particular sample, compared to other germline samples (e.g., germline skin, or mother/father).", "p-value", "statistic", "indexed");
+            candidateFrequencyIndex[sampleIndex] = statsWriter.defineField("INFO",
+                    String.format("somatic-frequency[%s]", sample),
+                    1, ColumnType.Float,
+                    "Frequency of a somatic variation (%), valid only when the p-value is significant.", "statistic", "indexed");
+            maxGenotypeSomaticPriority[sampleIndex] = statsWriter.defineField("INFO",
+                    String.format("priority[%s]", sample),
+                    1, ColumnType.Integer,
+                    "Somatic priority, larger integers indicate more support for somatic variation in sample (%)", "statistic", "indexed");
+
         }
 
         sample2FatherSampleIndex = new int[numSamples];
@@ -229,6 +250,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             for (String sampleId : allSamplesForPatient) {
                 int germlineSampleIndex = locateSampleIndex(sampleId);
                 if (covInfo.hasCovariateValue(sampleId, "kind-of-sample", "Germline")) {
+                    assert germlineSampleIndex != -1 : "A sampleId in the covariate file (" + sampleId + ") does not match the input alignment basenames.";
                     sample2GermlineSampleIndices[sampleIndex][index++] = germlineSampleIndex;
                 }
             }
@@ -272,6 +294,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         Arrays.fill(countsInSample, 1);
         this.numSamples = numberOfSamples;
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
+
     }
 
 
@@ -298,13 +321,29 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             // do not write a record if the position does not have an alternate allele.
             return;
         }
+        allocateIsSomaticCandidate(sampleCounts);
 
         // Do not write record if alleleSet is empty, IGV VCF track cannot handle that.
+        if (isPossibleSomaticVariation(sampleCounts)) {
 
-        estimateSomaticPValue(sampleCounts);
-        statsWriter.writeRecord();
+            estimateSomaticPValue(sampleCounts);
+            estimatePriority(sampleCounts);
+            if (isSomaticCandidate()) {
+                statsWriter.writeRecord();
+            }
+        }
+
         updateSampleCumulativeCounts(sampleCounts);
     }
+
+    void allocateIsSomaticCandidate(SampleCountInfo[] sampleCounts) {
+        int maxGenotypeIndex = 0;
+        for (SampleCountInfo sci : sampleCounts) {
+            maxGenotypeIndex = Math.max(maxGenotypeIndex, sci.getGenotypeMaxIndex());
+        }
+        isSomaticCandidate = new boolean[sampleCounts.length][maxGenotypeIndex];
+    }
+
 
     private void updateSampleCumulativeCounts(SampleCountInfo[] sampleCounts) {
         for (SampleCountInfo info : sampleCounts) {
@@ -374,8 +413,52 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         this.sample2MotherSampleIndex = sample2MotherSampleIndex;
     }
 
-    protected void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
-        // compare somatic to father:
+    public void estimatePriority(SampleCountInfo[] sampleCounts) {
+
+        for (int sampleIndex : somaticSampleIndices) {
+            SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
+            int maxPriority = Integer.MIN_VALUE;
+
+            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
+                if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
+                    int genotypePriority = 0;
+                    int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
+                    if (fatherSampleIndex != -1) {
+
+                        SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
+                        int fatherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, fatherCounts);
+                        genotypePriority += fatherPriority;
+                    }
+                    int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
+                    if (motherSampleIndex != -1) {
+
+                        SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
+                        int motherPriority = estimatePriorityComponent(genotypeIndex, somaticCounts, motherCounts);
+                        genotypePriority += motherPriority;
+                    }
+                    int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
+                    for (int germlineSampleIndex : germlineSampleIndices) {
+                        if (germlineSampleIndex != -1) {
+                            SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                            int germlinePriority = estimatePriorityComponent(genotypeIndex, somaticCounts, germlineCounts);
+                            genotypePriority += germlinePriority;
+                        }
+                    }
+                    maxPriority = Math.max(genotypePriority, maxPriority);
+                }
+            }
+            statsWriter.setInfo(maxGenotypeSomaticPriority[sampleIndex], maxPriority);
+
+        }
+    }
+
+    private int estimatePriorityComponent(int genotypeIndex, SampleCountInfo somaticCounts, SampleCountInfo parentOrGermlineCounts) {
+        return somaticCounts.getGenotypeCount(genotypeIndex) - parentOrGermlineCounts.getGenotypeCount(genotypeIndex);
+    }
+
+    public void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
+        // force recalculation of the isSomaticCandidate arrays:
+        isPossibleSomaticVariation(sampleCounts);
 
         for (int sampleIndex : somaticSampleIndices) {
             pValues.clear();
@@ -389,7 +472,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 pValues.add(fatherP);
             }
             int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
-            if (fatherSampleIndex != -1) {
+            if (motherSampleIndex != -1) {
 
                 SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
                 double motherP = estimateP(somaticCounts, motherCounts);
@@ -397,15 +480,86 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             }
             int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
             for (int germlineSampleIndex : germlineSampleIndices) {
-
-                SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
-                double germlineP = estimateP(somaticCounts, germlineCounts);
-                pValues.add(germlineP);
+                if (germlineSampleIndex != -1) {
+                    SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                    double germlineP = estimateP(somaticCounts, germlineCounts);
+                    pValues.add(germlineP);
+                }
             }
             // use the max of the above p-values:
             double pValue = max(pValues);
+            if (!isSomaticCandidate()) {
+                pValue = 1.0;
+            }
             statsWriter.setInfo(somaticPValueIndex[sampleIndex], pValue);
+
+            float somaticFrequency = 0;
+            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
+                if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
+                    somaticFrequency = Math.max(somaticCounts.frequency(genotypeIndex), somaticFrequency);
+                }
+            }
+            if (!isSomaticCandidate()) {
+                somaticFrequency = 0;
+            }
+            statsWriter.setInfo(candidateFrequencyIndex[sampleIndex], somaticFrequency * 100);
         }
+
+    }
+
+    boolean isPossibleSomaticVariation(SampleCountInfo[] sampleCounts) {
+
+        // In cases where both parents are homozygous and the patient can be heterozygous, which creates low fisher p-values
+        // in the contingency table of base counts.
+
+        // We estimate the frequency of each base detected in the somatic patient sample. We calculate the frequency
+        // of this same base in the father or mother and take the maximum parent frequency.
+
+        // if the frequency of any base in the somatic sample is larger than the parent frequency, we output the
+        // record. The p-value will inform about the strength of the somatic observation.
+        // otherwise, we do not output the variation in the somatic report.
+
+        for (int sampleIndex : somaticSampleIndices) {
+            SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
+            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
+                boolean parentHasGenotype = false;
+                float maxGermlineOrParentsFrequency = 0;
+                int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
+                if (fatherSampleIndex != -1) {
+
+                    SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
+                    parentHasGenotype |= fatherCounts.getGenotypeCount(genotypeIndex) > fatherCounts.failedCount;
+                    maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
+                }
+                int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
+                if (motherSampleIndex != -1) {
+
+                    SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
+                    parentHasGenotype |= motherCounts.getGenotypeCount(genotypeIndex) > motherCounts.failedCount;
+                    maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
+
+                }
+                boolean germlineHasPhenotype = false;
+                int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
+                for (int germlineSampleIndex : germlineSampleIndices) {
+                    if (germlineSampleIndex != -1) {
+                        SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
+                        germlineHasPhenotype |= germlineCounts.getGenotypeCount(genotypeIndex) >= 10;
+                        maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
+
+                    }
+                }
+                if (parentHasGenotype || germlineHasPhenotype) {
+                    isSomaticCandidate[sampleIndex][genotypeIndex] = false;
+                } else {
+                    if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
+
+                        isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                    }
+                }
+            }
+        }
+        return isSomaticCandidate();
     }
 
     private double max(DoubleArrayList pValues) {
@@ -417,31 +571,18 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         return max;
     }
 
+    boolean isSomaticCandidate[][];
+
     protected double estimateP(SampleCountInfo somaticCounts, SampleCountInfo germlineCounts) {
 
         double fisherP = 1;
 
-
         for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
-
 
             boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
             final int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
             final int somaticCount = somaticCounts.getGenotypeCount(genotypeIndex);
-            final int failedCountGermline = germlineCounts.failedCount;
-            if (germlineCount > failedCountGermline) {
-                // We see at least as many bases in the germline than there were failed bases in this sample. Consider
-                // that the genotype was seen in germline and therefore is not somatic.
-                /* Consider these examples:
-                      germlineCount=1  failedCountGermline=3 : ignore the occurence in germline, estimate P
-                      germlineCount=1  failedCountGermline=0 : not somatic since seen in germline
-                      germlineCount=0  failedCountGermline=0 : estimate P
-                      germlineCount=2  failedCountGermline=6 : estimate P
-                      germlineCount=4  failedCountGermline=2 : not somatic since seen in germline
-                 */
-                fisherP = Math.min(fisherP, 1);
-                continue;
-            }
+
             //    final int c = (int) ((germlineCount + somaticCount) * proportionCountsIn[germlineCounts.sampleIndex]);
             //    final int d = (int) ((germlineCount + somaticCount) * proportionCountsIn[somaticCounts.sampleIndex]);
             double germlineSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
@@ -498,13 +639,28 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         count = bCounts.getGenotypeCount(genotypeIndex);
 
         if (count < 0) ok = false;
-
-
         return ok;
 
     }
 
     public void setCovariateInfo(CovariateInfo covInfo) {
         this.covInfo = covInfo;
+    }
+
+    public boolean isSomaticCandidate() {
+        for (boolean[] someGenotypeIsSomatic : isSomaticCandidate) {
+            for (boolean candidate : someGenotypeIsSomatic) {
+                if (candidate) return true;
+            }
+        }
+        return false;
+    }
+
+    public void setCandidateFrequencyIndex(int[] candidateFrequencyIndex) {
+        this.candidateFrequencyIndex = candidateFrequencyIndex;
+    }
+
+    public int[] getCandidateFrequencyIndex() {
+        return candidateFrequencyIndex;
     }
 }

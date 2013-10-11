@@ -462,7 +462,24 @@ public class SampleCountInfo {
                 EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
 
                 return equivalentIndelRegion.isFiltered();
-            }   else return false;
+            } else return false;
         }
+    }
+
+    /**
+     * Return the base frequency of this genotype in this one sample.
+     *
+     * @param genotypeIndex Index of a genotype
+     * @return the frequency of this genotype (count of the genotype divided by the sum of all other counts).
+     */
+    public float frequency(int genotypeIndex) {
+        int sum = 0;
+
+        for (int index = 0; index < getGenotypeMaxIndex(); index++) {
+            sum += getGenotypeCount(index);
+        }
+        if (sum == 0) return 0;
+        float count = (float) getGenotypeCount(genotypeIndex);
+        return count / ((float) sum);
     }
 }
