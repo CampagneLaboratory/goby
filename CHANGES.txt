@@ -9,6 +9,9 @@
    they are less results that need to be corrected.
  - discover-sequence-variants somatic output: Add an error message when a sample is mispelled in the covariates
    file.
+ - Refactor code base to keep base counts for forward and reverse strands separately in SampleCountInfo.
+ - Normalize somatic priority score by number of mapped reads, and number of parents and germline samples used in
+   the calculation.
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
