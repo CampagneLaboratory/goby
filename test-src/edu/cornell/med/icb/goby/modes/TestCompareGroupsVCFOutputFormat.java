@@ -24,12 +24,10 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
-import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.easymock.EasyMock;
 import org.junit.Before;
@@ -280,10 +278,10 @@ public class TestCompareGroupsVCFOutputFormat {
         readerIndexToGroupIndex = new int[20];
         for (i = 0; i < 10; i++) {
             sampleCounts[i] = new SampleCountInfo();
-            sampleCounts[i].counts[SampleCountInfo.BASE_A_INDEX] = a_0;
-            sampleCounts[i].counts[SampleCountInfo.BASE_T_INDEX] = t_0;
-            sampleCounts[i].counts[SampleCountInfo.BASE_C_INDEX] = c_0;
-            sampleCounts[i].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, a_0);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, t_0);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, c_0);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 0);
             sampleCounts[i].referenceBase = 'C';
             sampleCounts[i].refCount = refCount_0;
             sampleCounts[i].varCount = varCount_0;
@@ -292,10 +290,10 @@ public class TestCompareGroupsVCFOutputFormat {
         }
         for (; i < 20; i++) {
             sampleCounts[i] = new SampleCountInfo();
-            sampleCounts[i].counts[SampleCountInfo.BASE_A_INDEX] = a_1;
-            sampleCounts[i].counts[SampleCountInfo.BASE_T_INDEX] = t_1;
-            sampleCounts[i].counts[SampleCountInfo.BASE_C_INDEX] = c_1;
-            sampleCounts[i].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, a_1);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, t_1);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, c_1);
+            sampleCounts[i].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 0);
             sampleCounts[i].referenceBase = 'C';
             sampleCounts[i].refCount = refCount_1;
             sampleCounts[i].varCount = varCount_1;

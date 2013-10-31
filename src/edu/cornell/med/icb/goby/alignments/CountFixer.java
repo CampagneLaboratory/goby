@@ -21,8 +21,6 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import java.util.Arrays;
-
 /**
  * @author Fabien Campagne
  *         Date: Mar 23, 2011
@@ -45,8 +43,8 @@ public class CountFixer implements CountFixerInterface {
         // do not decrement counts again. The Filters have done this already..
 
         for (SampleCountInfo sci : sampleCounts) {
-            for (int i = 0; i < sci.counts.length; i++) {
-                assert sci.counts[i] >= 0 : ("Counts must never be negative. This would happen if a GenotypeFilter removed counts directly. Value was " + sci.counts[i]);
+            for (int i = 0; i < sci.getCountsSize(); i++) {
+                assert sci.getGenotypeCount(i) >= 0 : ("Counts must never be negative. This would happen if a GenotypeFilter removed counts directly. Value was " + sci.getGenotypeCount(i));
             }
         }
         // calculate failed Count in each sample:

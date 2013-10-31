@@ -47,7 +47,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                         final char base = info.to == '-'? info.from : info.to;
                         final int baseIndex = sampleCountInfo.baseIndex(base);
                         if (!filteredList.contains(info)) {
-                            sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                            sampleCountInfo.suggestRemovingGenotype(baseIndex, info.matchesForwardStrand);
                             removeGenotype(info, filteredList);
                         }
                         /*  if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {

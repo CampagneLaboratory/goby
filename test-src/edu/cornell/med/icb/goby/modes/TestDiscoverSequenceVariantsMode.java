@@ -297,18 +297,18 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
 
         assertNotNull(sampleCounts[0].toString());
-        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(10, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(1, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
         assertEquals(1, removed.size());
         leftOverFilter.filterGenotypes(list, sampleCounts, removed);
         CountFixer fixer = new CountFixer();
         fixer.fix(list, sampleCounts, removed);
         assertEquals(2, removed.size());
         assertEquals(10, list.size());
-        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(10, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
     }
 
@@ -337,13 +337,13 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
 
         assertNotNull(sampleCounts[0].toString());
-        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(10, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(1, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
-        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(1, sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(10, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(10, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(1, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
         assertEquals(1, removed.size());
         leftOverFilter.filterGenotypes(list, sampleCounts, removed);
@@ -351,13 +351,13 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         fixer.fix(list, sampleCounts, removed);
         assertEquals(3, removed.size());
         assertEquals(30, list.size());
-        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(10, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
         // C genotype must be rescued by sample 1
-        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
-        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(1, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
+        assertEquals(10, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(10, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(0, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
     }
 
     @Test
@@ -380,10 +380,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         fixer.fix(list, sampleCounts, removed);
 
         assertEquals(19, list.size());
-        assertEquals(12, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(3, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(4, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(12, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(3, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(4, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_G_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
     }
 
@@ -407,10 +407,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         fixer.fix(list, sampleCounts, removed);
 
         assertEquals(7, list.size());
-        assertEquals(3, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(4, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(3, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(4, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_G_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
     }
 
@@ -434,10 +434,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         fixer.fix(list, sampleCounts, removed);
 
         assertEquals(26, list.size());
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
-        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(13, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_G_INDEX));
+        assertEquals(13, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
     }
 
@@ -461,10 +461,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         fixer.fix(list, sampleCounts, removed);
 
         assertEquals(25, list.size());
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(12, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
-        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_A_INDEX));
+        assertEquals(12, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_C_INDEX));
+        assertEquals(0, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_G_INDEX));
+        assertEquals(13, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_T_INDEX));
 
     }
 
@@ -483,7 +483,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         for (PositionBaseInfo info : list) {
             final int sampleIndex = info.readerIndex;
             int toBaseIndex = sci[sampleIndex].baseIndex(info.to);
-            sci[sampleIndex].counts[toBaseIndex]++;
+            sci[sampleIndex].incrementGenotypeCount(toBaseIndex, info.matchesForwardStrand);
             if (info.matchesReference) {
                 sci[sampleIndex].refCount++;
             } else {
@@ -511,10 +511,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
         sampleCounts[0] = new SampleCountInfo();
 
-        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
-        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
-        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
-        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, 5);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 9);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 1);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 1);
         sampleCounts[0].referenceBase = 'A';
         sampleCounts[0].refCount = 5;
         sampleCounts[0].varCount = 11;
@@ -524,20 +524,20 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     private SampleCountInfo[] makeTwoSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[0] = new SampleCountInfo();
-        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
-        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
-        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
-        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, 5);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 1);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 9);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 1);
         sampleCounts[0].referenceBase = 'A';
         sampleCounts[0].refCount = 5;
         sampleCounts[0].varCount = 11;
         sampleCounts[0].sampleIndex = 0;
 
         sampleCounts[1] = new SampleCountInfo();
-        sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX] = 10;
-        sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX] = 4;
-        sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX] = 0;
-        sampleCounts[1].counts[SampleCountInfo.BASE_OTHER_INDEX] = 2;
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, 10);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 4);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, 0);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 2);
         sampleCounts[1].referenceBase = 'A';
         sampleCounts[1].refCount = 10;
         sampleCounts[1].varCount = 6;
@@ -680,7 +680,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 
-                for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
+                for (int i = 0; i < sampleInfo.getGenotypeCount(baseIndex); i++) {
 
                     PositionBaseInfo info = new PositionBaseInfo();
                     final char base = sampleInfo.base(baseIndex);
@@ -712,7 +712,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 
-                for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
+                for (int i = 0; i < sampleInfo.getGenotypeCount(baseIndex); i++) {
 
                     PositionBaseInfo info = new PositionBaseInfo();
 
