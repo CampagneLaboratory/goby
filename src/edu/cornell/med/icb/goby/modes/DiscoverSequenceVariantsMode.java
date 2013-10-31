@@ -559,6 +559,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return covInfo;
     }
 
+    public String[] getInputFilenames() {
+        return inputFilenames;
+    }
+
 
     enum OutputFormat {
         VARIANT_DISCOVERY,
