@@ -603,6 +603,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
         final DiscoverVariantPositionData list = makeListWithScores(sampleCounts, scores);
+        assertEquals(Arrays.toString(list.elements()), "[+ ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, -  /T q=40 s=0, -  /C q=40 s=0, -  /C q=10 s=0, -  /C q=20 s=0, -  /C q=30 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=10 s=0, -  /N q=20 s=0, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, -  /T q=40 s=1, -  /T q=40 s=1, -  /T q=10 s=1, -  /T q=20 s=1, -  /N q=30 s=1, -  /N q=40 s=1, null, null, null, null, null, null, null, null]");
+
         assertEquals(32, list.size());
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster1.filterGenotypes(list, sampleCounts, filteredList);
