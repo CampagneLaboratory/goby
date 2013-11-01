@@ -281,7 +281,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             );
             if (sampleIds[i].equals(samples[i])) {
                 // put a minimum of one read to prevent divisions by zero:
-                numMatchedReads[i] = Math.min(1,getNumMatchedReads(inputFilenames[i]));
+                numMatchedReads[i] = Math.max(1,getNumMatchedReads(inputFilenames[i]));
             }
         }
     }
