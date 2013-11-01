@@ -12,6 +12,9 @@
  - Refactor code base to keep base counts for forward and reverse strands separately in SampleCountInfo.
  - Normalize somatic priority score by number of mapped reads, and number of parents and germline samples used in
    the calculation.
+ - Add a StrandBiasFilter in somatic analyses. The filter rejects variations that are not represented on both
+   strands when at least j reads support the variation. The value of j is set to 9 by default, so a variation with
+   10 bases needs to have
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified

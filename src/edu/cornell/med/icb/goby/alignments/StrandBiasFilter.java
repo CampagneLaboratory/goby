@@ -1,14 +1,35 @@
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * Removes genotypes when only one strand supports the genotype in a sample.
+ *
  * @author Fabien Campagne
  *         Date: 11/1/13
  *         Time: 2:24 PM
  */
 public class StrandBiasFilter extends GenotypeFilter {
+    private final int jPlusOne;
+    private int jParameter = 9;
+
+    @RegisterThis
+    public static final DynamicOptionClient doc = new DynamicOptionClient(QualityScoreFilter.class, "j:The maximum " +
+            "number of bases below after which we require base support from both strands. When j=9, variations with 10 bases" +
+            "must have representation from both strands. Please note that values of j lower than 1 are not valid.:9");
+
+    public StrandBiasFilter(int jParameter) {
+        this.jParameter = jParameter;
+        jPlusOne = jParameter + 1;
+    }
+
+    public StrandBiasFilter() {
+        this.jParameter = doc.getInteger("j");
+        assert jParameter >= 1;
+        jPlusOne = jParameter + 1;
+    }
 
     /**
      * Returns a short description of the filtering criteria.
@@ -34,10 +55,10 @@ public class StrandBiasFilter extends GenotypeFilter {
 
             // how many of this base have we seen in this sample?
             final int baseIndex = sampleCountInfo.baseIndex(base);
-            final int countForward = sampleCountInfo.getGenotypeCount(baseIndex,true);
-            final int countReverse = sampleCountInfo.getGenotypeCount(baseIndex,false);
+            final int countForward = sampleCountInfo.getGenotypeCount(baseIndex, true);
+            final int countReverse = sampleCountInfo.getGenotypeCount(baseIndex, false);
 
-            if ((countForward+countReverse)>=2 && (countForward==0 || countReverse==0)) {
+            if ((countForward + countReverse) >= (jPlusOne) && (countForward == 0 || countReverse == 0)) {
 
                 // the variation is not represented on one of the strands, filter
                 sampleCountInfo.suggestRemovingGenotype(baseIndex, positionBaseInfo.matchesForwardStrand);
