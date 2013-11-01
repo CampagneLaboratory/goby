@@ -48,7 +48,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Collections;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -105,7 +105,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         );
 
     }
-
 
 
     @Test
@@ -716,28 +715,61 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
                     PositionBaseInfo info = new PositionBaseInfo();
 
-                    final char base = sampleInfo.base(baseIndex);
-                    info.to = base;
-                    if (base == 'A') {
-                        info.matchesReference = true;
-                        info.from = base;
-                        info.matchesForwardStrand = true;
-                    }
-                    info.readerIndex = sampleInfo.sampleIndex;
-                    if (!nextQualityIterator.hasNext()) {
 
-                        // wrap back to the start of read indices:
-                        nextQualityIterator = qualityScores.iterator();
-                    }
-                    info.readIndex = 1;
-                    info.qualityScore = (byte) nextQualityIterator.nextInt();
-                    list.add(info);
-                    System.out.println("info: " + info);
+                    nextQualityIterator = makeBase(true, qualityScores, nextQualityIterator, list, sampleInfo, baseIndex, info);
                 }
 
             }
         }
         return list;
+    }
+
+    private DiscoverVariantPositionData makeListWithScoresStranded(SampleCountInfo[] sampleCounts, IntArrayList qualityScores) {
+        IntIterator nextQualityIterator = qualityScores.iterator();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
+        for (SampleCountInfo sampleInfo : sampleCounts) {
+            for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+
+                for (int i = 0; i < sampleInfo.getGenotypeCount(baseIndex, true); i++) {
+
+                    PositionBaseInfo info = new PositionBaseInfo();
+
+                    nextQualityIterator = makeBase(true, qualityScores, nextQualityIterator, list, sampleInfo, baseIndex, info);
+                }
+
+                for (int i = 0; i < sampleInfo.getGenotypeCount(baseIndex, false); i++) {
+
+                    PositionBaseInfo info = new PositionBaseInfo();
+
+                    nextQualityIterator = makeBase(false, qualityScores, nextQualityIterator, list, sampleInfo, baseIndex, info);
+                }
+
+            }
+        }
+        return list;
+    }
+
+    private IntIterator makeBase(boolean strandMatchedForward,
+                                 IntArrayList qualityScores, IntIterator nextQualityIterator, DiscoverVariantPositionData list,
+                                 SampleCountInfo sampleInfo, int baseIndex, PositionBaseInfo info) {
+        final char base = sampleInfo.base(baseIndex);
+        info.to = base;
+        if (base == 'A') {
+            info.matchesReference = true;
+            info.from = base;
+            info.matchesForwardStrand = strandMatchedForward;
+        }
+        info.readerIndex = sampleInfo.sampleIndex;
+        if (!nextQualityIterator.hasNext()) {
+
+            // wrap back to the start of read indices:
+            nextQualityIterator = qualityScores.iterator();
+        }
+        info.readIndex = 1;
+        info.qualityScore = (byte) nextQualityIterator.nextInt();
+        list.add(info);
+        System.out.println("info: " + info);
+        return nextQualityIterator;
     }
 
 
@@ -982,5 +1014,60 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         }
     }
 
+
+    @Test
+    public void testAdjustStrandBias() {
+        StrandBiasFilter adjuster1 = new StrandBiasFilter();
+
+        SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
+        // put one read on each strand:
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 1, true);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX, 1, false);
+        sampleCounts[0].varCount++;
+
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(12, sampleCounts[0].varCount);
+        assertEquals(10, sampleCounts[1].refCount);
+        assertEquals(6, sampleCounts[1].varCount);
+
+        IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
+
+        final DiscoverVariantPositionData list = makeListWithScoresStranded(sampleCounts, scores);
+        int index = 0;
+        for (PositionBaseInfo element : list) {
+            if (element.to == 'T' && element.readerIndex == 0) {
+                element.matchesForwardStrand = (index++ % 2) == 1;
+            }
+        }
+        assertEquals(33, list.size());
+        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
+        adjuster1.filterGenotypes(list, sampleCounts, filteredList);
+
+        System.out.println("list: " + list);
+        System.out.println("filtered: " + filteredList);
+        boolean foundForward = false;
+        boolean foundReverse = false;
+        for (PositionBaseInfo element : list) {
+            if (element.to == 'T' && element.readerIndex == 0 && element.matchesForwardStrand) {
+                foundForward = true;
+            }
+            if (element.to == 'T' && element.readerIndex == 0 && !element.matchesForwardStrand) {
+                foundReverse = true;
+            }
+        }
+        assertTrue(foundForward);
+        assertTrue(foundReverse);
+        CountFixer fixer=new CountFixer();
+        fixer.fix(list,sampleCounts,filteredList);
+
+        for (PositionBaseInfo element : list) {
+            if (element.to == 'T' && element.readerIndex == 1) {
+                fail("T genotype should have been removed from sample 1 (strand bias)");
+            }
+            if (element.to == 'C') {
+                fail("Genotype C should have been removed from all samples (strand bias)");
+            }
+        }
+    }
 
 }

@@ -401,7 +401,7 @@ public class SampleCountInfo {
 
     public void suggestRemovingGenotype(int baseIndex, boolean matchesForwardStrand) {
 
-        if (getGenotypeCount(baseIndex) - 1 >= 0) {
+        if (getGenotypeCount(baseIndex,matchesForwardStrand) - 1 >= 0) {
 
             decrementGenotypeCount(baseIndex, matchesForwardStrand);
         }
@@ -418,7 +418,7 @@ public class SampleCountInfo {
     public final int getGenotypeCount(final int genotypeIndex) {
 
         if (genotypeIndex < BASE_MAX_INDEX) {
-            return counts[POSITIVE_STRAND][genotypeIndex] + counts[NEGATIVE_STRAND][genotypeIndex];
+            return Math.max(0,counts[POSITIVE_STRAND][genotypeIndex]) + Math.max(0,counts[NEGATIVE_STRAND][genotypeIndex]);
         } else {
             if (hasIndels()) {
                 final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
@@ -437,7 +437,7 @@ public class SampleCountInfo {
         public final int getGenotypeCount(final int genotypeIndex, boolean matchesForwardStrand) {
 
             if (genotypeIndex < BASE_MAX_INDEX) {
-                return counts[recodeStrand(matchesForwardStrand)][genotypeIndex] ;
+                return Math.max(0,counts[recodeStrand(matchesForwardStrand)][genotypeIndex] );
             } else {
                 if (hasIndels()) {
                     final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
