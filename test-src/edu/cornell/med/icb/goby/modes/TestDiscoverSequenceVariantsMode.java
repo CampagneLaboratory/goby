@@ -612,6 +612,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "]",Arrays.toString(sampleCounts));
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster1.filterGenotypes(list, sampleCounts, filteredList);
+        assertEquals("[sample: 0 counts A=5 T=1 C=6 G=0 N=0 FB=0 indels={ null }\n" +
+                ", sample: 1 counts A=10 T=2 C=0 G=0 N=2 FB=0 indels={ null }\n" +
+                "]",Arrays.toString(sampleCounts));
         adjuster2.filterGenotypes(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
