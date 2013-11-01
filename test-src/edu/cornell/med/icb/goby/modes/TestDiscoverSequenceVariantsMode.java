@@ -717,7 +717,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
 
                     nextQualityIterator = makeBase(true, qualityScores, nextQualityIterator, list, sampleInfo, baseIndex, info);
-                }
+                    }
 
             }
         }
@@ -1017,7 +1017,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     @Test
     public void testAdjustStrandBias() {
-        StrandBiasFilter adjuster1 = new StrandBiasFilter();
+        StrandBiasFilter adjuster1 = new StrandBiasFilter(1);
 
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
         // put one read on each strand:
