@@ -46,6 +46,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
@@ -609,7 +610,13 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
-
+        CountFixer fixer=new CountFixer();
+        fixer.fix(list,sampleCounts,filteredList);
+        assertEquals(Arrays.toString(sampleCounts), "[sample: 0 counts A=0 T=1 C=9 G=0 N=1 FB=10 indels={ null }\n" +
+                ", sample: 1 counts A=10 T=4 C=0 G=0 N=2 FB=4 indels={ null }\n" +
+                "]");
+        assertEquals("{-  /C q=10 s=0, -  /C q=20 s=0, -  /C q=10 s=0, -  /N q=20 s=0, -  /T q=10 s=1, -  /T q=20 s=1, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, -  /T q=40 s=0, -  /C q=40 s=0, -  /C q=30 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /T q=40 s=1, -  /T q=40 s=1, -  /N q=30 s=1, -  /N q=40 s=1}",
+                filteredList.toString());
         assertEquals(20, filteredList.size());
         assertEquals(0, sampleCounts[0].refCount);
         assertEquals(0, sampleCounts[0].varCount);

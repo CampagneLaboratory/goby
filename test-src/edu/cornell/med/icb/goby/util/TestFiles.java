@@ -25,7 +25,9 @@ import it.unimi.dsi.lang.MutableString;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /**
@@ -35,11 +37,11 @@ import org.junit.Test;
  */
 public class TestFiles {
     @Test
-    public void doNothing(){
+    public void doNothing() {
 
         // keep this method in to please ccontrol.
     }
-    
+
     public void assertEquals(File file1, File file2) throws FileNotFoundException {
         MutableString string1 = new MutableString();
         MutableString string2 = new MutableString();
@@ -47,9 +49,15 @@ public class TestFiles {
         string2 = readFile1(file2);
         org.junit.Assert.assertEquals(string1.toString(), string2.toString());
     }
+
     public void assertEquals(int v1, int v2) {
-              org.junit.Assert.assertEquals(v1,v2);
-        }
+        org.junit.Assert.assertEquals(v1, v2);
+    }
+
+    public void assertEquals(String v1, String v2) {
+
+        org.junit.Assert.assertEquals(v1, v2);
+    }
 
     private MutableString readFile1(File file1) throws FileNotFoundException {
         LineIterator it = new LineIterator(new FastBufferedReader(new FileReader(file1)));
