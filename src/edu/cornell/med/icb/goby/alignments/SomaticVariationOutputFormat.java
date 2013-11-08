@@ -281,7 +281,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             );
             if (sampleIds[i].equals(samples[i])) {
 
-                numMatchedReads[i] = Math.max(0,getNumMatchedReads(inputFilenames[i]));
+                numMatchedReads[i] = Math.max(0, getNumMatchedReads(inputFilenames[i]));
             }
         }
     }
@@ -477,7 +477,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                         parentGenotypePriorityContribution += normalizePriority(motherPriority, motherSampleIndex);
                         numParents += 1;
                     }
-                    parentGenotypePriorityContribution /= numParents;
+                    if (numParents >= 1) {
+                        parentGenotypePriorityContribution /= numParents;
+                    }
                     int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
                     int numGermlineSamples = 0;
                     for (int germlineSampleIndex : germlineSampleIndices) {
@@ -488,8 +490,13 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                             numGermlineSamples += 1;
                         }
                     }
-                    germlineGenotypePriorityContribution /= numGermlineSamples;
+                    if (numGermlineSamples >= 1) {
+                        germlineGenotypePriorityContribution /= numGermlineSamples;
+                    }
                     maxPriority = Math.max(parentGenotypePriorityContribution - germlineGenotypePriorityContribution, maxPriority);
+                    if (maxPriority!=maxPriority){
+                        System.out.println("maxPriority:"+maxPriority);
+                    }
                 }
             }
             statsWriter.setInfo(maxGenotypeSomaticPriority[sampleIndex], maxPriority);
@@ -501,12 +508,12 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
      * Calculate a priority score normalized by the total number of reads mapped in a sample. Mulitply by 100 million
      * to get scores in a more convenient range.
      *
-     * @param priority Priority score contribution calculated for one sample
-     * @param sampleIndex  sample index of the corresponding sample.
+     * @param priority    Priority score contribution calculated for one sample
+     * @param sampleIndex sample index of the corresponding sample.
      * @return
      */
     private float normalizePriority(int priority, int sampleIndex) {
-        return 100000000f * ((float) priority) / ((float) numMatchedReads[sampleIndex]+1f);
+        return 100000000f * ((float) priority) / ((float) numMatchedReads[sampleIndex] + 1f);
     }
 
     private int estimatePriorityComponent(int genotypeIndex, SampleCountInfo somaticCounts, SampleCountInfo parentOrGermlineCounts) {
