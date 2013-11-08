@@ -494,9 +494,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                         germlineGenotypePriorityContribution /= numGermlineSamples;
                     }
                     maxPriority = Math.max(parentGenotypePriorityContribution - germlineGenotypePriorityContribution, maxPriority);
-                    if (maxPriority!=maxPriority){
-                        System.out.println("maxPriority:"+maxPriority);
-                    }
+
                 }
             }
             statsWriter.setInfo(maxGenotypeSomaticPriority[sampleIndex], maxPriority);
