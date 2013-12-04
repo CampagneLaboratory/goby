@@ -26,6 +26,17 @@ import org.rosuda.JRI.Rengine;
 
 import java.util.Arrays;
 
+
+
+
+//aaaaa
+
+
+
+
+
+
+
 /**
  * File format to output genotypes for somatic variations. The format must be used together with the covariates option
  * and a covariate file with the following columns: sample-id, patient-id, kind-of-sample=Germline|Somatic,
