@@ -72,7 +72,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
     public SomaticVariationOutputFormat() {
 
-        if (alnTableFilename != null) {
+
             final String alnTable = doc.getString("alnTableFilename");
 
             if (alnTable != null) {
@@ -86,7 +86,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                 alnTableFilename = null;
             }
-        }
+        
 
     }
 
