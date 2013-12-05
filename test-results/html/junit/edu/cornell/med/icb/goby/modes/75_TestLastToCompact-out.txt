@@ -1,0 +1,134 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Scanning target file..
+Target file had 1 entries.
+Wrote 1 target ids to alignment header.
+Total logical entries written: 2
+Total bytes written: 0
+Average bytes/logical entry: 0.0
+Min query index: 2857818
+Max query index: 2857818
+Number of queries: 2857819
+Number of targets: 1
+Removed by quality filter: 0
+Not best score: 3
+Number of alignments written: 0
+Scanning target file..
+Target file had 1 entries.
+Wrote 1 target ids to alignment header.
+Total logical entries written: 15
+Total bytes written: 0
+Average bytes/logical entry: 0.0
+Min query index: 24734
+Max query index: 3538281
+Number of queries: 3538282
+Number of targets: 1
+Removed by quality filter: 0
+Not best score: 3
+Number of alignments written: 13
+Scanning target file..
+Target file had 1 entries.
+Wrote 1 target ids to alignment header.
+Total logical entries written: 4
+Total bytes written: 0
+Average bytes/logical entry: 0.0
+Min query index: 2857818
+Max query index: 2857821
+Number of queries: 2857822
+Number of targets: 1
+Removed by quality filter: 0
+Not best score: 1
+Number of alignments written: 3
+0 entry : query_index: 2857818
+target_index: 0
+position: 1514
+score: 35.0
+matching_reverse_strand: false
+multiplicity: 1
+number_of_mismatches: 2
+number_of_indels: 0
+query_length: 35
+query_aligned_length: 35
+target_aligned_length: 35
+sequence_variations {
+  to: "C"
+  from: "G"
+  position: 1
+  read_index: 1
+}
+sequence_variations {
+  to: "C"
+  from: "A"
+  position: 11
+  read_index: 11
+}
+query_index_occurrences: 1
+ambiguity: 1
+
+1 entry : query_index: 2857819
+target_index: 0
+position: 1614
+score: 36.0
+matching_reverse_strand: false
+multiplicity: 1
+number_of_mismatches: 0
+number_of_indels: 3
+query_length: 35
+query_aligned_length: 35
+target_aligned_length: 35
+sequence_variations {
+  to: "---"
+  from: "TTT"
+  position: 3
+  read_index: 3
+}
+query_index_occurrences: 1
+ambiguity: 1
+
+2 entry : query_index: 2857820
+target_index: 0
+position: 1714
+score: 34.0
+matching_reverse_strand: false
+multiplicity: 1
+number_of_mismatches: 1
+number_of_indels: 1
+query_length: 35
+query_aligned_length: 35
+target_aligned_length: 35
+sequence_variations {
+  to: "A"
+  from: "G"
+  position: 2
+  read_index: 2
+}
+sequence_variations {
+  to: "A"
+  from: "-"
+  position: 29
+  read_index: 29
+}
+query_index_occurrences: 1
+ambiguity: 1
+
+3 entry : query_index: 2857821
+target_index: 0
+position: 1814
+score: 34.0
+matching_reverse_strand: false
+multiplicity: 1
+number_of_mismatches: 1
+number_of_indels: 0
+query_length: 35
+query_aligned_length: 35
+target_aligned_length: 35
+sequence_variations {
+  to: "A"
+  from: "G"
+  position: 2
+  read_index: 2
+}
+query_index_occurrences: 1
+ambiguity: 1
+
+

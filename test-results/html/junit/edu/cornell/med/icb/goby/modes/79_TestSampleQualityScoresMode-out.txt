@@ -1,0 +1,15 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Processing test-data/sample-qual-scores/30reads.fa
+Processed 0 read entries.
+Min quality score: 2147483647
+Max quality score: -2147483648
+Avg quality score: 0
+Probable quality encoding scheme: fasta
+Processing test-data/sample-qual-scores/30reads.fq
+Processed 30 read entries.
+Min quality score: 69
+Max quality score: 98
+Avg quality score: 94
+Probable quality encoding scheme: Illumina/Solexa
+

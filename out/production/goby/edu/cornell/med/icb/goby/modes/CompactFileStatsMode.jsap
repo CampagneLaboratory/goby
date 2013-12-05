@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The input filenames/basenames to to get statistics for. Compact file formats are recognized (reads or
+                alignments).
+            </help>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>Where the output will be written. If not specified, output will be written to stdout.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>type</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>type</longFlag>
+            <required>false</required>
+            <help>The type of input, alignment or reads. Can be determined automatically from filenames, but useful when
+                reading from stdin.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>number-of-quantiles</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>number-of-quantiles</longFlag>
+            <required>false</required>
+            <help>Number of quantiles used to characterize read length distribution.</help>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+        </flaggedOption>
+        <switch>
+            <id>verbose</id>
+            <shortFlag>v</shortFlag>
+            <longFlag>verbose</longFlag>
+            <help>Display detailed statistics.</help>
+        </switch>
+        <switch>
+                    <id>header-only</id>
+                    <longFlag>header-only</longFlag>
+                    <help>Only displays statistics from alignment headers (i.e, does not scan entries, tmh or other files).</help>
+                </switch>
+    </parameters>
+</jsap>

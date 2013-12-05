@@ -1,0 +1,7 @@
+id	column-name	column-type
+col_0	contig	Integer
+col_1	position	Integer
+col_2	context	String
+col_3	ref_allele	String
+col_4	alt_allele	String
+col_5	tumor_name	String

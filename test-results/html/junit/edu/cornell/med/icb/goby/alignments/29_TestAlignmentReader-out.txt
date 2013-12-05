@@ -1,0 +1,37 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+query_index: 6478
+target_index: 0
+position: 474786
+score: 48.0
+query_position: 0
+matching_reverse_strand: false
+multiplicity: 1
+number_of_mismatches: 2
+number_of_indels: 0
+query_length: 50
+query_aligned_length: 50
+target_aligned_length: 50
+sequence_variations {
+  to: "T"
+  from: "G"
+  position: 10
+  to_quality: "\021"
+  read_index: 10
+}
+sequence_variations {
+  to: "C"
+  from: "A"
+  position: 41
+  to_quality: "\021"
+  read_index: 41
+}
+pair_flags: 99
+pair_alignment_link {
+  target_index: 0
+  position: 474942
+  fragment_index: 1
+}
+fragment_index: 0
+
+

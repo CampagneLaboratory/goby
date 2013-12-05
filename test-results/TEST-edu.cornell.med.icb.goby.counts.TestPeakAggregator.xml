@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="localhost.localdomain" name="edu.cornell.med.icb.goby.counts.TestPeakAggregator" tests="2" time="0.344" timestamp="2013-12-03T15:54:24">
+  <properties>
+    <property name="ant.file.pmd" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/pmd/build.xml" />
+    <property name="buildstamp" value="20131203104145" />
+    <property name="env.DESKTOP_SESSION" value="gnome" />
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="test-failure" value="true" />
+    <property name="ant.file.cobertura" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/build.xml" />
+    <property name="java.home" value="/usr/java/jdk1.6.0_45/jre" />
+    <property name="checkstyle-config" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/checkstyle/config/icb_checks.xml" />
+    <property name="env.GDM_LANG" value="en_US.UTF-8" />
+    <property name="checkstyle.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/checkstyle" />
+    <property name="ant.file.jdepend" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/jdepend/build.xml" />
+    <property name="env.DISPLAY" value=":0.0" />
+    <property name="ant.file.buildsupport" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/buildsupport/build.xml" />
+    <property name="env.LS_COLORS" value="rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;05;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.tbz=01;31:*.tbz2=01;31:*.bz=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.axa=01;36:*.oga=01;36:*.spx=01;36:*.xspf=01;36:" />
+    <property name="debug" value="on" />
+    <property name="env.XDG_SESSION_COOKIE" value="0456f3d531283064b45a24f40000001b-1386083962.104055-1051940053" />
+    <property name="goby-spi-jarfile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/goby-spi.jar" />
+    <property name="java.endorsed.dirs" value="/usr/java/jdk1.6.0_45/jre/lib/endorsed" />
+    <property name="env.LOGNAME" value="mil2041" />
+    <property name="build.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby" />
+    <property name="env.USERNAME" value="mil2041" />
+    <property name="env.SESSION_MANAGER" value="local/unix:@/tmp/.ICE-unix/1490,unix/unix:/tmp/.ICE-unix/1490" />
+    <property name="sun.os.patch.level" value="unknown" />
+    <property name="log4j.debug" value="true" />
+    <property name="java.vendor.url" value="http://java.sun.com/" />
+    <property name="env.G_BROKEN_FILENAMES" value="1" />
+    <property name="java.version" value="1.6.0_45" />
+    <property name="env.ORBIT_SOCKETDIR" value="/tmp/orbit-mil2041" />
+    <property name="classes" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/classes" />
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
+    <property name="goby-jarfile-name" value="goby.jar" />
+    <property name="cobertura-classes" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/cobertura-classes" />
+    <property name="test.timeout" value="600000" />
+    <property name="env.GNOME_KEYRING_CONTROL" value="/tmp/keyring-jaroSF" />
+    <property name="user.name" value="mil2041" />
+    <property name="env.LANG" value="en_US.UTF-8" />
+    <property name="svnhost" value="pbtech-vc.med.cornell.edu" />
+    <property name="env.CVS_RSH" value="ssh" />
+    <property name="ant.file.testsupport" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/build.xml" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="sun.jnu.encoding" value="UTF-8" />
+    <property name="env.DBUS_SESSION_BUS_ADDRESS" value="unix:abstract=/tmp/dbus-cwK4HfnSB4,guid=93d69ed8242fbbb73c252dc800060a14" />
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
+    <property name="env.SSH_ASKPASS" value="/usr/libexec/openssh/gnome-ssh-askpass" />
+    <property name="optimize" value="on" />
+    <property name="label" value="development" />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="user.timezone" value="" />
+    <property name="env.LESSOPEN" value="||/usr/bin/lesspipe.sh %s" />
+    <property name="goby-jarfile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/goby.jar" />
+    <property name="path.separator" value=":" />
+    <property name="env.XMODIFIERS" value="@im=none" />
+    <property name="file.encoding" value="UTF-8" />
+    <property name="test-src" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-src" />
+    <property name="logs" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/logs" />
+    <property name="lib" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib" />
+    <property name="env.HOME" value="/home/mil2041" />
+    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner edu.cornell.med.icb.goby.counts.TestPeakAggregator filtertrace=true haltOnError=false haltOnFailure=false formatter=org.apache.tools.ant.taskdefs.optional.junit.SummaryJUnitResultFormatter showoutput=true outputtoformatters=true logtestlistenerevents=true formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-results/TEST-edu.cornell.med.icb.goby.counts.TestPeakAggregator.xml crashfile=/home/mil2041/Fabien_lab/contig_mapping_project/goby/junitvmwatcher6901064281509244584.properties propsfile=/home/mil2041/Fabien_lab/contig_mapping_project/goby/junit3975701555848165166.properties" />
+    <property name="ant.file" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/build.xml" />
+    <property name="test-results" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-results" />
+    <property name="timeout" value="600000" />
+    <property name="env.HOSTNAME" value="localhost.localdomain" />
+    <property name="java.io.tmpdir" value="/tmp" />
+    <property name="env.GNOME_KEYRING_PID" value="1478" />
+    <property name="TODAY" value="December 3 2013" />
+    <property name="user.language" value="en" />
+    <property name="env.HISTCONTROL" value="ignoredups" />
+    <property name="line.separator" value="
+" />
+    <property name="config" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/config" />
+    <property name="env.HISTSIZE" value="1000" />
+    <property name="svnant-lib" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/buildsupport/svnant" />
+    <property name="java.vm.info" value="mixed mode, sharing" />
+    <property name="sun.desktop" value="gnome" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="env.COLORTERM" value="gnome-terminal" />
+    <property name="pmd.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/pmd" />
+    <property name="env.GDMSESSION" value="gnome" />
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
+    <property name="ant.version" value="Apache Ant version 1.7.1 compiled on April 16 2010" />
+    <property name="env.WINDOWID" value="77597089" />
+    <property name="env.R_HOMED" value="/home/mil2041/R_home/R-dist" />
+    <property name="os.name" value="Linux" />
+    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="pre-test-task" value="pre-test-task" />
+    <property name="env.TERM" value="xterm" />
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM" />
+    <property name="env.QT_IM_MODULE" value="xim" />
+    <property name="test-lib" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-lib" />
+    <property name="java.library.path" value="/usr/java/jdk1.6.0_45/jre/lib/i386/client:/usr/java/jdk1.6.0_45/jre/lib/i386:/usr/java/jdk1.6.0_45/jre/../lib/i386:/usr/java/packages/lib/i386:/lib:/usr/lib" />
+    <property name="env.PATH" value="/home/mil2041/R_home/R-dist/bin:/usr/java/jdk1.6.0_45/bin:/home/mil2041/R_home/R-dist/bin:/usr/java/jdk1.6.0_45/bin:/usr/lib/qt-3.3/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/mil2041/bin" />
+    <property name="ant.java.version" value="1.6" />
+    <property name="basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby" />
+    <property name="java.class.version" value="50.0" />
+    <property name="env.SHLVL" value="2" />
+    <property name="env.LD_LIBRARY_PATH" value="/usr/java/jdk1.6.0_45/jre/lib/i386/client:/usr/java/jdk1.6.0_45/jre/lib/i386:/usr/java/jdk1.6.0_45/jre/../lib/i386" />
+    <property name="ant.home" value="/usr/share/ant" />
+    <property name="log4j.configuration" value="file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties" />
+    <property name="javadocs" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/javadocs" />
+    <property name="net.sourceforge.cobertura.datafile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/cobertura.ser" />
+    <property name="sun.boot.library.path" value="/usr/java/jdk1.6.0_45/jre/lib/i386" />
+    <property name="max.memory" value="2000m" />
+    <property name="sun.management.compiler" value="HotSpot Client Compiler" />
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
+    <property name="year" value="2013" />
+    <property name="env.USER" value="mil2041" />
+    <property name="goby-api-jarfile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/goby-api.jar" />
+    <property name="ant.project.name" value="goby" />
+    <property name="ant.file.goby" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/build.xml" />
+    <property name="java.vm.specification.version" value="1.0" />
+    <property name="env.GDM_KEYBOARD_LAYOUT" value="us" />
+    <property name="test-classes" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-classes" />
+    <property name="env.NLSPATH" value="/usr/dt/lib/nls/msg/%L/%N.cat" />
+    <property name="test.max.memory" value="2000m" />
+    <property name="sun.cpu.isalist" value="" />
+    <property name="java.ext.dirs" value="/usr/java/jdk1.6.0_45/jre/lib/ext:/usr/java/packages/lib/ext" />
+    <property name="findbugs.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/findbugs" />
+    <property name="os.version" value="2.6.35.14-106.fc14.i686" />
+    <property name="user.home" value="/home/mil2041" />
+    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
+    <property name="env.JAVA_HOME" value="/usr/java/jdk1.6.0_45/bin/.." />
+    <property name="env.XAUTHORITY" value="/var/run/gdm/auth-for-mil2041-mxkn8D/database" />
+    <property name="junit.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/junit" />
+    <property name="user.dir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby" />
+    <property name="env.XFILESEARCHPATH" value="/usr/dt/app-defaults/%L/Dt" />
+    <property name="env.WINDOWPATH" value="7" />
+    <property name="env.MAIL" value="/var/spool/mail/mil2041" />
+    <property name="ant.file.findbugs" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/findbugs/build.xml" />
+    <property name="env.PWD" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby" />
+    <property name="osfamily" value="unix" />
+    <property name="buildsupport.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/buildsupport" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="env.QTLIB" value="/usr/lib/qt-3.3/lib" />
+    <property name="ant.build.javac.target" value="1.6" />
+    <property name="deprecation" value="off" />
+    <property name="java.vm.version" value="20.45-b01" />
+    <property name="java.class.path" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/cobertura-classes:/home/mil2041/Fabien_lab/contig_mapping_project/goby/classes:/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-classes:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/junit/lib/junit-4.8.2.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/junit/lib/junit-addons-1.4.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/junit/lib/xmlunit-1.2.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/test-lib/goby-spi.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/JRI.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/JSAP-2.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/asm-4.0_RC1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/bdval-api.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/bzip2.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/cglib-2.2.2.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-collections-3.2.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-configuration-1.6.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-exec-1.0.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-io-2.4.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-lang-2.5.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-logging-1.1.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/commons-math-2.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/dsiutils-2.0.14.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/easymock-3.0.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/edu.mssm.crover.cli.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/fastutil-6.3.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/guava-r08.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/icb-utils.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/javassist-3.12.1.GA.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/junitx-5.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/log4j-1.2.15.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/objenesis-1.2.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/picard-1.64.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/pj20091226.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/protobuf-java-2.4.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/reflections-0.9.5.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/reflections-0.9.5.one-jar.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/sam-1.64.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/slf4j-api-1.6.1.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/slf4j-nop-1.6.4.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/squil.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/tisim-api.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/lib/xstream-1.4.3.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/lib/asm-3.0.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/lib/asm-tree-3.0.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/lib/cobertura.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/lib/jakarta-oro-2.0.8.jar:/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura/lib/log4j-1.2.15.jar:/usr/share/java/junit-3.8.2.jar:/usr/share/java/ant-launcher-1.7.1.jar:/usr/share/java/ant-1.7.1.jar:/usr/share/java/ant/ant-junit-1.7.1.jar" />
+    <property name="DSTAMP" value="20131203" />
+    <property name="ant.library.dir" value="/usr/share/ant/lib" />
+    <property name="env.QTDIR" value="/usr/lib/qt-3.3" />
+    <property name="os.arch" value="i386" />
+    <property name="ant.build.javac.source" value="1.6" />
+    <property name="sun.java.launcher" value="SUN_STANDARD" />
+    <property name="cobertura.basedir" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/cobertura" />
+    <property name="env.IMSETTINGS_INTEGRATE_DESKTOP" value="yes" />
+    <property name="goby-io-api-jarfile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/goby-io-api.jar" />
+    <property name="ant.core.lib" value="/usr/share/java/ant-1.7.1.jar" />
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="TSTAMP" value="1041" />
+    <property name="file.separator" value="/" />
+    <property name="test-error" value="true" />
+    <property name="java.runtime.version" value="1.6.0_45-b06" />
+    <property name="goby-io-jarfile" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/goby-io.jar" />
+    <property name="sun.boot.class.path" value="/usr/java/jdk1.6.0_45/jre/lib/resources.jar:/usr/java/jdk1.6.0_45/jre/lib/rt.jar:/usr/java/jdk1.6.0_45/jre/lib/sunrsasign.jar:/usr/java/jdk1.6.0_45/jre/lib/jsse.jar:/usr/java/jdk1.6.0_45/jre/lib/jce.jar:/usr/java/jdk1.6.0_45/jre/lib/charsets.jar:/usr/java/jdk1.6.0_45/jre/lib/modules/jdk.boot.jar:/usr/java/jdk1.6.0_45/jre/classes" />
+    <property name="env.SSH_AUTH_SOCK" value="/tmp/keyring-jaroSF/ssh" />
+    <property name="ant.file.junit" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/junit/build.xml" />
+    <property name="env.QTINC" value="/usr/lib/qt-3.3/include" />
+    <property name="user.country" value="US" />
+    <property name="env.SHELL" value="/bin/bash" />
+    <property name="log4j.config.url" value="file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties" />
+    <property name="src" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/src" />
+    <property name="ant.file.checkstyle" value="/home/mil2041/Fabien_lab/contig_mapping_project/goby/testsupport/checkstyle/build.xml" />
+    <property name="java.vendor" value="Sun Microsystems Inc." />
+    <property name="env.GPG_AGENT_INFO" value="/tmp/keyring-jaroSF/gpg:0:1" />
+    <property name="env.IMSETTINGS_MODULE" value="none" />
+    <property name="java.specification.version" value="1.6" />
+    <property name="env.GNOME_DESKTOP_SESSION_ID" value="this-is-deprecated" />
+    <property name="sun.arch.data.model" value="32" />
+  </properties>
+  <testcase classname="edu.cornell.med.icb.goby.counts.TestPeakAggregator" name="testPeakFinding" time="0.174" />
+  <testcase classname="edu.cornell.med.icb.goby.counts.TestPeakAggregator" name="testHasNext" time="0.0020" />
+  <system-out><![CDATA[log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+ peak : start :5 count :13 length :100010
+ peak : start :100020 count :10 length :1
+]]></system-out>
+  <system-err><![CDATA[log4j:ERROR Could not read configuration file from URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties].
+java.io.FileNotFoundException: /home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties (No such file or directory)
+	at java.io.FileInputStream.open(Native Method)
+	at java.io.FileInputStream.<init>(FileInputStream.java:120)
+	at java.io.FileInputStream.<init>(FileInputStream.java:79)
+	at sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:70)
+	at sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:161)
+	at java.net.URL.openStream(URL.java:1010)
+	at org.apache.log4j.PropertyConfigurator.doConfigure(PropertyConfigurator.java:459)
+	at org.apache.log4j.helpers.OptionConverter.selectAndConfigure(OptionConverter.java:471)
+	at org.apache.log4j.LogManager.<clinit>(LogManager.java:125)
+	at org.apache.log4j.Logger.getLogger(Logger.java:105)
+	at org.apache.commons.logging.impl.Log4JLogger.getLogger(Log4JLogger.java:289)
+	at org.apache.commons.logging.impl.Log4JLogger.<init>(Log4JLogger.java:109)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:513)
+	at org.apache.commons.logging.impl.LogFactoryImpl.createLogFromClass(LogFactoryImpl.java:1116)
+	at org.apache.commons.logging.impl.LogFactoryImpl.discoverLogImplementation(LogFactoryImpl.java:914)
+	at org.apache.commons.logging.impl.LogFactoryImpl.newInstance(LogFactoryImpl.java:604)
+	at org.apache.commons.logging.impl.LogFactoryImpl.getInstance(LogFactoryImpl.java:336)
+	at org.apache.commons.logging.impl.LogFactoryImpl.getInstance(LogFactoryImpl.java:310)
+	at org.apache.commons.logging.LogFactory.getLog(LogFactory.java:685)
+	at edu.cornell.med.icb.goby.counts.TestPeakAggregator.<clinit>(TestPeakAggregator.java:45)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:171)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.run(JUnitTestRunner.java:335)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.launch(JUnitTestRunner.java:911)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:768)
+log4j:ERROR Ignoring configuration file [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties].
+log4j:WARN No appenders could be found for logger (edu.cornell.med.icb.goby.counts.TestPeakAggregator).
+log4j:WARN Please initialize the log4j system properly.
+]]></system-err>
+</testsuite>

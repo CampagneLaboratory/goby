@@ -1,0 +1,20 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+entry: score=30.0000 readOriginIndex=0 
+entry: score=30.0000 readOriginIndex=0 
+entry: score=50.0000 readOriginIndex=3 
+entry: score=50.0000 readOriginIndex=3 
+entry: score=50.0000 readOriginIndex=3 
+Scanned 5 entries
+entry: score=50.0000 readOriginIndex=3 
+entry: score=50.0000 readOriginIndex=3 
+entry: score=50.0000 readOriginIndex=3 
+entry: score=30.0000 readOriginIndex=0 
+entry: score=30.0000 readOriginIndex=0 
+Scanned 5 entries
+entry: score=30.0000 readOriginIndex=0 
+entry: score=30.0000 readOriginIndex=0 
+Scanned 2 entries
+0
+2
+

@@ -1,0 +1,162 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The basename of the output alignment.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>adjust-query-indices</id>
+            <longFlag>adjust-query-indices</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Indicates that the query indices should be adjusted to remove clashes among alignment inputs. Use this
+                options to concatenate alignments built from different split of a large read file (such splits can be
+                created with reformat-compact-reads).
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>adjust-sample-indices</id>
+            <longFlag>adjust-sample-indices</longFlag>
+            <defaults>
+                <string>false</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Indicates that the file origin of each entry should be recorded by setting the sampleIndex field on
+                each entry. SampleIndex will be zero for the first reader on the command line, one for the next and so
+                on. This option should be set when concatenating alignments from independent sample, when it is
+                important to track which file contained the entry, but not for instance when concatenating several
+                pieces of the same sample file aligned in parallel on different machines.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>genome</id>
+            <longFlag>genome</longFlag>
+            <required>false</required>
+            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the
+                compressed, random access files this mode needs.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>processor</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>processor</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>NONE</string>
+            </defaults>
+            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment
+                entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a
+                processor that realigns reads in the proximity of indels will be used. Please note that this feature is
+                experimental (Since Goby 1.9.7).
+            </help>
+        </flaggedOption>
+        <!--flaggedOption>
+            <id>codec</id>
+            <longFlag>codec</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a codec. When provided, the coded is used to compress alignment entries.</help>
+        </flaggedOption-->
+        <!--flaggedOption>
+            <id>dynamic-options</id>
+            <shortFlag>y</shortFlag>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (without short class name without package), key identifies the option to change and value is the new value for the option. </help>
+        </flaggedOption-->
+        <flaggedOption>
+            <id>max-entries</id>
+            <longFlag>max-entries</longFlag>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The maximum number of entries to process before stopping. -1 will process all entries, but a positive
+                integer n will only write up to n entries (useful to extract small subsets of large alignments).
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading
+                from, or a string in the format ref-id,ref-position (since Goby 2.3). Only entries that have a position
+                after the start position will be written.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from,
+                or a string in the format ref-id,ref-position (since Goby 2.3). Only entries that occur before the
+                specified position will be written.
+            </help>
+        </flaggedOption>
+        <switch>
+            <id>add-read-origin-info</id>
+            <longFlag>add-read-origin-info</longFlag>
+            <shortFlag>r</shortFlag>
+            <help>Add read origin info to the input alignment. By default, the alignment basenames are associated
+                with the ID and SM (sample) read origin, equivalent to SAM @RG\tID:basename\tSM:basename.
+            </help>
+        </switch>
+        <flaggedOption>
+            <id>platform</id>
+            <longFlag>platform</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The platform string to use for read group/read origin info PL. This will be considered constant across
+                all input samples.
+            </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

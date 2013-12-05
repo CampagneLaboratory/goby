@@ -1,0 +1,105 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The count basename to use as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The file where base tallies will be written.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19 </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>alternative-count-archive</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>alternative-count-archive</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>counts</string>
+            </defaults>
+            <help>Specify an alternative count archive within the basename. The default is to use the count archive that ends in ".counts" (equivalent to -a counts).  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>genome</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>genome</longFlag>
+            <required>true</required>
+            <help>Genome in fasta format (extension .fa or .fa.gz) or compact format (extension .compact-reads).</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>genome-cache</id>
+            <shortFlag>c</shortFlag>
+            <longFlag>genome-cache</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>auto</string>
+            </defaults>
+            <help>Filename where a random access binary cache of the genome will be written. The default cache filename is derived from the genome command line argument.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>offset</id>
+            <longFlag>offset</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>auto</string>
+            </defaults>
+            <help>The position offset of the second basename relative to the first. The offset is added to the position of counts in the second count archive. When auto, offsets from -10 to 10 are scanned and the one which results in the best agreement between the two counts archive is used.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>cutoff</id>
+            <longFlag>cutoff</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>DoubleStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>2</string>
+            </defaults>
+            <help>The fold-change cutoff to report a position.  </help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>sample-rate</id>
+            <longFlag>sample-rate</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>DoubleStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>100</string>
+            </defaults>
+            <help>The rate at which counts are sampled form the genome. 100% will extract bases for all positions that match the fold-change cutoff, 10% will reduce the number of positions reported by 10.  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

@@ -1,0 +1,670 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.
+Filtering reads that have these criteria:
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen1 to group: A
+Associating basename: basen8 to group: A
+Associating basename: basen9 to group: A
+Associating basename: basen5 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen2 to group: B
+Associating basename: basen4 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen0 to group: B
+Associating basename: basen6 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group B
+sample: basen8 group A
+sample: basen0 group B
+sample: basen5 group A
+sample: basen9 group A
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen4 to group: A
+Associating basename: align-specific-sample to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen9 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen2 to group: B
+Associating basename: basen6 to group: B
+sample: align-specific-sample group A
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen0 group A
+sample: basen5 group B
+sample: basen9 group B
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen8 to group: A
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen2 to group: B
+Associating basename: basen5 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen9 to group: B
+sample: align-specific-sample group A
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group A
+sample: basen0 group A
+sample: basen5 group B
+sample: basen9 group B
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: align-specific-sample to group: A
+Associating basename: basen8 to group: A
+Associating basename: basen6 to group: A
+Associating basename: basen7 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen3 to group: B
+Associating basename: basen9 to group: B
+Associating basename: basen0 to group: B
+Associating basename: basen1 to group: B
+sample: align-specific-sample group A
+sample: basen6 group A
+sample: basen3 group B
+sample: basen1 group B
+sample: basen7 group A
+sample: basen4 group A
+sample: basen8 group A
+sample: basen0 group B
+sample: basen5 group B
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen5 to group: A
+Associating basename: basen6 to group: A
+Associating basename: basen0 to group: A
+Associating basename: basen7 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen9 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen1 to group: B
+Associating basename: basen2 to group: B
+Associating basename: basen4 to group: B
+sample: align-specific-sample group A
+sample: basen6 group A
+sample: basen3 group A
+sample: basen1 group B
+sample: basen7 group A
+sample: basen4 group B
+sample: basen8 group B
+sample: basen0 group A
+sample: basen5 group A
+sample: basen9 group B
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen4 to group: A
+Associating basename: align-specific-sample to group: A
+Associating basename: basen0 to group: A
+Associating basename: basen5 to group: A
+Associating basename: basen9 to group: A
+Associating basename: basen7 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen1 to group: B
+Associating basename: basen2 to group: B
+Associating basename: basen8 to group: B
+sample: align-specific-sample group A
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group B
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen0 group A
+sample: basen5 group A
+sample: basen9 group A
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen3 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen4 to group: A
+Associating basename: align-specific-sample to group: A
+Associating basename: basen8 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen0 to group: B
+Associating basename: basen2 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen6 to group: B
+sample: align-specific-sample group A
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group A
+sample: basen0 group B
+sample: basen5 group B
+sample: basen9 group A
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: A
+Associating basename: basen8 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen9 to group: A
+Associating basename: basen7 to group: B
+Associating basename: basen1 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen2 to group: B
+Associating basename: basen0 to group: B
+sample: align-specific-sample group A
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group B
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group A
+sample: basen0 group B
+sample: basen5 group A
+sample: basen9 group A
+sample: basen2 group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen3 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen8 to group: A
+Associating basename: basen0 to group: A
+Associating basename: basen7 to group: A
+Associating basename: basen4 to group: B
+Associating basename: basen9 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen1 to group: B
+Associating basename: align-specific-sample to group: B
+sample: align-specific-sample group B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group B
+sample: basen7 group A
+sample: basen4 group B
+sample: basen8 group A
+sample: basen0 group A
+sample: basen5 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen6 to group: A
+Associating basename: basen2 to group: A
+Associating basename: align-specific-sample to group: A
+Associating basename: basen5 to group: A
+Associating basename: basen9 to group: A
+Associating basename: basen7 to group: B
+Associating basename: basen4 to group: B
+Associating basename: basen3 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen1 to group: B
+sample: align-specific-sample group A
+sample: basen6 group A
+sample: basen3 group B
+sample: basen1 group B
+sample: basen7 group B
+sample: basen4 group B
+sample: basen8 group B
+sample: basen0 group A
+sample: basen5 group A
+sample: basen9 group A
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+Associating basename: basen0 to group: A
+Associating basename: basen1 to group: A
+Associating basename: basen2 to group: A
+Associating basename: basen3 to group: A
+Associating basename: basen4 to group: A
+Associating basename: basen5 to group: B
+Associating basename: basen6 to group: B
+Associating basename: basen7 to group: B
+Associating basename: basen8 to group: B
+Associating basename: basen9 to group: B
+sample: basen6 group B
+sample: basen3 group A
+sample: basen1 group A
+sample: basen7 group B
+sample: basen4 group A
+sample: basen8 group B
+sample: basen5 group B
+sample: basen0 group A
+sample: basen9 group B
+sample: basen2 group A
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: -  /T q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=10 s=0
+info: -  /C q=20 s=0
+info: -  /C q=30 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=10 s=0
+info: -  /N q=20 s=0
+list: pos=-1 #bases: 16 #indels: 0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: -  /T q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=10 s=0
+info: -  /C q=20 s=0
+info: -  /C q=30 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=10 s=0
+info: -  /N q=20 s=0
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: -  /T q=40 s=1
+info: -  /T q=40 s=1
+info: -  /T q=10 s=1
+info: -  /T q=20 s=1
+info: -  /N q=30 s=1
+info: -  /N q=40 s=1
+list: pos=-1 #bases: 32 #indels: 0
+filtered: {-  /C q=10 s=0, -  /C q=20 s=0, -  /C q=10 s=0, -  /N q=20 s=0, -  /T q=10 s=1, -  /T q=20 s=1, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, -  /T q=40 s=0, -  /C q=40 s=0, -  /C q=30 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /T q=40 s=1, -  /T q=40 s=1, -  /N q=30 s=1, -  /N q=40 s=1}
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: + ref: A s=0
+info: -  /T q=40 s=0
+info: -  /C q=10 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /C q=40 s=0
+info: -  /N q=40 s=0
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: + ref: A s=1
+info: -  /T q=40 s=1
+info: -  /T q=40 s=1
+info: -  /T q=40 s=1
+info: -  /T q=40 s=1
+info: -  /N q=40 s=1
+info: -  /N q=40 s=1
+list: pos=-1 #bases: 32 #indels: 0
+filtered: {-  /C q=10 s=0, -  /T q=40 s=0, -  /N q=40 s=0}
+

@@ -1,0 +1,31 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+ 0 
+AAC 3 
+ACC 6 
+ATC 9 
+AGC 12 
+AAC 15 
+ACC 18 
+ATC 21 
+AGC 24 
+AAC 27 
+ACC 30 
+ATC 33 
+AGC 36 
+AAC 39 
+ACC 42 
+ATC 45 
+AGC 48 
+AAC 51 
+ACC 54 
+ATC 57 
+AGC 60 
+AAC 63 
+ACC 66 
+ATC 69 
+AGC 72 
+AAC 75 
+ACC 78 
+ATC 81 
+AGC

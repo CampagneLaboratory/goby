@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>input</id>
+            <longFlag>input</longFlag>
+            <shortFlag>i</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the input compact-reads file.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>process-part-command</id>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <greedy>true</greedy>
+            <required>true</required>
+            <help>Command to execute in parallel for each piece of the input. The symbol %read.fastq% will be
+                replaced with the filename for the fastq file of each piece. The symbol %tmp1% will be
+                available with a valid and distinct filename for each part to write temporary content.
+                The symbol %output% will be available with a valid filename to write the output of this part
+                (pre-concat output). When the --paired argument is given, the symbol %pair.fastq% will be
+                replaced with the filename for the fastq file corresponding to pair sequences.
+            </help>
+        </unflaggedOption>
+
+        <switch>
+            <id>paired</id>
+            <longFlag>paired</longFlag>
+
+            <defaults>false</defaults>
+            <help>When this switch is provided, extract pairs from the compact reads input and generate
+                %pair.fastq% symbols.
+            </help>
+        </switch>
+        <flaggedOption>
+            <id>num-parts</id>
+            <longFlag>num-parts</longFlag>
+            <shortFlag>n</shortFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Number of parts needed, n.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <longFlag>output</longFlag>
+            <shortFlag>o</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>output filename, where compact-alignment will be written.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

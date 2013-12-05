@@ -1,0 +1,109 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>source-bam</id>
+            <longFlag>source-bam</longFlag>
+            <shortFlag>s</shortFlag>
+            <required>true</required>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <help>The original SAM/BAM file that was converted from.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>destination-bam</id>
+            <longFlag>destination-bam</longFlag>
+            <shortFlag>d</shortFlag>
+            <required>true</required>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <help>The SAM/BAM file that was converted to.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>destination-goby</id>
+            <longFlag>destination-goby</longFlag>
+            <shortFlag>g</shortFlag>
+            <required>false</required>
+            <help>The Goby Compact Alignment file that was converted to (inclusion of this flag will increase the
+            amount of provided mismatch output).</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>mapped-qualities-preserved</id>
+            <longFlag>mapped-qualities-preserved</longFlag>
+            <help>When this switch is provided, the destination Goby Compact Alignment was created
+                  with --preserve-all-mapped-qualities so all quality scores will be verified. By
+                  default, only the bases that have sequence variations will be verified.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>check-mate</id>
+            <longFlag>check-mate</longFlag>
+            <help>When this switch is provided, source SAM/BAM file is known to be complete
+                  (not a subset of a larger SAM/BAM file) and mate/pair details will be validated.
+                  By default, mate/pair details are NOT checked because with incomplete SAM/BAM
+                  files, the converted Goby Compact Alignment file may not contain details
+                  about pairs that were not found in the incomplete source SAM/BAM file.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>soft-clips-preserved</id>
+            <longFlag>soft-clips-preserved</longFlag>
+            <help>When this switch is provided, the destination Goby Compact Alignment was created
+                  with --preserve-soft-clips so the clipped bases will be verified. By default,
+                  only the aligned bases will be verified.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>canonical-mdz</id>
+            <longFlag>canonical-mdz</longFlag>
+            <help>When true, the source and destination MD:Z values will be passed through an algorithm
+                  to make them canonical (place 0's in places where 0's should exist but might not).
+                  By default this is enabled.
+            </help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
+    </parameters>
+</jsap>

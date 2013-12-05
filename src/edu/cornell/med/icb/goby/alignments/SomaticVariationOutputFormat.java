@@ -11,31 +11,21 @@ import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.apache.commons.math.MathException;
-import org.apache.commons.math.MaxIterationsExceededException;
-import org.apache.commons.math.distribution.ChiSquaredDistributionImpl;
 import org.apache.commons.math.distribution.PoissonDistributionImpl;
-import org.apache.commons.math.stat.inference.ChiSquareTest;
-import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
-import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
 
+// add by Eric -start-
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+// add by Eric -end-
+
+import java.io.File;
 import java.util.Arrays;
-
-
-
-
-//aaaaa
-
-
-
-
-
-
 
 /**
  * File format to output genotypes for somatic variations. The format must be used together with the covariates option
@@ -64,6 +54,50 @@ import java.util.Arrays;
 public class SomaticVariationOutputFormat implements SequenceVariationOutputFormat {
 
     /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(SomaticVariationOutputFormat.class);
+    @RegisterThis
+    public static DynamicOptionClient doc = new DynamicOptionClient(SomaticVariationOutputFormat.class,
+            "use_custom_Contig:boolean, true value indicates reads will align against custom contig reference:false",
+            "alnTableFilename:filename to a tab delimited alignment file:"
+
+    );
+
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
+
+    private String alnTableFilename;
+    private boolean useCustomContig;
+    private ContigHelper contigMapper;
+
+    public SomaticVariationOutputFormat() {
+        useCustomContig = doc.getBoolean("use_custom_Contig");
+
+        if (useCustomContig != false) {
+            final String alnTable = doc.getString("alnTableFilename");
+
+            if (alnTable != null) {
+                alnTableFilename = alnTable;
+                contigMapper = new ContigHelper(new File (alnTableFilename));
+                System.out.println("using use_custom_Contig option");
+                System.out.println("Loading user-provided contig mapping file: " + alnTableFilename);
+
+            } else {
+                // there is no contig alnTable file.
+
+                alnTableFilename = null;
+            }
+        } else {
+            alnTableFilename = null;
+        }
+
+    }
+
+
+
+    /**
      * We will store the largest candidate somatic frequency here.
      */
     private int[] candidateFrequencyIndex;
@@ -82,7 +116,8 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     private CovariateInfo covInfo;
     private ObjectArraySet<String> somaticSampleIds;
     GenotypesOutputFormat genotypeFormatter = new GenotypesOutputFormat();
-    private static final Logger LOG = Logger.getLogger(SomaticVariationOutputFormat.class);
+
+    //private static final Logger LOG = Logger.getLogger(SomaticVariationOutputFormat.class);
 
     /**
      * Given the index of a somatic sample, provides the index of the patient's father sample in sampleCounts.
@@ -323,9 +358,24 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         statsWriter.setInfo(igvFieldIndex,
                 String.format("%s:%d-%d", currentReferenceId, position,
                         position));
-        statsWriter.setChromosome(currentReferenceId);
 
-        statsWriter.setPosition(position);
+
+        if ( useCustomContig ) {
+
+            //ContigHelper contigMapper = new ContigHelper(alnTableFilename);
+            String contigMappingChr = contigMapper.translateContigID(currentReferenceId.toString());
+            int contigMappingPos = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
+
+            statsWriter.setChromosome(contigMappingChr);
+            statsWriter.setPosition(contigMappingPos);
+
+
+        } else {
+
+           statsWriter.setChromosome(currentReferenceId);
+           statsWriter.setPosition(position);
+
+        }
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
         if (!statsWriter.hasAlternateAllele()) {

@@ -1,0 +1,9 @@
+#Statistics for merged alignment. 
+#Tue Dec 03 10:54:51 EST 2013
+number.of.queries=2857819
+min.query.index=0
+number-of-entries-written=0
+max.query.index=2857819
+basename=last-101.compact
+number.alignment.entries=2
+basename.full=test-results/alignments/last-to-compact/last-101.compact

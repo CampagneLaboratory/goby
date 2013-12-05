@@ -1,0 +1,27 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Associating basename: basen0-indels to group: A
+Associating basename: basen1-indels to group: A
+Associating basename: basen2-indels to group: A
+Associating basename: basen3-indels to group: A
+Associating basename: basen4-indels to group: A
+Associating basename: basen5-indels to group: B
+Associating basename: basen6-indels to group: B
+Associating basename: basen7-indels to group: B
+Associating basename: basen8-indels to group: B
+Associating basename: basen9-indels to group: B
+sample: basen7-indels group B
+sample: basen2-indels group A
+sample: basen1-indels group A
+sample: basen4-indels group A
+sample: basen5-indels group B
+sample: basen8-indels group B
+sample: basen3-indels group A
+sample: basen9-indels group B
+sample: basen0-indels group A
+sample: basen6-indels group B
+Filtering reads that have these criteria:
+q<30
+#count(allele) < (2 *#filtered)
+count(allele in sample) < 1/4 * max_count over alleles in sample
+

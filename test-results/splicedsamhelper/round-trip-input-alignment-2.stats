@@ -1,0 +1,9 @@
+#Statistics for merged alignment. 
+#Tue Dec 03 10:55:08 EST 2013
+number.of.queries=2
+min.query.index=0
+number-of-entries-written=2
+max.query.index=1
+basename=round-trip-input-alignment-2
+number.alignment.entries=2
+basename.full=test-results/splicedsamhelper/round-trip-input-alignment-2

@@ -1,0 +1,18 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Total logical entries written: 1
+Total bytes written: 0
+Average bytes/logical entry: 0.0
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 45
+Looking for :/tmp/1000g/random-access-genome.names
+Looking for :/scratchLocal/gobyweb/input-data/reference-db/1000GENOMES.37/homo_sapiens/reference/random-access-genome.names
+Looking for :/home/ccontrol/goby-data/1000g/random-access-genome.names
+Looking for :/data/1000g/random-access-genome.names
+Looking for :/tmp/mm9/random-access-genome.names
+Looking for :/scratchLocal/gobyweb/input-data/reference-db/goby-benchmark-paper/mm9/random-access-genome.names
+Looking for :/home/ccontrol/goby-data/mm9/random-access-genome.names
+Looking for :/data/mm9/random-access-genome.names
+

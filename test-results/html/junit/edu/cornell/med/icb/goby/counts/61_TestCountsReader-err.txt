@@ -1,0 +1,22 @@
+log4j:ERROR Could not read configuration file from URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties].
+java.io.FileNotFoundException: /home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties (No such file or directory)
+	at java.io.FileInputStream.open(Native Method)
+	at java.io.FileInputStream.<init>(FileInputStream.java:120)
+	at java.io.FileInputStream.<init>(FileInputStream.java:79)
+	at sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:70)
+	at sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:161)
+	at java.net.URL.openStream(URL.java:1010)
+	at org.apache.log4j.PropertyConfigurator.doConfigure(PropertyConfigurator.java:459)
+	at org.apache.log4j.helpers.OptionConverter.selectAndConfigure(OptionConverter.java:471)
+	at org.apache.log4j.LogManager.<clinit>(LogManager.java:125)
+	at org.apache.log4j.Logger.getLogger(Logger.java:118)
+	at edu.cornell.med.icb.goby.counts.TestCountsReader.<clinit>(TestCountsReader.java:44)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:171)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.run(JUnitTestRunner.java:335)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.launch(JUnitTestRunner.java:911)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:768)
+log4j:ERROR Ignoring configuration file [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties].
+log4j:WARN No appenders could be found for logger (edu.cornell.med.icb.goby.counts.TestCountsReader).
+log4j:WARN Please initialize the log4j system properly.
+

@@ -1,0 +1,13 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+##fileformat=VCFv4.1
+##Goby=UNKNOWN
+##FieldGroupAssociations=CHROM=genomic-coordinate,CHROM=cross-sample-field,POS=genomic-coordinate,POS=cross-sample-field,ID=external-identifiers,ID=cross-sample-field,REF=cross-sample-field,ALT=cross-sample-field,QUAL=cross-sample-field,FILTER=cross-sample-field,INFO=cross-sample-field,INFO/p-value1=cross-sample-field,INFO/p-value1=p-value,INFO/p-value2=cross-sample-field,INFO/p-value2=p-value,INFO/#Cm_Group[Group_1]=cross-sample-field,INFO/#Cm_Group[Group_1]=#Cm,FORMAT/Zygosity=zygozity,FORMAT/Zygosity=sample-data,FORMAT/Another=another,FORMAT/Another=sample-data,
+##INFO=<ID=p-value1,Number=1,Type=Float,Description="A P-value">
+##INFO=<ID=p-value2,Number=1,Type=Float,Description="A P-value">
+##INFO=<ID=#Cm_Group[Group_1],Number=1,Type=Float,Description="Some count">
+##FORMAT=<ID=Zygosity,Number=1,Type=String,Description="Zygosity">
+##FORMAT=<ID=Another,Number=1,Type=String,Description="Another">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SampleA	SampleB
+
+

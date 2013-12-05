@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_goby" default="compile.module.goby">
+  <dirname property="module.goby.basedir" file="${ant.file.module_goby}"/>
+  
+  <property name="module.jdk.home.goby" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.goby" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.goby" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.goby" value="${compiler.args}"/>
+  
+  <property name="goby.output.dir" value="${module.goby.basedir}/out/production/goby"/>
+  <property name="goby.testoutput.dir" value="${module.goby.basedir}/out/test/goby"/>
+  
+  <path id="goby.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="goby.module.production.classpath">
+    <path refid="${module.jdk.classpath.goby}"/>
+    <path refid="library.libs.classpath"/>
+    <path refid="library.junit-4.10.classpath"/>
+  </path>
+  
+  <path id="goby.runtime.production.module.classpath">
+    <pathelement location="${goby.output.dir}"/>
+    <path refid="library.libs.classpath"/>
+    <path refid="library.junit-4.10.classpath"/>
+  </path>
+  
+  <path id="goby.module.classpath">
+    <path refid="${module.jdk.classpath.goby}"/>
+    <pathelement location="${goby.output.dir}"/>
+    <path refid="library.libs.classpath"/>
+    <path refid="library.junit-4.10.classpath"/>
+  </path>
+  
+  <path id="goby.runtime.module.classpath">
+    <pathelement location="${goby.testoutput.dir}"/>
+    <pathelement location="${goby.output.dir}"/>
+    <path refid="library.libs.classpath"/>
+    <path refid="library.junit-4.10.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.goby">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.goby">
+    <patternset refid="excluded.from.module.goby"/>
+  </patternset>
+  
+  <path id="goby.module.sourcepath">
+    <dirset dir="${module.goby.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  <path id="goby.module.test.sourcepath">
+    <dirset dir="${module.goby.basedir}">
+      <include name="test-src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.goby" depends="compile.module.goby.production,compile.module.goby.tests" description="Compile module goby"/>
+  
+  <target name="compile.module.goby.production" depends="register.custom.compilers" description="Compile module goby; production classes">
+    <mkdir dir="${goby.output.dir}"/>
+    <javac2 destdir="${goby.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.goby}/javac">
+      <compilerarg line="${compiler.args.goby}"/>
+      <bootclasspath refid="goby.module.bootclasspath"/>
+      <classpath refid="goby.module.production.classpath"/>
+      <src refid="goby.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.goby"/>
+    </javac2>
+    
+    <copy todir="${goby.output.dir}">
+      <fileset dir="${module.goby.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.goby.tests" depends="register.custom.compilers,compile.module.goby.production" description="compile module goby; test classes" unless="skip.tests">
+    <mkdir dir="${goby.testoutput.dir}"/>
+    <javac2 destdir="${goby.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.goby}/javac">
+      <compilerarg line="${compiler.args.goby}"/>
+      <bootclasspath refid="goby.module.bootclasspath"/>
+      <classpath refid="goby.module.classpath"/>
+      <src refid="goby.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.goby"/>
+    </javac2>
+    
+    <copy todir="${goby.testoutput.dir}">
+      <fileset dir="${module.goby.basedir}/test-src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.goby" description="cleanup module">
+    <delete dir="${goby.output.dir}"/>
+    <delete dir="${goby.testoutput.dir}"/>
+  </target>
+</project>

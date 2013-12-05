@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright (C) 2009-2012 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>Tab delimited files with pair information.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The file where the combined output will be written. If no output is provided, the output filename is
+                constructed from a relevant subset of the arguments.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>label</id>
+            <shortFlag>l</shortFlag>
+            <required>false</required>
+            <help>A label to include as a fixed column in the output file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>statistic</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>statistic</longFlag>
+            <required>true</required>
+            <help>The name of the statistic to evaluate</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>density-filename</id>
+            <shortFlag>d</shortFlag>
+            <longFlag>density-filename</longFlag>
+            <required>false</required>
+            <help>The filename to read or write a density.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>test-n</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>test-n</longFlag>
+             <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+
+            <required>false</required>
+            <help>The number of test pairs to consider when estimating empirical-P. When more than n test pairs are available, the tool randomly selects n out of the total number.</help>
+        </flaggedOption>
+        <switch>
+            <id>force-estimation</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>force-estimation</longFlag>
+            <help>Force p-value estimation on null-distribution observations. Requires an existing density (see -f
+                option).
+            </help>
+        </switch>
+        <!--switch>
+            <id>fdr</id>
+            <longFlag>fdr</longFlag>
+            <help>Report an estimated false discovery rate.</help>
+        </switch-->
+    </parameters>
+</jsap>

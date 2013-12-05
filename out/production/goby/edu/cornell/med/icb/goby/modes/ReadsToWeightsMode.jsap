@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>map</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>map</longFlag>
+            <required>false</required>
+           <help>The filename where a map will be written that associates individual read indices (in the input) to weight. Such maps can for instance be used by alignment to transcript count to produce reweighted transcript counts. When several reads files are processed (of if argument is absent), the map filename is build dynamically from by removing the reads file extension and adding .id-weights, where id designates the type of weight estimation method used.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>heptamer-info</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>heptamer-info</longFlag>
+            <required>false</required>
+            <help>The name of the file that contains heptamer information. Required when the heptamer weight method is used.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>method</id>
+            <longFlag>method</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>heptamers</string>
+            </defaults>
+            <help>The weight estimation method. Valid methods include heptamers, GC, AT, A, T, C, G.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+        <switch>
+            <id>color-space</id>
+            <longFlag>color-space</longFlag>
+            <help>When this switch is provided, the reads are in color-space.</help>
+        </switch>
+    </parameters>
+</jsap>
+
