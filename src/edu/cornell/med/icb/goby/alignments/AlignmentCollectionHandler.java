@@ -65,15 +65,10 @@ public final class AlignmentCollectionHandler implements ProtobuffCollectionHand
             "ignore-read-origin:boolean, When this flag is true do not compress read origin/read groups.:false",
             "symbol-modeling:string, a string which indicates which arithmetic coding scheme to use. order_zero will " +
                     "select a zero-order arithmetic coder. order_one will select an arithmetic order that models pairs of symbols. " +
-<<<<<<< HEAD
                     "plus will select an experimental coder.:order_zero",
             "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, " +
                     "and can increase further compression. For instance, setting this flag to true will compress " +
                     "related-alignment-links very efficiently if they link entries in the same chunk.:true"
-=======
-                    "plus will select an experimental coder.:plus",
-            "enable-domain-optimizations:boolean, When this flag is true we use compression methods that are domain specific, and can increase further compression. For instance, setting this flag to true will compress related-alignment-links very efficiently if they link entries in the same chunk.:true"
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
 
     );
     private String statsFilename;
@@ -455,7 +450,6 @@ public final class AlignmentCollectionHandler implements ProtobuffCollectionHand
     }
 
     private void restoreLinks(final Alignments.AlignmentCollection.Builder alignmentCollection) {
-<<<<<<< HEAD
         if (enableDomainOptimizations) {
             //   queryIndexToPositionList.clear();
             queryIndex2CombinedInfo.clear();
@@ -475,29 +469,9 @@ public final class AlignmentCollectionHandler implements ProtobuffCollectionHand
                     final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
                     recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
                 }
-=======
-     //   queryIndexToPositionList.clear();
-        queryIndex2CombinedInfo.clear();
-        collectLinkLists(alignmentCollection);
-
-        final int size = alignmentCollection.getAlignmentEntriesCount();
-        insertSizeIndex = 0;
-        for (int index = 0; index < size; index++) {
-            final Alignments.AlignmentEntry.Builder entry = alignmentCollection.getAlignmentEntriesBuilder(index);
-            final CombinedLists combinedLists = queryIndex2CombinedInfo.get(entry.getQueryIndex());
-            final IntArrayList positionList = combinedLists.positionList;
-            final IntArrayList fragmentList = combinedLists.fragmentIndices;
-            final int queryIndex = entry.getQueryIndex();
-            if (entry.hasPairAlignmentLink() && entry.getPairAlignmentLink().hasOptimizedIndex()) {
-
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getPairAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
-            }
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
 
                 if (entry.hasSplicedForwardAlignmentLink() && entry.getSplicedForwardAlignmentLink().hasOptimizedIndex()) {
 
-<<<<<<< HEAD
                     final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
                     recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
                 }
@@ -509,15 +483,6 @@ public final class AlignmentCollectionHandler implements ProtobuffCollectionHand
                 // we need to update insert size because the optimization messed up the mate position used by domain optimization:
 
                 //   recalculateInsertSize(entry, insertSizeIndex++);
-=======
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedForwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
-            }
-            if (entry.hasSplicedBackwardAlignmentLink() && entry.getSplicedBackwardAlignmentLink().hasOptimizedIndex()) {
-
-                final Alignments.RelatedAlignmentEntry.Builder linkBuilder = entry.getSplicedBackwardAlignmentLinkBuilder();
-                recoverLink(alignmentCollection, entry, positionList, fragmentList, queryIndex, linkBuilder, combinedLists);
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             }
         }
         final int size = alignmentCollection.getAlignmentEntriesCount();
