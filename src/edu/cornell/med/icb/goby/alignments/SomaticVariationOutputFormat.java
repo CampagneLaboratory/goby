@@ -377,8 +377,10 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
 
         if ( alnTableFilename != null) {
-            currentReferenceId = contigMapper.translateContigID(currentReferenceId.toString());
-            position = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
+            String contigMappingChr = contigMapper.translateContigID(currentReferenceId.toString());
+            int contigMappingPosition = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
+            currentReferenceId = contigMappingChr;
+            position = contigMappingPosition;
         }
 
         statsWriter.setChromosome(currentReferenceId);
