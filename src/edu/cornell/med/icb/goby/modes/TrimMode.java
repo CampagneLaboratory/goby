@@ -162,10 +162,6 @@ public class TrimMode extends AbstractGobyMode {
 
                 final ByteString qualityScores = entry.getQualityScores();
                 newQualScores.clear();
-<<<<<<< HEAD
-=======
-
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
                 final MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
 
@@ -294,13 +290,9 @@ public class TrimMode extends AbstractGobyMode {
                                       final ByteString qualityScores,
                                       final ByteArrayList newQualScores,
                                       final MutableString[] adapters) {
-<<<<<<< HEAD
         if (!trimRight) {
             return sequence;
         }
-=======
-
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
         final int currentLength = sequence.length();
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
@@ -330,13 +322,9 @@ public class TrimMode extends AbstractGobyMode {
 
     protected MutableString trimLeft(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
         final int currentLength = sequence.length();
-<<<<<<< HEAD
         if (!trimLeft) {
             return sequence;
         }
-=======
-
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
             for (int j = adaptLength; j >= minLeftLength; --j) {
@@ -364,15 +352,10 @@ public class TrimMode extends AbstractGobyMode {
     }
 
     protected MutableString contains(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
-<<<<<<< HEAD
         int midPoint = sequence.length() / 2;
         for (final MutableString adapter : adapters) {
 
 
-=======
-
-        for (final MutableString adapter : adapters) {
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             final int index = sequence.indexOf(adapter);
             if (index >= 0) {
                 if (verbose) {

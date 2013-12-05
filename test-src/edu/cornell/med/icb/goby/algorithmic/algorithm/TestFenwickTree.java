@@ -46,40 +46,8 @@ public class TestFenwickTree {
         assertEquals(4, tree.getCumulativeCount(2));
         assertEquals(5, tree.getCumulativeCount(3));
     }
-<<<<<<< HEAD
 
 
-=======
-    /*
-    @Test
-    public void testFind() {
-        FenwickTree tree = new FenwickTree(4);
-        add(tree, 4, 0);  //4 (cumulativeCount up to, including index)
-        add(tree, 2, 1);  //6
-        add(tree, 1, 2);  //7
-        add(tree, 6, 3);  //13
-        FenwickTree.answer result = tree.createAnswer();
-        tree.find(6, result);
-        assertEquals(6, result.cumulativeCount);
-        assertEquals(1, result.symbolIndex);
-        assertEquals(0, tree.find(4, result));
-        assertEquals(2, tree.find(7, result));
-        assertEquals(3, tree.find(13, result));
-        assertEquals(-1, tree.find(12, result));
-
-        tree.find(6, result);
-        assertEquals(6, result.cumulativeCount);
-        assertEquals(7, result.nextLargerCumulativeCount);
-
-        tree.find(7, result);
-               assertEquals(7, result.cumulativeCount);
-               assertEquals(13, result.nextLargerCumulativeCount);
-
-
-
-    }
-       */
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
     private void add(FenwickTree tree, int num, int index) {
         for (int i = 0; i < num; i++) {
             tree.incrementCount(index);

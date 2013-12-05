@@ -77,15 +77,9 @@
 
         <artifact:install file="goby.jar">
             <pom refid="goby-pom"/>
-<<<<<<< HEAD
             <artifact:attach file="goby-io.jar" classifier="io"/>
             <artifact:attach file="goby-api.jar" classifier="api"/>
             <artifact:attach file="goby-io-igv.jar" classifier="io-igv"/>
-=======
-            <artifact:attach  file="goby-io.jar" classifier="io"/>
-            <artifact:attach  file="goby-api.jar" classifier="api"/>
-            <artifact:attach  file="goby-io-igv.jar" classifier="io-igv"/>
->>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
         </artifact:install>
 
         <!--artifact:deploy file="goby.jar">
