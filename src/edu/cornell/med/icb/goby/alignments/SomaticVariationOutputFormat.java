@@ -59,7 +59,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     private static final Log LOG = LogFactory.getLog(SomaticVariationOutputFormat.class);
     @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(SomaticVariationOutputFormat.class,
-            "alnTableFilename:filename to a tab delimited alignment file:false"
+            "alnTableFilename:filename to a tab delimited alignment file:"
 
     );
 
@@ -355,25 +355,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 String.format("%s:%d-%d", currentReferenceId, position,
                         position));
 
-        /*
-        if ( useCustomContig ) {
 
-            //ContigHelper contigMapper = new ContigHelper(alnTableFilename);
-
-
-            String contigMappingChr = contigMapper.translateContigID(currentReferenceId.toString());
-            int contigMappingPos = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
-
-            statsWriter.setChromosome(contigMappingChr);
-            statsWriter.setPosition(contigMappingPos);
-
-
-        } else {
-
-           statsWriter.setChromosome(currentReferenceId);
-           statsWriter.setPosition(position);
-
-        }*/
 
 
         if ( alnTableFilename != null) {
