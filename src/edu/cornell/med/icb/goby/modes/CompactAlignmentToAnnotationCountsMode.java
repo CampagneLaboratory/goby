@@ -669,8 +669,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     deCalculator.defineElement(geneID);
                 }
             }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             // get just the filename (strip the path, not the extension)
             final String basename = FilenameUtils.getName(inputBasename);
             final String sampleId = inputBasename;
@@ -848,7 +851,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
                     if (linearray.length < 6) {
+<<<<<<< HEAD
                         LOG.warn("Annotation file, encountered truncated line, ignoring: " + line);
+=======
+                        LOG.warn("Annotation file, encountered truncated line, ignoring: "+line);
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
                         continue;
                     }
                     final String chromosome = linearray[0];

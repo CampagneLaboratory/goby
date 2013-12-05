@@ -86,7 +86,10 @@ public class FenwickTree implements Serializable {
         return totalCount;
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
     public answer createAnswer() {
         return new answer();
     }

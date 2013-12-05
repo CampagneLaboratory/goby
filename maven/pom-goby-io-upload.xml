@@ -2,7 +2,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.campagnelab.goby</groupId>
   <artifactId>goby-io</artifactId>
+<<<<<<< HEAD
   <version>2.3-SNAPSHOT</version>
+=======
+  <version>2.1.2</version>
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
   <packaging>jar</packaging>
 
   <name>Goby IO</name>
@@ -47,4 +51,7 @@
         </dependency>	
  </dependencies>
 </project>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9

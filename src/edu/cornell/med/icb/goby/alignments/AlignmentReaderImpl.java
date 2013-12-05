@@ -80,8 +80,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * Other possible extensions that can follow a Goby alignment basename.
      */
     public static final String[] COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS = {
+<<<<<<< HEAD
             ".index", ".perm", ".tmh"
     };
+=======
+                ".index", ".perm", ".tmh"
+        };
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
     private Alignments.AlignmentEntry nextEntry;
     private Alignments.AlignmentEntry nextEntryNoFilter;
     private boolean queryLengthStoredInEntries;
@@ -146,11 +151,19 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public static boolean canRead(final String filename) {
 
         final String filenameNoExtension = FilenameUtils.removeExtension(filename);
+<<<<<<< HEAD
         String fileExtension = FilenameUtils.getExtension(filename);
 
         if (!(ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS, "." + fileExtension) ||
                 ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS, "." + fileExtension))) {
             // the file does not contain any of the possible Goby extensions. It is not a supported file.
+=======
+        String fileExtension=FilenameUtils.getExtension(filename);
+
+        if (!ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS, "."+fileExtension) &&
+                !ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS, "."+fileExtension)   ) {
+            // the file does not contain any of the Goby required or possible extensions. It is not a supported file.
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             return false;
         }
         // the file contains a Goby alignment extension, we further check that each needed extension exists:

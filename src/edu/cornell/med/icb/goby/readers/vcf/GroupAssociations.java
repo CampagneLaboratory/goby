@@ -46,7 +46,11 @@ public class GroupAssociations {
     public GroupAssociations(String associationsAsText, ColumnInfo formatColumn, String[] sampleIds) {
         // parse associations stored in text in the header:
         associations = parse(associationsAsText);
+<<<<<<< HEAD
         if (formatColumn != null && sampleIds!=null) {
+=======
+        if (formatColumn != null) {
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             // now associate each sampleId to the columns that result from the combination of FORMAT fields and sample ids:
             for (String sample : sampleIds) {
                 for (final ColumnField formatField : formatColumn.fields) {
@@ -110,7 +114,11 @@ public class GroupAssociations {
         } else if (association.startsWith("INFO/") && association.contains(columnName)) {
             return "INFO/" + columnName + '=';
         }
+<<<<<<< HEAD
         String strippedColName = columnName.substring("INFO[".length(), columnName.length() - 1);
+=======
+        String strippedColName = columnName.substring("INFO[".length(),columnName.length()-1);
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
         if (association.startsWith("INFO") && association.contains(strippedColName)) {
             return "INFO/" + strippedColName + '=';// association.substring(0,association.indexOf('=')+1) ;
         } else return "not-matchjing=q3p-ow";
@@ -118,7 +126,11 @@ public class GroupAssociations {
     }
 
     private boolean isMatchingColumnName(String columnName, String association) {
+<<<<<<< HEAD
         if (association == null || columnName == null) {
+=======
+        if (association==null || columnName==null) {
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
             return false;
         }
         final String infoColumn = "INFO/" + columnName + "=";

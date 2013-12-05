@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2.3.3
  - IterateSortedAlignmentsListImpl: Use a WarningCounter to limit warnings to 10 instances. This is needed to
    avoid writing Gb of log output when the threshold is met.
@@ -83,6 +84,8 @@
  - Methylation rate VCF output: mark the context column with group 'indexed'.
  - Do not try to upgrade alignments when reading the header to concatenate permutations. This is not necessary and can
    open too many files when we are trying to concatenate alignments.
+=======
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
 2.1.1
  - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
    Goby alignments (generated either by GSNAP or STAR at this time).
@@ -97,11 +100,14 @@
  - Fix a bug where RandomAccessAnnotations could return results on a different chromosome.
  - Add annotation loading test and fix for when annotation file is truncated. Goby now loads annotations up to
    the truncation and logs truncated lines.
+<<<<<<< HEAD
  - Correct calculation for fold-change-magnitude column in goby diff exp mode. Previous calculation under-estimated
    magnitude when comparing low rpkms.
  - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
    (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
    return 404 errors for missing content).
+=======
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
@@ -116,8 +122,12 @@
  - NonAmbiguousAlignmentReader: fix an NPE when reading alignments where all entries have the ambiguity field.
  - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
    (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
+<<<<<<< HEAD
    return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.
 2.0.1
+=======
+   return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.2.0.1
+>>>>>>> 413d54e52a172d34cf0a704e1d602d291074d7d9
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
    Java APIs are already licensed under the LGPL (anything packaged under the Goby-io.jar file).

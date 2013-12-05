@@ -1,3 +1,8 @@
+# IDEA project, module and others
+*.iws
+*.ipr 
+*.iml
+
 # Compiled source #
 ###################
 *.com
