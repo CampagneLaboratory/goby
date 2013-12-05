@@ -59,7 +59,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     private static final Log LOG = LogFactory.getLog(SomaticVariationOutputFormat.class);
     @RegisterThis
     public static DynamicOptionClient doc = new DynamicOptionClient(SomaticVariationOutputFormat.class,
-            "use_custom_Contig:boolean, true value indicates reads will align against custom contig reference:false",
             "alnTableFilename:filename to a tab delimited alignment file:"
 
     );
@@ -69,13 +68,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     private String alnTableFilename;
-    private boolean useCustomContig;
     private ContigHelper contigMapper;
 
     public SomaticVariationOutputFormat() {
-        useCustomContig = doc.getBoolean("use_custom_Contig");
 
-        if (useCustomContig != false) {
+        if (alnTableFilename != null) {
             final String alnTable = doc.getString("alnTableFilename");
 
             if (alnTable != null) {
@@ -89,8 +86,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                 alnTableFilename = null;
             }
-        } else {
-            alnTableFilename = null;
         }
 
     }
@@ -359,10 +354,12 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 String.format("%s:%d-%d", currentReferenceId, position,
                         position));
 
-
+        /*
         if ( useCustomContig ) {
 
             //ContigHelper contigMapper = new ContigHelper(alnTableFilename);
+
+
             String contigMappingChr = contigMapper.translateContigID(currentReferenceId.toString());
             int contigMappingPos = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
 
@@ -375,7 +372,17 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
            statsWriter.setChromosome(currentReferenceId);
            statsWriter.setPosition(position);
 
+        }*/
+
+
+        if ( alnTableFilename != null) {
+            currentReferenceId = contigMapper.translateContigID(currentReferenceId.toString());
+            position = contigMapper.translateContigPosition(currentReferenceId.toString(), position);
         }
+
+        statsWriter.setChromosome(currentReferenceId);
+        statsWriter.setPosition(position);
+
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
         if (!statsWriter.hasAlternateAllele()) {
