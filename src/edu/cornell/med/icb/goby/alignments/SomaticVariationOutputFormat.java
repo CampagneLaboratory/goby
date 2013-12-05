@@ -350,11 +350,12 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
         currentReferenceId = iterator.getReferenceId(referenceIndex);
 
+        /*
         statsWriter.setId(".");
         statsWriter.setInfo(igvFieldIndex,
                 String.format("%s:%d-%d", currentReferenceId, position,
                         position));
-
+        */
 
 
 
@@ -364,6 +365,16 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             currentReferenceId = contigMappingChr;
             position = contigMappingPosition;
         }
+
+
+        statsWriter.setId(".");
+        statsWriter.setInfo(igvFieldIndex,
+                String.format("%s:%d-%d", currentReferenceId, position,
+                        position));
+
+
+
+
 
         statsWriter.setChromosome(currentReferenceId);
         statsWriter.setPosition(position);
