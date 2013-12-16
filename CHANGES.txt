@@ -9,6 +9,9 @@
    they are less results that need to be corrected.
  - discover-sequence-variants somatic output: Add an error message when a sample is mispelled in the covariates
    file.
+ - Remove candidate somatic variation that can occur when the germline samples have less coverage than the
+   somatic sample. Now require at least twice the coverage in the somatic sample than the minimum coverage
+   in the germline samples.
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
