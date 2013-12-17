@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
-import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
-import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
-import edu.cornell.med.icb.goby.alignments.ReadIndexStats;
-import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;

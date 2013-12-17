@@ -283,13 +283,14 @@ public class ExportableAlignmentEntryData {
         return alignmentEntry.getPairAlignmentLink().getPosition() + 1;
     }
 
-    /** Return the inferred size stored in the entry, or zero if the entry has no such field.
+    /**
+     * Return the inferred size stored in the entry, or zero if the entry has no such field.
      *
      * @return
      */
     public int getInferredInsertSize() {
 
-        return alignmentEntry.hasInsertSize()? alignmentEntry.getInsertSize():0;
+        return alignmentEntry.hasInsertSize() ? alignmentEntry.getInsertSize() : 0;
     }
 
     public Alignments.AlignmentEntry getAlignmentEntry() {
@@ -541,7 +542,7 @@ public class ExportableAlignmentEntryData {
         if (queryAlignedLength + numDeletions != targetAlignedLength + numInserts) {
             invalid = true;
             invalidMessage.append(
-                    String.format("Error with queryIndex=%d. " +
+                    String.format(" Error with queryIndex=%d. " +
                             "queryAlignedLength(%d) + numDeletions(%d) != targetAlignedLength(%d) + numInserts(%d). %n" +
                             "Alignment entry was: %s ",
                             alignmentEntry.getQueryIndex(), queryAlignedLength, numDeletions,
@@ -590,7 +591,7 @@ public class ExportableAlignmentEntryData {
                         } else {
                             qual = predefEndClipQuality != null ? predefEndClipQuality.byteAt(rightClipIndex) : UNKNOWN_MAPPING_VALUE;
                         }
-                        assert qualities!=null: "qualities field must never be null.";
+                        assert qualities != null : "qualities field must never be null.";
                         qualities.add(qual);
                         qualAddedForClip = true;
                         if (rightClippedPosition) {
@@ -621,7 +622,7 @@ public class ExportableAlignmentEntryData {
         }
 
         //
-        // TODO: This many not behave well if mutations and indels are in a single SEQVAR. Make
+        // TODO: This may not behave well if mutations and indels are in a single SEQVAR. Make
         // TODO: a test for this.
         int seqVarInsertsInRead = 0;
         for (final Alignments.SequenceVariation seqvar : alignmentEntry.getSequenceVariationsList()) {
@@ -633,11 +634,14 @@ public class ExportableAlignmentEntryData {
             final int startRefPosition = seqvar.getPosition() + startClip;   // refPosition, 1-based, always numbered from left
             final byte[] toQuals = seqvar.hasToQuality() ? seqvar.getToQuality().toByteArray() : null;
             int seqVarInsertsInReadDelta = 0;
-            for (int i = 0; i < froms.length(); i++) {
+            int toQualIndex=0;
+            for (int i = 0; i < Math.min(froms.length(), tos.length()); i++) {
                 final char from = froms.charAt(i);
                 final char to = tos.charAt(i);
-                final Byte toQual = toQuals == null ? null :
-                        (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(toQuals[i]);
+
+                final Byte toQual = toQuals == null ? null : (byte) qualityEncoding.phredQualityScoreToAsciiEncoding(
+                        to == '-' ? 0    // (gaps have not quality scores)
+                                : toQuals[toQualIndex++]);
 
                 final int refPosition = startRefPosition + i - 1; // Convert back to 0-based for list access
                 if (from == '-') {
@@ -729,7 +733,7 @@ public class ExportableAlignmentEntryData {
             // endClip, mark endClip number of bases to the right as N, we don't know their actual value
             final int readSize = readBases.size();
             final int genomePosition = alignmentEntry.getPosition() + alignmentEntry.getQueryAlignedLength() + numDeletions - numInserts;
-            for (int i = 0; i < endClip; i++) {
+            for (int i = 0; i < Math.min(endClip,predefEndClips.length()); i++) {
                 final int pos = readSize - endClip + i;
                 if (predefEndClips == null) {
                     readBases.set(pos, 'N');
@@ -772,11 +776,11 @@ public class ExportableAlignmentEntryData {
     }
 
     private boolean isRightClippedPosition(int endOfLoop, int position, String endClips) {
-        return position > endOfLoop - endClip && endClips != null;
+        return position > endOfLoop - endClip && endClips != null  && position<endClips.length();
     }
 
     private boolean isLeftClippedPosition(int endOfLoop, int i, String startClips) {
-        return i < startClip && startClips != null;
+        return i < startClip && startClips != null && i<startClips.length();
     }
 
     private boolean isClipPosition(final int endOfLoop, int position) {
@@ -972,6 +976,11 @@ public class ExportableAlignmentEntryData {
         MismatchType lastMismatchType = MismatchType.MATCH;
         int numLastMismatchType = 0;
         for (int i = startPos; i < endPos; i++) {
+            if (i>=readBases.size()) {
+                System.out.println("PROBLEM: "+this);
+                break;
+
+            }
             final char readBase = readBases.get(i);
             final char refBase = refBases.get(i);
             final CigarType curCigarType;

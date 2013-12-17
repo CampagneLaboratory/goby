@@ -77,7 +77,7 @@ public class ConcatenatePermutations extends QueryIndexPermutation {
         alignmentHasPermutation = new boolean[basenames.length];
         permReaders = new PermutationReaderInterface[basenames.length];
         for (final String basename : basenames) {
-            final AlignmentReader reader = new AlignmentReaderImpl(basename);
+            final AlignmentReader reader = new AlignmentReaderImpl(basename,false);
 
             try {
                 reader.readHeader();

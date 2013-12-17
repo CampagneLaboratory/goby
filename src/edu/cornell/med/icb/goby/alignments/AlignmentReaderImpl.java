@@ -80,8 +80,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * Other possible extensions that can follow a Goby alignment basename.
      */
     public static final String[] COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS = {
-                ".index", ".perm", ".tmh"
-        };
+            ".index", ".perm", ".tmh"
+    };
     private Alignments.AlignmentEntry nextEntry;
     private Alignments.AlignmentEntry nextEntryNoFilter;
     private boolean queryLengthStoredInEntries;
@@ -146,11 +146,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public static boolean canRead(final String filename) {
 
         final String filenameNoExtension = FilenameUtils.removeExtension(filename);
-        String fileExtension=FilenameUtils.getExtension(filename);
+        String fileExtension = FilenameUtils.getExtension(filename);
 
-        if (!ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS, "."+fileExtension) &&
-                !ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS, "."+fileExtension)   ) {
-            // the file does not contain any of the Goby required or possible extensions. It is not a supported file.
+        if (!(ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_POSSIBLE_EXTS, "." + fileExtension) ||
+                ArrayUtils.contains(AlignmentReaderImpl.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS, "." + fileExtension))) {
+            // the file does not contain any of the possible Goby extensions. It is not a supported file.
             return false;
         }
         // the file contains a Goby alignment extension, we further check that each needed extension exists:
@@ -465,7 +465,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                 final byte[] compressedBytes = alignmentEntryReader.getCompressedBytes();
                 if (compressedBytes != null) {
                     collection = (Alignments.AlignmentCollection) codec.decode(compressedBytes);
-                    if (collection==null || collection.getAlignmentEntriesCount() == 0) {
+                    if (collection == null || collection.getAlignmentEntriesCount() == 0) {
                         return false;
                     }
                     if (LOG.isTraceEnabled()) {
@@ -480,7 +480,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                             LOG.trace(String.format("New collection with first entry at position id=%s/pos=%d absolutePosition=%d %n", back.getId(firstEntry.getTargetIndex()),
                                     firstEntry.getPosition(),
                                     recodePosition(firstEntry.getTargetIndex(), firstEntry.getPosition())
-                                    ));
+                            ));
                         }
 
                     }
@@ -544,7 +544,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             if (targetPositionOffsets != null) {
                 LOG.trace(String.format("skipTo id=%s/pos=%d absolutePosition=%d %n", back.getId(targetIndex), positionChanged,
                         recodePosition(targetIndex, position)
-                        ));
+                ));
             }
 
         }
@@ -836,6 +836,31 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
 
+    @Override
+    public ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException {
+
+        assert isHeaderLoaded() : "header must be loaded to query locations.";
+        if (!isIndexed()) throw new RuntimeException("Alignment must be sorted and indexed to obtain locations.");
+
+        readIndex();
+        int i = 0;
+        ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+        long lastFileOffsetPushed = -1;
+
+        for (long absoluteLocation : indexAbsolutePositions) {
+            long offsetInEntriesFile = indexOffsets.get(i);
+            long compressedByteAmountSincePreviousLocation = offsetInEntriesFile - lastFileOffsetPushed;
+            if (lastFileOffsetPushed==-1 || compressedByteAmountSincePreviousLocation > bytesPerSlice) {
+                final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation);
+                location.compressedByteAmountSincePreviousLocation=compressedByteAmountSincePreviousLocation;
+                result.add(location);
+                lastFileOffsetPushed = offsetInEntriesFile;
+            }
+            i++;
+        }
+        return result;
+    }
+
     /**
      * Returns a sample of locations covered by this alignment.
      *
@@ -851,11 +876,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
         for (long absoluteLocation : indexAbsolutePositions) {
             final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation - (absoluteLocation % modulo));
+
             result.add(location);
 
         }
         return result;
     }
+
 
     private ReferenceLocation decodeAbsoluteLocation(long absoluteLocation) {
         int referenceIndex;
@@ -948,5 +975,4 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         assert isHeaderLoaded() : "header must be loaded to query Goby version.";
         return gobyVersion == null || "".equals(gobyVersion) ? "1.9.5-" : gobyVersion;
     }
-        }
-
+}

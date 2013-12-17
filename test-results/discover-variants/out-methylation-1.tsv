@@ -1,0 +1,21 @@
+##fileformat=VCFv4.1
+##Goby=UNKNOWN
+##FieldGroupAssociations=CHROM=genomic-coordinate,CHROM=cross-sample-field,POS=genomic-coordinate,POS=cross-sample-field,ID=external-identifiers,ID=cross-sample-field,REF=cross-sample-field,ALT=cross-sample-field,QUAL=cross-sample-field,FILTER=cross-sample-field,INFO=cross-sample-field,INFO/BIOMART_COORDS=cross-sample-field,INFO/BIOMART_COORDS=biomart,INFO/Strand=cross-sample-field,INFO/Strand=genomic-coordinate,INFO/Context=cross-sample-field,INFO/Context=indexed,INFO/MR[A]=cross-sample-field,INFO/MR[A]=MethylationRate,INFO/MR[B]=cross-sample-field,INFO/MR[B]=MethylationRate,INFO/#C_Group[A]=cross-sample-field,INFO/#C_Group[A]=#C,INFO/#Cm_Group[A]=cross-sample-field,INFO/#Cm_Group[A]=#Cm,INFO/#C_Group[B]=cross-sample-field,INFO/#C_Group[B]=#C,INFO/#Cm_Group[B]=cross-sample-field,INFO/#Cm_Group[B]=#Cm,INFO/DP=cross-sample-field,INFO/DP=Depth,FORMAT/GT=genotype,FORMAT/BC=base-calls,FORMAT/GB=good-bases,FORMAT/FB=failed-bases,FORMAT/MR=MethylationRate,FORMAT/C=#C,FORMAT/Cm=#Cm,
+##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates for use with Biomart.">
+##INFO=<ID=Strand,Number=1,Type=String,Description="Strand of the cytosine site on the reference sequence.">
+##INFO=<ID=Context,Number=1,Type=String,Description="Site genomic context">
+##INFO=<ID=MR[A],Number=1,Type=Float,Description="Methylation rate in group A.">
+##INFO=<ID=MR[B],Number=1,Type=Float,Description="Methylation rate in group B.">
+##INFO=<ID=#C_Group[A],Number=1,Type=Integer,Description="Number of unmethylated Cytosines at site in group A.">
+##INFO=<ID=#Cm_Group[A],Number=1,Type=Integer,Description="Number of methylated Cytosines at site in group A.">
+##INFO=<ID=#C_Group[B],Number=1,Type=Integer,Description="Number of unmethylated Cytosines at site in group B.">
+##INFO=<ID=#Cm_Group[B],Number=1,Type=Integer,Description="Number of methylated Cytosines at site in group B.">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total depth of sequencing across groups at this site">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=BC,Number=5,Type=String,Description="Base counts in format A=?;T=?;C=?;G=?;N=?.">
+##FORMAT=<ID=GB,Number=1,Type=String,Description="Number of bases that pass base filters in this sample, or ignore string.">
+##FORMAT=<ID=FB,Number=1,Type=String,Description="Number of bases that failed base filters in this sample, or ignore string.">
+##FORMAT=<ID=MR,Number=1,Type=Integer,Description="Methylation rate. 0-100%, 100% indicate fully methylated.">
+##FORMAT=<ID=C,Number=1,Type=Integer,Description="Number of converted cytosines at site.">
+##FORMAT=<ID=Cm,Number=1,Type=Integer,Description="Number of unconverted cytosines at site">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	+|basen0	+|basen1	+|basen2	+|basen3	+|basen4	+|basen5	+|basen6	+|basen7	+|basen8	+|basen9	-|basen0	-|basen1	-|basen2	-|basen3	-|basen4	-|basen5	-|basen6	-|basen7	-|basen8	-|basen9

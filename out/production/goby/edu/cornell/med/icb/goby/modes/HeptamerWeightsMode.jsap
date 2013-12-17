@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>heptamer-counts</id>
+            <shortFlag>c</shortFlag>
+            <longFlag>heptamer-counts</longFlag>
+            <required>false</required>
+             <defaults>
+                <string>heptamer-counts.tsv</string>
+            </defaults>
+            <help>The filename where heptamer count statistics will be written (in tab delimited format).</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>weights</id>
+            <shortFlag>w</shortFlag>
+            <longFlag>weights</longFlag>
+            <required>false</required>
+            <help>The filename where weights will be written for individual heptamers (in tab delimited format).</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>map</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>map</longFlag>
+            <required>false</required>
+             <defaults>
+                <string>read-index-to-heptamer-weights.bin</string>
+            </defaults>
+            <help>The filename where a map will be written that associates individual read indices (in the input) to weight. Such maps can for instance be used by alignment to transcript count to produce reweighted transcript counts.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>heptamer-info</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>heptamer-info</longFlag>
+            <required>false</required>
+             <defaults>
+                <string>heptamer-info.bin</string>
+            </defaults>
+            <help>The filename where heptamer information will be written. This file contains enough information to map a set of new reads to weights.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+         <switch>
+            <id>color-space</id>
+            <longFlag>color-space</longFlag>
+            <help>When this switch is provided, the reads are color-space and the first character of each read is skipped. </help>
+        </switch>
+    </parameters>
+</jsap>

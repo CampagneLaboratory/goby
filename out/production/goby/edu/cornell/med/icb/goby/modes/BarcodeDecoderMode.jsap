@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The .compact-reads or fasta/fastq files to use as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The basename of the output counts.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>barcode-info</id>
+            <shortFlag>b</shortFlag>
+            <longFlag>barcode-info</longFlag>
+            <required>true</required>
+            <help>A tab delimited, headerless file with sampleId[\t]barcodeIndex[\t]barcode </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>max-mismatches</id>
+           <shortFlag>y</shortFlag>
+            <longFlag>max-mismatches</longFlag>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The maximum number of mismatches allowed in the barcode/adapter to accept the barcode match.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>minimal-match-length</id>
+             <shortFlag>l</shortFlag>
+             <longFlag>minimal-match-length</longFlag>
+            <defaults>
+                <string>5</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The minimal match length between read and barcode/adapter to accept the barcode match.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>extremity</id>
+             <shortFlag>e</shortFlag>
+             <longFlag>extremity</longFlag>
+            <defaults>
+                <string>3_PRIME</string>
+            </defaults>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>The extremity that contains the barcode. Can be either 3_PRIME (barcode at the end of the sequence) or 5_PRIME (barcode at the start of the sequence).</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>Illumina</string>
+            </defaults>
+            <help>ONLY when converting fastq files (not applicable for .compact-reads files). The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+. Valid encodings include Illumina, Sanger and Solexa.</help>
+         </flaggedOption>
+        <switch>
+            <id>include-descriptions</id>
+            <longFlag>include-descriptions</longFlag>
+            <defaults>false</defaults>
+            <help>ONLY when converting fastq files (not applicable for .compact-reads files). When this switch is provided, include description lines into the compact output. By default, ignore description lines.</help>
+        </switch>
+        <switch>
+            <id>include-identifiers</id>
+            <longFlag>include-identifiers</longFlag>
+            <defaults>false</defaults>
+            <help>ONLY when converting fastq files (not applicable for .compact-reads files). When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.</help>
+        </switch>
+    </parameters>
+</jsap>

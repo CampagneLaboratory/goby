@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 
@@ -69,6 +70,10 @@ public class TrimMode extends AbstractGobyMode {
     private int minRightLength = 0;
     private int minLeftLength = 0;
 
+    private boolean trimLeft = true;
+    private boolean trimRight = true;
+    private boolean verbose;
+
 
     /**
      * {@inheritDoc}
@@ -103,6 +108,9 @@ public class TrimMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+        if (outputFilename == null) {
+            outputFilename = FilenameUtils.getBaseName(inputFilename) + "-trim.compact-reads";
+        }
         /**
          * File with one line per adapter sequence.
          */
@@ -110,6 +118,9 @@ public class TrimMode extends AbstractGobyMode {
         complementAdapters = jsapResult.getBoolean("complement");
         minLeftLength = jsapResult.getInt("min-left-length");
         minRightLength = jsapResult.getInt("min-right-length");
+        trimLeft = jsapResult.getBoolean("trim-left");
+        trimRight = jsapResult.getBoolean("trim-right");
+        verbose = jsapResult.getBoolean("verbose");
         return this;
     }
 
@@ -151,7 +162,6 @@ public class TrimMode extends AbstractGobyMode {
 
                 final ByteString qualityScores = entry.getQualityScores();
                 newQualScores.clear();
-
                 final MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
 
@@ -179,7 +189,7 @@ public class TrimMode extends AbstractGobyMode {
                 if (entry.hasSequencePair()) {
                     builder = builder.mergeFrom(entry)
                             .setSequencePair(ReadsWriterImpl.encodeSequence(pairSeq, buffer))
-                            .setReadLength(pairSeq.length());
+                            .setReadLengthPair(pairSeq.length());
 
                     if (sequencePair.length() != pairSeq.length()) {
                         numTrimmed++;
@@ -280,7 +290,9 @@ public class TrimMode extends AbstractGobyMode {
                                       final ByteString qualityScores,
                                       final ByteArrayList newQualScores,
                                       final MutableString[] adapters) {
-
+        if (!trimRight) {
+            return sequence;
+        }
         final int currentLength = sequence.length();
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
@@ -288,7 +300,7 @@ public class TrimMode extends AbstractGobyMode {
             for (int j = minRightLength; j < adaptLength; j++) {
                 if (sequence.endsWith(adapter.subSequence(j, adaptLength))) {
                     final int trimedLength = adaptLength - j;
-                    if (trimedLength > 10) {
+                    if (verbose && trimedLength > 10) {
                         System.out.printf("%d bases matching right %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) {
@@ -310,13 +322,15 @@ public class TrimMode extends AbstractGobyMode {
 
     protected MutableString trimLeft(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
         final int currentLength = sequence.length();
-
+        if (!trimLeft) {
+            return sequence;
+        }
         for (final MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
             for (int j = adaptLength; j >= minLeftLength; --j) {
                 if (sequence.startsWith(adapter.subSequence(0, j))) {
                     final int trimedLength = j;
-                    if (trimedLength > 10) {
+                    if (verbose && trimedLength > 10) {
                         System.out.printf("%d bases matching left %s %s %n", trimedLength, sequence, adapter);
                     }
                     if (currentLength == length) { // previously unchanged, we need to copy quality score to the list representation for editing.
@@ -338,17 +352,30 @@ public class TrimMode extends AbstractGobyMode {
     }
 
     protected MutableString contains(final int length, final MutableString sequence, final ByteString qualityScores, final ByteArrayList newQualScores, final MutableString[] adapters) {
-
+        int midPoint = sequence.length() / 2;
         for (final MutableString adapter : adapters) {
+
+
             final int index = sequence.indexOf(adapter);
             if (index >= 0) {
-                System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
+                if (verbose) {
+                    System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
+                }
                 copy(qualityScores, newQualScores);
+                // if the adapter is contained towards the end of the sequence, remove the end past the adapter,
+                // if not, only remove remove the beginning of the sequence up to the end of the adapter.
+                final int start, end;
+                if (index + adapter.length() / 2 > midPoint) {
+                    start = index;
+                    end = sequence.length();
 
-                final int end = adapter.length() + index;
-                newQualScores.removeElements(index, end);
+                } else {
+                    end = adapter.length() + index;
+                    start = 0;
+                }
+                newQualScores.removeElements(start, end);
                 numContained++;
-                return sequence.delete(index, end);
+                return sequence.delete(start, end);
             }
 
         }

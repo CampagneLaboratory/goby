@@ -1,0 +1,15 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Total logical entries written: 39
+Total bytes written: 660
+Average bytes/logical entry: 16.923077
+Number of bits/base 3.6590436
+Total logical entries written: 39
+Total bytes written: 685
+Average bytes/logical entry: 17.564102
+Number of bits/base 3.797644
+Total logical entries written: 39
+Total bytes written: 660
+Average bytes/logical entry: 16.923077
+Number of bits/base 3.6590436
+

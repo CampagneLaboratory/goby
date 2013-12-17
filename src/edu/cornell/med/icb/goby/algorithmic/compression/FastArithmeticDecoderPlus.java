@@ -50,7 +50,7 @@ public final class FastArithmeticDecoderPlus implements FastArithmeticDecoderI {
         lengths = new int[numCoders];
         for (int i = 0; i < numCoders; i++) {
             delegates[i] = new FastArithmeticDecoder(numSymbols);
-            decodedLists[i] = new IntArrayList();
+            decodedLists[i] = new IntArrayList(100000);
         }
         counts = new int[numSymbols];
         currentIndex = new int[numCoders];

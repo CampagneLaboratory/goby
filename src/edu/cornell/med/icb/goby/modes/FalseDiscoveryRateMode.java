@@ -122,6 +122,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         selectedPValueColumns = jsapResult.getStringArray("column");
         columnSelectionFilter = jsapResult.getStringArray("column-selection-filter");
         vcf = jsapResult.getBoolean("vcf");
+        if (outputFilename.endsWith(".vcf")) {
+            vcf = true;
+        }
+
         return this;
     }
 
@@ -157,6 +161,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
                 System.out.println("column: " + col);
             }
+            if (vcf) appendPValueColumns(inputFiles, selection);
 
             selectedPValueColumns = selection.toArray(new String[selection.size()]);
             DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
@@ -198,6 +203,32 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         }
     }
 
+    private void appendPValueColumns(String[] inputFiles, ObjectSet<String> selection) {
+        String firstFile = inputFiles[0];
+        try {
+            VCFParser parser = new VCFParser(firstFile);
+            parser.readHeader();
+            GroupAssociations groupAssociations = parser.getGroupAssociations();
+            ObjectArraySet<String> pValueColumns = groupAssociations.getColumnsWithGroup("p-value");
+            if (pValueColumns != null) {
+                System.out.println("Adding columns with group matching 'p-value': " + pValueColumns);
+                for (String columnName : pValueColumns) {
+                    if (columnName.startsWith("INFO/")) {
+                        selection.add(columnName.substring("INFO/".length(), columnName.length()));
+                    } else {
+                        selection.add(columnName);
+                    }
+                }
+            }
+        } catch (VCFParser.SyntaxException e) {
+            LOG.error("Error parsing VCF to retrieve group associations.");
+
+        } catch (IOException e) {
+            LOG.error("Error parsing VCF to retrieve group associations.");
+        }
+
+    }
+
     private void recordTopHits(final DifferentialExpressionResults data) {
         topHitsElementIndices = new IntArraySet();
         int num = 0;
@@ -231,13 +262,14 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             VCFParser parser = new VCFParser(filename);
             try {
                 parser.readHeader();
+                GroupAssociations groupAssociations = parser.getGroupAssociations();
                 IntSet selectedInfoFieldGlobalIndices = new IntArraySet();
                 // find the global field indices for the INFO fields we need to load:
 
                 for (String selectedFieldName : selectedPValueColumns) {
                     ColumnInfo infoColumn = parser.getColumns().find("INFO");
                     if (infoColumn == null) {
-                        System.err.printf("Could not find INFO colum in file %s.",
+                        System.err.printf("Could not find INFO colum in file %s.%n",
                                 filename);
                         System.exit(1);
                     }
@@ -390,21 +422,25 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
         Columns columns = new Columns();
         ObjectArrayList<String> sampleIdList = new ObjectArrayList();
-
-
+        boolean inputHasGroupAssociations = false;
+        GroupAssociations groupAssociations = null;
         for (String filename : inputFiles) {
             VCFParser parser = new VCFParser(filename);
             try {
                 try {
                     parser.readHeader();
-
+                    if (groupAssociations == null) {
+                        groupAssociations = parser.getGroupAssociations();
+                    }
                 } catch (VCFParser.SyntaxException e) {
                     throw new InternalError("this syntax error should have been caught in the first pass.");
                 }
+                inputHasGroupAssociations |= parser.getGroupAssociations().hasAssociations();
                 Columns fileColumns = parser.getColumns();
                 for (ColumnInfo col : fileColumns) {
                     if (columns.find(col.getColumnName()) == null) {
                         columns.add(col);
+
                         if (col.useFormat) {
                             final String sampleId = col.getColumnName();
                             if (!sampleIdList.contains(sampleId)) {
@@ -422,14 +458,17 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         vcfWriter.defineSchema(columns);
         vcfWriter.defineSamples(sampleIdList.toArray(new String[sampleIdList.size()]));
 
+        if (inputHasGroupAssociations) vcfWriter.setWriteFieldGroupAssociations(true);
         Int2IntMap statIndexToInfoFieldIndex = new Int2IntOpenHashMap();
 
         // add adjusted columns:
         ColumnInfo infoColumn = columns.find("INFO");
         int statIndex = 0;
         for (String fieldName : adjustedColumnIds) {
+            ObjectArrayList<String> groups = groupAssociations.listGroups(fieldName);
             vcfWriter.defineField("INFO", fieldName, 1, ColumnType.Float,
-                    String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName));
+                    String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName),
+                    "q-value", "indexed");
             statIndexToInfoFieldIndex.put(statIndex++, vcfWriter.getNumInfoFields() - 1);
         }
 
@@ -659,7 +698,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
 
                 while (reader.hasNext()) {
-                    first=true;
+                    first = true;
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);

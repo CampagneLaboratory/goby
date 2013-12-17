@@ -18,11 +18,14 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import edu.cornell.med.icb.goby.alignments.ContigHelper;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.OutputInfo;
+
+import java.io.File;
 
 /**
  * Interface to support different kinds of outputs for discover sequence variants mode.

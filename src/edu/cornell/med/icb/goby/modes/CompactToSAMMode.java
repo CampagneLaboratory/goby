@@ -217,7 +217,7 @@ public class CompactToSAMMode extends AbstractGobyMode {
         // is way too slow to run unintentionally in production!
 
         inputBasename = jsapResult.getString("input-basename");
-        inputGenome = jsapResult.getString("input-genome");
+        inputGenome = jsapResult.getString("genome");
         output = jsapResult.getString("output");
         alignmentIterator = new CompactToSAMIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
@@ -357,13 +357,13 @@ public class CompactToSAMMode extends AbstractGobyMode {
                         readGroup.setSample(roi.getSample());
                     }
                     if (roi.hasPlatform()) {
-                        readGroup.setSample(roi.getPlatform());
+                        readGroup.setPlatform(roi.getPlatform());
                     }
                     if (roi.hasPlatformUnit()) {
-                        readGroup.setSample(roi.getPlatformUnit());
+                        readGroup.setPlatformUnit(roi.getPlatformUnit());
                     }
                     if (roi.hasLibrary()) {
-                        readGroup.setSample(roi.getLibrary());
+                        readGroup.setLibrary(roi.getLibrary());
                     }
                     if (roi.hasRunDate()) {
                         final String runDate = roi.getRunDate();

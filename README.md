@@ -17,7 +17,7 @@ Goby source code is now on GitHub.  You can obtain and build the project as foll
    ```
    git clone git://github.com/CampagneLaboratory/goby.git
    cd goby
-   git checkout 2.1.1 (adjust the version number as needed, or use stable for the latest stable branch)
+   git checkout 2.0 (adjust the version number as needed, or use stable for the latest stable branch)
    git submodule update --init   (this will make sure the submodules are fetched in a new repository)
    ```
 #### Compilation:

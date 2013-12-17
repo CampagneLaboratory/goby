@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The output filename.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>optional-filter-extension</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>optional-filter-extension</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Extension of an optional read index filter. When provided, and when a file named input - '.compact-reads' + filter-extension is found, only reads provided in the filter are concatenated to the output. </help>
+        </flaggedOption>
+        <switch>
+            <id>quick-concat</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>quick-concat</longFlag>
+            <help>Does a "quick" concatenation. Does not filter or display statistics.</help>
+        </switch>
+    </parameters>
+</jsap>

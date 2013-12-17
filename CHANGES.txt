@@ -1,3 +1,88 @@
+2.3.3
+ - IterateSortedAlignmentsListImpl: Use a WarningCounter to limit warnings to 10 instances. This is needed to
+   avoid writing Gb of log output when the threshold is met.
+ - discover-sequence-variants somatic output: Make it possible to run simple trio design by removing the
+   requirement for a germline sample.
+ - discover-sequence-variants somatic output: Earlier versions were reporting somatic variation candidates
+   when two parents are homozygotes and the somatic samples was Het (the fisher p-value with each parent is
+   very significant in this case, but does not indicate a somatic change). This also improves q-values because
+   they are less results that need to be corrected.
+ - discover-sequence-variants somatic output: Add an error message when a sample is mispelled in the covariates
+   file.
+2.3.2
+ - run-parallel-mode now supports paired input files.
+ - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
+   encoding range.
+ - suggest-position-slices: fix problem where first slice of genome was omitted from output (with new split
+   by number of bytes option introduced in 2.3).
+2.3.1
+ - Fix for https://github.com/CampagneLaboratory/goby/issues/3
+ - Upgrade commons-io and dsiutils to latest jar versions. Log messages when scanning reads file with cfs mode.
+ - DistinctValueCounterBitSet: now grows to biggest size at construction time.
+ - Fixed a performance problem. When reading large reads file (>10GB), performance of ReadsReader would degrade
+   over time. This was due to caching of data in static protobuf methods of ReadCollection. We now create a
+   builder instance that gets garbage collected when it is no longer used. This fixes a subtle performance
+   problem. The same fix has been applied to alignment readers.
+2.3
+ - concatenate-alignments mode: add ability to restrict output to a genomic slice (see -s and -e options).
+ - API change: AlignmentSliceHelper makes it easier to parse and process genomic slices for sets of alignments.
+ - concatenate-alignments mode: now transfers read groups to output in the same way that non-sorted concat does.
+ - concatenate-alignments mode: Add a mechanism to override/define read groups/read origin info on the fly when
+   reading alignments that did not include them. Coupled with changes to compact-to-sam, this makes it possible
+   to get BAM files with read groups directly from Goby alignments.
+ - compact-to-sam mode: fixed output of read groups, which were not correctly written for platform, platform unit,
+   and library.
+ - suggest-position-slices: add --restrict-per-chromosome option.  When this switch is provided, slices will be
+   restricted to start and end on the same chromosome. This is useful to produce intervals to give Mutect,
+   for instance.
+ - Trim mode: add --trim-left --trim-right parameters to control trimming of specific sequence extremities.
+ - Trim mode: add --verbose flag.
+2.2.1
+ - FDR mode: add ability to read groups from VCF file and adjust columns/fields marked as p-value. Mark adjusted
+   columns with group q-value.
+ - Somatic variation output format: annotate somatic p-value column with 'p-value' group. Fix the type of the p-value
+   column to be a number (was String in release 2.2).
+ - Somatic variation output format: handle unrecognized sample-ids in the parents column.
+ - discover-sequence-variants mode: add assertion to give hint to user that syntax is incorrect in for -s and -e options.
+ - compact-file-stats mode: print progress when scanning reads files. Use a buffered reader to improve read file
+   parsing performance.
+ - discover-sequence-variants: adjust multiplier for left-over filter for somatic variations output format.
+ - discover-sequence-variants: Add a new filter to remove indels at a site where a sample shows lots of distinct
+   possible indels. Indels at these sites are very likely to be artefactual. We count the number of samples where
+   three distinct indel genotypes are seen. If more than 1/4 of the samples have likely indel artifacts, we remove
+   all indel candidates at the site. maxIndelPerSite:Maximum number of distinct indels at a given genomic site.:1
+   Additional filter: fractionOfSamples: Maximum fraction of samples that can have an indel candidate for the indel
+   to be considered (indel candidates that occur in many samples are more likely to be spurious).:0.25
+   This filter is added to the somatic variations output format. See dynamic options for this filter with --x-help
+2.2
+ - Remove threshold effects when calling genotypes in several samples. Modified the filters to not remove bases in
+   specific samples when the genotype survived filters in at least another sample (previous versions reported these
+   threshold edge effects as differences, which could be confusing, this version simply shows the marginal raw base
+   counts in samples where the genotype could have been filtered by a filter, which makes it easier to compare the
+   strength of the genotype support across samples). This adjustment was done for both base genotype and indel genotypes.
+ - LeftOverFilter: now uses minVariationSupport as minimum threshold.
+ - Mode suggest-position-slices: add option number-of-bytes to suggest slices with a uniform number of compressed
+   bytes. This option aims to provide more balanced slices in bases where the genome as very non uniform coverage
+   by position. With this option, the number of slices is determined to yield slices that need to decompress about
+   the amount of bytes indicated on the command line.    `
+ - Framework API change: introduce class PositionToBasesMap<T> to use as type for positionToBases. The class provides
+   methods to get the range of positions described in the map. This unfortunately requires changes to all clients/
+   implementations of IterateSortedAlignments<T>.
+ - Mode discover-sequence-variants: Fix various problems that prevented reporting genotypes for deletions (i.e., C/-).
+ - Fix a potential NPE in GroupAssociations when samples are null.
+ - Fix for issue #2, see https://github.com/CampagneLaboratory/goby/issues/2
+ - Expose comparator in SortedAnnotations.
+2.1.2
+ - Upgrade xstream to version 1.4.3. This fixes the compatibility problem seen when running goby 2.1.1 with java 1.7+.
+   Goby 2.1.2 should run with Java 1.7+, but more testing will be needed to rule out other migration problems. If you
+   are running JDK 1.7+ please let us know any issues you encounter.
+ - Fix VCFParser issue https://github.com/CampagneLaboratory/goby/issues/1. The issue could be triggered when the FORMAT
+   column changed from line to line.
+ - VCFWriter: improve support for VCF group associations. The Goby VCF parser makes it possible to associate columns
+   to groups (these associations are written in a ##FieldGroupAssociations field).
+ - Methylation rate VCF output: mark the context column with group 'indexed'.
+ - Do not try to upgrade alignments when reading the header to concatenate permutations. This is not necessary and can
+   open too many files when we are trying to concatenate alignments.
 2.1.1
  - Add extract-splicing-events mode. This mode is used by GobyWeb 1.9 to extract splicing events from spliced
    Goby alignments (generated either by GSNAP or STAR at this time).
@@ -12,6 +97,11 @@
  - Fix a bug where RandomAccessAnnotations could return results on a different chromosome.
  - Add annotation loading test and fix for when annotation file is truncated. Goby now loads annotations up to
    the truncation and logs truncated lines.
+ - Correct calculation for fold-change-magnitude column in goby diff exp mode. Previous calculation under-estimated
+   magnitude when comparing low rpkms.
+ - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
+   (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
+   return 404 errors for missing content).
 2.1
  - Improve compression of hybrid-1 codec by about 8% on average at similar speed. You can enable this improvement with
    option -x AlignmentCollectionHandler:symbol-modeling=plus. This option will be made the default in a future release.
@@ -26,7 +116,8 @@
  - NonAmbiguousAlignmentReader: fix an NPE when reading alignments where all entries have the ambiguity field.
  - Fix a problem where AlignmentReaderImpl.canRead would return true when the file ended with an incorrect extension
    (this problem could create subtle issues when the goby tried to access .info.txt files on a web server that did not
-   return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.2.0.1
+   return 404 errors for missing content). Thanks to Jim Robinson and Helga Thorvaldsdottir for reporting this issue.
+2.0.1
  - Release Goby C/C++ APIs under the LGPL license version 3 to make it possible for companies to incorporate support
    for Goby formats in their tools. Thanks to Collin Hercus for the suggestion. Please note that part of the Goby
    Java APIs are already licensed under the LGPL (anything packaged under the Goby-io.jar file).

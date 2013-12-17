@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.data.CovariateInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
@@ -72,6 +73,40 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         GobyRengine.getInstance();
         //    assertNotNull("R engine must be available", GobyRengine.getInstance().getRengine());
     }
+
+    @Test
+    public void testDiscoverSomaticVariation() throws IOException, JSAPException {
+
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-somatic-" + i + ".vcf";
+        String[] args = constructArgumentString(
+                add(basenames, specificAlignments), BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.SOMATIC_VARIATIONS.toString()});
+
+        configureTestGenome(mode);
+        final CovariateInfo covInfo = CovariateInfo.parse("test-data/covariates/example-4.tsv");
+        FormatConfigurator configurator = new FormatConfigurator() {
+
+            @Override
+            public void configureFormatter(final SequenceVariationOutputFormat formatter) {
+
+                ((SomaticVariationOutputFormat) formatter).setCovariateInfo(covInfo);
+
+            }
+        };
+        mode.setFormatConfigurator(configurator);
+        mode.configure(args);
+
+        mode.execute();
+        assertEquals(
+                new File("test-data/discover-variants/expected-output-somatic.vcf"),
+                new File(BASE_TEST_DIR + "/" + outputFilename)
+        );
+
+    }
+
+
 
     @Test
     public void testDiscoverGroupsOnly() throws IOException, JSAPException {
@@ -246,7 +281,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testCleanup() {
         QualityScoreFilter qualityScoreFilter = new QualityScoreFilter();
-        LeftOverFilter leftOverFilter = new LeftOverFilter();
+        // make filter compatible with Goby 2.2.1
+        qualityScoreFilter.setNoRandomSampling(true);
+        LeftOverFilter leftOverFilter = new LeftOverFilter(1);
 
 
         DiscoverVariantPositionData list = new DiscoverVariantPositionData();
@@ -258,6 +295,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
         SampleCountInfo[] sampleCounts = sampleCounts(list);
         qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
+
+        assertNotNull(sampleCounts[0].toString());
         assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
@@ -273,6 +312,53 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
+    @Test
+    public void testRemoveThresholdingEffectArtifact() {
+        QualityScoreFilter qualityScoreFilter = new QualityScoreFilter();
+        LeftOverFilter leftOverFilter = new LeftOverFilter(1);
+
+
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
+
+        appendInfo(list, 1, (byte) 20, false, 'A', 'C', 0);  // will be filtered by qualityScoreFilter in sample 0, but should be recovered because
+        // the genotype is surviving filters in sample 1
+        appendInfo(list, 1, (byte) 40, false, 'A', 'T', 0);  // will be filtered by leftOverFilter
+        appendInfo(list, 10, (byte) 40, true, 'A', 'A', 0);
+
+        appendInfo(list, 10, (byte) 30, false, 'A', 'C', 1);  // will be not filtered by qualityScoreFilter in sample 1
+        appendInfo(list, 1, (byte) 40, false, 'A', 'T', 1);  // will be filtered by leftOverFilter
+        appendInfo(list, 10, (byte) 40, true, 'A', 'A', 1);
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+
+        CountFixer fixer = new CountFixerNoThresholdingEffect();
+        fixer.preserveCounts(sampleCounts);
+        qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
+
+        assertNotNull(sampleCounts[0].toString());
+        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(1, sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX]);
+
+        assertEquals(1, removed.size());
+        leftOverFilter.filterGenotypes(list, sampleCounts, removed);
+
+        fixer.fix(list, sampleCounts, removed);
+        assertEquals(3, removed.size());
+        assertEquals(30, list.size());
+        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        // C genotype must be rescued by sample 1
+        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(10, sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX]);
+    }
 
     @Test
     public void testQuarterFilter() {
@@ -392,6 +478,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         SampleCountInfo[] sci = new SampleCountInfo[sampleIndices.size()];
         for (int i = 0; i < sci.length; i++) {
             sci[i] = new SampleCountInfo();
+
         }
         for (PositionBaseInfo info : list) {
             final int sampleIndex = info.readerIndex;
@@ -402,7 +489,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             } else {
                 sci[sampleIndex].varCount++;
             }
-
+            sci[sampleIndex].sampleIndex = sampleIndex;
         }
         return sci;
     }
@@ -482,6 +569,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testQualityScoreAdjuster() {
         QualityScoreFilter adjuster = new QualityScoreFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster.setNoRandomSampling(true);
         SampleCountInfo[] sampleCounts = makeSampleCounts();
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
@@ -501,7 +590,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
-        LeftOverFilter adjuster2 = new LeftOverFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster1.setNoRandomSampling(true);
+        LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 
         assertEquals(5, sampleCounts[0].refCount);
@@ -520,7 +611,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
 
-        assertEquals(22, filteredList.size());
+        assertEquals(20, filteredList.size());
         assertEquals(0, sampleCounts[0].refCount);
         assertEquals(0, sampleCounts[0].varCount);
 
@@ -532,7 +623,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     @Test
     public void testAdjustVarCount2() {
         QualityScoreFilter adjuster1 = new QualityScoreFilter();
-        LeftOverFilter adjuster2 = new LeftOverFilter();
+        // make filter compatible with Goby 2.2.1
+        adjuster1.setNoRandomSampling(true);
+        LeftOverFilter adjuster2 = new LeftOverFilter(0);
         SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
 
         assertEquals(5, sampleCounts[0].refCount);
@@ -727,7 +820,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--compare A/B " +
                 "--genome use-dummy-in-test " +
                 "--eval %s " +
-                "--minimum-variation-support 1 " +
+                "--minimum-variation-support 0 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +
                 "%s", statsFilename, groups, evalString, outputfilename, basenamesString);

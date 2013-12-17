@@ -41,7 +41,7 @@ package edu.cornell.med.icb.goby.reads;
  * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
  * |                         |    |        |                              |                     |
  * 33                        59   64       73                            104                   126
- * <p/>
+ *
  * S - Sanger       Phred+33,  41 values  (0, 40)
  * I - Illumina 1.3 Phred+64,  41 values  (0, 40)
  * X - Solexa       Solexa+64, 68 values (-5, 62)
@@ -81,14 +81,18 @@ public enum QualityEncoding {
     private final boolean solexaEncoding;
     private int minPhredScore;
     private int maxPhredScore;
+    /**
+     * When the force flag is set, force encoding values within range.
+     */
+    private boolean force = false;
 
     /**
      * Create a new QualityEncoding with the specified offset.
      *
      * @param asciiOffset    The offset used to convert quality scores to/from ASCII characters.
      * @param solexaEncoding Indicates whether solexa scale conversion must occur.
-     * @param minPhredScore the minimum allowed phred score
-     * @param maxPhredScore the maximum allowed phred score
+     * @param minPhredScore  the minimum allowed phred score
+     * @param maxPhredScore  the maximum allowed phred score
      */
     private QualityEncoding(final int asciiOffset, final boolean solexaEncoding, final int minPhredScore, final int maxPhredScore) {
         this.asciiOffset = asciiOffset;
@@ -112,7 +116,7 @@ public enum QualityEncoding {
                             - 1
             )
             ));
-            System.out.printf("qSolexa=%d%n", qSolexa);
+          //  System.out.printf("qSolexa=%d%n", qSolexa);
             return (char) (qSolexa + asciiOffset);
         } else {
             return (char) (qPhred + asciiOffset);
@@ -129,21 +133,34 @@ public enum QualityEncoding {
      * @return The score value converted to Phred quality score scale.
      */
     public byte asciiEncodingToPhredQualityScore(final char asciiCharacter) {
+
         if (solexaEncoding) {
             final int qSolexa = (asciiCharacter - asciiOffset);
             // System.out.printf("qSolexa=%d%n", qSolexa);
             // convert Qsolexa to Qphred:
-            final byte qPhredScore = (byte) Math.round((10 * Math.log10(
+            byte qPhredScore = (byte) Math.round((10 * Math.log10(
                     Math.pow(10d, (((double) qSolexa) / 10d))
                             + 1)
             ));
-            System.out.printf("qPhredScore=%d%n", qPhredScore);
+          //  System.out.printf("qPhredScore=%d%n", qPhredScore);
+            qPhredScore = forceInRange(qPhredScore);
             return qPhredScore;
 
         } else {
-            return (byte) (asciiCharacter - asciiOffset);
+            return forceInRange((byte) (asciiCharacter - asciiOffset));
         }
 
+    }
+
+    private byte forceInRange(byte value) {
+        if (!force) {
+            return value;
+        } else {
+
+            value = (byte) Math.min(maxPhredScore, value);
+            value = (byte) Math.max(minPhredScore, value);
+            return value;
+        }
     }
 
     /**
@@ -153,6 +170,11 @@ public enum QualityEncoding {
      * @return True  if the phredScore is within valid range for this encoding, false otherwise.
      */
     public boolean isWithinValidRange(final byte phredScore) {
+        if (force) return true;
         return (phredScore <= maxPhredScore && phredScore >= minPhredScore);
+    }
+
+    public void setForce(boolean force) {
+        this.force = force;
     }
 }

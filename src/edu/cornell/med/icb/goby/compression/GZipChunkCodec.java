@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 
 import java.io.*;
 import java.util.zip.Deflater;
@@ -83,7 +84,7 @@ public class GZipChunkCodec implements ChunkCodec {
 
     @Override
     public Message decode(final byte[] bytes) throws IOException {
-        final GZIPInputStream uncompressStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        final GZIPInputStream uncompressStream = new GZIPInputStream(new FastByteArrayInputStream(bytes));
         try {
             return parser.parse(uncompressStream);
         } finally {

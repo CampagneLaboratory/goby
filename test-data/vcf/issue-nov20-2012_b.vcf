@@ -1,0 +1,12 @@
+##fileformat=VCFv4.1
+##INFO=<ID=AA,Number=1,Type=String,Description="Ancestral Allele, ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/pilot_data/technical/reference/ancestral_alignments/README">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
+##INFO=<ID=HM2,Number=0,Type=Flag,Description="HapMap2 membership">
+##INFO=<ID=HM3,Number=0,Type=Flag,Description="HapMap3 membership">
+##reference=human_b36_both.fasta
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	HG00096	HG00097	HG00099
+1	695744	.	C	T	.	PASS	AA=.;DP=115	GT:GQ:DP	0|1:100:20	0|0:16:13	0|0:100:82
+1	713682	rs11804171	T	A	.	PASS	AA=.;DP=137;HM2	GT:GX:DP	0|1:33:30	0|1:54:14	0|0:100:43

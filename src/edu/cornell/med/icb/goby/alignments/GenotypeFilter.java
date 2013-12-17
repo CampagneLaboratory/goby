@@ -19,7 +19,12 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
@@ -33,6 +38,10 @@ import java.util.Arrays;
  */
 public abstract class GenotypeFilter {
 
+    /**
+     * Used to log debug and informational messages.
+     */
+    protected static final Log LOG = LogFactory.getLog(DiscoverVariantIterateSortedAlignments.class);
 
     /**
      * Adjust genotypes and sampleCounts to remove/reduce the effect of sequencing errors.
@@ -60,6 +69,11 @@ public abstract class GenotypeFilter {
     int[] refCountRemovedPerSample;
     int numFiltered = 0;
     int numScreened = 0;
+    /**
+     * List of sampleIndex,genotypeIndex tuples. Items in this list indicate genotypes suggested for removal by some
+     * filter.
+     */
+    protected LongArrayList removalSuggestions = new LongArrayList();
 
     public double getPercentFilteredOut() {
         double rate = numFiltered;
@@ -71,7 +85,7 @@ public abstract class GenotypeFilter {
         return "filter (" + describe() + ")";
     }
 
-    void initStorage(int numSamples) {
+    public void initStorage(int numSamples) {
 
         if (varCountRemovedPerSample == null) {
             varCountRemovedPerSample = new int[numSamples];
@@ -86,6 +100,7 @@ public abstract class GenotypeFilter {
 
         numScreened = 0;
         numFiltered = 0;
+
     }
 
     protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts) {
@@ -100,6 +115,9 @@ public abstract class GenotypeFilter {
         }
     }
 
+    private ObjectArraySet<EquivalentIndelRegion> toBeRemoved = new ObjectArraySet<EquivalentIndelRegion>();
+    private IntArraySet doNotRemoveSampleIndices = new IntArraySet();
+
     protected void filterIndels(final DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts) {
         if (list.hasCandidateIndels()) {
             // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
@@ -113,6 +131,38 @@ public abstract class GenotypeFilter {
             }
         }
     }
+
+    /**
+     * Adjust the genotypes considering genotype removals and thresholding effects.
+     *
+     * @param list
+     * @param filteredList
+     * @param sampleCounts
+     */
+    protected void adjustGenotypes(DiscoverVariantPositionData list, ObjectSet<PositionBaseInfo> filteredList,
+                                   SampleCountInfo[] sampleCounts) {
+
+
+    }
+
+    /**
+     * Use this method to remove a genotype in a sub-class filter.
+     *
+     * @param info         the base to remove from consideration, according to the filter logic.
+     * @param filteredList the list of filtered bases to add to.
+     */
+    protected void removeGenotype(PositionBaseInfo info, ObjectSet<PositionBaseInfo> filteredList) {
+        filteredList.add(info);
+
+        final int sampleIndex = info.readerIndex;
+        if (info.matchesReference) {
+            refCountRemovedPerSample[sampleIndex]++;
+        } else {
+            varCountRemovedPerSample[sampleIndex]++;
+        }
+        numFiltered++;
+    }
+
 
     public abstract int getThresholdForSample(final int sampleIndex);
 }

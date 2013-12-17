@@ -39,7 +39,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
         return "count(allele in sample) < 1/4 * max_count over alleles in sample";
     }
 
-    void initStorage(int numSamples) {
+    public void initStorage(int numSamples) {
         super.initStorage(numSamples);
         if (maxAlleleCountsPerSample == null) {
             maxAlleleCountsPerSample = new int[numSamples];
@@ -55,18 +55,18 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
-                                ObjectSet<PositionBaseInfo> filteredSet) {
+                                ObjectSet<PositionBaseInfo> filteredList) {
 
         resetCounters();
         initStorage(sampleCounts.length);
+
         for (SampleCountInfo sci : sampleCounts) {
+
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int count = sci.getGenotypeCount(genotypeIndex);
                 maxAlleleCountsPerSample[sci.sampleIndex] = Math.max(maxAlleleCountsPerSample[sci.sampleIndex], count);
             }
         }
-
-
 
         for (PositionBaseInfo positionBaseInfo : list) {
 
@@ -86,21 +86,12 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
                 // this allele has less than 1/4 of the counts of the allele with the most counts in this sample.
                 // remove.
-
-                if (!filteredSet.contains(positionBaseInfo)) {
-                    sampleCountInfo.counts[baseIndex]--;
-                    if (positionBaseInfo.matchesReference) {
-                        refCountRemovedPerSample[sampleIndex]++;
-                    } else {
-                        varCountRemovedPerSample[sampleIndex]++;
-                    }
-                    filteredSet.add(positionBaseInfo);
-                    numFiltered++;
-                }
-
+                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                removeGenotype(positionBaseInfo, filteredList);
             }
         }
         filterIndels(list, sampleCounts);
+        adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
 

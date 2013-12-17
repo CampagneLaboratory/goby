@@ -36,14 +36,15 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
 import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.goby.util.Timer;
-import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -346,13 +347,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public void execute() throws IOException {
         System.out.println("Reading annotations from " + annotationFile);
         if (genomicRange != null) {
-            // resolve chromsome ids against the alignment headers:
-
-            ConcatAlignmentReader concat = new ConcatAlignmentReader(AlignmentReaderImpl.getBasenames(inputFilenames));
-            concat.readHeader();
-
-            genomicRange.setTargetIds(concat.getTargetIdentifiers());
-            concat.close();
+            if (!genomicRange.setTargetIds(inputFilenames)) {
+                System.err.println("Unable to obtain target reference identifiers from alignment files.");
+                System.exit(1);
+            }
         }
         final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = filterAnnotations(removeNonConstitutiveSegments(
                 readAnnotations(annotationFile)), genomicRange);
@@ -671,6 +669,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     deCalculator.defineElement(geneID);
                 }
             }
+
+
             // get just the filename (strip the path, not the extension)
             final String basename = FilenameUtils.getName(inputBasename);
             final String sampleId = inputBasename;
@@ -848,7 +848,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
                     if (linearray.length < 6) {
-                        LOG.warn("Annotation file, encountered truncated line, ignoring: "+line);
+                        LOG.warn("Annotation file, encountered truncated line, ignoring: " + line);
                         continue;
                     }
                     final String chromosome = linearray[0];

@@ -97,6 +97,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     private String inputFilename;
     private String outputFilename;
+
+    public void setOutputPairFilename(String outputPairFilename) {
+        this.outputPairFilename = outputPairFilename;
+        processPairs=true;
+    }
+
     private String outputPairFilename;
     private boolean indexToHeader;
     private boolean identifierToHeader;

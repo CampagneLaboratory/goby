@@ -39,4 +39,10 @@ public interface CountFixerInterface {
      */
     void fix(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts,
              ObjectSet<PositionBaseInfo> likelyErrors);
+
+    /**
+     * Give the fixer an opportunity to preserve counts before any filter is applied.
+     * @param sampleCounts
+     */
+    void preserveCounts(SampleCountInfo[] sampleCounts);
 }

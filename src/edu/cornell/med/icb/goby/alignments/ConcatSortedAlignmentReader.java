@@ -24,6 +24,8 @@ import edu.cornell.med.icb.goby.alignments.perms.ConcatenatePermutations;
 import it.unimi.dsi.fastutil.AbstractPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -31,7 +33,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Concatenates sorted alignments while preserving entry sort order across inputs. The result is a sorted
- * alignment.
+ * alignment. Since Goby 2.3, this class supports restricting its output to a genomic range. see setGenomicRange.
  *
  * @author Fabien Campagne
  *         Date: Jun 22, 2010
@@ -43,6 +45,11 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
     private static AlignmentPositionComparator comparator = new AlignmentPositionComparator();
     private boolean[] nextLoadedForReader;
     private Bucket[] buckets;
+    private GenomicRange genomicRange;
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(ConcatSortedAlignmentReader.class);
 
 
     public ConcatSortedAlignmentReader(final String... basenames) throws IOException {
@@ -156,10 +163,17 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
             Bucket bucket;
             while (!entryHeap.isEmpty()) {
                 bucket = entryHeap.first();
-                if (bucket.entry.getTargetIndex() < targetIndex || bucket.entry.getPosition() < position) {
-                    // the first entry in the heap has locaton before the skip to location. We remove it.
+                int bucketTargetIndex = bucket.entry.getTargetIndex();
+                if (bucketTargetIndex < targetIndex || (
+                        (bucketTargetIndex == targetIndex && bucket.entry.getPosition() < position))) {
+                    // the first entry in the heap has location before the skip to location. We remove it.
                     Bucket removed = entryHeap.dequeue();
                     nextLoadedForReader[removed.readerIndex] = false;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Cleaning the heap: removing %d:%d from reader=%d", bucket.entry.getTargetIndex(),
+                                bucket.entry.getPosition(), activeIndex));
+                    }
+
                 } else {
                     // the first entry in the heap is at or after the skipTo location. We are done cleaning up the heap.
                     break;
@@ -174,20 +188,43 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
                 activeIndex = readerIndex;
                 //     System.out.println("Setting activeIndex to "+readerIndex + " "+ readersWithMoreEntries);
                 final AlignmentReader reader = readers[activeIndex];
-                final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(targetIndex, position);
+                Alignments.AlignmentEntry alignmentEntry;
+                do {
+                    alignmentEntry = reader.skipTo(targetIndex, position);
+                } while (alignmentEntry != null && genomicRange != null &&
+                        genomicRange.positionIsBeforeStart(alignmentEntry.getTargetIndex(),
+                                alignmentEntry.getPosition()));
+
                 if (alignmentEntry == null) {
                     // reader has no more entries. Remove from further consideration
                     readersWithMoreEntries.remove(activeIndex);
 
                 } else {
 
+                    if (genomicRange != null &&
+                            genomicRange.positionIsPastEnd(alignmentEntry.getTargetIndex(),
+                                    alignmentEntry.getPosition())) {
 
-                    nextLoadedForReader[readerIndex] = true;
-                    final Bucket bucket = buckets[readerIndex];
-                    bucket.entry = alignmentEntry;
-                    bucket.readerIndex = readerIndex;
-                    entryHeap.enqueue(bucket);
-                    //    System.out.println("entryHeap.size()" + entryHeap.size());
+                        // entry is past the slice of interest, we are now done with this reader.
+                        readersWithMoreEntries.remove(activeIndex);
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(String.format("Reached the end of slice for reader %d with entry %d:%d", activeIndex,
+                                    alignmentEntry.getTargetIndex(),
+                                    alignmentEntry.getPosition()));
+                        }
+                    } else {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(String.format("Adding to the heap: %d:%d from reader=%d", alignmentEntry.getTargetIndex(),
+                                    alignmentEntry.getPosition(), activeIndex));
+                        }
+                        nextLoadedForReader[readerIndex] = true;
+                        final Bucket bucket = buckets[readerIndex];
+                        bucket.entry = alignmentEntry;
+                        bucket.readerIndex = readerIndex;
+                        entryHeap.enqueue(bucket);
+                        //    System.out.println("entryHeap.size()" + entryHeap.size());
+
+                    }
                 }
             }
         }
@@ -216,7 +253,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         if (adjustSampleIndices) {
             builder = builder.setSampleIndex(activeIndex);
         }
-
+        builder=processReadGroups(alignmentEntry,builder, activeIndex);
         return builder.build();
 
 
@@ -249,38 +286,71 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         if (hasNext) {
             return true;
         }
+
         for (final int readerIndex : readersWithMoreEntries) {
             if (!nextLoadedForReader[readerIndex]) {
                 // the reader at position readerIndex was used in the previous next
                 activeIndex = readerIndex;
-
-                final AlignmentReader reader = readers[activeIndex];
-                final boolean hasNext = reader.hasNext();
-                if (!hasNext) {
-                    // reader has no more entries. Remove from further consideration
-                    readersWithMoreEntries.remove(activeIndex);
-
-                } else {
-
-                    final Alignments.AlignmentEntry alignmentEntry = reader.next();
-                    nextLoadedForReader[readerIndex] = true;
-                    final Bucket bucket = buckets[readerIndex];
-                    bucket.entry = alignmentEntry;
-                    entryHeap.enqueue(bucket);
-                    //    System.out.println("entryHeap.size()" + entryHeap.size());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Obtaining entry from reader=%d", activeIndex));
                 }
+                final AlignmentReader reader = readers[activeIndex];
+                try {
+                    final Alignments.AlignmentEntry alignmentEntry;
+                    if (genomicRange != null) {
+                        alignmentEntry = reader.skipTo(genomicRange.startReferenceIndex, genomicRange.startPosition);
+                    } else {
+                        alignmentEntry = reader.hasNext() ? reader.next() : null;
+                    }
+                    final boolean hasNext = alignmentEntry != null;
+                    if (!hasNext) {
+                        // reader has no more entries. Remove from further consideration
+                        readersWithMoreEntries.remove(activeIndex);
+
+                    } else {
+
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(String.format("Considering %d:%d", alignmentEntry.getTargetIndex(), alignmentEntry.getPosition()));
+                        }
+                        if (genomicRange != null && genomicRange.positionIsPastEnd(alignmentEntry.getTargetIndex(),
+                                alignmentEntry.getPosition())) {
+
+                            // entry is past the slice of interest, we are now done with this reader.
+                            readersWithMoreEntries.remove(activeIndex);
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("Reached the end of slice for reader # " + activeIndex);
+                            }
+                        } else {
+
+                            nextLoadedForReader[readerIndex] = true;
+                            final Bucket bucket = buckets[readerIndex];
+                            bucket.readerIndex=readerIndex;
+                            bucket.entry = alignmentEntry;
+                            entryHeap.enqueue(bucket);
+
+                            //    System.out.println("entryHeap.size()" + entryHeap.size());
+                        }
+
+                    }
+                } catch (IOException e) {
+                    // ignore this exception. the headers are sorted.
+                    LOG.error("Could not read headers for sorted alignments.");
+                }
+
             }
         }
+
         return (hasNext = (!entryHeap.isEmpty()));
 
     }
 
     /**
-     * Get the index of the alignmnet reader that provided the entry. The entry returned by the previous call to next()
+     * Get the index of the alignment reader that provided the entry. The entry returned by the previous call to next()
      * originated from the AlignmentReader at index 'readerIndex' in the list provided to the constructor.
      *
      * @return readerIndex.
      */
+
     public int getReaderIndex() {
         return activeIndex;
     }
@@ -291,19 +361,20 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
      * @return the alignment read entry from the input stream.
      */
     @Override
-    public Alignments.AlignmentEntry next()  {
+    public Alignments.AlignmentEntry next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         } else {
 
             final Bucket bucket = entryHeap.dequeue();
-            nextLoadedForReader[bucket.readerIndex] = false;
+           final int readerIndex = bucket.readerIndex;
+            nextLoadedForReader[readerIndex] = false;
 
             //   minEntry = null;
             hasNext = false;
             final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
 
-            final int newQueryIndex = mergedQueryIndex(bucket.readerIndex, alignmentEntry.getQueryIndex());
+            final int newQueryIndex = mergedQueryIndex(readerIndex, alignmentEntry.getQueryIndex());
             final int queryIndex = alignmentEntry.getQueryIndex();
             Alignments.AlignmentEntry.Builder builder = alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry);
             if (adjustQueryIndices && newQueryIndex != queryIndex) {
@@ -314,10 +385,24 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
                 builder = builder.setSampleIndex(activeIndex);
             }
 
+            builder=processReadGroups(alignmentEntry,builder, readerIndex);
+
             return builder.build();
 
         }
     }
 
     boolean hasNext;
+
+    public void setGenomicRange(GenomicRange genomicRange) throws IOException {
+        this.genomicRange = genomicRange;
+        Alignments.AlignmentEntry entry = skipTo(genomicRange.startReferenceIndex, genomicRange.startPosition);
+
+        if (entry != null) {
+            hasNext = true;
+
+            // push back the entry to the heap so we can get it again with hasNext/next()
+            entryHeap.enqueue(new Bucket(entry, activeIndex));
+        }
+    }
 }

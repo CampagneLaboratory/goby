@@ -23,8 +23,10 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -46,11 +48,19 @@ public class SampleCountInfo {
     public int sampleIndex;
     public int varCount;
     public int refCount;
+
+
     /**
      * Number of bases that failed base filters, for any reason.
      */
+
     public int failedCount;
     public int[] counts = new int[5];
+    /**
+     * While base genotypes were flagged for removal by some filter in this sample.
+     */
+    public boolean filtered[] = new boolean[5];
+
     /**
      * List of indel eirs that start at the position in this sample.
      */
@@ -67,6 +77,7 @@ public class SampleCountInfo {
             return eir1.to.compareTo(eir2.to);
         }
     };
+
 
     /**
      * Add an indel to this sample info. This method lazily creates the indels collection when the first
@@ -378,14 +389,97 @@ public class SampleCountInfo {
 
     @Override
     public String toString() {
-        return String.format("sample: %d counts A=%d C=%d T=%d G=%d N=%d FB=%d indels={ %s }%n",
+        return String.format("sample: %d counts %s %s %s %s %s FB=%d indels={ %s }%n",
                 sampleIndex,
-                counts[BASE_A_INDEX],
-                counts[BASE_C_INDEX],
-                counts[BASE_T_INDEX],
-                counts[BASE_G_INDEX],
-                counts[BASE_OTHER_INDEX],
+                toString(BASE_A_INDEX),
+                toString(BASE_T_INDEX),
+                toString(BASE_C_INDEX),
+                toString(BASE_G_INDEX),
+                toString(BASE_OTHER_INDEX),
                 failedCount,
                 indels);
+    }
+
+    private String toString(int baseIndex) {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append(base(baseIndex));
+        buffer.append("=");
+        buffer.append(counts[baseIndex]);
+
+        return buffer.toString();
+
+    }
+
+
+    public void suggestRemovingGenotype(int baseIndex) {
+
+        if (counts[baseIndex] - 1 >= 0) {
+
+            counts[baseIndex]--;
+        }
+
+    }
+
+
+    /**
+     * Reset a genotype count to a given value.
+     *
+     * @param genotypeIndex
+     * @param count
+     */
+    public void setGenotypeCount(int genotypeIndex, int count) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            counts[genotypeIndex] = count;
+            return;
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
+                equivalentIndelRegion.setFrequency(count);
+                equivalentIndelRegion.removeFiltered();
+                return;
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    public int getSumCounts() {
+        int sum = 0;
+        for (int i = 0; i < getGenotypeMaxIndex(); i++) {
+            sum += getGenotypeCount(i);
+        }
+        return sum;
+    }
+
+    public boolean isFiltered(int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return filtered[genotypeIndex];
+
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
+
+                return equivalentIndelRegion.isFiltered();
+            } else return false;
+        }
+    }
+
+    /**
+     * Return the base frequency of this genotype in this one sample.
+     *
+     * @param genotypeIndex Index of a genotype
+     * @return the frequency of this genotype (count of the genotype divided by the sum of all other counts).
+     */
+    public float frequency(int genotypeIndex) {
+        int sum = 0;
+
+        for (int index = 0; index < getGenotypeMaxIndex(); index++) {
+            sum += getGenotypeCount(index);
+        }
+        if (sum == 0) return 0;
+        float count = (float) getGenotypeCount(genotypeIndex);
+        return count / ((float) sum);
     }
 }

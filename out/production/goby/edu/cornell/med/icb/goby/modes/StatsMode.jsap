@@ -1,0 +1,109 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <help>The compact alignment file(s) to read as input. Basenames are derived from these input files by
+                removing the conventional Goby alignment extensions (e.g., .entries, .tmh, .stat, .header).
+            </help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.
+            </help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>groups</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>groups</longFlag>
+            <required>false</required>
+            <help>Define groups for multigroup comparisons. The syntax of the groups arguments is
+                id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to
+                consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the
+                command line (see input). Multiple groups are separated by forward slashes (/).
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>compare</id>
+            <longFlag>compare</longFlag>
+            <required>false</required>
+            <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids
+                separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups
+                option), --compare group-A/group-B will evaluate statistical tests of different count representation
+                between samples in groups A and B.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>normalization-methods</id>
+            <longFlag>normalization-methods</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>bullard-upper-quartile</string>
+            </defaults>
+            <help>Comma separated list of the normalization methods to apply. Method currently supported include
+                (AC=aligned-count) normalization by aligned sample count, or (BUQ=bullard-upper-quartile) Bullard Upper
+                Quantile normalization. By default both options are evaluated. This option is available since goby 1.5.
+            </help>
+        </flaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Process basenames in parallel. Use when you have many basenames to process, need the parallel speedup,
+                and have a lot of memory to load multiple basenames in memory. You can tune the number of processors
+                used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel
+                is specified, one thread per processing core of the machine will be used unless specified otherwise
+                (with pj.nt).
+            </help>
+        </switch>
+        <flaggedOption>
+            <id>eval</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>eval</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH
+                </string>
+            </defaults>
+            <help>Name the statistics to evaluate. The complete list of valid statistics names is
+                "samples,counts,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH".
+                This option is available since Goby 1.7.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>info</id>
+            <longFlag>info</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>XML file with information in the format produced by alignment-to-annotation-counts. Provides annotatio
+                lengths and total mapped counts for samples.
+            </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

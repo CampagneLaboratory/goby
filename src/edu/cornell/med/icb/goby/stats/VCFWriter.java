@@ -79,6 +79,7 @@ public class VCFWriter {
 
     /**
      * When this flag is true, writeHeader writes associations between columns and groups.
+     *
      * @param writeFieldGroupAssociations True or False.
      */
     public void setWriteFieldGroupAssociations(final boolean writeFieldGroupAssociations) {
@@ -290,13 +291,15 @@ public class VCFWriter {
                 sb.append(',');
             }
             for (ColumnField field : column.fields) {
-                for (String group : field.getGroups()) {
-                    sb.append(column.getColumnName());
-                    sb.append('/');
-                    sb.append(field.id);
-                    sb.append('=');
-                    sb.append(group);
-                    sb.append(',');
+                if (field.getGroups() != null) {
+                    for (String group : field.getGroups()) {
+                        sb.append(column.getColumnName());
+                        sb.append('/');
+                        sb.append(field.id);
+                        sb.append('=');
+                        sb.append(group);
+                        sb.append(',');
+                    }
                 }
             }
         }
@@ -564,7 +567,8 @@ public class VCFWriter {
 
 
     ColumnInfo infoColumn = new ColumnInfo("INFO");
-     /**
+
+    /**
      * Define a VCF field for a column. No groups associated with the field.
      *
      * @param columnName  Name of an existing column.
@@ -576,8 +580,9 @@ public class VCFWriter {
      */
     public int defineField(String columnName, String fieldName, int numValues, ColumnType type, String description) {
 
-      return defineField(columnName,fieldName,numValues,type,description, NO_GROUPS);
+        return defineField(columnName, fieldName, numValues, type, description, NO_GROUPS);
     }
+
     /**
      * Define a VCF field for a column.
      *
@@ -765,6 +770,7 @@ public class VCFWriter {
         columnList.clear();
         this.columns = columns;
     }
+
 
     // assign column order according to the CVF format.
     private void assignColumnIndices(Columns columns) {

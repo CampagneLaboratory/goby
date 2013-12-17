@@ -1,0 +1,9 @@
+#Statistics for merged alignment. 
+#Tue Dec 03 10:55:07 EST 2013
+number.of.queries=1
+min.query.index=0
+number-of-entries-written=2
+max.query.index=0
+basename=spliced-output-alignment-11
+number.alignment.entries=2
+basename.full=test-results/splicedsamhelper/spliced-output-alignment-11

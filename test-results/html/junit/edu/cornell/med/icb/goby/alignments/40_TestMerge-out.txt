@@ -1,0 +1,638 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+preparing 105
+Warning: could not find depth/max-length-of-match in too many hits information.
+found entry: query_index: 0
+target_index: 1999
+position: 19991
+score: 20020.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 1
+target_index: 1999
+position: 19992
+score: 20021.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 1999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 1999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 1999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 1999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 1999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 1999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 1999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 1999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+Warning: could not find depth/max-length-of-match in too many hits information.
+preparing 105
+Warning: could not find depth/max-length-of-match in too many hits information.
+found entry: query_index: 0
+target_index: 1
+position: 11
+score: 40.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 1
+target_index: 1
+position: 12
+score: 41.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 1
+position: 13
+score: 42.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 1
+position: 14
+score: 43.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 1
+position: 15
+score: 44.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 1
+position: 16
+score: 45.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 1
+position: 17
+score: 46.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 1
+position: 18
+score: 47.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 1
+position: 19
+score: 48.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 1
+position: 20
+score: 49.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+preparing 105
+Warning: could not find depth/max-length-of-match in too many hits information.
+notBestScoreCount=16.6667 % geneAmbiguityCount=33.3333 % 
+found entry: query_index: 0
+target_index: 1
+position: 2
+score: 31.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 0
+target_index: 2
+position: 3
+score: 31.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 4
+position: 6
+score: 30.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+preparing 105
+Finding max number of reads...
+Found input file with 2 target(s)
+Found input file with 2 target(s)
+... max number of reads was 10
+First pass: determine which reads should be kept in the merged alignment.
+Scanning align-105
+Scanning align-106
+Found 40 logical alignment entries.
+Prepare merged too many hits information.
+Warning: could not find depth/max-length-of-match in too many hits information.
+Second pass: writing the merged alignment.
+Wrote 20  skipped: 20 50.000000% too many hits 0.000000% notBestScore: 50.000000%
+Total logical entries written: 20
+Total bytes written: 0
+Average bytes/logical entry: 0.0
+Min query index: 0
+Max query index: 9
+Number of queries: 10
+Number of targets: 4
+Percent aligned: 100.0
+preparing 105
+Warning: could not find depth/max-length-of-match in too many hits information.
+preparing 105
+Warning: could not find depth/max-length-of-match in too many hits information.
+found entry: query_index: 0
+target_index: 1999
+position: 19991
+score: 20020.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 1
+target_index: 1999
+position: 19992
+score: 20021.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 1999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 1999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 1999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 1999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 1999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 1999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 1999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 1999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 0
+target_index: 3999
+position: 19991
+score: 20020.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 1
+target_index: 3999
+position: 19992
+score: 20021.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 3999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 3999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 3999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 3999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 3999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 3999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 3999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 3999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+preparing 105
+found entry: query_index: 2
+target_index: 1999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 1999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 1999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 1999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 1999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 1999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 1999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 1999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 3999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 3999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 3999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 3999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 3999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 3999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 3999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 3999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+preparing 105
+found entry: query_index: 2
+target_index: 1999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 1999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 1999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 1999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 1999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 1999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 1999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 1999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 2
+target_index: 3999
+position: 19993
+score: 20022.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 3
+target_index: 3999
+position: 19994
+score: 20023.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 4
+target_index: 3999
+position: 19995
+score: 20024.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 5
+target_index: 3999
+position: 19996
+score: 20025.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 6
+target_index: 3999
+position: 19997
+score: 20026.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 7
+target_index: 3999
+position: 19998
+score: 20027.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 8
+target_index: 3999
+position: 19999
+score: 20028.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+found entry: query_index: 9
+target_index: 3999
+position: 20000
+score: 20029.0
+matching_reverse_strand: false
+multiplicity: 1
+query_length: 35
+
+

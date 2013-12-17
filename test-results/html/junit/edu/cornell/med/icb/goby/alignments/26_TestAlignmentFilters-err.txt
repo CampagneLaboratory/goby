@@ -1,0 +1,2 @@
+Setting quality threshold to 0.02
+

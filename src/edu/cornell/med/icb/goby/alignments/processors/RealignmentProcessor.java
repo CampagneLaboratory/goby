@@ -322,28 +322,36 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 final int realignedPos = pos + (direction * indelLength);
                 // if the realigned varPosition lies outside of the reference penalize heavily with -10, otherwise
                 // count -1 for every new mismatch introduced by the indel:
-                assert realignedPos >= 0 : "realignedPos cannot be negative for best indel.";
+                if (realignedPos >= 0) {
 
+                    final char fromBase = genome.get(targetIndex, realignedPos);
+                    final char toBase = genome.get(targetIndex, pos);
+                    final boolean compatible = fromBase == toBase;
 
-                final char fromBase = genome.get(targetIndex, realignedPos);
-                final char toBase = genome.get(targetIndex, pos);
-                final boolean compatible = fromBase == toBase;
+                    if (!compatible) {
+                        Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
+                        // varPosition is one-based while realignedPos and entryPos are zero-based:
+                        final int varPosition = direction * (realignedPos - entryPosition) + 1;
+                        varBuilder.setPosition(varPosition);
+                        varBuilder.setFrom(Character.toString(fromBase));
+                        varBuilder.setTo(Character.toString(toBase));
+                        varBuilder.setToQuality(byteArray((byte) Byte.MAX_VALUE));
+                        int readIndex = entry.getMatchingReverseStrand() ?
+                                entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
+                                varPosition;
 
-                if (!compatible) {
-                    Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
-                    // varPosition is one-based while realignedPos and entryPos are zero-based:
-                    final int varPosition = direction * (realignedPos - entryPosition) + 1;
-                    varBuilder.setPosition(varPosition);
-                    varBuilder.setFrom(Character.toString(fromBase));
-                    varBuilder.setTo(Character.toString(toBase));
-                    varBuilder.setToQuality(byteArray((byte) Byte.MAX_VALUE));
-                    int readIndex = entry.getMatchingReverseStrand() ?
-                            entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
-                            varPosition;
+                        varBuilder.setReadIndex(readIndex);
+                        rewrittenVariations.add(varBuilder.build());
 
-                    varBuilder.setReadIndex(readIndex);
-                    rewrittenVariations.add(varBuilder.build());
-
+                    }
+                } else {
+                    LOG.warn(
+                            String.format("Realigned position cannot be negative." +
+                                    " Ignoring this entry: %s%n" +
+                                    "Error encountered at targetIndex=%d targetId=%s pos=%d %n",
+                                    entry.toString(), targetIndex, genome.getReferenceName(targetIndex), pos));
+                    // returning source entry without any changes:
+                    return entry;
                 }
             }
         }
@@ -476,7 +484,6 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         }
         return sequence.toString();
     }
-
 
 
     public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {

@@ -41,15 +41,15 @@ public class IterateSortedAlignmentsTester extends IterateSortedAlignments<Objec
      */
     private static final Logger LOG = Logger.getLogger(IterateSortedAlignmentsTester.class);
 
-    public Int2ObjectMap<PerQueryAlignmentData> queryIndexToAlignmentDataMap;
+    public PositionToBasesMap<PerQueryAlignmentData> queryIndexToAlignmentDataMap;
 
     public IterateSortedAlignmentsTester() {
-        queryIndexToAlignmentDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
+        queryIndexToAlignmentDataMap = new PositionToBasesMap<PerQueryAlignmentData>();
     }
 
     @Override
     public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
-                                     Int2ObjectMap<Object> positionToBases,
+                                     PositionToBasesMap<Object> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
@@ -81,7 +81,7 @@ public class IterateSortedAlignmentsTester extends IterateSortedAlignments<Objec
     @Override
     public void observeVariantBase(
             ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
-            Int2ObjectMap<Object> positionToBases, Alignments.SequenceVariation var,
+            PositionToBasesMap<Object> positionToBases, Alignments.SequenceVariation var,
             char toChar, char fromChar, byte toQual, int currentReferenceIndex,
             int currentRefPosition, int currentReadIndex) {
         if (LOG.isDebugEnabled()) {

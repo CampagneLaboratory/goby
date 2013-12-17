@@ -1,0 +1,61 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>delimiter</id>
+            <shortFlag>d</shortFlag>
+            <longFlag>delimiter</longFlag>
+            <required>true</required>
+            <help>The delimiter character used to parse filenames into tokens.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>suffix</id>
+            <longFlag>suffix</longFlag>
+            <required>false</required>
+            <help>Determine how filename suffixes should be processed to generate the first column of the sample attribute file. This argument should be in the format A/B, where A is a suffix of the filename, and B is a string to substitute to A for every file. For instance, .entries/ will remove the .entries suffix of each filename. </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>attribute</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>attribute</longFlag>
+            <required>true</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>The identifier for each attribute, in the order the values appear in the filename.</help>
+        </flaggedOption>
+
+          <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+
+            <help>The output file name.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>file</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The input file(s) to construct attributes for.</help>
+        </unflaggedOption>
+
+
+    </parameters>
+</jsap>

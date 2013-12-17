@@ -1,0 +1,53 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>Where the output will be written.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <help>The SAM input file.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>BAM</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is to not convert the characters (BAM encoding). Valid encodings include BAM, Illumina, Sanger and Solexa.</help>
+         </flaggedOption>
+        <flaggedOption>
+            <id>process-at-most</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>process-at-most</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>When this option is given, will stop extracting reads after the given number of entries. This is useful to have a preview extraction of a very large file.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

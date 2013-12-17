@@ -74,14 +74,16 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
      * The second index is the original read origin index in the input reader. The value is the
      * permuted read origin index for the concatenated entry.
      */
-    private int[][] readOriginPermutations;
+    protected int[][] readOriginPermutations;
     private boolean needsPermutation;
     private String[] basenames;
     // indicates whether a reader has read a origin information:
-    private boolean[] hasReadOrigin;
+    protected boolean[] hasReadOrigin;
+
+
 
     /**
-     * Construct an alignment reader over a set of alignments.
+     * Construct an alignment reader over a RepositionableInputStreamset of alignments.
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
      * This version uses adjustQueryIndices as the default true.
@@ -122,7 +124,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
-                                    hasReadOrigin=new boolean[basenames.length];
+        hasReadOrigin = new boolean[basenames.length];
         readersWithMoreEntries = new IntArraySet();
 
         for (int readerIndex = 0; readerIndex < basenames.length; readerIndex++) {
@@ -172,7 +174,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
-        hasReadOrigin=new boolean[basenames.length];
+        hasReadOrigin = new boolean[basenames.length];
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
         for (final String basename : basenames) {
@@ -237,7 +239,15 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                     numberOfQueries = Math.max(numberOfQueries, numQueriesForReader);
                 }
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
-                mergeReadOrigins(readerIndex, reader.getReadOriginInfo().getPbList(), readers.length);
+                ReadOriginInfo readOriginInfo = reader.getReadOriginInfo();
+                ReadGroupHelper readGroupHelper = getReadGroupHelper();
+                if (readOriginInfo.size() > 0 && readGroupHelper.isOverrideReadGroups()) {
+                    LOG.warn("Source contained read origin info, but overriding.");
+                }
+                if (readGroupHelper.isOverrideReadGroups()) {
+                    readOriginInfo = makeDefaultReadOriginInfo(reader);
+                }
+                mergeReadOrigins(readerIndex, readOriginInfo.getPbList(), readers.length);
 
                 readerIndex++;
             }
@@ -297,6 +307,26 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
 
 
         setHeaderLoaded(true);
+    }
+
+    private ReadOriginInfo makeDefaultReadOriginInfo(AlignmentReader reader) {
+
+        List<Alignments.ReadOriginInfo> list = new ObjectArrayList<Alignments.ReadOriginInfo>();
+        Alignments.ReadOriginInfo.Builder builder = Alignments.ReadOriginInfo.newBuilder();
+        builder.setOriginIndex(0);
+        String basename = reader.basename();
+        ReadGroupHelper readGroupHelper = getReadGroupHelper();
+        builder.setOriginId(readGroupHelper.getId(basename));
+        builder.setSample(readGroupHelper.getSample(basename));
+        // Assume only one barcode per sample:
+        builder.setPlatformUnit(readGroupHelper.getSample(basename));
+        builder.setPlatform(readGroupHelper.getPlatform(basename));
+        list.add(builder.build());
+        return new ReadOriginInfo(list);
+    }
+
+    public ReadGroupHelper getReadGroupHelper() {
+        return new ReadGroupHelper();
     }
 
     private int nextAvailableReadOriginIndex = 0;
@@ -400,12 +430,18 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             if (adjustSampleIndices) {
                 builder = builder.setSampleIndex(activeIndex);
             }
-            if (alignmentEntry.hasReadOriginIndex() && hasReadOrigin[activeIndex]) {
-                // remove conflicts by permuting read origin index to the concatenated read origin indices:
-                builder = builder.setReadOriginIndex(readOriginPermutations[activeIndex][alignmentEntry.getReadOriginIndex()]);
-            }
+            builder = processReadGroups(alignmentEntry, builder, activeIndex);
             return builder.build();
         }
+    }
+
+    protected Alignments.AlignmentEntry.Builder processReadGroups(Alignments.AlignmentEntry alignmentEntry,
+                                                                  Alignments.AlignmentEntry.Builder builder, final int readerIndex) {
+        if (alignmentEntry.hasReadOriginIndex() && hasReadOrigin[readerIndex]) {
+            // remove conflicts by permuting read origin index to the concatenated read origin indices:
+            builder = builder.setReadOriginIndex(readOriginPermutations[readerIndex][alignmentEntry.getReadOriginIndex()]);
+        }
+        return builder;
     }
 
     /**
@@ -457,6 +493,78 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
     }
 
+    public ObjectList<ReferenceLocation> getLocationsByBytes(int numBytesPerSlice) throws IOException {
+        readHeader();
+        ObjectSet<ReferenceLocation> result = new ObjectOpenHashSet<ReferenceLocation>();
+        int numReaders = this.readers.length;
+        long byteAccumulation = 0;
+        int readerIndex = 0;
+        ObjectList<ReferenceLocation> locations[] = new ObjectList[numReaders];
+        int[] locationIndices = new int[numReaders];
+        int maxLocationIndices = -1;
+        for (AlignmentReader reader : this.readers) {
+
+            locations[readerIndex] = reader.getLocationsByBytes(numBytesPerSlice / numReaders);
+            maxLocationIndices = Math.max(maxLocationIndices, locations[readerIndex].size());
+            readerIndex++;
+        }
+
+        long sizeSinceLastSlice = 0;
+        // explicitely put start and end locations into the result:
+        ReferenceLocation startLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        ReferenceLocation endLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+            ReferenceLocation readerFirst = locations[readerIndex].get(0);
+            ReferenceLocation readerLast = locations[readerIndex].get(locations[readerIndex].size()-1);
+            if (readerFirst.compareTo(startLocation)<0) {
+                startLocation=readerFirst;
+            }
+            if (readerLast.compareTo(startLocation)>0) {
+                endLocation=readerLast;
+            }
+        }
+
+        for (int i = 0; i < maxLocationIndices; i++) {
+
+            for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+                if (i < locations[readerIndex].size()) {
+                    assert readerIndex < locations.length : "readerIndex must be smaller than locations length";
+                    assert readerIndex < locationIndices.length : "i must be smaller than locationIndices length";
+
+                    ReferenceLocation readerLocation = locations[readerIndex]
+                            .get(locationIndices[readerIndex]);
+                    sizeSinceLastSlice += readerLocation.compressedByteAmountSincePreviousLocation;
+
+                }
+                locationIndices[readerIndex]++;
+            }
+            if ( sizeSinceLastSlice > numBytesPerSlice) {
+                ObjectList<ReferenceLocation> currentLocations = new ObjectArrayList<ReferenceLocation>();
+                for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
+
+                    if (locationIndices[readerIndex]==0 || locationIndices[readerIndex] < locations[readerIndex].size()) {
+                        ReferenceLocation readerLocation = locations[readerIndex].get(locationIndices[readerIndex]);
+                        currentLocations.add(readerLocation);
+                    }
+                }
+                Collections.sort(currentLocations);
+                int medianIndex = currentLocations.size() / 2;
+                if (medianIndex < currentLocations.size()) {
+                    ReferenceLocation medianLocation = currentLocations.get(medianIndex);
+                    result.add(medianLocation);
+                }
+
+                sizeSinceLastSlice = 0;
+            }
+        }
+        ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
+        list.addAll(result);
+        list.add(startLocation);
+        list.add(endLocation);
+        Collections.sort(list);
+        return list;
+    }
+
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
         readHeader();
         ObjectSet<ReferenceLocation> result = new ObjectOpenHashSet<ReferenceLocation>();
@@ -480,5 +588,22 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     public ReadOriginInfo getReadOriginInfo() {
         return new ReadOriginInfo(mergedReadOriginInfoList);
     }
+
+    private String startOffsetArgument;
+    private String endOffsetArgument;
+
+    /**
+     * Restrict concatenation to a slice of the inputs. Offset arguments are either long byte offsets
+     * in a string, or strings in the format ref,genomic-pos, where ref is the identifier of the reference
+     * sequence where the slice stats/ends and genomic-pos is the corresponding genomic position on that reference.
+     *
+     * @param startOffsetArgument
+     * @param endOffsetArgument
+     */
+    public void setStartEndOffsets(String startOffsetArgument, String endOffsetArgument) {
+        this.startOffsetArgument = startOffsetArgument;
+        this.endOffsetArgument = endOffsetArgument;
+    }
+
 
 }

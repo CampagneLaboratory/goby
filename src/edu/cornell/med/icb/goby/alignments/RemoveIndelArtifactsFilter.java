@@ -30,33 +30,27 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  */
 public class RemoveIndelArtifactsFilter extends GenotypeFilter {
     @Override
-    public void filterGenotypes(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts, ObjectSet<PositionBaseInfo> filteredSet) {
+    public void filterGenotypes(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts,
+                                ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
+
         if (list.hasCandidateIndels()) {
             for (EquivalentIndelRegion indel : list.getIndels()) {
                 for (final PositionBaseInfo info : list) {
 
 
-                    if (info.readerIndex == indel.sampleIndex && info.to == '-') {
+                    if (info.readerIndex == indel.sampleIndex && info.to == '-' ) {
                         //     list.remove(info);
-                        filteredSet.add(info);
 
-                        final SampleCountInfo sampleCount = sampleCounts[info.readerIndex];
-
-                        final char base = info.to;
-
-                        final int baseIndex = sampleCount.baseIndex(base);
-                        sampleCount.counts[baseIndex] = Math.max(0, sampleCount.counts[baseIndex] - 1);
-                        checkCountPositive(sampleCount, baseIndex);
-                        if (info.matchesReference) {
-                            refCountRemovedPerSample[info.readerIndex]++;
-
-                        } else {
-                            varCountRemovedPerSample[info.readerIndex]++;
+                        final SampleCountInfo sampleCountInfo = sampleCounts[info.readerIndex];
+                        final char base = info.to == '-'? info.from : info.to;
+                        final int baseIndex = sampleCountInfo.baseIndex(base);
+                        if (!filteredList.contains(info)) {
+                            sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                            removeGenotype(info, filteredList);
                         }
-                        numFiltered++;
-                        /*       if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
+                        /*  if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
 
                             System.out.println("STOP3");
                         }*/
@@ -66,6 +60,9 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
 
         }
         numScreened += list.size();
+     //   filterIndels(list, sampleCounts);
+     // do not adjust for thresholding effects.
+        adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
 

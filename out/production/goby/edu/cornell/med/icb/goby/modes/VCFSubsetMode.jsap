@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>suffix</longFlag>
+            <required>false</required>
+            <help>The output suffix to construct an output filename for each input file. The output filename will be input-filename - extensions + suffix + vcf.gz</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The filenames of the input VCF files to subset.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>column</id>
+            <longFlag>column</longFlag>
+            <shortFlag>c</shortFlag>
+            <required>false</required>
+              <allowMultipleDeclarations>true</allowMultipleDeclarations>
+              <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Name of a column/sample to extract from the input and write in the output.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>required-info-flags</id>
+            <longFlag>required-info-flags</longFlag>
+            <shortFlag>r</shortFlag>
+            <required>false</required>
+              <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Name of INFO flags that must appear in a record for the record to be written in the output. This argument acts as a filter on the input.</help>
+        </flaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Process input files in parallel. By default, uses as many threads as available in the server. Adjust the number of threads with -Dpj.nt=x, where x is the desired number of threads. </help>
+        </switch>
+        <switch>
+            <id>constant-format</id>
+            <longFlag>constant-format</longFlag>
+            <help>Optimize for constant FORMAT fields. When the FORMAT fields are constant throughout each record of a field and the INFO field always contains the same number of fields, providing this flag with skip some time consuming steps. Since INFO is often variable, use with care, as variations in the INFO column will shift FORMAT fields from one sample to another.</help>
+        </switch>
+        <switch>
+            <id>exclude-ref</id>
+            <longFlag>exclude-ref</longFlag>
+            <help>Remove positions that are strictly homozygous matching the reference in all subset samples.</help>
+        </switch>
+    </parameters>
+</jsap>

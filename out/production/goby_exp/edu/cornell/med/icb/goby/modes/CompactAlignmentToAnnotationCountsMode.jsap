@@ -1,0 +1,204 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The compact alignment file(s) to read as input. Basenames are derived from these input files by removing the conventional Goby alignment extensions (e.g., .entries, .tmh, .stat, .header).</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The tab delimited output filename, when omitted, constructed from the input filename. Output filenames will have extension .ann-counts.tsv</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>stats</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>stats</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>comparison-stats.tsv</string>
+            </defaults>
+            <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>annotation</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>annotation</longFlag>
+            <required>true</required>
+            <help>The annotation file as input.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>groups</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>groups</longFlag>
+            <required>false</required>
+            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>include-annotation-types</id>
+            <longFlag>include-annotation-types</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>gene,exon,other</string>
+            </defaults>
+            <help>Comma delimited list of annotation types. When provided, write annotation counts for the specified annotation type. By default, write annotation counts for gene exon or introns.  The other category indicates intronic or intergenic regions currently not annotated as genes or exons by the given annotation.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>compare</id>
+            <longFlag>compare</longFlag>
+            <required>false</required>
+            <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests of different count representation between samples in groups A and B.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>normalization-methods</id>
+            <longFlag>normalization-methods</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>bullard-upper-quartile</string>
+            </defaults>
+            <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC=aligned-count) normalization by aligned sample count, or (BUQ=bullard-upper-quartile) Bullard Upper Quantile normalization. By default both options are evaluated. This option is available since goby 1.5.</help>
+        </flaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Process basenames in parallel. Use when you have many basenames to process, need the parallel speedup, and have a lot of memory to load multiple basenames in memory. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+        </switch>
+        <switch>
+            <id>remove-shared-segments</id>
+            <longFlag>remove-shared-segments</longFlag>
+            <shortFlag>N</shortFlag>
+            <help>Remove annotation segments when they partially overlap with more than one primary annotation id. When this option is selected and the primary id is a gene, and secondary id is an exon, the mode will remove exons that are associated with several genes. When the option is used with transcript id as primary and exon as secondary, exons are removed that are shared across different transcripts of the same gene.</help>
+        </switch>
+        <flaggedOption>
+            <id>write-annotation-counts</id>
+            <longFlag>write-annotation-counts</longFlag>
+            <required>false</required>
+            <help>If true, the annotation counts files will be written.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>omit-non-informative-columns</id>
+            <longFlag>omit-non-informative-columns</longFlag>
+            <required>false</required>
+            <help>If true, columns which are entirely non-informative will be omitted.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+             <id>use-weights</id>
+             <shortFlag>w</shortFlag>
+             <longFlag>use-weights</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>false</string>
+            </defaults>
+                   <help>Whether weights should be used to adjust read counts. When the flag is set to a string 'id' other than false, this mode will try to load a weights file associated with each input basename ('basename'.'id'-weight). If found, the weights are used to adjust the read count for annotations. This option is available since Goby 1.7.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+             <id>adjust-gc-bias</id>
+             <longFlag>adjust-gc-bias</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>false</string>
+            </defaults>
+                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done. This option is available since Goby 1.7.</help>
+         </flaggedOption>
+          <flaggedOption>
+             <id>eval</id>
+             <shortFlag>t</shortFlag>
+             <longFlag>eval</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH</string>
+            </defaults>
+                   <help>Name the statistics to evaluate. The complete list of valid statistics names is "samples,counts,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH". This option is available since Goby 1.7.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>filter-ambiguous-reads</id>
+            <longFlag>filter-ambiguous-reads</longFlag>
+            <required>true</required>
+            <help>If true, the reads that match more locations than the ambiguity threshold are not considered when calculating counts. When false, all reads are considered. Please note that prior to Goby 1.9.7.1, this mode used false. The default for Goby 1.9.7.1+ is true.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be a string in the format ref-id,ref-position (since Goby 1.9.8). Ref-position is zero-based. Only entries that have a position after the start position are considered.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be a string in the format ref-id,ref-position (since Goby 1.9.8). Ref-position is zero-based. Only entries that occur before the specified position are analyzed.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>info-output</id>
+            <longFlag>info-output</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Filename where to write accessory information neded by Stats mode.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

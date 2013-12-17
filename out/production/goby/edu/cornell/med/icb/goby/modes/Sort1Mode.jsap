@@ -1,0 +1,61 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The basename where to write the sorted alignment.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <help>The compact alignment file to read as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only output alignment entries that match the provided reference identifiers listed in this comma separated list. To process only entries matching chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading from. Reading will start at the first record on or after start-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from. Reading will end at the end of the record on or after end-position.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

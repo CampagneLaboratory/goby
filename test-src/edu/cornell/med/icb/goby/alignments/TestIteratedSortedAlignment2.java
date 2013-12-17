@@ -86,9 +86,9 @@ public class TestIteratedSortedAlignment2 {
     }
 
     private boolean dataSetup = false;
-    private Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap;
+    private PositionToBasesMap<PerQueryAlignmentData> alignmentDataMap;
     private int[] alignmentQueryIndexes;
-    private Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap;
+    private PositionToBasesMap<PerQueryAlignmentData> seqvarDataMap;
     private int[] seqvarQueryIndexes;
 
     /**
@@ -340,8 +340,8 @@ public class TestIteratedSortedAlignment2 {
         dataSetup = true;
     }
 
-    public static Int2ObjectMap<PerQueryAlignmentData> readSeqVarFile(final String filename) throws IOException {
-        Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
+    public static PositionToBasesMap<PerQueryAlignmentData> readSeqVarFile(final String filename) throws IOException {
+        PositionToBasesMap<PerQueryAlignmentData> seqvarDataMap = new PositionToBasesMap<PerQueryAlignmentData>();
         final File datafile = new File(filename);
         final TsvToFromMap tsvReader = TsvToFromMap.createFromTsvFile(datafile);
         for (final LinkedHashToMultiTypeMap<String> dataline : new TsvLineIterator(datafile, tsvReader)) {

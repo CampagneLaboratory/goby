@@ -1,0 +1,6 @@
+ appending (count=10,length=4)
+ appending (count=1,length=0)
+ appending (count=2,length=8)
+Hello
+ appending (count=10,length=4)
+

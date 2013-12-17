@@ -21,12 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsToTextWriter;
-import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.io.File;
@@ -35,6 +30,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 /**
  * Validates the functionality of {@link edu.cornell.med.icb.goby.modes.ReformatCompactReadsMode}.

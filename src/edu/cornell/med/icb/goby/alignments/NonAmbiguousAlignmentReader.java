@@ -264,6 +264,11 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
         return delegate.getLocations(modulo);
     }
 
+    @Override
+    public ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException {
+        return delegate.getLocationsByBytes(bytesPerSlice);
+    }
+
     public boolean isQueryLengthStoredInEntries() {
         return delegate.isQueryLengthStoredInEntries();
     }

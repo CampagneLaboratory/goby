@@ -25,10 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.ranges.Range;
 import edu.cornell.med.icb.goby.algorithmic.data.ranges.Ranges;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
@@ -68,6 +65,14 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
      * Optional: file name for an annotation file.
      */
     private String annotationFilename;
+    private int numBytesPerSlice = -1;
+    private boolean useModulo;
+    /**
+     * When this switch is active, slices that would span two chromosomes are truncated to the end of the first
+     * spanned chromosome. The next slice starts at the beginning of the next chromosome.
+     */
+    private boolean restrictPerChromosome;
+    private int numBreakPointAdded = 0;
 
 
     @Override
@@ -100,7 +105,19 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         modulo = jsapResult.getInt("modulo");
         numberOfSlices = jsapResult.getInt("number-of-slices");
-
+        numBytesPerSlice = jsapResult.getInt("number-of-bytes");
+        if (!(jsapResult.userSpecified("number-of-slices") ||
+                jsapResult.userSpecified("number-of-bytes"))) {
+            System.err.println("You must specify either --number-of-bytes or --number-of-slices");
+            System.exit(1);
+        }
+        restrictPerChromosome = jsapResult.getBoolean("restrict-per-chromosome");
+        if (jsapResult.userSpecified("number-of-slices") && jsapResult.userSpecified("number-of-bytes")) {
+            System.err.println("You must select either number-of-slices or number-of-bytes, but not both. ");
+            System.exit(1);
+        }
+        useModulo = jsapResult.userSpecified("number-of-slices");
+        if (!useModulo) System.err.println("Splitting with " + numBytesPerSlice);
         return this;
     }
 
@@ -122,44 +139,35 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
 
             ConcatSortedAlignmentReader input = new ConcatSortedAlignmentReader(basenames);
             input.readHeader();
+
             DoubleIndexedIdentifier ids = new DoubleIndexedIdentifier(input.getTargetIdentifiers());
-            ObjectList<ReferenceLocation> locations = input.getLocations(modulo);
 
             Ranges ranges = null;
             if (annotationFilename != null) {
                 ranges = convertAnnotationsToRanges(annotationFilename, ids, input);
             }
 
-            if (locations.size() < numberOfSlices) {
-                numberOfSlices = locations.size();
-            }
-            ReferenceLocation first;
-            ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
-            breakpoints[0] = first = locations.get(0);
-            locations.remove(first);
-            stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
-            for (int i = 0; i < numberOfSlices - 1; i++) {
-                breakpoints[i + 1] = locations.get(locations.size() / (numberOfSlices - 1) * i);
-            }
-
-            // largest position in the last reference sequence:
-            final int lastTargetIndex = ids.size() - 1;
-            breakpoints[breakpoints.length - 1] = new ReferenceLocation(lastTargetIndex, input.getTargetLength(lastTargetIndex));
+            ReferenceLocation[] breakpoints = useModulo ? getReferenceLocationsWithModulo(stream, input, ids) :
+                    getReferenceLocationsWithBytes(stream, input, ids);
 
             if (ranges != null) {
                 adjustBreakpointsWithAnnotations(breakpoints, ranges);
             }
-            for (int i = 0; i < numberOfSlices; i++) {
-
-                stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
-                        ids.getId(breakpoints[i].targetIndex),
-                        breakpoints[i].position,
-                        ids.getId(breakpoints[i].targetIndex),
-                        breakpoints[i].position,
-                        ids.getId(breakpoints[i + 1].targetIndex),
-                        breakpoints[i + 1].position,
-                        ids.getId(breakpoints[i + 1].targetIndex),
-                        breakpoints[i + 1].position));
+            if (restrictPerChromosome) {
+                breakpoints = restrictPerChromosome(breakpoints, input);
+            }
+            for (int i = 0; i < breakpoints.length - 1; i++) {
+                if (!restrictPerChromosome ||
+                        (restrictPerChromosome && breakpoints[i].targetIndex == breakpoints[i + 1].targetIndex))
+                    stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
+                            ids.getId(breakpoints[i].targetIndex),
+                            breakpoints[i].position,
+                            ids.getId(breakpoints[i].targetIndex),
+                            breakpoints[i].position,
+                            ids.getId(breakpoints[i + 1].targetIndex),
+                            breakpoints[i + 1].position,
+                            ids.getId(breakpoints[i + 1].targetIndex),
+                            breakpoints[i + 1].position));
 
             }
 
@@ -168,6 +176,59 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                 IOUtils.closeQuietly(stream);
             }
         }
+    }
+
+    private ReferenceLocation[] restrictPerChromosome(ReferenceLocation[] breakpoints, ConcatSortedAlignmentReader reader) {
+        ObjectArrayList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+        int lastTargetIndex = -1;
+        int index = 0;
+        for (ReferenceLocation breakpoint : breakpoints) {
+            if (breakpoint.targetIndex != lastTargetIndex) {
+                // we switch to a new chromosome, introduce a new breakpoint at the end of the previous chromosome:
+                if (lastTargetIndex != -1) {
+                    result.add(new ReferenceLocation(lastTargetIndex, reader.getTargetLength(lastTargetIndex)-1));
+                    result.add(new ReferenceLocation(breakpoint.targetIndex, 0));
+                    System.out.println("Adding breakpoint at end of " + lastTargetIndex);
+                    numBreakPointAdded++;
+                }
+                lastTargetIndex = breakpoint.targetIndex;
+            }
+            result.add(breakpoint);
+            index++;
+        }
+        return result.toArray(new ReferenceLocation[result.size()]);
+    }
+
+    private ReferenceLocation[] getReferenceLocationsWithBytes(PrintStream stream, ConcatSortedAlignmentReader input, DoubleIndexedIdentifier ids) throws IOException {
+        ObjectList<ReferenceLocation> locations = input.getLocationsByBytes(numBytesPerSlice);
+        numberOfSlices = locations.size();
+        return prepareBreakpoints(stream, input, ids, locations);
+    }
+
+    private ReferenceLocation[] getReferenceLocationsWithModulo(PrintStream stream, ConcatSortedAlignmentReader input, DoubleIndexedIdentifier ids) throws IOException {
+        ObjectList<ReferenceLocation> locations = input.getLocations(modulo);
+
+        if (locations.size() < numberOfSlices) {
+            numberOfSlices = locations.size();
+        }
+
+        return prepareBreakpoints(stream, input, ids, locations);
+    }
+
+    private ReferenceLocation[] prepareBreakpoints(PrintStream stream, ConcatSortedAlignmentReader input, DoubleIndexedIdentifier ids, ObjectList<ReferenceLocation> locations) {
+        ReferenceLocation first;
+        ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
+        breakpoints[0] = first = locations.get(0);
+        locations.remove(first);
+        stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
+        for (int i = 0; i < numberOfSlices - 1; i++) {
+            breakpoints[i + 1] = locations.get(locations.size() / (numberOfSlices - 1) * i);
+        }
+
+        // largest position in the last reference sequence:
+        final int lastTargetIndex = ids.size() - 1;
+        breakpoints[breakpoints.length - 1] = new ReferenceLocation(lastTargetIndex, input.getTargetLength(lastTargetIndex));
+        return breakpoints;
     }
 
     private void adjustBreakpointsWithAnnotations(final ReferenceLocation[] breakpoints, final Ranges ranges) {

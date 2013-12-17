@@ -43,11 +43,12 @@ public class ReadProtobuffCollectionHandler implements ProtobuffCollectionHandle
 
     @Override
     public GeneratedMessage parse(final InputStream compressedBytes) throws IOException {
-        final byte[] bytes= IOUtils.toByteArray(compressedBytes);
+        final byte[] bytes = IOUtils.toByteArray(compressedBytes);
         final CodedInputStream codedInput = CodedInputStream.newInstance(bytes);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
+        Reads.ReadCollection.Builder builder = Reads.ReadCollection.newBuilder();
+        return builder.mergeFrom(codedInput).build();
 
-        return Reads.ReadCollection.parseFrom(codedInput);
     }
 
     @Override

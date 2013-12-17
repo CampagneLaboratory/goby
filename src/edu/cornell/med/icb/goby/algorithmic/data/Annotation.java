@@ -33,9 +33,18 @@ public class Annotation implements Comparable<Annotation> {
     protected final String chromosome;
     protected final ObjectList<Segment> segments;
     protected final String strand;
+    /**
+     * A field to store the index of the chromosome in some genome.
+     */
+    public int chromosomeIndex;
 
     public Annotation(final String id, final String chromosome) {
         this(id, chromosome, "N/A");
+    }
+
+    public Annotation(final String id, final String chromosome, final String strand, int chromosomeIndex) {
+        this(id, chromosome, strand);
+        this.chromosomeIndex = chromosomeIndex;
     }
 
     public Annotation(final String id, final String chromosome, final String strand) {
@@ -112,6 +121,7 @@ public class Annotation implements Comparable<Annotation> {
 
     /**
      * Determine if any segment overlaps with the specified position.
+     *
      * @param chromosome
      * @param position
      * @return
@@ -132,17 +142,18 @@ public class Annotation implements Comparable<Annotation> {
     /**
      * Determines if the specified position overlaps within the interval of this annotation
      * Does not necessarily imply segment overlap
-     *@param chromosome
-     *@param position
-     *@return
+     *
+     * @param chromosome
+     * @param position
+     * @return
      */
-    public boolean withinRange(final String chromosome, final int position){
+    public boolean withinRange(final String chromosome, final int position) {
         if (!chromosome.equals(this.chromosome)) {
-                    return false;
-                }
-        if(this.getStart()<=position && this.getEnd() >= position){
-                return true;
-        }else{
+            return false;
+        }
+        if (this.getStart() <= position && this.getEnd() >= position) {
+            return true;
+        } else {
             return false;
         }
     }

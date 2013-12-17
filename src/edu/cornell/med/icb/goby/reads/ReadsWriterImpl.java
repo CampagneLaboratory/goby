@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+ * Copyright (C) 2009-2012 Institute for Computational Biomedicine,
  *                    Weill Medical College of Cornell University
  *
  *  This file is part of the Goby IO API.

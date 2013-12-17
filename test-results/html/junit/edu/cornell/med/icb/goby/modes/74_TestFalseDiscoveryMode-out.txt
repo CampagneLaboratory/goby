@@ -1,0 +1,26 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Loading test-data/fdr-mode/file1.vcf
+Loading test-data/fdr-mode/file2.vcf
+Loading test-data/fdr-mode/file3.vcf
+Combining test-data/fdr-mode/file1.vcf
+Combining test-data/fdr-mode/file2.vcf
+Combining test-data/fdr-mode/file3.vcf
+Loading test-data/fdr-mode/file1.vcf
+Loading test-data/fdr-mode/file2.vcf
+Loading test-data/fdr-mode/file3.vcf
+adjusting column: PCHI2
+Combining test-data/fdr-mode/file1.vcf
+Combining test-data/fdr-mode/file2.vcf
+Combining test-data/fdr-mode/file3.vcf
+Loading test-data/fdr-mode/file-B-1.vcf
+Loading test-data/fdr-mode/file-B-2.vcf
+adjusting column: PCHI2
+Combining test-data/fdr-mode/file-B-1.vcf
+Combining test-data/fdr-mode/file-B-2.vcf
+Loading test-data/fdr-mode/file-B-1.vcf
+Loading test-data/fdr-mode/file-B-2.vcf
+adjusting column: PCHI2
+Combining test-data/fdr-mode/file-B-1.vcf
+Combining test-data/fdr-mode/file-B-2.vcf
+

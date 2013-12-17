@@ -428,7 +428,7 @@ public class VCFParser implements Closeable {
         try {
             while (lineIterator.hasNext()) {
                 line = lineIterator.next();
-                if (line.startsWith("##")) {
+                if (hasVcfMetaLine()) {
                     TSV = false;
                 }
                 if (!line.startsWith("#")) {
@@ -448,7 +448,7 @@ public class VCFParser implements Closeable {
                     }
                     break;
                 }
-                if (line.startsWith("##")) {
+                if (hasVcfMetaLine()){
                     TSV = false;
                     processMetaInfoLine(line);
                 } else if (line.startsWith("#")) {
@@ -473,6 +473,10 @@ public class VCFParser implements Closeable {
             };
 
         }
+    }
+
+    private boolean hasVcfMetaLine() {
+        return line.startsWith("##") && line.indexOf('=')!=-1;
     }
 
     private void parseTSVLine() {
@@ -688,7 +692,7 @@ public class VCFParser implements Closeable {
 
     private String[] split(final MutableString line, final char formatFieldSeparatorCharacter,
                            final int startFormatColumn, final int endFormatColumn) {
-        if (formatSplit != null) {
+        if (cacheFieldPermutation && formatSplit != null) {
             return formatSplit;
         } else {
             final MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
@@ -906,10 +910,12 @@ public class VCFParser implements Closeable {
     private void processMetaInfoLine(final MutableString line) throws SyntaxException {
         final int start = 2;
         final int end = line.indexOf('=');
-        final String columnName = line.substring(start, end).toString();
+        if (end > start) {
+            final String columnName = line.substring(start, end).toString();
 
-        final MutableString restOfLine = line.substring(end + 1);
-        processMetaInfo(columnName, restOfLine);
+            final MutableString restOfLine = line.substring(end + 1);
+            processMetaInfo(columnName, restOfLine);
+        }
     }
 
 
@@ -1032,7 +1038,7 @@ public class VCFParser implements Closeable {
     }
 
     public GroupAssociations getGroupAssociations() {
-        return new GroupAssociations(associationString,columns.find("FORMAT"),getColumnNamesUsingFormat());
+        return new GroupAssociations(associationString, columns.find("FORMAT"), getColumnNamesUsingFormat());
     }
 
 

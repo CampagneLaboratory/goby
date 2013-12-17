@@ -1,0 +1,52 @@
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+Total logical entries written: 7
+Total bytes written: 219
+Average bytes/logical entry: 31.285715
+Min query index: 0
+Max query index: 0
+Number of queries: 1
+Number of targets: 3
+

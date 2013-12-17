@@ -36,7 +36,7 @@ public class DiploidFilter extends GenotypeFilter {
     private int secondMaxFrequency[];
 
     @Override
-    void initStorage(final int numSamples) {
+    public void initStorage(final int numSamples) {
         super.initStorage(numSamples);
         if (firstMaxFrequency == null) {
             firstMaxFrequency = new int[numSamples];
@@ -50,9 +50,10 @@ public class DiploidFilter extends GenotypeFilter {
     @Override
     public void filterGenotypes(final DiscoverVariantPositionData list,
                                 final SampleCountInfo[] sampleCounts,
-                                final ObjectSet<PositionBaseInfo> filteredSet) {
+                                final ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
+
         for (final SampleCountInfo sci : sampleCounts) {
             final int sampleIndex = sci.sampleIndex;
             int maxIndex = sci.getGenotypeMaxIndex();
@@ -94,23 +95,14 @@ public class DiploidFilter extends GenotypeFilter {
                 continue;
             }
             if (count != firstMaxFrequency[sampleIndex] && count != secondMaxFrequency[sampleIndex]) {
-                // remove this genotype.
-                if (!filteredSet.contains(positionBaseInfo)) {
-                    sampleCountInfo.counts[baseIndex]--;
-                    if (positionBaseInfo.matchesReference) {
-                        refCountRemovedPerSample[sampleIndex]++;
-                    } else {
 
-                        varCountRemovedPerSample[sampleIndex]++;
-                    }
-                    filteredSet.add(positionBaseInfo);
-                    numFiltered++;
-                }
-
+                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                removeGenotype(positionBaseInfo, filteredList);
             }
         }
 
         filterIndels(list, sampleCounts);
+        adjustGenotypes(list, filteredList, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
 

@@ -19,8 +19,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 
-import edu.cornell.med.icb.goby.alignments.perms.ConcatenatePermutations;
-
 /**
  * @author Fabien Campagne
  *         Date: 6/15/11

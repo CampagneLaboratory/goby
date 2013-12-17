@@ -1,0 +1,7 @@
+sample-id	patient-id	gender	type	kind-of-sample	tissue	parents	offspring
+basen1	P1	Male	Father	Germline	Blood	N/A	P3
+basen2	P2	Female	Mother	Germline	Blood	N/A	P3
+basen3	P3	Male	Patient	Germline	Blood	P1|P2	N/A
+basen4	P3	Male	Patient	Germline	Skin	P1|P2	N/A
+basen5	P3	Male	Patient	Germline	PBMC	P1|P2	N/A
+align-specific-sample	P3	Male	Patient	Somatic	PBMC	P1|P2	N/A

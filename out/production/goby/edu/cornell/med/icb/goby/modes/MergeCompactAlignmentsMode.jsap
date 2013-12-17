@@ -1,0 +1,60 @@
+<!--
+  ~ Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The output filename to write the merged alignments to.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>k</id>
+            <shortFlag>k</shortFlag>
+            <longFlag>k</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>[K_VALUE]</string>
+            </defaults>
+            <help>The k values for the merge.  If gene-transcript-map-file is defined, the alignment was against transcripts. k defines the maximum number of genes that a read may match. Best value is probably 1.  If gene-transcript-map-file is NOT defined, the alignment was against a reference genome. k defines the maximum number of duplicates allowed for the top quality score when there are duplicates.  </help>
+        </flaggedOption>
+       <switch>
+            <id>hi-c</id>
+            <longFlag>hi-c</longFlag>
+            <help>When this switch is provided, use a merge strategy suitable for hi-c alignments. The strategy works with exactly two input files, which must have been sequenced as pair in the Hi-C protocol.</help>
+        </switch>
+        <flaggedOption>
+            <id>gene-transcript-map-file</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>gene-transcript-map-file</longFlag>
+            <required>false</required>
+            <help>A TSV file that specifies the gene-transcript mapping.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The input alignment files to merge.</help>
+        </unflaggedOption>
+    </parameters>
+</jsap>

@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -44,10 +46,24 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     public DiscoverVariantPositionData() {
         super();
         position = -1;
+        filtered = new ObjectArraySet[5];
+        for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+            filtered[baseIndex] = new ObjectArraySet();
+        }
+    }
+
+    /**
+     * Count of genotypes that were flagged for removal by some filter in this sample.
+     */
+    public ObjectArraySet filtered[];
+
+    @Override
+    public String toString() {
+        return String.format("pos=%d #bases: %d #indels: %d", position, size(), hasCandidateIndels() ? getIndels().size() : 0);
     }
 
     public DiscoverVariantPositionData(final int position) {
-        super();
+        this();
         this.position = position;
     }
 
@@ -62,18 +78,21 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         }
         if (!candidateIndels.contains(candidateIndel)) {
             candidateIndels.add(candidateIndel);
+           // System.out.println(candidateIndels);
+           // assert candidateIndels.contains(candidateIndel) : "indel must have been added.";
         } else {
             for (final EquivalentIndelRegion eir : candidateIndels) {
                 if (eir.equals(candidateIndel)) {
                     eir.incrementFrequency();
+                    // since the EIR match, increase the number of distinct read indices observed for the overlap:
+                    eir.readIndices.addAll(candidateIndel.readIndices);
                 }
             }
         }
     }
 
     public ObjectArraySet<EquivalentIndelRegion> getIndels() {
-      // switch to disable indels calls
-        // return EMPTY_SET;
+
        return candidateIndels;
     }
 
@@ -83,7 +102,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
      * @param indel the candidate indel that failed tests.
      */
     public void failIndel(final EquivalentIndelRegion indel) {
-        if (candidateIndels!=null) {
+        if (candidateIndels != null) {
             candidateIndels.remove(indel);
         }
         if (failedIndels == null) {
@@ -111,5 +130,13 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         } else {
             return failedIndels;
         }
+    }
+    public String completeToString() {
+        return super.toString();
+
+    }
+
+    public void printAll(){
+        System.out.println(completeToString());
     }
 }

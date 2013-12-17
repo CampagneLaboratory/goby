@@ -1,0 +1,151 @@
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test.compact-reads
+log4j: Using URL [file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties] for automatic log4j configuration.
+log4j: Reading configuration from URL file:/home/mil2041/Fabien_lab/contig_mapping_project/goby/config/log4j.properties
+Total logical entries written: 73
+Total bytes written: 1197
+Average bytes/logical entry: 16.39726
+Number of bits/base 3.7479453
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-extremes.compact-reads
+Total logical entries written: 73
+Total bytes written: 1197
+Average bytes/logical entry: 16.39726
+Number of bits/base 3.7479453
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-start-end.compact-reads
+Total logical entries written: 73
+Total bytes written: 1197
+Average bytes/logical entry: 16.39726
+Number of bits/base 3.7479453
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-zero-zero.compact-reads
+Total logical entries written: 0
+Total bytes written: 31
+Average bytes/logical entry: Infinity
+Number of bits/base Infinity
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-chunk-size.compact-reads
+Total logical entries written: 73
+Total bytes written: 4813
+Average bytes/logical entry: 65.9315
+Number of bits/base 15.070059
+Converting [1/1] test-data/compact-reads/s_1_sequence_short_1_per_chunk.compact-reads to test-results/reformat-test-start.compact-reads
+Total logical entries written: 1
+Total bytes written: 64
+Average bytes/logical entry: 64.0
+Number of bits/base 14.6285715
+Converting [1/1] test-data/compact-reads/s_1_sequence_short_1_per_chunk.compact-reads to test-results/reformat-test-subset.compact-reads
+Total logical entries written: 72
+Total bytes written: 1188
+Average bytes/logical entry: 16.5
+Number of bits/base 3.7714286
+Converting [1/1] test-data/compact-reads/s_1_sequence_short_1_per_chunk.compact-reads to test-results/reformat-test-exclude-read-lengths.compact-reads
+Total logical entries written: 0
+Total bytes written: 31
+Average bytes/logical entry: Infinity
+Number of bits/base Infinity
+Converting [1/1] test-data/compact-reads/small-paired.compact-reads to test-results/reformat-test-trim-paired.compact-reads
+Total logical entries written: 73
+Total bytes written: 840
+Average bytes/logical entry: 11.506849
+Number of bits/base 4.60274
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-exclude-read-lengths-at-extrreme.compact-reads
+Total logical entries written: 73
+Total bytes written: 1197
+Average bytes/logical entry: 16.39726
+Number of bits/base 3.7479453
+Converting [1/1] test-data/compact-reads/s_1_sequence_short.compact-reads to test-results/reformat-test-exclude-read-lengths-at-extrreme.compact-reads
+Total logical entries written: 73
+Total bytes written: 1197
+Average bytes/logical entry: 16.39726
+Number of bits/base 3.7479453
+Converting [1/1] test-data/compact-reads/with-meta-data-input.compact-reads to test-results/with-meta-data-output.compact-reads
+Total logical entries written: 2
+Total bytes written: 110
+Average bytes/logical entry: 55.0
+Number of bits/base 38.260868
+read_index: 0
+read_length: 12
+sequence: "GATACCACATCA"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\361\362"
+meta_data {
+  key: "key2"
+  value: "value2"
+}
+meta_data {
+  key: "key1"
+  value: "value1"
+}
+
+
+read_index: 1
+read_length: 11
+sequence: "TAGACCATAGG"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\362"
+
+
+read_index: 0
+read_length: 12
+sequence: "GATACCACATCA"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\361\362"
+meta_data {
+  key: "key2"
+  value: "value2"
+}
+meta_data {
+  key: "key1"
+  value: "value1"
+}
+
+
+read_index: 1
+read_length: 11
+sequence: "TAGACCATAGG"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\362"
+
+
+Converting [1/1] test-data/compact-reads/with-meta-data-input.compact-reads to test-results/with-meta-data-output-same.compact-reads
+Total logical entries written: 2
+Total bytes written: 110
+Average bytes/logical entry: 55.0
+Number of bits/base 38.260868
+read_index: 0
+read_length: 12
+sequence: "GATACCACATCA"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\361\362"
+meta_data {
+  key: "key2"
+  value: "value2"
+}
+meta_data {
+  key: "key1"
+  value: "value1"
+}
+
+
+read_index: 1
+read_length: 11
+sequence: "TAGACCATAGG"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\362"
+
+
+read_index: 0
+read_length: 12
+sequence: "GATACCACATCA"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\361\362"
+meta_data {
+  key: "key2"
+  value: "value2"
+}
+meta_data {
+  key: "key1"
+  value: "value1"
+}
+
+
+read_index: 1
+read_length: 11
+sequence: "TAGACCATAGG"
+quality_scores: "\361\362\363\364\365\366\367\370\371\360\362"
+
+
+Converting [1/1] test-data/compact-reads/with-meta-data-input.compact-reads to will-not-write-here.compact-reads
+Converting [1/1] test-data/compact-reads/with-meta-data-input.compact-reads to will-not-write-here.compact-reads
+Converting [1/1] test-data/compact-reads/with-meta-data-input.compact-reads to will-not-write-here.compact-reads
+
