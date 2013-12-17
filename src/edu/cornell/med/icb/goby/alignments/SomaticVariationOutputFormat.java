@@ -66,6 +66,18 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
      */
     private int[] maxGenotypeSomaticPriority;
 
+    private int strictSomaticCandidateFieldIndex;
+    /**
+     * If a somatic candidate has more bases in a parent that this threshold, the candidate is not marked as
+     * STRICT_SOMATIC. A reasonable default is 0.
+     */
+    private int strictThresholdParents = 0;
+    /**
+     * If a somatic candidate has more bases in a matched germline sample that this threshold, the candidate is
+     * not marked as STRICT_SOMATIC. A reasonable default is 10.
+     */
+    private int strictThresholdGermline = 10;
+
     protected void setSomaticPValueIndex(int[] somaticPValueIndex) {
         this.somaticPValueIndex = somaticPValueIndex;
     }
@@ -137,6 +149,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         recordNumAlignedReads(mode.getInputFilenames());
 
         igvFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates formatted for use with IGV.");
+        strictSomaticCandidateFieldIndex = statsWriter.defineField("FILTER", "STRICT_SOMATIC", 1, ColumnType.Flag, "Indicates that the site is not a strict somatic candidate. Strict somatic candidates are not detected in the parents and only poorly in the matched germline. False otherwise.");
         genotypeFormatter.defineInfoFields(statsWriter);
         genotypeFormatter.defineGenotypeField(statsWriter);
 
@@ -379,6 +392,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             maxGenotypeIndex = Math.max(maxGenotypeIndex, sci.getGenotypeMaxIndex());
         }
         isSomaticCandidate = new boolean[sampleCounts.length][maxGenotypeIndex];
+        isStrictSomaticCandidate = new boolean[sampleCounts.length][maxGenotypeIndex];
     }
 
 
@@ -477,7 +491,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                         parentGenotypePriorityContribution = Math.max(parentGenotypePriorityContribution, normalizePriority(motherPriority, motherSampleIndex));
                         numParents += 1;
                     }
-               //     parentGenotypePriorityContribution /= Math.max(1, numParents);
+                    //     parentGenotypePriorityContribution /= Math.max(1, numParents);
                     int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
                     int numGermlineSamples = 0;
                     for (int germlineSampleIndex : germlineSampleIndices) {
@@ -495,7 +509,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                 }
             }
             statsWriter.setInfo(maxGenotypeSomaticPriority[sampleIndex], maxPriority);
-
+            statsWriter.setFilter(isStrictSomaticCandidate() ? "PASS" : "STRICT_SOMATIC");
         }
     }
 
@@ -582,6 +596,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
             SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
             for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
                 boolean parentHasGenotype = false;
+                boolean strictParent = false;
                 float maxGermlineOrParentsFrequency = 0;
                 int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
                 int minGermlineCoverage = Integer.MAX_VALUE;
@@ -592,6 +607,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     minGermlineCoverage = Math.min(fatherCounts.coverage(), minGermlineCoverage);
                     int fatherCount = fatherCounts.getGenotypeCount(genotypeIndex);
                     parentHasGenotype = fatherCount > fatherCounts.failedCount || fatherCount > 5;
+                    strictParent = fatherCount > strictThresholdParents;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
                 }
                 int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
@@ -601,6 +617,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     minGermlineCoverage = Math.min(motherCounts.coverage(), minGermlineCoverage);
                     int motherCount = motherCounts.getGenotypeCount(genotypeIndex);
                     parentHasGenotype |= motherCount > motherCounts.failedCount || motherCount > 5;
+                    strictParent |= motherCount > strictThresholdParents;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
 
                 }
@@ -610,32 +627,36 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     if (germlineSampleIndex != -1) {
                         SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
                         minGermlineCoverage = Math.min(germlineCounts.coverage(), minGermlineCoverage);
-                        int somaticCount = germlineCounts.getGenotypeCount(genotypeIndex);
-                        germlineHasPhenotype |= somaticCount >= 10 && somaticCount >= 1.5 * somaticCounts.failedCount;
+                        int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
+                        germlineHasPhenotype |= germlineCount >= 10 && germlineCount >= 1.5 * somaticCounts.failedCount;
+                        strictParent |= germlineCount > strictThresholdGermline;
                         maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
                     }
                 }
                 boolean somaticHasGenotype = somaticCounts.getGenotypeCount(genotypeIndex) > 0;
                 if (parentHasGenotype || germlineHasPhenotype || !somaticHasGenotype) {
                     isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                 //   System.out.println(explainSomaticCandidateChoice(sampleCounts));
+
+                    //   System.out.println(explainSomaticCandidateChoice(sampleCounts));
                 } else {
                     int somaticCoverage = sampleCounts[sampleIndex].coverage();
                     if (minGermlineCoverage < somaticCoverage / 2) {
                         // not enough coverage in germline samples to call this site confidently
                         isSomaticCandidate[sampleIndex][genotypeIndex] = false;
-                    //    System.out.println(explainSomaticCandidateChoice(sampleCounts));
+                        isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strictParent;
+                        //    System.out.println(explainSomaticCandidateChoice(sampleCounts));
                     } else {
                         if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
 
                             isSomaticCandidate[sampleIndex][genotypeIndex] = true;
-                        //    System.out.println(explainSomaticCandidateChoice(sampleCounts));
+                            isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strictParent;
+                            //    System.out.println(explainSomaticCandidateChoice(sampleCounts));
                         }
                     }
                 }
             }
         }
-      //  System.out.println(explainSomaticCandidateChoice(sampleCounts));
+        //  System.out.println(explainSomaticCandidateChoice(sampleCounts));
         return isSomaticCandidate();
     }
 
@@ -668,6 +689,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
     boolean isSomaticCandidate[][];
+    boolean isStrictSomaticCandidate[][];
 
     protected double estimateP(SampleCountInfo somaticCounts, SampleCountInfo germlineCounts) {
 
@@ -752,6 +774,15 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         return false;
     }
 
+    public boolean isStrictSomaticCandidate() {
+        for (boolean[] someGenotypeIsSomatic : isStrictSomaticCandidate) {
+            for (boolean candidate : someGenotypeIsSomatic) {
+                if (candidate) return true;
+            }
+        }
+        return false;
+    }
+
     public void setCandidateFrequencyIndex(int[] candidateFrequencyIndex) {
         this.candidateFrequencyIndex = candidateFrequencyIndex;
     }
@@ -759,4 +790,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     public int[] getCandidateFrequencyIndex() {
         return candidateFrequencyIndex;
     }
+
+
 }
