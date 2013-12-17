@@ -18,6 +18,9 @@
  - Remove candidate somatic variation that can occur when the germline samples have less coverage than the
    somatic sample. Now require at least twice the coverage in the somatic sample than the minimum coverage
    in the germline samples.
+ - Add a STRICT_SOMATIC filter that flags genomic sites where some bases appear in support of the variation
+   the parents or germline samples.
+ - Fix a bug in FDR mode that would not handle vcf files with non default FILTER values.
 2.3.2
  - run-parallel-mode now supports paired input files.
  - fasta-to-compact: add --force-quality-encoding option to force the quality values within the specified
