@@ -461,7 +461,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
         for (int sampleIndex : somaticSampleIndices) {
             SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
-            double maxPriority = -Double.MAX_VALUE;
+            double maxPriority = -10;
 
             for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
                 if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
