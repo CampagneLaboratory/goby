@@ -53,11 +53,11 @@ public class SampleCountInfo {
      */
 
     public int failedCount;
-    private int[][] counts= new int[2][5];
+    private int[][] counts = new int[2][5];
 
     public SampleCountInfo() {
-        this.counts[0]=new int[5];
-        this.counts[1]=new int[5];
+        this.counts[0] = new int[5];
+        this.counts[1] = new int[5];
     }
 
     /**
@@ -356,8 +356,17 @@ public class SampleCountInfo {
     static final String N_BASE = "N";
     static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
 
-    public final String baseString(final int baseIndex) {
-        return STRING[baseIndex];
+    public final String baseString(final int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return STRING[genotypeIndex];
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).toString();
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+
     }
 
     /**
@@ -401,7 +410,7 @@ public class SampleCountInfo {
 
     public void suggestRemovingGenotype(int baseIndex, boolean matchesForwardStrand) {
 
-        if (getGenotypeCount(baseIndex,matchesForwardStrand) - 1 >= 0) {
+        if (getGenotypeCount(baseIndex, matchesForwardStrand) - 1 >= 0) {
 
             decrementGenotypeCount(baseIndex, matchesForwardStrand);
         }
@@ -418,7 +427,7 @@ public class SampleCountInfo {
     public final int getGenotypeCount(final int genotypeIndex) {
 
         if (genotypeIndex < BASE_MAX_INDEX) {
-            return Math.max(0,counts[POSITIVE_STRAND][genotypeIndex]) + Math.max(0,counts[NEGATIVE_STRAND][genotypeIndex]);
+            return Math.max(0, counts[POSITIVE_STRAND][genotypeIndex]) + Math.max(0, counts[NEGATIVE_STRAND][genotypeIndex]);
         } else {
             if (hasIndels()) {
                 final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
@@ -429,26 +438,26 @@ public class SampleCountInfo {
     }
 
     /**
-         * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
-         *
-         * @param genotypeIndex Index of the genotype for which count/frequency is sought.
-         * @return the frequency.
-         */
-        public final int getGenotypeCount(final int genotypeIndex, boolean matchesForwardStrand) {
+     * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
+     *
+     * @param genotypeIndex Index of the genotype for which count/frequency is sought.
+     * @return the frequency.
+     */
+    public final int getGenotypeCount(final int genotypeIndex, boolean matchesForwardStrand) {
 
-            if (genotypeIndex < BASE_MAX_INDEX) {
-                return Math.max(0,counts[recodeStrand(matchesForwardStrand)][genotypeIndex] );
-            } else {
-                if (hasIndels()) {
-                    final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
-                    return indels.get(indelIndex).getFrequency();
-                }
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return Math.max(0, counts[recodeStrand(matchesForwardStrand)][genotypeIndex]);
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).getFrequency();
             }
-            throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
         }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
 
     private int recodeStrand(boolean matchesForwardStrand) {
-        return matchesForwardStrand ? POSITIVE_STRAND :NEGATIVE_STRAND;
+        return matchesForwardStrand ? POSITIVE_STRAND : NEGATIVE_STRAND;
     }
 
     /**
@@ -491,8 +500,9 @@ public class SampleCountInfo {
     public int incrementGenotypeCount(int baseIndex, boolean matchesForwardStrand) {
         return (++counts[recodeStrand(matchesForwardStrand)][baseIndex]);
     }
+
     private static final int POSITIVE_STRAND = 1;
-       private static final int NEGATIVE_STRAND = 0;
+    private static final int NEGATIVE_STRAND = 0;
 
 
     public int getSumCounts() {
@@ -565,5 +575,33 @@ public class SampleCountInfo {
             sum += count;
         }
         return sum;
+    }
+
+    /**
+     * Return the number of bases that cover this site, irrespective of genotype.
+     *
+     * @return the coverage at the site.
+     */
+    public int coverage() {
+        int coverage = 0;
+        for (int genotypeIndex = 0; genotypeIndex < getGenotypeMaxIndex(); genotypeIndex++) {
+            coverage += getGenotypeCount(genotypeIndex);
+
+        }
+        return coverage;
+    }
+
+    /**
+     * Return the number of bases that cover this site, irrespective of genotype.
+     *
+     * @return the coverage at the site.
+     */
+    public int coverage() {
+       int coverage=0;
+        for (int genotypeIndex=0; genotypeIndex<getGenotypeMaxIndex(); genotypeIndex++){
+            coverage+=getGenotypeCount(genotypeIndex);
+
+        }
+        return coverage;
     }
 }

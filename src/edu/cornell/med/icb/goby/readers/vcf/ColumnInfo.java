@@ -60,14 +60,15 @@ public class ColumnInfo implements Cloneable {
      * @param fields     Fields in this column.
      */
     public ColumnInfo(String columnName, ColumnField... fields) {
-    this(columnName,false,fields);
+        this(columnName, false, fields);
     }
+
     /**
      * Create a ColumnInfo with provided information.
      *
-     * @param columnName Name of the new column.
-     * @param transferGroups  Indicate that the column groups should be initialized with a copy of the fields' groups.
-     * @param fields     Fields in this column.
+     * @param columnName     Name of the new column.
+     * @param transferGroups Indicate that the column groups should be initialized with a copy of the fields' groups.
+     * @param fields         Fields in this column.
      */
     public ColumnInfo(String columnName, final boolean transferGroups, ColumnField... fields) {
         this.columnName = columnName;
@@ -93,12 +94,13 @@ public class ColumnInfo implements Cloneable {
 
     /**
      * Add a field to this column. Note that any group associated with the column is added to the field.
+     *
      * @param field Field to add to this column.
      */
     public void addField(ColumnField field) {
         fields.add(field);
         field.column = this;
-        for (String columnGroup: columnGroups) {
+        for (String columnGroup : columnGroups) {
             field.addGroup(columnGroup);
         }
     }
@@ -108,6 +110,9 @@ public class ColumnInfo implements Cloneable {
     }
 
     public ColumnField getField(String fieldName) {
+        if ("VALUE".equals(fieldName) && fields.size() == 1) {
+            return fields.list.get(0);
+        }
         return fields.find(fieldName);
     }
 
@@ -125,7 +130,7 @@ public class ColumnInfo implements Cloneable {
     }
 
     private void addGroup(String... columnGroups) {
-       this. columnGroups.addAll(ObjectArrayList.wrap(columnGroups));
+        this.columnGroups.addAll(ObjectArrayList.wrap(columnGroups));
     }
 
     public String[] getGroups() {

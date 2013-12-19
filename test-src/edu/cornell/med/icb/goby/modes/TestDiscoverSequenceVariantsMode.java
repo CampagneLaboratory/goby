@@ -603,9 +603,11 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
         final DiscoverVariantPositionData list = makeListWithScores(sampleCounts, scores);
-//        assertEquals(Arrays.toString(list.elements()), "[+ ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, -  /T q=40 s=0, -  /C q=40 s=0, -  /C q=10 s=0, -  /C q=20 s=0, -  /C q=30 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /C q=10 s=0, -  /N q=20 s=0, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, + ref: A s=1, -  /T q=40 s=1, -  /T q=40 s=1, -  /T q=10 s=1, -  /T q=20 s=1, -  /N q=30 s=1, -  /N q=40 s=1, null, null, null, null, null, null, null, null]");
-
         assertEquals(32, list.size());
+
+        assertEquals("[sample: 0 counts A=5 T=1 C=9 G=0 N=1 FB=0 indels={ null }\n" +
+                ", sample: 1 counts A=10 T=4 C=0 G=0 N=2 FB=0 indels={ null }\n" +
+                "]",Arrays.toString(sampleCounts));
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
 
   /*      assertEquals("[sample: 0 counts A=5 T=1 C=9 G=0 N=1 FB=0 indels={ null }\n" +
@@ -613,6 +615,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "]", Arrays.toString(sampleCounts));
     */
         adjuster1.filterGenotypes(list, sampleCounts, filteredList);
+        adjuster2.filterGenotypes(list, sampleCounts, filteredList);
 
       /*  assertEquals("[sample: 0 counts A=5 T=1 C=6 G=0 N=0 FB=0 indels={ null }\n" +
                 ", sample: 1 counts A=10 T=2 C=0 G=0 N=2 FB=0 indels={ null }\n" +
@@ -621,14 +624,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
-        CountFixer fixer = new CountFixer();
-        fixer.fix(list, sampleCounts, filteredList);
-       /* assertEquals(Arrays.toString(sampleCounts), "[sample: 0 counts A=0 T=1 C=9 G=0 N=1 FB=10 indels={ null }\n" +
-                ", sample: 1 counts A=10 T=4 C=0 G=0 N=2 FB=4 indels={ null }\n" +
-                "]");
-        assertEquals("{-  /C q=10 s=0, -  /C q=20 s=0, -  /C q=10 s=0, -  /N q=20 s=0, -  /T q=10 s=1, -  /T q=20 s=1, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, + ref: A s=0, -  /T q=40 s=0, -  /C q=40 s=0, -  /C q=30 s=0, -  /C q=40 s=0, -  /C q=40 s=0, -  /T q=40 s=1, -  /T q=40 s=1, -  /N q=30 s=1, -  /N q=40 s=1}",
-                filteredList.toString());
-      */
+
         assertEquals(20, filteredList.size());
         assertEquals(0, sampleCounts[0].refCount);
         assertEquals(0, sampleCounts[0].varCount);
@@ -636,6 +632,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertEquals(10, sampleCounts[1].refCount);
         assertEquals(6 - 6, sampleCounts[1].varCount);
 
+    }
+
+    private void assertEquals(String s, String s1) {
+        org.junit.Assert.assertEquals(s,s1);
     }
 
     @Test
