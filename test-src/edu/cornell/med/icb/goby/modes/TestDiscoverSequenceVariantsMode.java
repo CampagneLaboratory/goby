@@ -634,9 +634,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
-    private void assertEquals(String s, String s1) {
-        org.junit.Assert.assertEquals(s,s1);
-    }
 
     @Test
     public void testAdjustVarCount2() {

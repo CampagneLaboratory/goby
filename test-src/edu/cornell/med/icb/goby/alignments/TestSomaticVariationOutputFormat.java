@@ -40,7 +40,7 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,0);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,100);
         sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,0);
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,0);
@@ -53,7 +53,7 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,150);
         sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,0);
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
@@ -71,7 +71,7 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,150);
         sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,5);     // too many bases for C genotype in germline. P-value will be 1.0.
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
         sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
