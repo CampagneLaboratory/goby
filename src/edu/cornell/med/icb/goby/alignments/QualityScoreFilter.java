@@ -120,7 +120,7 @@ public class QualityScoreFilter extends GenotypeFilter {
                             // errors stack at the same position only by chance and yield small proportions compared to
                             // the other genotypes. A genotype with a strong proportion is more likely to be correct,
                             // irrespective of quality scores.
-                            sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                            sampleCountInfo.suggestRemovingGenotype(baseIndex,info.matchesForwardStrand);
                             removeGenotype(info, filteredList);
                             thresholdPerSample[info.readerIndex]++;
                         }

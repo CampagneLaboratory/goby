@@ -90,13 +90,13 @@ public class DiploidFilter extends GenotypeFilter {
             final SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
             // how many of this base have we seen in this sample?
             final int baseIndex = sampleCountInfo.baseIndex(base);
-            final int count = sampleCountInfo.counts[baseIndex];
+            final int count = sampleCountInfo.getGenotypeCount(baseIndex);
             if (count == 0) {
                 continue;
             }
             if (count != firstMaxFrequency[sampleIndex] && count != secondMaxFrequency[sampleIndex]) {
 
-                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                sampleCountInfo.suggestRemovingGenotype(baseIndex, positionBaseInfo.matchesForwardStrand);
                 removeGenotype(positionBaseInfo, filteredList);
             }
         }
