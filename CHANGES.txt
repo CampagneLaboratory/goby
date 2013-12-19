@@ -1,25 +1,26 @@
 2.3.3
  - IterateSortedAlignmentsListImpl: Use a WarningCounter to limit warnings to 10 instances. This is needed to
    avoid writing Gb of log output when the threshold is met.
- - discover-sequence-variants somatic output: Make it possible to run simple trio design by removing the
+ - discover-sequence-variants somatic output: Make it possible to run a simple trio design by removing the
    requirement for a germline sample.
  - discover-sequence-variants somatic output: Earlier versions were reporting somatic variation candidates
    when two parents are homozygotes and the somatic samples was Het (the fisher p-value with each parent is
    very significant in this case, but does not indicate a somatic change). This also improves q-values because
    they are less results that need to be corrected.
- - discover-sequence-variants somatic output: Add an error message when a sample is mispelled in the covariates
+ - discover-sequence-variants somatic output: Add an error message when a sample is mis-spelled in the covariates
    file.
  - Refactor code base to keep base counts for forward and reverse strands separately in SampleCountInfo.
  - Normalize somatic priority score by number of mapped reads, and number of parents and germline samples used in
    the calculation.
  - Add a StrandBiasFilter in somatic analyses. The filter rejects variations that are not represented on both
    strands when at least j reads support the variation. The value of j is set to 9 by default, so a variation with
-   10 bases needs to have
+   10 bases needs to have at least the two strands represented.
  - Remove candidate somatic variation that can occur when the germline samples have less coverage than the
    somatic sample. Now require at least twice the coverage in the somatic sample than the minimum coverage
    in the germline samples.
  - Add a STRICT_SOMATIC filter that flags genomic sites where some bases appear in support of the variation
-   the parents or germline samples.
+   in the parents or germline samples. Please note the VCF spec semantic: PASS indicates that all filters passed.
+   This means that lines with the STRICT_SOMATIC value in the FILTER column failed that test.
  - Fix a bug in FDR mode that would not handle vcf files with non default FILTER values.
 2.3.2
  - run-parallel-mode now supports paired input files.
