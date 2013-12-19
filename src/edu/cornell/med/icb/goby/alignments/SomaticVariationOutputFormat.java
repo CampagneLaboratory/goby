@@ -641,12 +641,12 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                         // not enough coverage in germline samples to call this site confidently
                         isSomaticCandidate[sampleIndex][genotypeIndex] = false;
                     } else {
-                    if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
+                        if (somaticCounts.frequency(genotypeIndex) > 3 * maxGermlineOrParentsFrequency) {
 
-                        isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                            isSomaticCandidate[sampleIndex][genotypeIndex] = true;
+                        }
+                        isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strict && isSomaticCandidate[sampleIndex][genotypeIndex];
                     }
-                    isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strict && isSomaticCandidate[sampleIndex][genotypeIndex];
-
                 }
             }
         }

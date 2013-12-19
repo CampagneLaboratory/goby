@@ -76,7 +76,6 @@ public class SampleCountInfo {
          * @param eir2 second indel
          * @return sort order
          */
-        @Override
         public int compare(final EquivalentIndelRegion eir1, final EquivalentIndelRegion eir2) {
             return eir1.to.compareTo(eir2.to);
         }
@@ -591,17 +590,5 @@ public class SampleCountInfo {
         return coverage;
     }
 
-    /**
-     * Return the number of bases that cover this site, irrespective of genotype.
-     *
-     * @return the coverage at the site.
-     */
-    public int coverage() {
-       int coverage=0;
-        for (int genotypeIndex=0; genotypeIndex<getGenotypeMaxIndex(); genotypeIndex++){
-            coverage+=getGenotypeCount(genotypeIndex);
 
-        }
-        return coverage;
-    }
 }
