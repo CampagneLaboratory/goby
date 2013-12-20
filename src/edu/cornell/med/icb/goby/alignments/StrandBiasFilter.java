@@ -31,6 +31,14 @@ public class StrandBiasFilter extends GenotypeFilter {
         jPlusOne = jParameter + 1;
     }
 
+    public void initStorage(int numSamples) {
+        super.initStorage(numSamples);
+        remove = new boolean[SampleCountInfo.BASE_MAX_INDEX + 1][numSamples];
+    }
+
+    // indexed by baseIndex, then sampleIndex:
+    boolean remove[][];
+
     /**
      * Returns a short description of the filtering criteria.
      *
@@ -58,7 +66,8 @@ public class StrandBiasFilter extends GenotypeFilter {
             final int countForward = sampleCountInfo.getGenotypeCount(baseIndex, true);
             final int countReverse = sampleCountInfo.getGenotypeCount(baseIndex, false);
 
-            if ((countForward + countReverse) >= (jPlusOne) && (countForward == 0 || countReverse == 0)) {
+            remove[baseIndex][positionBaseInfo.readerIndex] |= (countForward + countReverse) >= (jPlusOne);
+            if (remove[baseIndex][positionBaseInfo.readerIndex] && (countForward == 0 || countReverse == 0)) {
 
                 // the variation is not represented on one of the strands, filter
                 sampleCountInfo.suggestRemovingGenotype(baseIndex, positionBaseInfo.matchesForwardStrand);

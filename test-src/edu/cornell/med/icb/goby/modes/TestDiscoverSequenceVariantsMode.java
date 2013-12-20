@@ -607,7 +607,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         assertEquals("[sample: 0 counts A=5 T=1 C=9 G=0 N=1 FB=0 indels={ null }\n" +
                 ", sample: 1 counts A=10 T=4 C=0 G=0 N=2 FB=0 indels={ null }\n" +
-                "]",Arrays.toString(sampleCounts));
+                "]", Arrays.toString(sampleCounts));
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
 
   /*      assertEquals("[sample: 0 counts A=5 T=1 C=9 G=0 N=1 FB=0 indels={ null }\n" +
@@ -1070,15 +1070,16 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertTrue(foundReverse);
         CountFixer fixer = new CountFixer();
         fixer.fix(list, sampleCounts, filteredList);
-        assertEquals("[sample: 0 counts A=5 T=1 C=9 G=0 N=1 FB=0 indels={ null }\n" +
-                       ", sample: 1 counts A=10 T=4 C=0 G=0 N=2 FB=0 indels={ null }\n" +
-                       "]",Arrays.toString(sampleCounts));
+
         for (PositionBaseInfo element : list) {
             if (element.to == 'T' && element.readerIndex == 1) {
                 fail("T genotype should have been removed from sample 1 (strand bias)");
             }
             if (element.to == 'C') {
                 fail("Genotype C should have been removed from all samples (strand bias)");
+            }
+            if (element.to == 'A') {
+                fail("Genotype A should have been removed from all samples (strand bias)");
             }
         }
     }
