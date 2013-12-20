@@ -607,7 +607,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                     SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
                     minGermlineCoverage = Math.min(fatherCounts.coverage(), minGermlineCoverage);
-                    parentHasGenotype |= fatherCounts.getGenotypeCount(genotypeIndex) > fatherCounts.failedCount;
+                    int fatherCount = fatherCounts.getGenotypeCount(genotypeIndex);
+                    parentHasGenotype = fatherCount > fatherCounts.failedCount || fatherCount > 5;
+                    strict = fatherCount <= strictThresholdParents;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, fatherCounts.frequency(genotypeIndex));
                 }
                 int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
@@ -615,7 +617,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                     SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
                     minGermlineCoverage = Math.min(motherCounts.coverage(), minGermlineCoverage);
-                    parentHasGenotype |= motherCounts.getGenotypeCount(genotypeIndex) > motherCounts.failedCount;
+                    int motherCount = motherCounts.getGenotypeCount(genotypeIndex);
+                    parentHasGenotype |= motherCount > motherCounts.failedCount|| motherCount > 5;
+                    strict &= motherCount <= strictThresholdParents;
                     maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, motherCounts.frequency(genotypeIndex));
 
                 }
@@ -625,7 +629,9 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     if (germlineSampleIndex != -1) {
                         SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
                         minGermlineCoverage = Math.min(germlineCounts.coverage(), minGermlineCoverage);
-                        germlineHasPhenotype |= germlineCounts.getGenotypeCount(genotypeIndex) >= 10;
+                        int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
+                        strict &= germlineCount <= strictThresholdGermline;
+                        germlineHasPhenotype |= germlineCount >= 10 && germlineCount >= 1.5 * somaticCounts.failedCount;
                         maxGermlineOrParentsFrequency = Math.max(maxGermlineOrParentsFrequency, germlineCounts.frequency(genotypeIndex));
 
                     }
@@ -636,6 +642,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
                     isStrictSomaticCandidate[sampleIndex][genotypeIndex] = false;
                     //   System.out.println(explainSomaticCandidateChoice(sampleCounts));
                 } else {
+
                     int somaticCoverage = sampleCounts[sampleIndex].coverage();
                     if (minGermlineCoverage < somaticCoverage / 2) {
                         // not enough coverage in germline samples to call this site confidently
@@ -645,8 +652,8 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
                             isSomaticCandidate[sampleIndex][genotypeIndex] = true;
                         }
-                        isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strict && isSomaticCandidate[sampleIndex][genotypeIndex];
                     }
+                    isStrictSomaticCandidate[sampleIndex][genotypeIndex] = strict && isSomaticCandidate[sampleIndex][genotypeIndex];
                 }
             }
         }
