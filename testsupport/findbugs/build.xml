@@ -1,0 +1,38 @@
+<project name="findbugs" default="findbugs" basedir="..">
+    <dirname property="findbugs.basedir" file="${ant.file.findbugs}"/>
+
+    <!-- See http://findbugs.sourceforge.net/ -->
+    <path id="findbugs.path">
+        <fileset dir="${findbugs.basedir}/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="findbugs.auxpath">
+        <path refid="test.classpath"/>
+        <pathelement location="${findbugs.basedir}/lib/jsr305.jar"/>
+    </path>
+
+    <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+        <classpath refid="findbugs.path"/>
+    </taskdef>
+
+    <target name="findbugs" depends="compile-tests" description="Run findbugs on source code">
+        <findbugs projectname="${ant.project.name}"
+                reportLevel="experimental" workHard="true" effort="max" adjustExperimental="true"
+                jvmargs="-Xmx999m" output="xml:withMessages"
+                outputfile="${test-results}/findbugs.xml"
+                home="${findbugs.basedir}">
+            <auxclasspath refid="findbugs.auxpath"/>
+            <sourcepath path="${src}"/>
+            <classpath refid="findbugs.path"/>
+            <class location="${classes}"/>
+        </findbugs>
+        <xslt in="${test-results}/findbugs.xml"
+              out="${test-results}/html/findbugs/index.html">
+            <style>
+                <zipentry zipfile="${findbugs.basedir}/lib/findbugs.jar" name="fancy.xsl"/>
+            </style>
+        </xslt>
+    </target>
+</project>

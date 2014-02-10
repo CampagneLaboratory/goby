@@ -1,0 +1,116 @@
+<project name="junit" default="test" basedir="..">
+    <dirname property="junit.basedir" file="${ant.file.junit}"/>
+
+    <property name="test-src" location="test-src"/>
+    <property name="test-classes" location="test-classes"/>
+    <property name="test-results" location="test-results"/>
+    <property name="test-lib" location="test-lib"/>
+
+    <!-- this property controls the output of the internal log4j configuration initialization -->
+    <property name="log4j.debug" value="true"/>
+
+    <!-- default memory size for tests -->
+    <property name="test.max.memory" value="600m"/>
+    <!-- default timeout (in milliseconds) for an individual test to prevent infinite loops, 10 minutes. -->
+    <property name="test.timeout" value="600000"/>
+
+    <makeurl file="${config}/log4j.properties" property="log4j.config.url" validate="false"/>
+
+    <target name="init">
+        <mkdir dir="${test-classes}"/>
+        <!-- Create directory for test results -->
+        <mkdir dir="${test-results}"/>
+        <mkdir dir="${test-results}/html"/>
+        <mkdir dir="${test-lib}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${test-classes}"/>
+        <delete dir="${test-results}"/>
+        <delete dir="${test-lib}"/>
+    </target>
+
+    <path id="test.classpath">
+        <!--
+              Note the classpath order: instrumented classes are before the
+              original (uninstrumented) classes.  This is important.
+          -->
+        <pathelement location="${cobertura-classes}"/>
+        <pathelement location="${classes}"/>
+        <pathelement location="${test-classes}"/>
+        <fileset dir="${junit.basedir}/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${test-lib}">
+            <include name="*.jar"/>
+        </fileset>
+
+        <path refid="classpath"/>
+        <path refid="cobertura.classpath"/>
+    </path>
+
+    <target name="compile-tests" depends="compile" description="Compile test source code">
+
+        <javac srcdir="${test-src}" includeantruntime="false" destdir="${test-classes}" debug="${debug}"
+               optimize="${optimize}" deprecation="${deprecation}">
+            <compilerarg value="-Xlint:unchecked"/>
+            <classpath refid="test.classpath"/>
+        </javac>
+        <if>
+            <isset property="pre-test-task"/>
+            <then>
+                <antcall target="${pre-test-task}"/>
+            </then>
+        </if>
+
+    </target>
+
+    <target name="test" depends="compile-tests,cobertura-instrument" description="Run JUnit Tests">
+
+        <junit dir="${basedir}" fork="true" printsummary="yes" haltonfailure="yes" haltonerror="yes"
+               showoutput="yes" maxmemory="${test.max.memory}" timeout="${test.timeout}">
+            <sysproperty key="net.sourceforge.cobertura.datafile"
+                         file="${basedir}/cobertura.ser"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <syspropertyset id="properties-starting-with-test">
+                <propertyref prefix="test."/>
+                <mapper type="glob" from="test.*" to="*"/>
+            </syspropertyset>
+
+            <assertions>
+                <enable/>
+            </assertions>
+            <classpath refid="test.classpath"/>
+
+            <batchtest haltonfailure="no" haltonerror="no" todir="${test-results}"
+                       failureproperty="test-failure" errorproperty="test-error">
+
+                <formatter type="plain" usefile="false"/>
+                <formatter type="xml"/>
+                <fileset dir="${test-classes}">
+                    <include name="**/*Test.class"/>
+                    <!-- all test classes -->
+                    <include name="**/Test*.class"/>
+                    <!-- all test classes -->
+                    <exclude name="**/*$*"/>
+                    <!-- skip inner classes -->
+                </fileset>
+
+            </batchtest>
+        </junit>
+        <junitreport todir="${logs}">
+            <fileset dir="${test-results}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test-results}/html/junit"/>
+        </junitreport>
+        <condition property="tests-failed">
+            <or>
+                <isset property="test-error"/>
+                <isset property="test-failure"/>
+            </or>
+        </condition>
+        <fail message="One or more of the tests failed" if="tests-failed"/>
+    </target>
+</project>

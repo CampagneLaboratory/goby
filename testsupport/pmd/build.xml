@@ -1,0 +1,60 @@
+<project name="pmd" default="pmd" basedir="..">
+    <dirname property="pmd.basedir" file="${ant.file.pmd}"/>
+
+    <!-- See http://pmd.sourceforge.net/ -->
+    <path id="pmd.path">
+        <fileset dir="${pmd.basedir}/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <fileset dir="${src}" id="pmd-fileset">
+        <include name="**/*.java"/>
+    </fileset>
+
+    <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
+             classpathref="pmd.path"/>
+
+    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask"
+             classpathref="pmd.path"/>
+
+    <target name="pmd" depends="init" description="Scan Java source code and look for potential problems">
+        <pmd targetjdk="${ant.build.javac.source}" failonerror="true"
+             failurespropertyname="pmderrors" shortfilenames="true" encoding="utf-8">
+            <fileset refid="pmd-fileset"/>
+            <ruleset>basic</ruleset>
+            <ruleset>braces</ruleset>
+            <ruleset>clone</ruleset>
+            <ruleset>finalizers</ruleset>
+            <ruleset>imports</ruleset>
+            <ruleset>logging-jakarta-commons</ruleset>
+            <ruleset>j2ee</ruleset>
+            <ruleset>migrating</ruleset>
+            <ruleset>optimizations</ruleset>
+            <ruleset>strictexception</ruleset>
+            <ruleset>strings</ruleset>
+            <ruleset>sunsecure</ruleset>
+            <ruleset>unusedcode</ruleset>
+            <!--
+                        <ruleset>codesize</ruleset>
+                        <ruleset>controversial</ruleset>
+                        <ruleset>coupling</ruleset>
+                        <ruleset>design</ruleset>
+                        <ruleset>javabeans</ruleset>
+                        <ruleset>junit</ruleset>
+                        <ruleset>naming</ruleset>
+            -->
+            <formatter type="xml" toFile="${test-results}/pmd-report.xml"/>
+        </pmd>
+        <xslt in="${test-results}/pmd-report.xml" style="${pmd.basedir}/config/pmd-report-per-class.xslt"
+              out="${test-results}/html/pmd/index.html"/>
+    </target>
+
+    <target name="cpd" depends="init" description="Scan Java source code and look for potential duplication">
+        <cpd minimumTokenCount="50" outputFile="${test-results}/cpd-report.xml" format="xml" encoding="utf-8">
+            <fileset refid="pmd-fileset"/>
+        </cpd>
+        <xslt in="${test-results}/cpd-report.xml" style="${pmd.basedir}/config/cpdhtml.xslt"
+              out="${test-results}/html/cpd/index.html"/>
+    </target>
+</project>

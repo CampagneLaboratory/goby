@@ -1,0 +1,43 @@
+<project name="cobertura" basedir="..">
+    <dirname property="cobertura.basedir" file="${ant.file.cobertura}"/>
+    <property name="cobertura-classes" location="cobertura-classes"/>
+
+    <path id="cobertura.classpath">
+        <fileset dir="${cobertura.basedir}/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- See http://cobertura.sourceforge.net/ -->
+    <taskdef classpathref="cobertura.classpath" resource="tasks.properties"/>
+
+    <target name="init">
+        <mkdir dir="${cobertura-classes}"/>
+    </target>
+
+    <target name="cobertura-setup">
+        <mkdir dir="${cobertura-classes}"/>
+        <property name="with-cobertura" value="true"/>
+    </target>
+
+    <target name="cobertura-instrument" if="with-cobertura">
+        <delete file="cobertura.ser"/>
+
+        <cobertura-instrument todir="${cobertura-classes}">
+            <fileset dir="${classes}">
+                <include name="**/*.class"/>
+            </fileset>
+        </cobertura-instrument>
+    </target>
+
+    <target name="cobertura-report" if="with-cobertura">
+        <cobertura-report format="html" destdir="${test-results}/html/cobertura">
+            <fileset dir="${src}"/>
+        </cobertura-report>
+    </target>
+
+    <target name="clean">
+        <delete dir="${cobertura-classes}"/>
+        <delete file="cobertura.ser"/>
+    </target>
+</project>

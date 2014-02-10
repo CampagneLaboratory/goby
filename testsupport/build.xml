@@ -1,0 +1,11 @@
+<project name="testsupport" basedir=".">
+    <import file="checkstyle/build.xml"/>
+    <import file="cobertura/build.xml"/>
+    <import file="findbugs/build.xml"/>
+    <import file="jdepend/build.xml"/>
+    <import file="junit/build.xml"/>
+    <import file="pmd/build.xml"/>
+
+    <target name="init" depends="junit.init, cobertura.init"/>
+    <target name="clean" depends="junit.clean, cobertura.clean"/>
+</project>
