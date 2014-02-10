@@ -1,0 +1,18 @@
+<project name="jdepend" default="jdepend" basedir="..">
+    <!-- See http://www.clarkware.com/software/JDepend.html -->
+    <target name="jdepend">
+        <jdepend format="xml" outputfile="${test-results}/jdepend-report.xml"
+            classpathref="compile.classpath">
+            <sourcespath>
+                <pathelement location="${src}"/>
+            </sourcespath>
+            <classespath>
+                <pathelement location="${classes}"/>
+            </classespath>
+        </jdepend>
+
+        <xslt basedir="${test-results}" destdir="${test-results}/html/jdepend"
+              includes="jdepend-report.xml"
+              style="${ant.home}/etc/jdepend.xsl" />
+    </target>
+</project>

@@ -1,0 +1,29 @@
+<project name="checkstyle" default="checkstyle" basedir="..">
+    <dirname property="checkstyle.basedir" file="${ant.file.checkstyle}"/>
+
+    <property name="checkstyle-config" location="${checkstyle.basedir}/config/icb_checks.xml"/>
+    <fileset dir="${src}" id="checkstyle-fileset">
+        <include name="**/*.java"/>
+        <exclude name="**/package-info.java"/>
+    </fileset>
+
+    <!-- see http://checkstyle.sourceforge.net/ -->
+    <taskdef resource="checkstyletask.properties" onerror="report">
+        <classpath>
+            <pathelement location="${checkstyle.basedir}/lib/checkstyle-all-5.1.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="checkstyle" depends="init" description="Checks source against coding standards">
+        <checkstyle config="${checkstyle-config}" failonviolation="false">
+            <fileset refid="checkstyle-fileset"/>
+            <classpath refid="classpath"/>
+            <formatter type="xml" toFile="${test-results}/checkstyle_errors.xml"/>
+            <formatter type="plain" useFile="false"/>
+        </checkstyle>
+
+        <xslt in="${test-results}/checkstyle_errors.xml"
+              out="${test-results}/html/checkstyle/index.html"
+              style="${checkstyle.basedir}/config/checkstyle-noframes-sorted.xsl"/>
+    </target>
+</project>

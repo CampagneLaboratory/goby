@@ -1,0 +1,66 @@
+<project name="buildsupport" basedir="..">
+    <dirname property="buildsupport.basedir" file="${ant.file.buildsupport}"/>
+    <property name="build.basedir" location="${buildsupport.basedir}/.."/>
+
+    <tstamp>
+        <!-- current time for buildstamp purposes -->
+        <format property="buildstamp" pattern="yyyyMMddHHmmss"/>
+    </tstamp>
+    <tstamp>
+        <format property="year" pattern="yyyy"/>
+    </tstamp>
+
+    <property environment="env"/>
+    <property name="classes" location="${build.basedir}/classes"/>
+    <property name="lib" location="${build.basedir}/lib"/>
+    <property name="src" location="${build.basedir}/src"/>
+    <property name="javadocs" location="${build.basedir}/javadocs"/>
+    <property name="logs" location="${build.basedir}/logs"/>
+    <property name="config" location="${build.basedir}/config"/>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" onerror="fail">
+        <classpath>
+            <pathelement location="${buildsupport.basedir}/ant-contrib/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+    <import file="gitant/git-tasks.xml"/>
+    <path id="maven-ant-tasks.classpath" path="${buildsupport.basedir}/maven-ant/maven-ant-tasks-2.1.3.jar"/>
+    <!-- Maven ant support -->
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath"/>
+
+    <osfamily property="osfamily"/>
+
+    <property name="svnant-lib" location="${buildsupport.basedir}/svnant"/>
+    <property name="svnhost" value="pbtech-vc.med.cornell.edu"/>
+
+    <path id="svnant.classpath">
+        <fileset dir="${svnant-lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath"/>
+
+    <target name="init">
+        <tstamp/>
+        <mkdir dir="${classes}"/>
+        <!--  Create the logs directory -->
+        <mkdir dir="${logs}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete dir="${logs}"/>
+        <delete dir="${javadocs}"/>
+    </target>
+
+    <macrodef name="writeln" description="Write message to file and append a line ending character">
+        <attribute name="file" description="File to write to"/>
+        <attribute name="message" description="The line to write"/>
+        <attribute name="append" default="true" description="Whether or not to append to an existing file"/>
+        <sequential>
+            <echo file="@{file}" append="@{append}" message="@{message}${line.separator}"/>
+        </sequential>
+    </macrodef>
+</project>
