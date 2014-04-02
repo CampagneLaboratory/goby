@@ -34,6 +34,12 @@ public class StreamSignal extends OutputStream {
     private IsDone flag;
     private OutputStream stream;
 
+    @Override
+    public void close() throws IOException {
+        super.close();
+        flag.setDone(true);
+    }
+
     public StreamSignal(IsDone flag, String scanning, OutputStream stream) {
         this.scanning = new MutableString(scanning).compact();
         this.flag = flag;

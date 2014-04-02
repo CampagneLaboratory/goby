@@ -76,9 +76,8 @@ public class RunParallelMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws java.io.IOException                    error parsing
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)
@@ -190,9 +189,11 @@ public class RunParallelMode extends AbstractGobyMode {
                     final String transformedCommand = transform(processPartCommand, replacements);
                     final DefaultExecutor executor = new DefaultExecutor();
                     OutputStream logStream = null;
+                    StreamSignal scanningStream = null;
                     try {
                         logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
-                        executor.setStreamHandler(new PumpStreamHandler(new StreamSignal(done, "scanning", logStream)));
+                        scanningStream = new StreamSignal(done, "scanningStream", logStream);
+                        executor.setStreamHandler(new PumpStreamHandler(scanningStream));
 
                         final CommandLine parse = CommandLine.parse(transformedCommand, replacements);
                         LOG.info("About to execute: " + parse);
@@ -206,9 +207,10 @@ public class RunParallelMode extends AbstractGobyMode {
                             System.out.println("Warning: did not find output alignment: " + outputFilename);
                         }
                     } finally {
-                        IOUtils.closeQuietly(logStream);
+                        if (scanningStream != null) IOUtils.closeQuietly(scanningStream);
                         // remove the fastq file
                         new File(fastqFilename).delete();
+                        done.setDone(true);
                     }
 
 
@@ -264,9 +266,8 @@ public class RunParallelMode extends AbstractGobyMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException                    error parsing or executing.
      */
 
     public static void main(final String[] args) throws JSAPException, IOException {
