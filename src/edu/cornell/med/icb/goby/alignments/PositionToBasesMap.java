@@ -12,8 +12,9 @@ import java.util.Map;
  *         Time: 12:37 PM
  */
 public class PositionToBasesMap<T> {
-    private Int2ObjectOpenHashMap<T> delegate = new Int2ObjectOpenHashMap<T>();
+    private Int2ObjectAVLTreeMap<T> delegate = new Int2ObjectAVLTreeMap<T>();
     private IntSortedSet sortedKeys = new IntAVLTreeSet();
+    private Int2BooleanAVLTreeMap ignoredPositions = new Int2BooleanAVLTreeMap();
 
     @Override
     public String toString() {
@@ -48,11 +49,14 @@ public class PositionToBasesMap<T> {
     public void clear() {
         sortedKeys.clear();
         delegate.clear();
+        ignoredPositions.clear();
     }
 
     public T remove(int k) {
         sortedKeys.remove(k);
+        ignoredPositions.remove(k);
         return delegate.remove(k);
+
     }
 
     public T get(int ok) {
@@ -70,5 +74,12 @@ public class PositionToBasesMap<T> {
 
     public int firstPosition() {
         return sortedKeys.firstInt();
+    }
+
+    public void markIgnoredPosition(int position) {
+        ignoredPositions.put(position,true);
+    }
+    public boolean isIgnoredPosition(int position) {
+        return ignoredPositions.get(position);
     }
 }

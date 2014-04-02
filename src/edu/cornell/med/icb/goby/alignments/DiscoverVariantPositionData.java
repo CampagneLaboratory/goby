@@ -24,6 +24,8 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
+import java.util.Collections;
+
 /**
  * Stores information collected about each genomic position inspected by IterateSortedAlignmentsImpl (used by
  * DiscoverSequenceVariantsMode).
@@ -138,5 +140,20 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
 
     public void printAll(){
         System.out.println(completeToString());
+    }
+
+    /**
+     * Sub-sample this list to keep the specified maximum number of elements.
+     * @param numberToKeep the number of elements to keep in the list after sub-sampling
+     */
+    public void subSample(int numberToKeep) {
+
+        final int size=this.size();
+        if (numberToKeep>=size) return;
+
+        Collections.shuffle(this);
+        for (int i=size-1 ; i>=numberToKeep; --i) {
+            this.remove(i);
+        }
     }
 }

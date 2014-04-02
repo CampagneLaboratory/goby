@@ -101,38 +101,45 @@ public abstract class IterateSortedAlignmentsListImpl
         info.to = toChar;
         info.matchesReference = false;
         info.position = currentRefPosition - 1; // store 0-based position
-        final int readMappingQuality =  (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
+        final int readMappingQuality = (alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 40);
         info.qualityScore = (byte) Math.min(toQual, readMappingQuality);
         info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
 
-    private WarningCounter moreVariantsThanThreshold = new WarningCounter(10);
-    private void addToFuture(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
-                             final PositionBaseInfo info) {
+    private final WarningCounter moreVariantsThanThreshold = new WarningCounter(10);
 
-        DiscoverVariantPositionData list = positionToBases.get(info.position);
+    private final void addToFuture(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
+                                   final PositionBaseInfo info) {
+        final int position = info.position;
+        DiscoverVariantPositionData list = positionToBases.get(position);
         if (list == null) {
-            list = new DiscoverVariantPositionData(info.position);
-            positionToBases.put(info.position, list);
+            list = new DiscoverVariantPositionData(position);
+            positionToBases.put(position, list);
         } else {
-            assert list.getZeroBasedPosition() == info.position : "info position must match list position.";
+            assert list.getZeroBasedPosition() == position : "info position must match list position.";
         }
-        if (list.size() > maxThreshold) {
+        boolean isIgnoredPosition = positionToBases.isIgnoredPosition(position);
+        if (isIgnoredPosition || list.size() > maxThreshold) {
             IntOpenHashSet positions = new IntOpenHashSet();
             for (PositionBaseInfo element : list) {
                 positions.add(element.position);
             }
-            moreVariantsThanThreshold.warn(LOG,"position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
-                                positions.size());
-            moreVariantsThanThreshold.warn(LOG,"positions: " + positions.toString());
-
             // stop accumulating if the position has more than half a million bases!
+            // also sub-sample the already collection bases to reduce coverage to 10,000.
+
+            if (!isIgnoredPosition) {
+                moreVariantsThanThreshold.warn(LOG, "position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ",
+                        info.position, 500000, list.size(),
+                        positions.size());
+                list.subSample(10000);
+            }
+            positionToBases.markIgnoredPosition(position);
 
             return;
         }
-        list.add(info);
 
+        list.add(info);
 
     }
 
