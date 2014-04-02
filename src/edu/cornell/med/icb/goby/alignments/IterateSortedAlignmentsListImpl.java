@@ -120,15 +120,16 @@ public abstract class IterateSortedAlignmentsListImpl
             assert list.getZeroBasedPosition() == position : "info position must match list position.";
         }
         boolean isIgnoredPosition = positionToBases.isIgnoredPosition(position);
-        if (isIgnoredPosition || list.size() > maxThreshold) {
-            IntOpenHashSet positions = new IntOpenHashSet();
-            for (PositionBaseInfo element : list) {
-                positions.add(element.position);
-            }
+        if (isIgnoredPosition || list.size() >= maxThreshold) {
+
             // stop accumulating if the position has more than half a million bases!
             // also sub-sample the already collection bases to reduce coverage to 10,000.
 
             if (!isIgnoredPosition) {
+                IntOpenHashSet positions = new IntOpenHashSet();
+                for (PositionBaseInfo element : list) {
+                    positions.add(element.position);
+                }
                 moreVariantsThanThreshold.warn(LOG, "position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ",
                         info.position, 500000, list.size(),
                         positions.size());
