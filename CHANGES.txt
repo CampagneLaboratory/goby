@@ -7,6 +7,8 @@
  - Fix a problem with run-in-parallel where some threads would never finish when they do not detect
    the keyword. Now indicate that the thread finished so that others can start when the processing
    completes.
+ - reads-file-stats: remove any path from basename in the output.
+
 2.3.3
  - IterateSortedAlignmentsListImpl: Use a WarningCounter to limit warnings to 10 instances. This is needed to
    avoid writing Gb of log output when the threshold is met.

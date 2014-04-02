@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.math.random.MersenneTwister;
 
@@ -216,7 +217,8 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
                 final ReadsReader reader = new ReadsReader(filename);
-                final String basename = ReadsReader.getBasename(filename.toString());
+                // we do getName to remove any path, that is not taken out by ReadsReader.getBasename().
+                final String basename = FilenameUtils.getName(ReadsReader.getBasename(filename.toString()));
                 for (final Reads.ReadEntry entry : reader) {
                     if (!doSample || random.nextDouble() < sampleFraction) {
                         final ByteString qualityScores = entry.getQualityScores();
