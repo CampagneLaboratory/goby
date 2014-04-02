@@ -168,11 +168,15 @@ public class RunParallelMode extends AbstractGobyMode {
                             slices[loopIndex].startOffset,
                             slices[loopIndex].endOffset, loopIndex));
                     ctfm.execute();
+                    long waited=0;
+                    long maxWait=60*2; // wait 2 mins at most.
                     if (loopIndex > 0) {
                         while (!done.isDone()) {
                             // wait a bit to give the first thread the time to load the database and establish shared memory pool
                             //   System.out.println("sleep 5 thread "+loopIndex);
                             sleep(5);
+                            waited+=5;
+                            if (waited>maxWait) break;
                         }
                         System.out.println("Thread " + loopIndex + " can now start.");
                     }
@@ -272,6 +276,7 @@ public class RunParallelMode extends AbstractGobyMode {
 
     public static void main(final String[] args) throws JSAPException, IOException {
         new RunParallelMode().configure(args).execute();
+        System.exit(0);
     }
 
 }
