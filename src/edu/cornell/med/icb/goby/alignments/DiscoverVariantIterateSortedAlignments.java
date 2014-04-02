@@ -28,7 +28,6 @@ import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.WarningCounter;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -234,11 +233,11 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         final char referenceBase = getReferenceAllele(genome, position, list);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] = 0;
-            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] = 0;
-            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] = 0;
-            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] = 0;
-            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+            sampleCounts[sampleIndex].clearGenotypeCount(SampleCountInfo.BASE_A_INDEX);
+            sampleCounts[sampleIndex].clearGenotypeCount(SampleCountInfo.BASE_T_INDEX);
+            sampleCounts[sampleIndex].clearGenotypeCount(SampleCountInfo.BASE_C_INDEX);
+            sampleCounts[sampleIndex].clearGenotypeCount(SampleCountInfo.BASE_G_INDEX);
+            sampleCounts[sampleIndex].clearGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX);
             sampleCounts[sampleIndex].referenceBase = referenceBase;
             sampleCounts[sampleIndex].distinctReadIndices.clear();
             sampleCounts[sampleIndex].sampleIndex = sampleIndex;
@@ -287,7 +286,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].refCount++;
-                    incrementBaseCounter(info.from, sampleIndex);
+                    incrementBaseCounter(info.from, sampleIndex, info.matchesForwardStrand);
 
                 } else {
                     sampleCounts[sampleIndex].varCount++;
@@ -302,7 +301,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
 
-                    if (!info.isInsertionOrDeletion()) incrementBaseCounter(info.to, sampleIndex);
+                    if (!info.isInsertionOrDeletion()) incrementBaseCounter(info.to, sampleIndex, info.matchesForwardStrand);
                 }
             }
 
@@ -346,8 +345,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     private boolean anyCountNegative(SampleCountInfo[] sampleCounts) {
 
         for (SampleCountInfo sci : sampleCounts) {
-            for (int count : sci.counts) {
-                if (count < 0) return true;
+            if (sci.anyCountNegative()) {
+                return true;
             }
 
         }
@@ -417,25 +416,25 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
     }
 
-    private void incrementBaseCounter(char base, int sampleIndex) {
+    private void incrementBaseCounter(char base, int sampleIndex, boolean matchesForwardStrand) {
         switch (base) {
             case 'A':
-                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] += 1;
+                sampleCounts[sampleIndex].incrementGenotypeCount(SampleCountInfo.BASE_A_INDEX,matchesForwardStrand);
                 break;
             case 'T':
-                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] += 1;
+                sampleCounts[sampleIndex].incrementGenotypeCount(SampleCountInfo.BASE_T_INDEX,matchesForwardStrand);
                 break;
             case 'C':
-                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] += 1;
+                sampleCounts[sampleIndex].incrementGenotypeCount(SampleCountInfo.BASE_C_INDEX,matchesForwardStrand);
                 break;
             case 'G':
-                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
+                sampleCounts[sampleIndex].incrementGenotypeCount(SampleCountInfo.BASE_G_INDEX,matchesForwardStrand);
                 break;
             case '-':
                 // deletions are handled as indels, do not report as Ns.
                 break;
             default:
-                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] += 1;
+                sampleCounts[sampleIndex].incrementGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX,matchesForwardStrand);
                 break;
         }
     }

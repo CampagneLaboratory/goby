@@ -320,12 +320,12 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case SOMATIC_VARIATIONS:
 
                 genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new StrandBiasFilter());
                 if (callIndels) {
                     genotypeFilters.add(new EntropicIndelArtifactFilter());
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                     genotypeFilters.add(new CommonIndelArtifactFilter());
                 }
-
                 break;
             case INDEL_COUNTS:
                 genotypeFilters.add(new QualityScoreFilter());
@@ -557,6 +557,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     public CovariateInfo getCovariateInfo() {
         return covInfo;
+    }
+
+    public String[] getInputFilenames() {
+        return inputFilenames;
     }
 
 

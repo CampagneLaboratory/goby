@@ -377,20 +377,20 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
     private SampleCountInfo[] makeTwoSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[0] = new SampleCountInfo();
-        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
-        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
-        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
-        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, 5);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX,1);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,9);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX,1);
         sampleCounts[0].referenceBase = 'C';
         sampleCounts[0].refCount = 5;
         sampleCounts[0].varCount = 11;
         sampleCounts[0].sampleIndex = 0;
 
         sampleCounts[1] = new SampleCountInfo();
-        sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX] = 10;
-        sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX] = 4;
-        sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX] = 0;
-        sampleCounts[1].counts[SampleCountInfo.BASE_OTHER_INDEX] = 2;
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,10);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_T_INDEX,4);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,0);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 2);
         sampleCounts[1].referenceBase = 'C';
         sampleCounts[1].refCount = 10;
         sampleCounts[1].varCount = 6;
@@ -425,7 +425,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 
-                for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
+                for (int i = 0; i < sampleInfo.getGenotypeCount(baseIndex); i++) {
 
                     PositionBaseInfo info = new PositionBaseInfo();
                     final char base = sampleInfo.base(baseIndex);

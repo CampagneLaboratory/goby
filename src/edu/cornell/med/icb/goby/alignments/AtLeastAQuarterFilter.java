@@ -80,13 +80,13 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
             final SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
             // how many of this base have we seen in this sample?
             final int baseIndex = sampleCountInfo.baseIndex(base);
-            final int count = sampleCountInfo.counts[baseIndex];
+            final int count = sampleCountInfo.getGenotypeCount(baseIndex);
             if (count == 0) continue;
             if (count < removedBaseCountThreshold) {
 
                 // this allele has less than 1/4 of the counts of the allele with the most counts in this sample.
                 // remove.
-                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                sampleCountInfo.suggestRemovingGenotype(baseIndex, positionBaseInfo.matchesForwardStrand);
                 removeGenotype(positionBaseInfo, filteredList);
             }
         }

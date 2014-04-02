@@ -2,7 +2,6 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.algorithmic.data.CovariateInfo;
-import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import java.io.IOException;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
 /**
@@ -42,10 +40,10 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_A_INDEX] = 0;
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_C_INDEX] = 0;
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_C_INDEX] = 100;
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_A_INDEX] = 0;
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,100);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,0);
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,0);
         assertPWithCounts(2.2229697512078737E-19, sampleCounts, 100f);
 
     }
@@ -55,10 +53,10 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_A_INDEX] = 50;
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_C_INDEX] = 0;
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_C_INDEX] = 100;
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_A_INDEX] = 50;
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,150);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,0);
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
         assertPWithCounts(2.2229697512078737E-19, sampleCounts, 66.66667f);
 
     }
@@ -73,10 +71,10 @@ public class TestSomaticVariationOutputFormat {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
         sampleCounts[GERMLINE] = new SampleCountInfo();
         sampleCounts[SOMATIC] = new SampleCountInfo();
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_A_INDEX] = 50;
-        sampleCounts[GERMLINE].counts[SampleCountInfo.BASE_C_INDEX] = 5;     // too many bases for C genotype in germline. P-value will be 1.0.
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_C_INDEX] = 100;
-        sampleCounts[SOMATIC].counts[SampleCountInfo.BASE_A_INDEX] = 50;
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,150);
+        sampleCounts[GERMLINE].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,5);     // too many bases for C genotype in germline. P-value will be 1.0.
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,100);
+        sampleCounts[SOMATIC].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,50);
         assertPWithCounts(1.6933846698892596E-14, sampleCounts,  66.66667f);
 
     }
@@ -229,10 +227,10 @@ public class TestSomaticVariationOutputFormat {
                                                       int fatherCount, int motherCount, int baseline) {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[3];
         sampleCounts[0] = new SampleCountInfo();
-        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = baseline;
-        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = motherCount;
-        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = baseline;
-        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_A_INDEX, baseline);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_T_INDEX,motherCount);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_C_INDEX, baseline);
+        sampleCounts[0].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX, 0);
         sampleCounts[0].referenceBase = 'A';
         sampleCounts[0].refCount = baseline * 2;
         sampleCounts[0].varCount = somaticCount;
@@ -241,10 +239,10 @@ public class TestSomaticVariationOutputFormat {
 
 
         sampleCounts[1] = new SampleCountInfo();
-        sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX] = baseline;
-        sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX] = somaticCount;
-        sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX] = baseline;
-        sampleCounts[1].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,baseline);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_T_INDEX,somaticCount);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,baseline);
+        sampleCounts[1].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX,0);
         sampleCounts[1].referenceBase = 'A';
         sampleCounts[1].refCount = baseline * 2 + motherCount;
         sampleCounts[1].varCount = motherCount;
@@ -252,10 +250,10 @@ public class TestSomaticVariationOutputFormat {
         sampleCounts[1].sampleIndex = 1;
 
         sampleCounts[2] = new SampleCountInfo();
-        sampleCounts[2].counts[SampleCountInfo.BASE_A_INDEX] = baseline;
-        sampleCounts[2].counts[SampleCountInfo.BASE_T_INDEX] = fatherCount;
-        sampleCounts[2].counts[SampleCountInfo.BASE_C_INDEX] = baseline;
-        sampleCounts[2].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_A_INDEX,baseline);
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_T_INDEX,fatherCount);
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_C_INDEX,baseline);
+        sampleCounts[2].setGenotypeCount(SampleCountInfo.BASE_OTHER_INDEX,0);
         sampleCounts[2].referenceBase = 'A';
         sampleCounts[2].refCount = baseline * 2 + fatherCount;
         sampleCounts[2].varCount = fatherCount;

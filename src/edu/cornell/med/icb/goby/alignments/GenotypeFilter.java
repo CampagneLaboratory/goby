@@ -103,6 +103,7 @@ public abstract class GenotypeFilter {
 
     }
 
+
     protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts) {
         for (SampleCountInfo sci : sampleCounts) {
             sci.varCount -= varCountRemovedPerSample[sci.sampleIndex];

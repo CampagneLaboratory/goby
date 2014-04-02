@@ -85,7 +85,7 @@ public class LeftOverFilter extends GenotypeFilter {
             final SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
             // how many of this base have we seen in this sample?
             final int baseIndex = sampleCountInfo.baseIndex(base);
-            final int count = sampleCountInfo.counts[baseIndex];
+            final int count = sampleCountInfo.getGenotypeCount(baseIndex);
             if (count == 0) continue;
             if (count < thresholdsPerSample[sampleIndex]) {
 
@@ -93,7 +93,7 @@ public class LeftOverFilter extends GenotypeFilter {
                 // an error.
                 // We remove this call
 
-                sampleCountInfo.suggestRemovingGenotype(baseIndex);
+                sampleCountInfo.suggestRemovingGenotype(baseIndex, positionBaseInfo.matchesForwardStrand);
                 removeGenotype(positionBaseInfo, filteredList);
             }
         }

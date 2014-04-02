@@ -97,10 +97,8 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
             minRefId = iterator.getReferenceId(minRefIndex);
         }
         for (SampleCountInfo sci : sampleCounts) {
-            int totalCount = 0;
-            for (int count : sci.counts) {
-                totalCount += count;
-            }
+            int totalCount = sci.getSumOfCounts();
+
 
             if (totalCount >= MIN_COVERAGE_THRESHOLD) {
                 sampleSitesObserved[sci.sampleIndex]++;
@@ -197,10 +195,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         // don't use threshold on events at site for indel rates:
         mci.eventCountAtSite=0;
         for (SampleCountInfo sci : sampleCounts) {
-            int sampleTotalCount = 0;
-            for (int count : sci.counts) {
-                sampleTotalCount += count;
-            }
+            int sampleTotalCount = sci.getSumOfCounts();
 
             if (sampleTotalCount >= MIN_COVERAGE_THRESHOLD) {
 

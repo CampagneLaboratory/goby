@@ -42,8 +42,8 @@ public class TestTrimMode {
                 new MutableString("ACT")
         };
         MutableString result = trimmer.contains(10, original, ByteString.copyFrom(bytes), list, adapters);
-        assertEquals(new MutableString("12>>1234567"),result);
-        assertEquals(ByteArrayList.wrap(new byte[]{0,1,2,3,7,8,9,10,11,12,13,14}), list);
+        assertEquals(new MutableString("1234567"),result);
+        assertEquals(ByteArrayList.wrap(new byte[]{7,8,9,10,11,12,13,14}), list);
 
 
     }

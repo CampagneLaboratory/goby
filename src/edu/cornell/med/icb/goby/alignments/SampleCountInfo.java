@@ -23,10 +23,8 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -55,7 +53,13 @@ public class SampleCountInfo {
      */
 
     public int failedCount;
-    public int[] counts = new int[5];
+    private int[][] counts = new int[2][5];
+
+    public SampleCountInfo() {
+        this.counts[0] = new int[5];
+        this.counts[1] = new int[5];
+    }
+
     /**
      * While base genotypes were flagged for removal by some filter in this sample.
      */
@@ -72,11 +76,11 @@ public class SampleCountInfo {
          * @param eir2 second indel
          * @return sort order
          */
-        @Override
         public int compare(final EquivalentIndelRegion eir1, final EquivalentIndelRegion eir2) {
             return eir1.to.compareTo(eir2.to);
         }
     };
+    private int sumOfCounts;
 
 
     /**
@@ -118,24 +122,6 @@ public class SampleCountInfo {
         return BASE_MAX_INDEX + (hasIndels() ? indels.size() : 0);
     }
 
-    /**
-     * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
-     *
-     * @param genotypeIndex Index of the genotype for which count/frequency is sought.
-     * @return the frequency.
-     */
-    public final int getGenotypeCount(final int genotypeIndex) {
-
-        if (genotypeIndex < BASE_MAX_INDEX) {
-            return counts[genotypeIndex];
-        } else {
-            if (hasIndels()) {
-                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
-                return indels.get(indelIndex).getFrequency();
-            }
-        }
-        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
-    }
 
     /**
      * Align indel genotypes so that genotype indices refer to the same genotype across a set of samples.
@@ -369,8 +355,17 @@ public class SampleCountInfo {
     static final String N_BASE = "N";
     static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
 
-    public final String baseString(final int baseIndex) {
-        return STRING[baseIndex];
+    public final String baseString(final int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return STRING[genotypeIndex];
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).toString();
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+
     }
 
     /**
@@ -405,22 +400,64 @@ public class SampleCountInfo {
 
         buffer.append(base(baseIndex));
         buffer.append("=");
-        buffer.append(counts[baseIndex]);
+        buffer.append(getGenotypeCount(baseIndex));
 
         return buffer.toString();
 
     }
 
 
-    public void suggestRemovingGenotype(int baseIndex) {
+    public void suggestRemovingGenotype(int baseIndex, boolean matchesForwardStrand) {
 
-        if (counts[baseIndex] - 1 >= 0) {
+        if (getGenotypeCount(baseIndex, matchesForwardStrand) - 1 >= 0) {
 
-            counts[baseIndex]--;
+            decrementGenotypeCount(baseIndex, matchesForwardStrand);
         }
 
     }
 
+
+    /**
+     * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
+     *
+     * @param genotypeIndex Index of the genotype for which count/frequency is sought.
+     * @return the frequency.
+     */
+    public final int getGenotypeCount(final int genotypeIndex) {
+
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return Math.max(0, counts[POSITIVE_STRAND][genotypeIndex]) + Math.max(0, counts[NEGATIVE_STRAND][genotypeIndex]);
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).getFrequency();
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    /**
+     * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
+     *
+     * @param genotypeIndex Index of the genotype for which count/frequency is sought.
+     * @return the frequency.
+     */
+    public final int getGenotypeCount(final int genotypeIndex, boolean matchesForwardStrand) {
+
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return Math.max(0, counts[recodeStrand(matchesForwardStrand)][genotypeIndex]);
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).getFrequency();
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    private int recodeStrand(boolean matchesForwardStrand) {
+        return matchesForwardStrand ? POSITIVE_STRAND : NEGATIVE_STRAND;
+    }
 
     /**
      * Reset a genotype count to a given value.
@@ -428,9 +465,9 @@ public class SampleCountInfo {
      * @param genotypeIndex
      * @param count
      */
-    public void setGenotypeCount(int genotypeIndex, int count) {
+    public void setGenotypeCount(int genotypeIndex, int count, boolean matchesForwardStrand) {
         if (genotypeIndex < BASE_MAX_INDEX) {
-            counts[genotypeIndex] = count;
+            counts[recodeStrand(matchesForwardStrand)][genotypeIndex] = count;
             return;
         } else {
             if (hasIndels()) {
@@ -442,7 +479,30 @@ public class SampleCountInfo {
             }
         }
         throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+
     }
+
+    /**
+     * Reset a genotype count to a given value.
+     *
+     * @param genotypeIndex
+     * @param count
+     */
+    public void setGenotypeCount(int genotypeIndex, int count) {
+        setGenotypeCount(genotypeIndex, count, true);
+    }
+
+    private int decrementGenotypeCount(int baseIndex, boolean matchesForwardStrand) {
+        return --(counts[recodeStrand(matchesForwardStrand)][baseIndex]);
+    }
+
+    public int incrementGenotypeCount(int baseIndex, boolean matchesForwardStrand) {
+        return (++counts[recodeStrand(matchesForwardStrand)][baseIndex]);
+    }
+
+    private static final int POSITIVE_STRAND = 1;
+    private static final int NEGATIVE_STRAND = 0;
+
 
     public int getSumCounts() {
         int sum = 0;
@@ -482,4 +542,53 @@ public class SampleCountInfo {
         float count = (float) getGenotypeCount(genotypeIndex);
         return count / ((float) sum);
     }
+
+
+    public void clearGenotypeCount(int baseIndex) {
+        counts[0][baseIndex] = 0;
+        counts[1][baseIndex] = 0;
+    }
+
+    /**
+     * return the number of base genotypes.
+     *
+     * @return
+     */
+    public int getCountsSize() {
+        return counts.length;
+    }
+
+    public boolean anyCountNegative() {
+        for (int i = 0; i < getCountsSize(); i++) {
+            if (getGenotypeCount(i) < 0) return true;
+        }
+        return false;
+    }
+
+    public int getSumOfCounts() {
+        int sum = 0;
+        for (int count : counts[0]) {
+            sum += count;
+        }
+        for (int count : counts[1]) {
+            sum += count;
+        }
+        return sum;
+    }
+
+    /**
+     * Return the number of bases that cover this site, irrespective of genotype.
+     *
+     * @return the coverage at the site.
+     */
+    public int coverage() {
+        int coverage = 0;
+        for (int genotypeIndex = 0; genotypeIndex < getGenotypeMaxIndex(); genotypeIndex++) {
+            coverage += getGenotypeCount(genotypeIndex);
+
+        }
+        return coverage;
+    }
+
+
 }
