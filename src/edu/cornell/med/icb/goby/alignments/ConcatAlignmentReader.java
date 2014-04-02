@@ -81,7 +81,6 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     protected boolean[] hasReadOrigin;
 
 
-
     /**
      * Construct an alignment reader over a RepositionableInputStreamset of alignments.
      * Please note that the constructor access the header of each individual alignment to
@@ -144,7 +143,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
      * query index mapping and let you move such a temporary permutation file to a final destination.
      *
      * @return ConcatenatePermutations helper, which may have created a temporary global permutation file for the
-     *         concatenated input alignments.
+     * concatenated input alignments.
      */
     public ConcatenatePermutations getConcatPerm() {
         return concatenatePerms;
@@ -493,6 +492,36 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
     }
 
+    @Override
+    public ReferenceLocation getMinLocation() throws IOException {
+        ReferenceLocation minLocation = readers[0].getMinLocation();
+
+        for (AlignmentReader reader : this.readers) {
+
+            ReferenceLocation loc = reader.getMinLocation();
+            if (loc.compareTo(minLocation) < 0) {
+                minLocation = loc;
+            }
+
+        }
+        return minLocation;
+    }
+
+    @Override
+    public ReferenceLocation getMaxLocation() throws IOException {
+        ReferenceLocation maxLocation = readers[0].getMaxLocation();
+
+        for (AlignmentReader reader : this.readers) {
+
+            ReferenceLocation loc = reader.getMaxLocation();
+            if (loc.compareTo(maxLocation) > 0) {
+                maxLocation = loc;
+            }
+
+        }
+        return maxLocation;
+    }
+
     public ObjectList<ReferenceLocation> getLocationsByBytes(int numBytesPerSlice) throws IOException {
         readHeader();
         ObjectSet<ReferenceLocation> result = new ObjectOpenHashSet<ReferenceLocation>();
@@ -510,20 +539,21 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
 
         long sizeSinceLastSlice = 0;
-        // explicitely put start and end locations into the result:
-        ReferenceLocation startLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        ReferenceLocation endLocation=new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        // explicitly put start and end locations into the result:
+        ReferenceLocation startLocation = new ReferenceLocation(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        ReferenceLocation endLocation = new ReferenceLocation(0, 0);
         for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
             ReferenceLocation readerFirst = locations[readerIndex].get(0);
-            ReferenceLocation readerLast = locations[readerIndex].get(locations[readerIndex].size()-1);
-            if (readerFirst.compareTo(startLocation)<0) {
-                startLocation=readerFirst;
+            ReferenceLocation readerLast = locations[readerIndex].get(locations[readerIndex].size() - 1);
+            if (readerFirst.compareTo(startLocation) < 0) {
+                startLocation = readerFirst;
             }
-            if (readerLast.compareTo(startLocation)>0) {
-                endLocation=readerLast;
+            if (readerLast.compareTo(endLocation) > 0) {
+                endLocation = readerLast;
             }
         }
-
+        startLocation = getMinLocation();
+        endLocation = getMaxLocation();
         for (int i = 0; i < maxLocationIndices; i++) {
 
             for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
@@ -538,11 +568,11 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 }
                 locationIndices[readerIndex]++;
             }
-            if ( sizeSinceLastSlice > numBytesPerSlice) {
+            if (sizeSinceLastSlice > numBytesPerSlice) {
                 ObjectList<ReferenceLocation> currentLocations = new ObjectArrayList<ReferenceLocation>();
                 for (readerIndex = 0; readerIndex < numReaders; readerIndex++) {
 
-                    if (locationIndices[readerIndex]==0 || locationIndices[readerIndex] < locations[readerIndex].size()) {
+                    if (locationIndices[readerIndex] == 0 || locationIndices[readerIndex] < locations[readerIndex].size()) {
                         ReferenceLocation readerLocation = locations[readerIndex].get(locationIndices[readerIndex]);
                         currentLocations.add(readerLocation);
                     }
@@ -559,8 +589,8 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         }
         ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
         list.addAll(result);
-        list.add(startLocation);
-        list.add(endLocation);
+        list.add(getMinLocation());
+        list.add(getMaxLocation());
         Collections.sort(list);
         return list;
     }

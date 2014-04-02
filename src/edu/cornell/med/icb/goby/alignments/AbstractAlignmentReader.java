@@ -311,4 +311,19 @@ public abstract class AbstractAlignmentReader implements Closeable,
     public String getSampleBasename(final int sampleIndex) {
         return sampleBasenames.get(sampleIndex);
     }
+    /**
+     * Return the minimum location in this alignment.
+     *
+     * @return The minimum location in this alignment.
+     * @throws IOException
+     */
+    public abstract  ReferenceLocation getMinLocation() throws IOException;
+
+    /**
+     * Return the maximum location in this alignment.
+     *
+     * @return The maximum location in this alignment.
+     * @throws IOException
+     */
+    public abstract ReferenceLocation getMaxLocation() throws IOException;
 }

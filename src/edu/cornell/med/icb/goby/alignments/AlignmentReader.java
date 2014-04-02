@@ -28,6 +28,7 @@ import java.util.Properties;
 
 /**
  * Interface for Goby alignment readers.
+ *
  * @author Fabien Campagne
  *         Date: Apr 10, 2011
  *         Time: 12:43:51 PM
@@ -143,18 +144,33 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
      *
      * @param modulo Modulo to avoid sampling every position in the genome.
      * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
-     *         * @throws IOException
+     * * @throws IOException
      */
     ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException;
+
+    /**
+     * Return the minimum location in this alignment.
+     *
+     * @return The minimum location in this alignment.
+     * @throws IOException
+     */
+    public ReferenceLocation getMinLocation() throws IOException;
+
+    /**
+     * Return the maximum location in this alignment.
+     *
+     * @return The maximum location in this alignment.
+     * @throws IOException
+     */
+    public ReferenceLocation getMaxLocation() throws IOException;
 
     /**
      * Returns a sample of locations covered by this alignment.
      * <p/>
      *
-     *
      * @param bytesPerSlice Return locations approximately spaced by this number of compressed bytes.
      * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
-     *         * @throws IOException
+     * * @throws IOException
      */
     ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException;
 

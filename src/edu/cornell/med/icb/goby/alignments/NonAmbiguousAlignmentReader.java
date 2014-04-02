@@ -265,6 +265,15 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     }
 
     @Override
+    public ReferenceLocation getMinLocation() throws IOException {
+        return delegate.getMinLocation();
+    }
+    @Override
+    public ReferenceLocation getMaxLocation() throws IOException {
+        return delegate.getMaxLocation();
+    }
+
+    @Override
     public ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException {
         return delegate.getLocationsByBytes(bytesPerSlice);
     }

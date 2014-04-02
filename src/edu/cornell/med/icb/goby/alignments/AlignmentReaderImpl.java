@@ -656,7 +656,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @param position    Position along the reference sequence.
      * @param chunkOffset Offset used to iterate through successive PB chunks.
      * @return the largest position in byte in the entries file that occur before the location (targetIndex, position) or
-     *         Long.MIN_VALUE if the offset cannot be determined (e.g., alignment is empty).
+     * Long.MIN_VALUE if the offset cannot be determined (e.g., alignment is empty).
      */
     protected long getByteOffset(final int targetIndex, final int position, final int chunkOffset) {
 
@@ -835,6 +835,17 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         return numberOfAlignedReads;
     }
 
+    @Override
+    public ReferenceLocation getMinLocation() throws IOException {
+        long minAbsoluteIndex = indexAbsolutePositions.get(0);
+        return decodeAbsoluteLocation(minAbsoluteIndex);
+    }
+
+    @Override
+    public ReferenceLocation getMaxLocation() throws IOException {
+        long maxAbsoluteIndex = indexAbsolutePositions.get(indexAbsolutePositions.size()-1);
+        return decodeAbsoluteLocation(maxAbsoluteIndex);
+    }
 
     @Override
     public ObjectList<ReferenceLocation> getLocationsByBytes(int bytesPerSlice) throws IOException {
@@ -850,9 +861,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         for (long absoluteLocation : indexAbsolutePositions) {
             long offsetInEntriesFile = indexOffsets.get(i);
             long compressedByteAmountSincePreviousLocation = offsetInEntriesFile - lastFileOffsetPushed;
-            if (lastFileOffsetPushed==-1 || compressedByteAmountSincePreviousLocation > bytesPerSlice) {
+            if (lastFileOffsetPushed == -1 || compressedByteAmountSincePreviousLocation > bytesPerSlice) {
                 final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation);
-                location.compressedByteAmountSincePreviousLocation=compressedByteAmountSincePreviousLocation;
+                location.compressedByteAmountSincePreviousLocation = compressedByteAmountSincePreviousLocation;
                 result.add(location);
                 lastFileOffsetPushed = offsetInEntriesFile;
             }
@@ -866,7 +877,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      *
      * @param modulo Modulo to avoid sampling every position in the genome.
      * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
-     *         * @throws IOException
+     * * @throws IOException
      */
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
         assert isHeaderLoaded() : "header must be loaded to query locations.";
