@@ -21,7 +21,8 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.util.WarningCounter;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.RegisterThis;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.log4j.Logger;
 
@@ -32,9 +33,31 @@ import org.apache.log4j.Logger;
  */
 public abstract class IterateSortedAlignmentsListImpl
         extends IterateSortedAlignments<DiscoverVariantPositionData> {
+
+
+    protected IterateSortedAlignmentsListImpl() {
+        this.SUB_SAMPLE_SIZE = doc.getInteger("sub-sample-size");
+
+    }
+
+    public static final DynamicOptionClient doc() {
+        return doc;
+    }
+
+    @RegisterThis
+    public static final DynamicOptionClient doc = new DynamicOptionClient(IterateSortedAlignmentsListImpl.class,
+
+            /*"max-coverage:integer, The maximum number of bases allowed before triggering sub-sampling. Some positions just " +
+                    "have too much coverage, usually because of some artefactual effect. We use this parameter to determine " +
+                    "when too much is too much. Any position with more covering bases will be sub-sampled to reduce computational load " +
+                    "and make performance predictable. The default parameter is set at half a million bases.:500000" +*/
+            "sub-sample-size:integer, The number of bases to keep when coverage exceeds the maximum and sub-sampling " +
+                    "is needed to improve performance.:10000"
+    );
     /**
      * Used to log debug and informational messages.
      */
+
     private static final Logger LOG = Logger.getLogger(IterateSortedAlignmentsListImpl.class);
 
     /**
@@ -108,6 +131,7 @@ public abstract class IterateSortedAlignmentsListImpl
     }
 
     private final WarningCounter moreVariantsThanThreshold = new WarningCounter(10);
+    private int SUB_SAMPLE_SIZE = 10000;
 
     private final void addToFuture(final PositionToBasesMap<DiscoverVariantPositionData> positionToBases,
                                    final PositionBaseInfo info) {
@@ -131,9 +155,9 @@ public abstract class IterateSortedAlignmentsListImpl
                     positions.add(element.position);
                 }
                 moreVariantsThanThreshold.warn(LOG, "position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ",
-                        info.position, 500000, list.size(),
+                        info.position, maxThreshold, list.size(),
                         positions.size());
-                list.subSample(10000);
+                list.subSample(SUB_SAMPLE_SIZE);
             }
             positionToBases.markIgnoredPosition(position);
 
