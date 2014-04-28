@@ -132,7 +132,7 @@
                 <include name="commons-pool-1.6.jar"/>
                 <include name="edu.mssm.crover.cli.jar"/>
                 <include name="bzip2.jar"/>
-                <include name="fastutil-6.3.jar"/>
+                <include name="fastutil-6.5.15.jar"/>
                 <include name="dsiutils-2.0.14.jar"/>
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
@@ -268,9 +268,9 @@
             <zipgroupfileset dir="${lib}">
                 <include name="bzip2.jar"/>
                 <!-- Apache Software License -->
-                <include name="fastutil-6.3.jar"/>
+                <include name="fastutil-6.5.15.jar"/>
                 <!-- LGPL -->
-                <include name="dsiutils-1.0.12.jar"/>
+                <include name="dsiutils-2.0.14.jar"/>
                 <!-- LGPL -->
                 <include name="icb-utils.jar"/>
                 <!-- LGPL -->
