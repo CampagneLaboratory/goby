@@ -24,9 +24,7 @@ import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -85,6 +83,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean flipStrand;
     private boolean substituteCharacter;
     private Substitution[] substitutions;
+    private boolean hasPair;
+    private boolean firstInPair;
 
     @Override
     public String getModeName() {
@@ -166,6 +166,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                        final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
 
         int currentQueryIndex = -1;
+        int currentFragmentIndex = -1;
         final List<Alignments.AlignmentEntry.Builder> sameQueryIndexAlignmentEntries =
                 new ArrayList<Alignments.AlignmentEntry.Builder>();
 
@@ -181,9 +182,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         // convert MAF to compact alignment
         if (!onlyCountsFile) {
 
-            // initialize minimum score & num hits maps
-            final Int2FloatOpenHashMap queryIndexToMaxAlignmentScore = new Int2FloatOpenHashMap();
-            final Int2IntOpenHashMap queryIndexToNumHitsAtMaxScore = new Int2IntOpenHashMap();
+            // initialize minimum score & num hits maps. The following arrays are indexed on the fragmentIndex:
+            final Int2FloatOpenHashMap queryIndexToMaxAlignmentScore[] = new Int2FloatOpenHashMap[]{new Int2FloatOpenHashMap(), new Int2FloatOpenHashMap()};
+            final Int2IntOpenHashMap queryIndexToNumHitsAtMaxScore[] = new Int2IntOpenHashMap[]{new Int2IntOpenHashMap(), new Int2IntOpenHashMap()};
 
 
             final AlignmentStats stats = new AlignmentStats();
@@ -221,9 +222,26 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                             query.alignment.replace(sub.from, sub.to);
                         }
                     }
-                    final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
+                    String s = query.sequenceIdentifier.toString();
+                    int fragmentIndex = 0;
+                    if (s.endsWith("/1")) {
+                        s = s.substring(0, s.length() - 2);
+                        fragmentIndex = 0;
+                        hasPair=true;
+                        firstInPair=true;
+                    }
+                    if (s.endsWith("/2")) {
+                        s = s.substring(0, s.length() - 2);
+                        fragmentIndex = 1;
+                        hasPair=true;
+                        firstInPair=false;
+                    }
+                    final int queryIndex = Integer.parseInt(s);
                     if (currentQueryIndex == -1) {
                         currentQueryIndex = queryIndex;
+                    }
+                    if (currentFragmentIndex == -1) {
+                        currentFragmentIndex = fragmentIndex;
                     }
                     largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
                     int targetIndex = -1;
@@ -253,8 +271,27 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setPosition(targetPosition);
                     currentEntry.setQueryAlignedLength(query.alignedLength);
                     currentEntry.setQueryIndex(queryIndex);
+                    currentEntry.setFragmentIndex(fragmentIndex);
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
+
+                    storeForPairsIndex(writeAlignment, queryIndex, fragmentIndex, targetIndex, targetPosition, reverseStrand);
+
+                    if (writeAlignment && hasPair) {
+                        final Alignments.RelatedAlignmentEntry.Builder builderForValue = Alignments.RelatedAlignmentEntry.newBuilder();
+                        builderForValue.setFragmentIndex(flipFragmentIndex(fragmentIndex));
+                        builderForValue.setTargetIndex(getPairTargetIndex(queryIndex, fragmentIndex));
+                        builderForValue.setPosition(getPairPosition(queryIndex, fragmentIndex));
+                        currentEntry.setPairAlignmentLink(builderForValue.build());
+                        int pairFlags = EntryFlagHelper.paired();
+                        if (firstInPair) pairFlags|= EntryFlagHelper.firstInPair();
+                        if (getPairStrand(queryIndex, fragmentIndex) && firstInPair) pairFlags|= EntryFlagHelper.mateReverseStrand();
+                        if (getPairStrand(queryIndex, fragmentIndex) && !firstInPair) pairFlags|= EntryFlagHelper.readReverseStrand();
+                        if (getPairStrand(queryIndex, flipFragmentIndex(fragmentIndex)) && firstInPair) pairFlags|= EntryFlagHelper.readReverseStrand();
+                        if (getPairStrand(queryIndex, flipFragmentIndex(fragmentIndex)) && !firstInPair) pairFlags|= EntryFlagHelper.mateReverseStrand();
+                        currentEntry.setPairFlags(pairFlags);
+                    }
+
                     if (targetLengths.size() <= targetIndex) {
                         targetLengths.size(targetIndex + 1);
                     }
@@ -267,19 +304,19 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
 
                     if (qualityFilter.keepEntry(depth, currentEntry)) {
-                        final float currentMax = queryIndexToMaxAlignmentScore.get(queryIndex);
-                        final int currentNumHits = queryIndexToNumHitsAtMaxScore.get(queryIndex);
+                        final float currentMax = queryIndexToMaxAlignmentScore[fragmentIndex].get(queryIndex);
+                        final int currentNumHits = queryIndexToNumHitsAtMaxScore[fragmentIndex].get(queryIndex);
                         // on the first pass, writeAlignment=false
                         if (!writeAlignment) {
                             // save the maximum score per read
                             //   and reset the counter to reflect numHits at this new value
                             if (score > currentMax) {
-                                queryIndexToMaxAlignmentScore.put(queryIndex, score);
-                                queryIndexToNumHitsAtMaxScore.put(queryIndex, 1);
+                                queryIndexToMaxAlignmentScore[fragmentIndex].put(queryIndex, score);
+                                queryIndexToNumHitsAtMaxScore[fragmentIndex].put(queryIndex, 1);
                             }
                             // if query score equals the current max, add 1 to the counter
                             if (score == currentMax) {
-                                queryIndexToNumHitsAtMaxScore.put(queryIndex, currentNumHits + 1);
+                                queryIndexToNumHitsAtMaxScore[fragmentIndex].put(queryIndex, currentNumHits + 1);
                             }
                         } else {
                             // on the second pass, writeAlignment=true
@@ -288,12 +325,14 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                                 // only write non-ambiguous entries i.e. currentNumHits <= mParameter
                                 if (currentNumHits <= mParameter) {
 
-                                    if (currentEntry.getQueryIndex() == currentQueryIndex) {
+                                    if (currentEntry.getQueryIndex() == currentQueryIndex ) {
                                         sameQueryIndexAlignmentEntries.add(currentEntry);
+
                                     } else {
                                         writeEntries(writer, sameQueryIndexAlignmentEntries);
                                         sameQueryIndexAlignmentEntries.add(currentEntry);
                                         currentQueryIndex = currentEntry.getQueryIndex();
+                                        currentFragmentIndex = currentEntry.getFragmentIndex();
                                         numAligns += multiplicity;
                                     }
                                 }
@@ -308,23 +347,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     }
 
                     progress.lightUpdate();
+
                 }
                 parser.close();
                 if (writeAlignment) {
                     // Write the remaining entries (last query index);
-                    writeEntries(writer, sameQueryIndexAlignmentEntries);
-                    /*System.out.println("============== LastToCompact dumping targetLengths..");
-                    final DoubleIndexedIdentifier reverse = new DoubleIndexedIdentifier(targetIds);
-                    int targetIndex = 0;
-                    for (final int length : targetLengths) {
-                        if (length != 0) {
-                            System.out.printf("target-id %s: index: %d length=%d %n", reverse.getId(targetIndex), targetIndex,
-                                    length);
-                        }
-                        targetIndex++;
-                    }
-                    System.out.println("LastToCompact dumping targetLengths done ============== ");
-                   */
+                    numAligns += writeEntries(writer, sameQueryIndexAlignmentEntries);
                     writer.setTargetLengths(targetLengths.toIntArray(new int[targetLengths.size()]));
                     if (readIndexFilter != null) {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
@@ -337,6 +365,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     System.out.printf("Not best score: %d%n", notBestScore);
                 }
                 progress.stop();
+                currentQueryIndex = -1;
+                currentFragmentIndex = -1;
             }
         }
 
@@ -360,17 +390,60 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    private void writeEntries(final AlignmentWriter writer,
-                              final List<Alignments.AlignmentEntry.Builder> alignmentEntries) throws IOException {
+    // swap the fragment index to locate the other read in the pair:
+    private int flipFragmentIndex(int fragmentIndex) {
+        return fragmentIndex ^ 1;
+    }
+
+    private int getPairTargetIndex(int queryIndex, int fragmentIndex) {
+        // swap the fragment index to locate the other read in the pair:
+        fragmentIndex = flipFragmentIndex(fragmentIndex);
+        return targetMap[fragmentIndex].get(queryIndex);
+    }
+
+    private int getPairPosition(int queryIndex, int fragmentIndex) {
+        // swap the fragment index to locate the other read in the pair:
+        fragmentIndex = flipFragmentIndex(fragmentIndex);
+        return positionMap[fragmentIndex].get(queryIndex);
+    }
+    private boolean getPairStrand(int queryIndex, int fragmentIndex) {
+        // swap the fragment index to locate the other read in the pair:
+        fragmentIndex = flipFragmentIndex(fragmentIndex);
+        return strandMap[fragmentIndex].get(queryIndex);
+    }
+
+    /**
+     * The following arrays positionMap and targetMap are indexed on the fragment index.
+     * positionMap stores the position of each queryIndex, fragmentIndex
+     * targetMap stores the target of each queryIndex, fragmentIndex
+     */
+    Int2IntAVLTreeMap positionMap[] = new Int2IntAVLTreeMap[]{new Int2IntAVLTreeMap(), new Int2IntAVLTreeMap()};
+    Int2IntAVLTreeMap targetMap[] = new Int2IntAVLTreeMap[]{new Int2IntAVLTreeMap(), new Int2IntAVLTreeMap()};
+    Int2BooleanAVLTreeMap strandMap[] = new Int2BooleanAVLTreeMap[]{new Int2BooleanAVLTreeMap(), new Int2BooleanAVLTreeMap()};
+
+    private void storeForPairsIndex(boolean writeAlignment, int queryIndex, int fragmentIndex, int targetIndex, int position, boolean matchesReverseStrand) {
+        if (!writeAlignment) {
+            positionMap[fragmentIndex].put(queryIndex, position);
+            targetMap[fragmentIndex].put(queryIndex, targetIndex);
+            strandMap[fragmentIndex].put(queryIndex, matchesReverseStrand);
+        }
+    }
+
+    private int writeEntries(final AlignmentWriter writer,
+                             final List<Alignments.AlignmentEntry.Builder> alignmentEntries) throws IOException {
+
+        int numAligns = 0;
         final int size = alignmentEntries.size();
         if (size > 0) {
             for (final Alignments.AlignmentEntry.Builder alignmentEntry : alignmentEntries) {
                 alignmentEntry.setQueryIndexOccurrences(size);
-                alignmentEntry.setAmbiguity(size);
+                alignmentEntry.setAmbiguity(1);
                 writer.appendEntry(alignmentEntry.build());
+                numAligns += alignmentEntry.getMultiplicity();
             }
             alignmentEntries.clear();
         }
+        return numAligns;
     }
 
     private void flip(final MutableString alignment) {
@@ -411,9 +484,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException                    error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new LastToCompactMode().configure(args).execute();
