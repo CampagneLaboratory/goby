@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.io.FastBufferedReader;
@@ -34,7 +35,7 @@ import java.util.NoSuchElementException;
  * Parses the Last MAF format.
  * As per http://genome.ucsc.edu/FAQ/FAQformat#format5
  * ----------------------------------------------------------------------------
- *  Quoting this documentation
+ * Quoting this documentation
  * ----------------------------------------------------------------------------
  * The multiple alignment format stores a series of multiple alignments in a
  * format that is easy to parse and relatively easy to read. This format stores
@@ -43,30 +44,30 @@ import java.util.NoSuchElementException;
  * of DNA without rearrangements, but would require considerable extension to
  * cope with genomic issues such as forward and reverse strand directions,
  * multiple pieces to the alignment, and so forth.
- *
+ * <p/>
  * General Structure
- *
+ * <p/>
  * The .maf format is line-oriented. Each multiple alignment ends with a blank
  * line. Each sequence in an alignment is on a single line, which can get quite
  * long, but there is no length limit. Words in a line are delimited by any
  * white space. Lines starting with # are considered to be comments. Lines
  * starting with ## can be ignored by most programs, but contain meta-data of
  * one form or another.
- *
+ * <p/>
  * The file is divided into paragraphs that terminate in a blank line. Within a
  * paragraph, the first word of a line indicates its type. Each multiple
  * alignment is in a separate paragraph that begins with an "a" line and
  * contains an "s" line for each sequence in the multiple alignment. Some MAF
  * files may contain other optional line types:
- *
- *      an "i" line containing information about what is in the aligned species
- *      DNA before and after the immediately preceding "s" line
- *
- *      an "e" line containing information about the size of the gap between
- *      the alignments that span the current block
- *
- *      a "q" line indicating the quality of each aligned base for the species
- *
+ * <p/>
+ * an "i" line containing information about what is in the aligned species
+ * DNA before and after the immediately preceding "s" line
+ * <p/>
+ * an "e" line containing information about the size of the gap between
+ * the alignments that span the current block
+ * <p/>
+ * a "q" line indicating the quality of each aligned base for the species
+ * <p/>
  * Parsers may ignore any other types of paragraphs and other types of lines
  * within an alignment paragraph."
  * ----------------------------------------------------------------------------
@@ -80,6 +81,7 @@ public class LastParser implements Closeable {
     private float score;
     private final ObjectArrayList<AlignedSequence> alignedSequences;
     private final ObjectArraySet<AlignedSequence> poolOfAlignedSequences;
+    private double qualityScores;
 
     public LastParser(final Reader reader) {
         iterator = new LineIterator(new FastBufferedReader(reader));
@@ -105,12 +107,13 @@ public class LastParser implements Closeable {
     /**
      * Reads MAF file input lines until ALL aligned sequences have been parsed, one per line.
      * Currently only reading lines beginning with "s".
-     *
+     * <p/>
      * According to the MAF format, "e", "i" and "q" lines may also populate the multiple-
      * alignment block.
      */
     private void readMatches() {
         // N.B. MAF entries can have more than 2 lines ... stop reading at blank line
+        AlignedSequence previousSeq = null;
         while (iterator.hasNext()) {
             final MutableString line = iterator.next();
             if (line.startsWith("#")) {
@@ -136,6 +139,18 @@ public class LastParser implements Closeable {
                 seq.alignment.append(tokens[6]);
 
                 alignedSequences.add(seq);
+                previousSeq = seq;
+            } else if (line.startsWith("q")) {
+                final String[] tokens = line.toString().split("[\\ \t]+");
+
+                String readId = tokens[1];
+                if (previousSeq != null && previousSeq.sequenceIdentifier.equals(readId)) {
+                    previousSeq.qualityScores.clear();
+                    String qualityString = tokens[2];
+                    for (int i = 0; i < qualityString.length(); i++) {
+                        previousSeq.qualityScores.add(QualityEncoding.SANGER.asciiEncodingToPhredQualityScore(qualityString.charAt(i)));
+                    }
+                }
             } else {
                 // An alignment is terminated by a blank line.
                 break;

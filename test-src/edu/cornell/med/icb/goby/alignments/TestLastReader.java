@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.alignments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -116,5 +118,45 @@ public class TestLastReader {
                 "\n" +
                 "# CPU time: 0.28 seconds";
     }
+
+    private String getMafInputWithQuality() {
+        return "# fraglen=111.0 sdev=65.9758 disjoint=0.01 genome=2864785220\n" +
+                "a score=540 mismap=0\n" +
+                "s 4         17885592 90 + 191154276 CCACGTTTTTTCCTGGGCTGCTTACTGTCTTTTCGATCTAATCCATCTTCAGTATTTTCAGAGGTTCCATCAACTGTTCCATTTTTAGAA\n" +
+                "s 5130000/1        7 90 -        97 CCACGTTTTTTCCTGGGCTGCTTACTGTCTTTTCGATCTAATCCATCTTCAGTATTTTCAGAGGTTCCATCAACTGTTCCATTTTTAGAA\n" +
+                "q 5130000/1                         ^^^^^^^```_`ccccccccbc_`hhhchcchhhddd`hhdbc`bdddhhhdhchdhdhhhhhhdhdchdde`hhhdadhcccccccccc\n" +
+                "\n" +
+                "a score=558 mismap=0\n" +
+                "s 4         17885595 93 + 191154276 CGTTTTTTCCTGGGCTGCTTACTGTCTTTTCGATCTAATCCATCTTCAGTATTTTCAGAGGTTCCATCAACTGTTCCATTTTTAGAATTAAGA\n" +
+                "s 5130000/2        0 93 +        97 CGTTTTTTCCTGGGCTGCTTACTGTCTTTTCGATCTAATCCATCTTCAGTATTTTCAGAGGTTCCATCAACTGTTCCATTTTTAGAATTAAGA\n" +
+                "q 5130000/2                         cccccccccchdadhhh`eddhcdhdhhhhhhdhdhchdhhhdddb`cbdhh`dddhhhcchchhh`_cbcccccccc`_```^^^^^^^^^`";
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testReadQualities() throws IOException {
+        final String mafInput = getMafInputWithQuality();
+        final LastParser reader = new LastParser(new StringReader(mafInput));
+        assertTrue(reader.hasNext());
+        reader.next();
+        assertEquals(540f, reader.getScore(), EPSILON);
+        int sequenceLength = reader.getAlignedSequences().get(1).alignment.length();
+        ByteArrayList qualityScores = reader.getAlignedSequences().get(1).getQualityScores();
+        assertEquals(61, qualityScores.getByte(0));
+        assertEquals(66, qualityScores.getByte(sequenceLength-1));
+
+        assertTrue(reader.hasNext());
+        reader.next();
+        assertEquals(558f, reader.getScore(), EPSILON);
+        qualityScores = reader.getAlignedSequences().get(1).getQualityScores();
+        assertEquals(66, qualityScores.getByte(0));
+        assertEquals(61, qualityScores.getByte(sequenceLength-1));
+
+        assertFalse(reader.hasNext());
+
+        // next should throw an exception if hasNext is false
+        reader.next();
+
+    }
+
 
 }

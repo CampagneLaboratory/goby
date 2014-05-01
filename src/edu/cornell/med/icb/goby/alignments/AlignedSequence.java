@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 /**
@@ -64,6 +65,12 @@ public class AlignedSequence {
      */
     public final MutableString alignment;
 
+    public ByteArrayList getQualityScores() {
+        return qualityScores;
+    }
+
+    public ByteArrayList qualityScores;
+
     /**
      * Create a new aligned sequence object.
      * Typically contents of this object maps to Lines starting with 's'
@@ -80,5 +87,6 @@ public class AlignedSequence {
         super();
         sequenceIdentifier = new MutableString();
         alignment = new MutableString();
+        qualityScores=new ByteArrayList();
     }
 }
