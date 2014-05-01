@@ -1,4 +1,4 @@
-> 2.3.4
+2.3.4
  - Optimize the speed of genotyping when some sites have very high coverage (>500M bases).
    Now sub-sampling to keep a random set of 10,000 bases for such sites. Expose the default
    sub-sample size with a dynamic option called sub-sample-size in IterateSortedAlignmentsListImpl.
