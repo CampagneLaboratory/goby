@@ -471,13 +471,16 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
     private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
                                          final AlignedSequence reference,
-                                         final AlignedSequence query, final int readStartPosition, final int queryLength, final boolean reverseStrand) {
+                                         final AlignedSequence query,
+                                         final int readStartPosition,
+                                         final int queryLength,
+                                         final boolean reverseStrand) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
 
         extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition,
-                queryLength, reverseStrand, null);
+                queryLength, reverseStrand, query.getQualityScores().toByteArray());
     }
 
     /**

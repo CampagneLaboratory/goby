@@ -4,6 +4,8 @@
    sub-sample size with a dynamic option called sub-sample-size in IterateSortedAlignmentsListImpl.
    (-x IterateSortedAlignmentsListImpl:sub-sample-size <int>)
  - LastToCompact mode now supports the import of paired end alignments produced by Last's last-pair-probs.sh.
+ - LastToCompact mode now supports the import of quality scores (lastal must be done with -Q1 since the
+   import assumes Phred quality scores on the q lines).
  - Add two methods to AlignmentReader to determine the minimum and maximum genomic locations represented
    in the reader. This is useful when suggesting slices to split a set of alignments. This commit includes
    a fix for possible null start or end positions in slices generated with suggest-position-slices.
