@@ -98,7 +98,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
      */
     private int[][] sample2GermlineSampleIndices;
     private int numSamples;
-    private boolean fisherRInstalled;
     private int pos;
     private CharSequence currentReferenceId;
     private int referenceIndex;
@@ -181,15 +180,10 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         candidateFrequencyIndex = new int[numSamples];
         maxGenotypeSomaticPriority = new int[numSamples];
         Arrays.fill(somaticPValueIndex, -1);
-        setupR();
 
         for (String sample : somaticSampleIds) {
             int sampleIndex = locateSampleIndex(sample);
             assert sampleIndex != -1 : "sample-id must match between covariate file and alignment basenames.";
-            somaticPValueIndex[sampleIndex] = statsWriter.defineField("INFO",
-                    String.format("Somatic-P-value(%s)[%s]", fisherRInstalled ? "Fisher" : "Poisson", sample),
-                    1, ColumnType.Float,
-                    "P-value that a variation is somatic in this particular sample, compared to other germline samples (e.g., germline skin, or mother/father).", "p-value", "statistic", "indexed");
             candidateFrequencyIndex[sampleIndex] = statsWriter.defineField("INFO",
                     String.format("somatic-frequency[%s]", sample),
                     1, ColumnType.Float,
@@ -309,16 +303,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         }
     }
 
-    protected void setupR() {
-        final Rengine rEngine = GobyRengine.getInstance().getRengine();
-        fisherRInstalled = rEngine != null && rEngine.isAlive();
-        //assert fisherRInstalled : "Somatic format requires a working R connection.";
-        if (fisherRInstalled) {
-            System.err.println("Using FISHER statistics to estimate somatic variation p-values.");
-        } else {
-            throw new InternalError("Somatic variation output requires a working R connection. The output format needs to estimate fisher exact test p-values.");
-        }
-    }
 
     private int locateSampleIndex(String somaticSampleId) {
         int index = 0;
@@ -354,7 +338,8 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         statsWriter.setId(".");
         statsWriter.setInfo(igvFieldIndex,
                 String.format("%s:%d-%d", currentReferenceId, position,
-                        position));
+                        position)
+        );
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
@@ -369,7 +354,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         // Do not write record if alleleSet is empty, IGV VCF track cannot handle that.
         if (isPossibleSomaticVariation(sampleCounts)) {
 
-            estimateSomaticPValue(sampleCounts);
             estimatePriority(sampleCounts);
             if (isSomaticCandidate()) {
                 statsWriter.writeRecord();
@@ -532,56 +516,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
         return somaticNormalized - germlineNormalized;
     }
 
-    public void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
-        // force recalculation of the isSomaticCandidate arrays:
-        isPossibleSomaticVariation(sampleCounts);
-
-        for (int sampleIndex : somaticSampleIndices) {
-            pValues.clear();
-
-            SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
-            int fatherSampleIndex = sample2FatherSampleIndex[sampleIndex];
-            if (fatherSampleIndex != -1) {
-
-                SampleCountInfo fatherCounts = sampleCounts[fatherSampleIndex];
-                double fatherP = estimateP(somaticCounts, fatherCounts);
-                pValues.add(fatherP);
-            }
-            int motherSampleIndex = sample2MotherSampleIndex[sampleIndex];
-            if (motherSampleIndex != -1) {
-
-                SampleCountInfo motherCounts = sampleCounts[motherSampleIndex];
-                double motherP = estimateP(somaticCounts, motherCounts);
-                pValues.add(motherP);
-            }
-            int germlineSampleIndices[] = sample2GermlineSampleIndices[sampleIndex];
-            for (int germlineSampleIndex : germlineSampleIndices) {
-                if (germlineSampleIndex != -1) {
-                    SampleCountInfo germlineCounts = sampleCounts[germlineSampleIndex];
-                    double germlineP = estimateP(somaticCounts, germlineCounts);
-                    pValues.add(germlineP);
-                }
-            }
-            // use the max of the above p-values:
-            double pValue = max(pValues);
-            if (!isSomaticCandidate()) {
-                pValue = 1.0;
-            }
-            statsWriter.setInfo(somaticPValueIndex[sampleIndex], pValue);
-
-            float somaticFrequency = 0;
-            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
-                if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
-                    somaticFrequency = Math.max(somaticCounts.frequency(genotypeIndex), somaticFrequency);
-                }
-            }
-            if (!isSomaticCandidate()) {
-                somaticFrequency = 0;
-            }
-            statsWriter.setInfo(candidateFrequencyIndex[sampleIndex], somaticFrequency * 100);
-        }
-
-    }
 
     boolean isPossibleSomaticVariation(SampleCountInfo[] sampleCounts) {
 
@@ -685,62 +619,6 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     boolean isSomaticCandidate[][];
     boolean isStrictSomaticCandidate[][];
 
-    protected double estimateP(SampleCountInfo somaticCounts, SampleCountInfo germlineCounts) {
-
-        double fisherP = 1;
-
-        for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); genotypeIndex++) {
-
-            boolean ok = checkCounts(somaticCounts, germlineCounts, genotypeIndex);
-            final int germlineCount = germlineCounts.getGenotypeCount(genotypeIndex);
-            final int somaticCount = somaticCounts.getGenotypeCount(genotypeIndex);
-
-            //    final int c = (int) ((germlineCount + somaticCount) * proportionCountsIn[germlineCounts.sampleIndex]);
-            //    final int d = (int) ((germlineCount + somaticCount) * proportionCountsIn[somaticCounts.sampleIndex]);
-            double germlineSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
-                    somaticCounts.sampleIndex, germlineCounts.sampleIndex);
-            double somaticSampleExpectedProportion = getSpecificSampleProportion(germlineCounts.sampleIndex,
-                    somaticCounts.sampleIndex, somaticCounts.sampleIndex);
-            assert germlineSampleExpectedProportion + somaticSampleExpectedProportion == 1 : "proportions must sum to 1.0";
-            final int c = (int) ((germlineCount + somaticCount) * germlineSampleExpectedProportion);
-            final int d = (int) ((germlineCount + somaticCount) * somaticSampleExpectedProportion);
-            if (ok) {
-                if (fisherRInstalled) {
-                    //    System.out.printf("%n fisher=? %n%d|%d%n%d|%d ", germlineCount, somaticCount - germlineCount, c, d - c);
-                    fisherP = Math.min(fisherP, FisherExactRCalculator.getFisherOneTailedLesserPValue(
-                            germlineCount, somaticCount,
-                            c, d));
-                    //System.out.printf("%n fisher=%g %n%d|%d%n%d|%d ", fisherP, germlineCount, somaticCount, c, d);
-                    //System.out.flush();
-                } else {
-
-                    int mean = Math.max(1, (germlineCount + c) / 2);
-
-                    final PoissonDistributionImpl poissonDistribution = new PoissonDistributionImpl(mean);
-                    try {
-                        fisherP = Math.min(fisherP, poissonDistribution.cumulativeProbability(c));
-                        // System.out.printf("%nmean=%d%n%d|%d%n%d|%d  x=%d  P(X<=x) %g",mean, germlineCount,somaticCount,c,d,c, fisherP);
-                    } catch (MathException e) {
-                        fisherP = Double.NaN;
-                    }
-
-                }
-
-            } else {
-                System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                        "referenceId=%s referenceIndex=%d position=%d %n" +
-                        "germlineCount=%d somaticCount=%d%n" +
-                        "c=%d, d=%d",
-                        currentReferenceId, referenceIndex,
-                        pos + 1,
-                        germlineCount, somaticCount, c, d
-                );
-            }
-
-        }
-        return fisherP != -1 ? fisherP : Double.NaN;
-    }
-
     private boolean checkCounts(SampleCountInfo aCounts, SampleCountInfo bCounts, int genotypeIndex) {
 
         boolean ok = true;
@@ -786,4 +664,11 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
     }
 
 
+    public void estimateSomaticPValue(SampleCountInfo[] sampleCounts) {
+        // this method does nothing. Kept for compatibility with JUnit tests.
+    }
+
+    public void setupR() {
+        // this method does nothing. Kept for compatibility with JUnit tests.
+    }
 }

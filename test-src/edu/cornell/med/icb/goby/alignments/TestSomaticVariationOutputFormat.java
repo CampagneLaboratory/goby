@@ -84,7 +84,7 @@ public class TestSomaticVariationOutputFormat {
         sampleCounts[0].sampleIndex = 0;
         sampleCounts[1].sampleIndex = 1;
         SomaticVariationOutputFormat output = new SomaticVariationOutputFormat();
-        output.setupR();
+
         output.allocateStorage(2, 0);
         int[][] sampleIndex2GermlineSampleIndices = new int[][]{new int[]{-1}, new int[]{0}};
         IntArrayList indices = new IntArrayList();
