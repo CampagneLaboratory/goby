@@ -6,7 +6,6 @@ import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -353,7 +352,7 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
         // Do not write record if alleleSet is empty, IGV VCF track cannot handle that.
         if (isPossibleSomaticVariation(sampleCounts)) {
-
+            estimateSomaticFrequencies(sampleCounts);
             estimatePriority(sampleCounts);
             if (isSomaticCandidate()) {
                 statsWriter.writeRecord();
@@ -605,6 +604,27 @@ public class SomaticVariationOutputFormat implements SequenceVariationOutputForm
 
         }
         return output;
+    }
+    public void estimateSomaticFrequencies(SampleCountInfo[] sampleCounts) {
+        // force recalculation of the isSomaticCandidate arrays:
+        isPossibleSomaticVariation(sampleCounts);
+
+        for (int sampleIndex : somaticSampleIndices) {
+
+            SampleCountInfo somaticCounts = sampleCounts[sampleIndex];
+
+            float somaticFrequency = 0;
+            for (int genotypeIndex = 0; genotypeIndex < somaticCounts.getGenotypeMaxIndex(); ++genotypeIndex) {
+                if (isSomaticCandidate[sampleIndex][genotypeIndex]) {
+                    somaticFrequency = Math.max(somaticCounts.frequency(genotypeIndex), somaticFrequency);
+                }
+            }
+            if (!isSomaticCandidate()) {
+                somaticFrequency = 0;
+            }
+            statsWriter.setInfo(candidateFrequencyIndex[sampleIndex], somaticFrequency * 100);
+        }
+
     }
 
     private double max(DoubleArrayList pValues) {
