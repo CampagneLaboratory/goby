@@ -1,3 +1,7 @@
+> 2.3.4.1
+  - Add a mode to test that the connection from Goby to R is working (requires JRI and R built
+  with shared library support). The mode is called test-r-connection (tcr).
+
 2.3.4
  - Optimize the speed of genotyping when some sites have very high coverage (>500M bases).
    Now sub-sampling to keep a random set of 10,000 bases for such sites. Expose the default
