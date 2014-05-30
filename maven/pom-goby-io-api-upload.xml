@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.campagnelab.goby</groupId>
   <artifactId>goby-io-api</artifactId>
-    <version>2.3-SNAPSHOT</version>
+    <version>${version}</version>
   <packaging>jar</packaging>
 
   <name>Goby IO API</name>
