@@ -1,6 +1,8 @@
 > 2.3.4.1
+  - Add an option to the fasta-to-compact mode that will convert a set of files and concatenate the result
+    to a single compact-reads file (see new --concat option).
   - Add a mode to test that the connection from Goby to R is working (requires JRI and R built
-  with shared library support). The mode is called test-r-connection (tcr).
+    with shared library support). The mode is called test-r-connection (tcr).
   - Restore STRICT_SOMATIC filter.
 
 2.3.4

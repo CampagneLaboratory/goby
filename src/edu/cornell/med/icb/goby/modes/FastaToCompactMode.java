@@ -133,6 +133,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private ReadCodec codec;
     private boolean forceOverwrite;
     private boolean forceQualityEncoding;
+    // In the concatenate mode, several paired end files are concatenated to a single output file.
+    private boolean concatenate;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -333,6 +335,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
         forceOverwrite = jsapResult.getBoolean("force");
+        concatenate = jsapResult.getBoolean("concat");
         final String tokens = jsapResult.getString("pair-indicator");
 
         String codecName = jsapResult.getString("codec");
@@ -406,20 +409,24 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 // Force parallel to false if in apiMode.
                 parallel = false;
             }
-            final DoInParallel loop = new DoInParallel(numThreads) {
-                @Override
-                public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
-                    try {
-                        debugStart(inputBasename);
-                        processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
-                        debugEnd(inputBasename);
-                    } catch (IOException e) {
-                        LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
+            if (concatenate) {
+                concat(inputFilenames, reqOutputFilename);
+            } else {
+                final DoInParallel loop = new DoInParallel(numThreads) {
+                    @Override
+                    public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
+                        try {
+                            debugStart(inputBasename);
+                            processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
+                            debugEnd(inputBasename);
+                        } catch (IOException e) {
+                            LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
+                        }
                     }
-                }
-            };
-            System.out.println("parallel: " + parallel);
-            loop.execute(parallel, inputFilenames);
+                };
+                System.out.println("parallel: " + parallel);
+                loop.execute(parallel, inputFilenames);
+            }
         } catch (IllegalArgumentException e) {
             if (apiMode) {
                 throw e;
@@ -542,6 +549,55 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
+    private void convert(ReadsWriter writer, String inputFilename) throws IOException {
+        FastXReader pairReader = null;
+        if (processPairs) {
+            final String pairInputFilename = pairFilename(inputFilename);
+            LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
+            pairReader = new FastXReader(pairInputFilename);
+
+        }
+        FastXEntry pairEntry = null;
+        int entryIndex = 0;
+        writer.setMetaData(keyValueProps);
+
+        for (final FastXEntry entry : new FastXReader(inputFilename)) {
+            if (pairReader != null) {
+                pairEntry = pairReader.next();
+                if (pairEntry == null) {
+                    System.err.println("Cannot find matching sequence for " + entry.getEntryHeader());
+                }
+            }
+            if (includeDescriptions) {
+                writer.setDescription(entry.getEntryHeader());
+            }
+            if (includeIdentifiers) {
+                final MutableString description = entry.getEntryHeader();
+                final String identifier = description.toString().split("[\\s]")[0];
+                writer.setIdentifier(identifier);
+            }
+            if (!excludeSequences) {
+                writer.setSequence(entry.getSequence());
+                if (pairEntry != null) {
+                    writer.setPairSequence(pairEntry.getSequence());
+                }
+            } else {
+                writer.setSequence("");
+            }
+            if (!excludeQuality) {
+                writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),
+                        verboseQualityScores, apiMode));
+                if (pairEntry != null) {
+                    writer.setQualityScoresPair(convertQualityScores(qualityEncoding, pairEntry.getQuality(),
+                            verboseQualityScores, apiMode));
+                }
+            }
+
+            writer.appendEntry();
+            entryIndex++;
+        }
+    }
+
     private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename, Properties keyValueProps) throws IOException {
         System.out.printf("Converting [%d/%d] %s to %s%n",
                 loopIndex + 1, length, inputFilename, outputFilename);
@@ -556,53 +612,36 @@ public class FastaToCompactMode extends AbstractGobyMode {
             writer.setCodec(codec);
         }
         try {
-
             writer.setNumEntriesPerChunk(sequencePerChunk);
-            FastXReader pairReader = null;
-            if (processPairs) {
-                final String pairInputFilename = pairFilename(inputFilename);
-                LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
-                pairReader = new FastXReader(pairInputFilename);
 
-            }
-            FastXEntry pairEntry = null;
-            int entryIndex = 0;
-            writer.setMetaData(keyValueProps);
+            this.convert(writer, inputFilename);
 
-            for (final FastXEntry entry : new FastXReader(inputFilename)) {
-                if (pairReader != null) {
-                    pairEntry = pairReader.next();
-                    if (pairEntry == null) {
-                        System.err.println("Cannot find matching sequence for " + entry.getEntryHeader());
-                    }
-                }
-                if (includeDescriptions) {
-                    writer.setDescription(entry.getEntryHeader());
-                }
-                if (includeIdentifiers) {
-                    final MutableString description = entry.getEntryHeader();
-                    final String identifier = description.toString().split("[\\s]")[0];
-                    writer.setIdentifier(identifier);
-                }
-                if (!excludeSequences) {
-                    writer.setSequence(entry.getSequence());
-                    if (pairEntry != null) {
-                        writer.setPairSequence(pairEntry.getSequence());
-                    }
-                } else {
-                    writer.setSequence("");
-                }
-                if (!excludeQuality) {
-                    writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),
-                            verboseQualityScores, apiMode));
-                    if (pairEntry != null) {
-                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding, pairEntry.getQuality(),
-                                verboseQualityScores, apiMode));
-                    }
-                }
+        } finally
 
-                writer.appendEntry();
-                entryIndex++;
+        {
+            writer.close();
+            writer.printStats(System.out);
+        }
+    }
+
+    private void concat(final String inputFilenames[], final String outputFilename) throws IOException {
+
+
+        // Create directory for output file if it doesn't already exist
+        final String outputPath = FilenameUtils.getFullPath(outputFilename);
+        if (StringUtils.isNotBlank(outputPath)) {
+            FileUtils.forceMkdir(new File(outputPath));
+        }
+        final ReadsWriter writer = new ReadsWriterImpl(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+        if (codec != null) {
+            writer.setCodec(codec);
+        }
+        try {
+            writer.setNumEntriesPerChunk(sequencePerChunk);
+            for (String inputFilename : inputFilenames) {
+                System.out.printf("Concatenating %s to %s%n", inputFilename, outputFilename);
+
+                this.convert(writer, inputFilename);
             }
         } finally {
             writer.close();
@@ -610,11 +649,12 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
+
     public static byte[] convertQualityScores(final QualityEncoding qualityEncoding, final CharSequence quality, final boolean verboseQualityScores) {
         return convertQualityScores(qualityEncoding, quality, verboseQualityScores, false);
     }
 
-    public static byte[] convertQualityScores(  final QualityEncoding qualityEncoding, final CharSequence quality, final boolean verboseQualityScores, final boolean apiMode) {
+    public static byte[] convertQualityScores(final QualityEncoding qualityEncoding, final CharSequence quality, final boolean verboseQualityScores, final boolean apiMode) {
         // Only Solexa, Sanger and Illumina encoding are supported at this time
 
         final int size = quality.length();
@@ -657,7 +697,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param name the full path to the file in question
      * @return the full path to file without the fastx/gz extensions or the same name if
-     *         those extensions weren't found.
+     * those extensions weren't found.
      * @see edu.cornell.med.icb.goby.util.FileExtensionHelper#FASTX_FILE_EXTS
      */
     private static String stripFastxExtensions(final String name) {

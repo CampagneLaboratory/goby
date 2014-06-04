@@ -218,5 +218,11 @@
                 errors.
             </help>
         </switch>
+        <switch>
+            <id>concat</id>
+            <longFlag>concat</longFlag>
+            <help>Convert and concatenate a number of input files to one output file. The output file must be named on the command line with the -o option.
+            </help>
+        </switch>
     </parameters>
 </jsap>
