@@ -3,13 +3,12 @@
     <parent>
         <groupId>org.campagnelab.build-utils</groupId>
         <artifactId>maven-parent</artifactId>
-        <version>LATEST</version>
+        <version>1.0.3</version>
     </parent>
 
     <groupId>org.campagnelab.goby</groupId>
     <artifactId>goby</artifactId>
     <version>${version}</version>
-    <packaging>jar</packaging>
 
     <name>Goby</name>
     <description>See http://goby.campagnelab.org/ for information about the Goby project</description>

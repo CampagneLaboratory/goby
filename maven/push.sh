@@ -5,4 +5,4 @@ if [ "$#" -eq "0" ]; then
 fi
 VERSION=$1
 COMMAND=$2
-mvn -Dversion=${VERSION} -f pom-goby-build.xml ${COMMAND}
+mvn -X -e -Dreleases.repository.url.deploy=http://repository.campagnelab.org/artifactory/CampagneLab-SNAPSHOT -Dversion=${VERSION} -f pom-goby-build.xml ${COMMAND}
