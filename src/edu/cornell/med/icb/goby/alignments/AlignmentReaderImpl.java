@@ -770,33 +770,36 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             // header is needed to access target lengths:
             readHeader();
             final GZIPInputStream indexStream = new GZIPInputStream(new RepositionableInputStream(basename + ".index"));
+            try {
+                final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
+                codedInput.setSizeLimit(Integer.MAX_VALUE);
+                final Alignments.AlignmentIndex index = Alignments.AlignmentIndex.parseFrom(codedInput);
+                indexOffsets.clear();
+                indexAbsolutePositions.clear();
 
-            final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
-            codedInput.setSizeLimit(Integer.MAX_VALUE);
-            final Alignments.AlignmentIndex index = Alignments.AlignmentIndex.parseFrom(codedInput);
-            indexOffsets.clear();
-            indexAbsolutePositions.clear();
-
-            for (final long offset : index.getOffsetsList()) {
-                indexOffsets.add(offset);
-            }
-            for (final long absolutePosition : index.getAbsolutePositionsList()) {
-                indexAbsolutePositions.add(absolutePosition);
-            }
-            // trimming is essential for the binary search to work reliably with the result of elements():
-            indexAbsolutePositions.trim();
-            indexOffsets.trim();
+                for (final long offset : index.getOffsetsList()) {
+                    indexOffsets.add(offset);
+                }
+                for (final long absolutePosition : index.getAbsolutePositionsList()) {
+                    indexAbsolutePositions.add(absolutePosition);
+                }
+                // trimming is essential for the binary search to work reliably with the result of elements():
+                indexAbsolutePositions.trim();
+                indexOffsets.trim();
 
 // calculate the coding offset for each target index. This information will be used by recode
-            targetPositionOffsets = new long[targetLengths.length];
-            targetPositionOffsets[0] = 0;
-            for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
-                targetPositionOffsets[targetIndex] =
-                        targetLengths[targetIndex - 1] +
-                                targetPositionOffsets[targetIndex - 1];
+                targetPositionOffsets = new long[targetLengths.length];
+                targetPositionOffsets[0] = 0;
+                for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
+                    targetPositionOffsets[targetIndex] =
+                            targetLengths[targetIndex - 1] +
+                                    targetPositionOffsets[targetIndex - 1];
 
+                }
+                indexLoaded = true;
+            } finally {
+                IOUtils.closeQuietly(indexStream);
             }
-            indexLoaded = true;
         }
         if (!indexLoaded && !indexed) {
             LOG.warn("Trying to read index for an alignment that is not indexed.");
@@ -820,6 +823,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (alignmentEntryReader != null) {
             alignmentEntryReader.close();
         }
+        IOUtils.closeQuietly(headerStream);
+
     }
 
 
@@ -843,7 +848,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     @Override
     public ReferenceLocation getMaxLocation() throws IOException {
-        long maxAbsoluteIndex = indexAbsolutePositions.get(indexAbsolutePositions.size()-1);
+        long maxAbsoluteIndex = indexAbsolutePositions.get(indexAbsolutePositions.size() - 1);
         return decodeAbsoluteLocation(maxAbsoluteIndex);
     }
 
