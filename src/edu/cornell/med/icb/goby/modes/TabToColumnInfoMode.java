@@ -35,11 +35,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -391,12 +387,14 @@ public class TabToColumnInfoMode extends AbstractGobyMode {
 
             // Get the column headers, initialize columnToType
             final TsvToFromMap tsvDetails = TsvToFromMap.createFromTsvFile(inputFile);
+            tsvDetails.setLenientColumnCount(true);
             for (final String columnName : tsvDetails.getColumnHeaders()) {
                 columnToType.put(columnName, ColumnType.Unknown);
             }
 
             // Iterate over the file.
             in = new TsvLineIterator(inputFile, tsvDetails);
+
             for (final LinkedHashToMultiTypeMap<String> lineMap : in) {
                 for (final Map.Entry<String, String> entry : lineMap.entrySet()) {
                     final String columnName = entry.getKey();
