@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -70,6 +69,7 @@ public class GenomicRange {
     }
 
     /**
+     * Determine if the range fully contains a segment.
      * @param chromosome   chromosome.
      * @param segmentStart zero-based position of the start of the segment on chromosome.
      * @param segmentEnd   zero-based position of the end of the segment on chromosome.
