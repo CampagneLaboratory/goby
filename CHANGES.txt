@@ -8,6 +8,9 @@
     that could occur when loading hundreds of alignments simultaneously.
   - Allow lenient import mode for TSV files. This makes it possible to convert TSV files to lucene.index when
     they have been created with Goby in the past with a \t character as last character of the column line.
+  - Fix a bug that caused some slices to occur within annotations, despite the --annotation option being given
+    on the command line. The problem was that the chromosome index was not obtained from the genome and was set
+    to zero, always.
 2.3.4
  - Optimize the speed of genotyping when some sites have very high coverage (>500M bases).
    Now sub-sampling to keep a random set of 10,000 bases for such sites. Expose the default

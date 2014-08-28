@@ -23,7 +23,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.ranges.Range;
 import edu.cornell.med.icb.goby.algorithmic.data.ranges.Ranges;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
+import edu.cornell.med.icb.goby.alignments.ReferenceLocation;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +33,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Map;
 
 /**
  * Converts a compact alignment to plain text.
@@ -262,6 +263,8 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                 int max = Integer.MIN_VALUE;
                 String chromosome = ann.getChromosome();
                 String id = ann.getId();
+                final int referenceIndex = ids.getIndex(chromosome);
+                refIndices.put(id,referenceIndex);
                 min = starts.getInt(id);
                 max = ends.getInt(id);
 
