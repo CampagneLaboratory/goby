@@ -1,4 +1,4 @@
-> 2.3.4.1
+2.3.4.1
   - Add an option to the fasta-to-compact mode that will convert a set of files and concatenate the result
     to a single compact-reads file (see new --concat option).
   - Add a mode to test that the connection from Goby to R is working (requires JRI and R built
@@ -9,7 +9,7 @@
   - Allow lenient import mode for TSV files. This makes it possible to convert TSV files to lucene.index when
     they have been created with Goby in the past with a \t character as last character of the column line.
   - Fix a bug that caused some slices to occur within annotations, despite the --annotation option being given
-    on the command line. The problem was that the chromosome index was not obtained from the genome and was set
+    on the command line. The problem was that the chromosome index was not /obtained from the genome and was set
     to zero, always.
 2.3.4
  - Optimize the speed of genotyping when some sites have very high coverage (>500M bases).
