@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilte
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
@@ -405,7 +406,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         }
         appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand, readIndexAdjustment, baseQualities);
     }
-
+    static WarningCounter noQualScoresWarning=new WarningCounter(10);
+    static WarningCounter sequenceVariationWarning=new WarningCounter(10);
     /**
      * @param currentEntry
      * @param from
@@ -440,10 +442,9 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
                         readIndex,
                         queryLength);
-                LOG.warn(String.format(
-                        "Ignoring sequence variations for a read since readIndex %d must be smaller than read length %d. query index=%d reference index=%d%n", readIndex,
+                sequenceVariationWarning.warn(LOG,"Ignoring sequence variations for a read since readIndex %d must be smaller than read length %d. query index=%d reference index=%d%n", readIndex,
                         queryLength, currentEntry.getQueryIndex(),
-                        currentEntry.getTargetIndex()));
+                        currentEntry.getTargetIndex());
                 //System.exit(1);
                 return;
             }
@@ -457,7 +458,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                     if (i < baseQualities.length) {
                         toQualities[j++] = (byte) ((int) baseQualities[i] - 33);
                     } else {
-                        LOG.warn(String.format("index i=%d too large max=%d", i, baseQualities.length));
+                        noQualScoresWarning.warn(LOG,"index i=%d too large max=%d", i, baseQualities.length);
                     }
                 }
 

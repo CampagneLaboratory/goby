@@ -1,3 +1,7 @@
+> 2.3.4.2
+ - Prevent AbstractAlignmentToCompactMode to print more than 10 warnings if quality scores are not available in
+   an alignment.
+
 2.3.4.1
   - Add an option to the fasta-to-compact mode that will convert a set of files and concatenate the result
     to a single compact-reads file (see new --concat option).
