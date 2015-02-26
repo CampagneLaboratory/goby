@@ -564,7 +564,6 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                     ReferenceLocation readerLocation = locations[readerIndex]
                             .get(locationIndices[readerIndex]);
                     sizeSinceLastSlice += readerLocation.compressedByteAmountSincePreviousLocation;
-
                 }
                 locationIndices[readerIndex]++;
             }
@@ -581,16 +580,17 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 int medianIndex = currentLocations.size() / 2;
                 if (medianIndex < currentLocations.size()) {
                     ReferenceLocation medianLocation = currentLocations.get(medianIndex);
-                    result.add(medianLocation);
+                    if (!result.contains(medianLocation)) {
+                        result.add(medianLocation);
+                    }
                 }
-
                 sizeSinceLastSlice = 0;
             }
         }
         ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
+        result.add(getMinLocation());
+        result.add(getMaxLocation());
         list.addAll(result);
-        list.add(getMinLocation());
-        list.add(getMaxLocation());
         Collections.sort(list);
         return list;
     }

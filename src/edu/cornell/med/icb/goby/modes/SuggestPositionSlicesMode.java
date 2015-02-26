@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.*;
 
 /**
  * Converts a compact alignment to plain text.
@@ -91,9 +92,8 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws java.io.IOException                    error parsing
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)
@@ -154,27 +154,74 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             if (ranges != null) {
                 adjustBreakpointsWithAnnotations(breakpoints, ranges);
             }
+            breakpoints = removeDuplicates(breakpoints);
             if (restrictPerChromosome) {
                 breakpoints = restrictPerChromosome(breakpoints, input);
             }
+            assertPostcondition(breakpoints);
             for (int i = 0; i < breakpoints.length - 1; i++) {
+                final int startTargetIndex = breakpoints[i].targetIndex;
+                final int endTargetIndex = breakpoints[i + 1].targetIndex;
+                final int startPosition = breakpoints[i].position;
+                final int endPosition = breakpoints[i + 1].position;
+
                 if (!restrictPerChromosome ||
-                        (restrictPerChromosome && breakpoints[i].targetIndex == breakpoints[i + 1].targetIndex))
+                        (restrictPerChromosome && startTargetIndex == endTargetIndex)) {
+
                     stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
-                            ids.getId(breakpoints[i].targetIndex),
-                            breakpoints[i].position,
-                            ids.getId(breakpoints[i].targetIndex),
-                            breakpoints[i].position,
-                            ids.getId(breakpoints[i + 1].targetIndex),
-                            breakpoints[i + 1].position,
-                            ids.getId(breakpoints[i + 1].targetIndex),
-                            breakpoints[i + 1].position));
+                            ids.getId(startTargetIndex),
+                            startPosition,
+                            ids.getId(startTargetIndex),
+                            startPosition,
+                            ids.getId(endTargetIndex),
+                            endPosition,
+                            ids.getId(endTargetIndex),
+                            endPosition));
+
+
+                }
 
             }
 
         } finally {
             if (stream != System.out) {
                 IOUtils.closeQuietly(stream);
+            }
+            System.out.println("Done");
+        }
+    }
+
+    private ReferenceLocation[] removeDuplicates(ReferenceLocation[] breakpoints) {
+
+        Set<ReferenceLocation> locations = new HashSet<ReferenceLocation>();
+        for (ReferenceLocation breakpoint : breakpoints) {
+            locations.add(breakpoint);
+        }
+        List<ReferenceLocation> locationsSorted = new ArrayList<ReferenceLocation>();
+        locationsSorted.addAll(locations);
+        Collections.sort(locationsSorted);
+
+        return locationsSorted.toArray(new ReferenceLocation[locationsSorted.size()]);
+
+    }
+
+    /**
+     * Check that slices do not overlap. If they do, raise an assertion.
+     *
+     * @param breakpoints
+     */
+    private void assertPostcondition(ReferenceLocation[] breakpoints) {
+
+        for (int i=0;i<breakpoints.length-1;i++) {
+
+            final int startTargetIndex = breakpoints[i].targetIndex;
+            final int endTargetIndex = breakpoints[i + 1].targetIndex;
+            final int startPosition = breakpoints[i].position;
+            final int endPosition = breakpoints[i + 1].position;
+
+            if (startTargetIndex == endTargetIndex) {
+
+                assert endPosition > startPosition : "Positions must increase in slices: at index=" + i + " breakpoints[index]=" + startPosition + " breakpoints[index]=" + endPosition;
             }
         }
     }
@@ -187,7 +234,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             if (breakpoint.targetIndex != lastTargetIndex) {
                 // we switch to a new chromosome, introduce a new breakpoint at the end of the previous chromosome:
                 if (lastTargetIndex != -1) {
-                    result.add(new ReferenceLocation(lastTargetIndex, reader.getTargetLength(lastTargetIndex)-1));
+                    result.add(new ReferenceLocation(lastTargetIndex, reader.getTargetLength(lastTargetIndex) - 1));
                     result.add(new ReferenceLocation(breakpoint.targetIndex, 0));
                     System.out.println("Adding breakpoint at end of " + lastTargetIndex);
                     numBreakPointAdded++;
@@ -264,7 +311,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                 String chromosome = ann.getChromosome();
                 String id = ann.getId();
                 final int referenceIndex = ids.getIndex(chromosome);
-                refIndices.put(id,referenceIndex);
+                refIndices.put(id, referenceIndex);
                 min = starts.getInt(id);
                 max = ends.getInt(id);
 
@@ -291,9 +338,8 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException                    error parsing or executing.
      */
 
     public static void main(final String[] args) throws JSAPException, IOException {
