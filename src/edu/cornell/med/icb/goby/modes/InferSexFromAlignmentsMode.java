@@ -182,7 +182,6 @@ public class InferSexFromAlignmentsMode extends AbstractGobyMode {
 
         while ((alignmentEntry = referenceReader.skipTo(skipToIndex, 0)) != null) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
-            //System.out.println("refIndex="+referenceIndex);
             if (referenceIndex == chrXIndex) {
                 hitsOnChrX += 1;
             } else if (referenceIndex == chrYIndex) {
@@ -191,9 +190,6 @@ public class InferSexFromAlignmentsMode extends AbstractGobyMode {
                 final int maxSexChrIndex = Math.max(chrXIndex, chrYIndex);
                 if (referenceReader.isSorted() && referenceIndex < maxSexChrIndex) {
                     // jump to the second sex chromosome:
-
-                    System.out.println("jump to the second sex chromosome");
-                    //  referenceReader.skipTo(Math.max(chrXIndex, chrYIndex), 0);
                     skipToIndex = maxSexChrIndex;
                 }
             }
