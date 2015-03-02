@@ -1,7 +1,11 @@
-> 2.3.4.2
+> 2.3.5
+ - Add a mode to infer sex of samples from data (tested on exome data). Useful as quality control to check the
+   data you get checks out with respect to the what is known about the samples. See --mode infer-sex. Works
+   faster on sorted alignments where the index is used to jump quickly to the human sex chromosome.
  - Prevent AbstractAlignmentToCompactMode to print more than 10 warnings if quality scores are not available in
    an alignment.
-
+ - suggest-position-slices: fix a bug in that caused some slices to overlap. Found with a job with hundreds of
+   alignments, so not common.
 2.3.4.1
   - Add an option to the fasta-to-compact mode that will convert a set of files and concatenate the result
     to a single compact-reads file (see new --concat option).
