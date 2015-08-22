@@ -473,7 +473,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (genomicRange == null) {
             return map;
         }
-        Object2ObjectMap<String, ObjectList<Annotation>> filtered = new Object2ObjectArrayMap<String, ObjectList<Annotation>>();
+        Object2ObjectMap<String, ObjectList<Annotation>> filtered = new Object2ObjectAVLTreeMap<String, ObjectList<Annotation>>();
         for (Map.Entry<String, ObjectList<Annotation>> entry : map.entrySet()) {
             String key = entry.getKey();
             String chromosome = key;
@@ -653,8 +653,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         int numberOfAnnotationCountsWritten = 0;
         for (final int referenceIndex : referencesToProcess) {
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
-            System.out.println("Writing annotation counts for reference " + chromosomeName);
-
+            if (referencesToProcess.size()<1000) {
+                //let's not write thousands of lines of output
+                System.out.println("Writing annotation counts for reference " + chromosomeName);
+            }
             if (!allAnnots.containsKey(chromosomeName)) {
                 continue;
             }
