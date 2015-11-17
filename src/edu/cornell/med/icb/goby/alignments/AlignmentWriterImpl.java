@@ -190,7 +190,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @param queryIndex The query index of the next alignment entry to append
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setQueryIndex(final int queryIndex) {
@@ -202,7 +202,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @param targetIndex The target index of the next alignment entry to append
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setTargetIndex(final int targetIndex) {
@@ -214,7 +214,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @param position The target position of the next alignment entry to append
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setTargetPosition(final int position) {
@@ -226,7 +226,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @param score The score of the next alignment entry to append
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setAlignmentScore(final float score) {
@@ -246,7 +246,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      * @param score                The score of the next alignment entry to append
      * @param matchesReverseStrand true if the entry matches the reverse strand
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setAlignmentEntry(final int queryIndex, final int targetIndex,
@@ -268,7 +268,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @return the current alignment entry.
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public Alignments.AlignmentEntry.Builder getAlignmentEntry() {
@@ -280,7 +280,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
      *
      * @throws IOException if the entry cannot be written
      * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public synchronized void appendEntry() throws IOException {
@@ -548,12 +548,12 @@ public class AlignmentWriterImpl implements AlignmentWriter {
 
         if (targetIdentifiersArray == null) {
             for (final MutableString id : identifiers.keySet()) {
-
-                mappings.add(Alignments.IdentifierInfo.newBuilder()
-                        .setName(id.toString())
-                        .setIndex(identifiers.get(id))
-                        .build());
-
+                if (id != null) {
+                    mappings.add(Alignments.IdentifierInfo.newBuilder()
+                            .setName(id.toString())
+                            .setIndex(identifiers.get(id))
+                            .build());
+                }
             }
         } else {
             // prefer to use the array when available, for speed:
@@ -708,6 +708,7 @@ public class AlignmentWriterImpl implements AlignmentWriter {
     public void setReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
         this.readOriginInfoBuilderList = readOriginInfoBuilderList;
     }
+
     @Override
     public void addReadOriginInfo(ObjectArrayList<Alignments.ReadOriginInfo.Builder> readOriginInfoBuilderList) {
         this.readOriginInfoBuilderList.addAll(readOriginInfoBuilderList);
