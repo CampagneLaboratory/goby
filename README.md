@@ -1,6 +1,8 @@
 Goby is a next-gen data management framework designed to facilitate the implementation of efficient data analysis pipelines. The program is distributed under the GNU General Public License (GPL).
 
 ### File formats
+
+[![Join the chat at https://gitter.im/CampagneLaboratory/goby](https://badges.gitter.im/CampagneLaboratory/goby.svg)](https://gitter.im/CampagneLaboratory/goby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Goby provides very efficient file formats to store next-generation sequencing data and intermediary analysis results. The software has been under development and released since 2010. In June 2012, we released Goby 2.0, a version with compression methods that provide state of the art compression of High-Throughput Sequencing (HTS) alignment data.
 
 ### Framework
