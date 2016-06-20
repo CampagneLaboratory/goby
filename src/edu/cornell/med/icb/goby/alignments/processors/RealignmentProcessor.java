@@ -23,15 +23,16 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.WarningCounter;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Random;
 
 /**
  * Support to realign reads on the fly in the proximity of indels. This implementation starts randomly filtering out alignments
@@ -69,7 +70,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     /**
      * The FIFO queue that holds target indices that have entries pooled in tinfo:
      */
-    private IntArrayFIFOQueue activeTargetIndices = new IntArrayFIFOQueue();
+    private IntSortedSet activeTargetIndices = new IntAVLTreeSet();
     private WarningCounter genomeNull = new WarningCounter(2);
 
 
@@ -99,10 +100,15 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         } else {
             //determine if the pool has enough entry within windowSize:
             InfoForTarget backTargetInfo = targetInfo.get(activeTargetIndices.firstInt());
+            InfoForTarget frontTargetInfo = targetInfo.get(activeTargetIndices.lastInt());
             // windowLength is zero at the beginning
             int wl = windowLength == 0 ? 1000 : windowLength;
             mustLoadPool = backTargetInfo.entriesInWindow.isEmpty() ||
-                    backTargetInfo.maxEntryPosition < backTargetInfo.windowStartPosition + wl;
+                    currentTargetIndex == -1 ||
+                    (activeTargetIndices.firstInt() == currentTargetIndex &&
+                            backTargetInfo.maxEntryPosition < backTargetInfo.windowStartPosition + wl) ||
+                    (activeTargetIndices.lastInt() > currentTargetIndex &&
+                            frontTargetInfo.entriesInWindow.isEmpty());
         }
 
         if (mustLoadPool) {
@@ -116,12 +122,13 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
                 if (entry != null) {
 
-                    minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
                     final int entryTargetIndex = entry.getTargetIndex();
+                    minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
+                    currentTargetIndex = minTargetIndex;
                     // push new targetIndices to activeTargetIndices:
                     if (activeTargetIndices.isEmpty() || activeTargetIndices.lastInt() != entryTargetIndex) {
-
-                        activeTargetIndices.enqueue(entryTargetIndex);
+                   //     LOG.info("Adding targetIndex: " + entryTargetIndex + " at back of activeTargetIndices ");
+                        activeTargetIndices.add(entryTargetIndex);
                     }
                     final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
                     // System.out.printf("windowStartPosition=%,d %n",windowStartPosition);
@@ -132,21 +139,25 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 } else if (activeTargetIndices.isEmpty()) {
                     // entry == null and none stored in windows
                     // we could not find anything to return at all. Return null here.
+                    this.targetInfo.clear();
                     return null;
+
                 }
             }
-            while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
+            while (entry != null &&
+                    entry.getTargetIndex() == activeTargetIndices.firstInt() &&
+                    entry.getPosition() < windowStartPosition + windowLength);
         }
 
         // check if we still have entries in the previously active target:
         int backTargetIndex = activeTargetIndices.firstInt();
-        if (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
-            activeTargetIndices.dequeueInt();
+        while (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
+            activeTargetIndices.rem(backTargetIndex);
 
-            //     targetInfo.remove(0);
-            targetInfo.get(0).clear();
+            targetInfo.get(backTargetIndex).clear();
             if (activeTargetIndices.isEmpty()) {
                 // no more targets, we are done.
+                this.targetInfo.clear();
                 return null;
             }
             backTargetIndex = activeTargetIndices.firstInt();
@@ -154,17 +165,22 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
         final InfoForTarget backInfo = targetInfo.get(backTargetIndex); // the pool info we will use to dequeue the entry at the back of the window
         //  System.out.printf("back is holding %d entries %n", backInfo.entriesInWindow.size());
-        // now find the entry at the left of the realignment window on the active target:
-        if (backInfo.entriesInWindow.isEmpty()) {
+
+        if (backInfo.entriesInWindow.isEmpty() && activeTargetIndices.isEmpty()) {
+            this.targetInfo.clear();
             return null;
         }
-
+// now find the entry at the left of the realignment window on the active target:
         Alignments.AlignmentEntry returnedEntry = backInfo.remove();
 
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
         }
-
+        if (returnedEntry.getTargetIndex() > currentTargetIndex) {
+            for (int i = 0; i < returnedEntry.getTargetIndex(); i++) {
+                pruneTargetInfo(i);
+            }
+        }
         // advance the windowStartPosition
         int previousWindowStart = backInfo.windowStartPosition;
         int windowStartPosition = Math.max(backInfo.windowStartPosition, returnedEntry.getPosition());
@@ -181,6 +197,11 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
 
     }
+
+    private void pruneTargetInfo(int targetIndex) {
+        this.targetInfo.get(targetIndex).clear();
+    }
+
 
     private InfoForTarget reallocateTargetInfo(int targetIndex) {
         int intermediateTargetIndex = targetInfo.size() - 1;
@@ -347,8 +368,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 } else {
                     LOG.warn(
                             String.format("Realigned position cannot be negative." +
-                                    " Ignoring this entry: %s%n" +
-                                    "Error encountered at targetIndex=%d targetId=%s pos=%d %n",
+                                            " Ignoring this entry: %s%n" +
+                                            "Error encountered at targetIndex=%d targetId=%s pos=%d %n",
                                     entry.toString(), targetIndex, genome.getReferenceName(targetIndex), pos));
                     // returning source entry without any changes:
                     return entry;

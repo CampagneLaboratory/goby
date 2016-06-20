@@ -1,4 +1,9 @@
-> 2.3.5
+2.3.6
+ - Improve performance of realignment around indels when processing RNA-Seq reads. Previous versions of Goby had
+   scalability issues and kept data around from previous chromosomes. This was OK when processing DNA-Seq inside GobyWeb,
+   which splits data into genomic slices, but not when trying to process one or more RNA-Seq alignment files.
+   Performance has also been dramatically improved by fixing a bug on indel equality.
+2.3.5
  - Add a mode to infer sex of samples from data (tested on exome data). Useful as quality control to check the
    data you get checks out with respect to the what is known about the samples. See --mode infer-sex. Works
    faster on sorted alignments where the index is used to jump quickly to the human sex chromosome.
